@@ -8,6 +8,7 @@
 error_log
 config/secrets/prod/prod.decrypt.private.php
 public_html/bundles/
+public_html/datafix/
 public_html/cotiza/
 public_html/_p/
 public_html/mrks_logos/
