@@ -1,27 +1,26 @@
 ###> symfony/framework-bundle ###
-/.vscode/
+.vscode/
 .idea
 .env.local
 .env.local.php
 .env.*.local
-/.env
+.env
 error_log
-/config/secrets/prod/prod.decrypt.private.php
-/public_html/bundles/
-/public_html/cotiza/
-/public_html/_p/
-/public_html/mrks_logos/
-/public_html/to_orden_tmp/
-/public_html/error_log
-/public_html/.___htaccess
-/public_html/.__htaccess
-/var/
-/vendor/
-/docs/
+config/secrets/prod/prod.decrypt.private.php
+public_html/bundles/
+public_html/cotiza/
+public_html/_p/
+public_html/mrks_logos/
+public_html/to_orden_tmp/
+public_html/error_log
+public_html/.___htaccess
+public_html/.__htaccess
+var/
+vendor/
 ###< symfony/framework-bundle ###
 
 ###> lexik/jwt-authentication-bundle ###
-/config/jwt/*.pem
+config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
 
 ###< en el server ###
