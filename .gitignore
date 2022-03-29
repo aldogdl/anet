@@ -1,10 +1,62 @@
-
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
 /.env.*.local
+/.env
+/.idea
+/error_log
 /config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
+/public_html/bundles/
+/public_html/scp_eye/
+/public_html/eyes_pro/
+/public_html/eyes/
+/public_html/taller/
+/public_html/cotiza/
+/public_html/empresas/
+/public_html/proveedor/
+/public_html/_p/
+/public_html/clusters/
+/public_html/data/
+/public_html/tks/
+/public_html/test_push/
+/public_html/error_log
 /var/
 /vendor/
+/docs/
 ###< symfony/framework-bundle ###
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+###< en el server ###
+.bash_history
+.bash_logout
+.bash_profile
+.bashrc
+.composer/
+.config/
+.contactemail
+.cpanel/
+.cphorde/
+.dns
+.emacs
+.ftpquota
+.gemrc
+.kshrc
+.lastlogin
+.softaculous/
+.spamassassin/
+.spamassassinboxenable
+.spamassassinenable
+.spamboxenable
+.ssh/
+.subaccounts/
+access-logs
+etc/
+mail/
+public_ftp/
+ssl/
+tmp/
+www/
+www
