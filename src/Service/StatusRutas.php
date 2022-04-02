@@ -26,7 +26,10 @@ class StatusRutas
     public function setNewRuta(array $data) {
 
         $pathTo = $this->params->get('datafix');
-
+        if(!$this->filesystem->exists($pathTo)) {
+            $this->filesystem->mkdir($pathTo);
+        }
+        
         $lastRuta = '';
         $finder = new Finder();
         $finder->files()->in($pathTo)->name('*.last');
