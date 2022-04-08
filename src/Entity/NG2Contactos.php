@@ -46,6 +46,18 @@ class NG2Contactos implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'text')]
     private $keyWeb;
 
+    public function __construct()
+    {
+        $this->keyCel = '0';   
+        $this->keyWeb = '0';   
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -86,8 +98,6 @@ class NG2Contactos implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }

@@ -83,7 +83,7 @@ class StatusRutas
     }
 
     /**
-     * Obtenemos el ultimo archivo creado para las rutas.
+     * Obtenemos el nombre del ultimo archivo creado para las rutas.
      */
     public function getLastRutaName(): string
     {

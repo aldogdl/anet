@@ -55,6 +55,8 @@ class OrdenesRepository extends ServiceEntityRepository
         }
     }
 
+    /** ------------------------------------------------------------------- */
+    
     /**
      * @throws ORMException
      * @throws OptimisticLockException
@@ -137,7 +139,28 @@ class OrdenesRepository extends ServiceEntityRepository
     }
 
     /**
-     * from:Centinela
+     * from:SCP
+     */
+    public function getAllOrdenByAvo(int $idAvo): \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT o, mk, md, '.
+        'partial u.{id, nombre, cargo, celular, roles}, '.
+        'partial e.{id, nombre} '.
+        'FROM ' . Ordenes::class . ' o '.
+        'JOIN o.marca mk '.
+        'JOIN o.modelo md '.
+        'JOIN o.own u '.
+        'JOIN u.empresa e ';
+        if($idAvo != 0) {
+            $dql = $dql . 'WHERE o.id = :id ';
+            return $this->_em->createQuery($dql)->setParameter('id', $idAvo);
+        }
+        $dql = $dql . 'ORDER BY o.id DESC';
+        return $this->_em->createQuery($dql);
+    }
+
+    /**
+     * from:Centinela, SCP
      */
     public function getDataOrdenById(string $idOrden): \Doctrine\ORM\Query
     {

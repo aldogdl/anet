@@ -151,4 +151,15 @@ class OrdenPiezasRepository extends ServiceEntityRepository
         'WHERE p.id = :id';
         return $this->_em->createQuery($dql)->setParameter('id', $idPieza);
     }
+
+    /**
+     * from:SCP
+     */
+    public function getPiezasByOrden(int $idOrden): \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT p, o.id as o_id FROM ' . OrdenPiezas::class . ' p '.
+        'JOIN p.orden o '.
+        'WHERE p.orden = :id';
+        return $this->_em->createQuery($dql)->setParameter('id', $idOrden);
+    }
 }

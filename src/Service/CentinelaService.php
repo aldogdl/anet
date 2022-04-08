@@ -45,6 +45,18 @@ class CentinelaService
         ];
     }
 
+    /** */ 
+    public function getSchemaOrdenInit(string $key, array $data): array
+    {
+        return [
+            $key => [
+                'est' => $data['est'],
+                'stt' => $data['stt'],
+                'ruta'=> $data['rta']
+            ]
+        ];
+    }
+
     /** */
     public function setNewOrden(array $data): bool
     {
@@ -104,6 +116,38 @@ class CentinelaService
             $dataMain['version'] = $data['version'];
             $this->filesystem->dumpFile($path, json_encode($dataMain));
         }
+        return $result;
+    }
+
+    /** */
+    public function setNewSttToOrden(array $data): bool
+    {
+        $dataMain = [];
+        $result = false;
+        $path = $this->params->get('centinela');
+        $lock = $this->lock->createLock('centinela');
+        if ($lock->acquire(true)) {
+
+            if($this->filesystem->exists($path)) {
+                $dataMain = json_decode( file_get_contents($path), true );
+                if(!array_key_exists('ord', $dataMain)) {
+                    $dataMain['ord'] = [];
+                }
+                if(!array_key_exists($data['orden'], $dataMain['ord'])) {
+                    $dataMain['ord'][] = $this->getSchemaOrdenInit($data['orden'], $data);
+                }else{
+                    $dataMain['ord'][$data['orden']] = [
+                        'est' => $data['est'],
+                        'stt' => $data['stt'],
+                        'ruta'=> $data['rta']
+                    ];
+                }
+                $dataMain['version'] = $data['version'];
+                $this->filesystem->dumpFile($path, json_encode($dataMain));
+            }
+        }
+
+        $lock->release();
         return $result;
     }
 
