@@ -45,43 +45,12 @@ class SharedController extends AbstractController
 
     #[Route('scp/delete-contacto/{idContac}/', methods:['get'])]
     public function deleteContacto(
-        NG1EmpresasRepository $empEm,
         NG2ContactosRepository $contactsEm,
         int $idContac,
     ): Response
     {   
 
-        $result = ['abort' => false, 'msg' => 'ok', 'body' => 'ok'];
-        $ct = $contactsEm->find(NG2Contactos::class, $idContac);
-
-        if($ct) {
-            $emp = $empEm->find(NG1Empresas::class, $ct->getEmpresa()->getId());
-
-            if($emp) {
-                try {
-                    $contactsEm->remove($ct);
-                    $empEm->remove($emp);
-                } catch (\Throwable $th) {
-                    $result = [
-                        'abort' => true,
-                        'msg'   => $th->getMessage(),
-                        'body'  => 'Error al borrar contacto, inténtalo nuevamente'
-                    ];
-                }
-            }else{
-                $result = [
-                    'abort' => true,
-                    'msg'   => 'err',
-                    'body'  => 'No se encontró la empresa con el ID ' . $ct->getEmpresa()->getId()
-                ];
-            }
-        }else{
-            $result = [
-                'abort' => true,
-                'msg'   => 'err',
-                'body'  => 'No se encontró el contacto con el ID ' . $idContac
-            ];
-        }
+        $result = $contactsEm->borrarContactoById($idContac);
         return $this->json($result);
     }
 

@@ -101,6 +101,44 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     }
 
     /** */
+    public function borrarContactoById(int $idcontact): array
+    {
+
+        $ct = $this->_em->find(NG2Contactos::class, $idcontact);
+
+        if($ct) {
+            $emp = $this->_em->find(NG1Empresas::class, $ct->getEmpresa()->getId());
+
+            if($emp) {
+                try {
+                    $this->remove($ct, false);
+                    $this->remove($emp);
+                } catch (\Throwable $th) {
+                    $this->result = [
+                        'abort' => true,
+                        'msg'   => $th->getMessage(),
+                        'body'  => 'Error al borrar contacto, inténtalo nuevamente'
+                    ];
+                }
+            }else{
+                $this->result = [
+                    'abort' => true,
+                    'msg'   => 'err',
+                    'body'  => 'No se encontró la empresa con el ID ' . $ct->getEmpresa()->getId()
+                ];
+            }
+        }else{
+            $this->result = [
+                'abort' => true,
+                'msg'   => 'err',
+                'body'  => 'No se encontró el contacto con el ID ' . $idcontact
+            ];
+        }
+
+        return $this->result;
+    }
+
+    /** */
     public function seveDataContact(array $data): array
     {
         $obj = null;
