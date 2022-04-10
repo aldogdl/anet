@@ -70,9 +70,7 @@ class NG1EmpresasRepository extends ServiceEntityRepository
         if(is_null($obj)) {
             $obj = new NG1Empresas();
         }
-        if(array_key_exists('local', $data)) {
-            $obj->setId($data['id']);
-        }
+
         $obj->setNombre($data['nombre']);
         $obj->setDomicilio($data['domicilio']);
         $obj->setCp($data['cp']);
@@ -81,11 +79,32 @@ class NG1EmpresasRepository extends ServiceEntityRepository
         $obj->setLatLng($data['latLng']);
         try {
             $this->add($obj, true);
+            if(array_key_exists('local', $data)) {
+                $obj = $this->revisarIdTable($obj, $data);
+            }
             $this->result['body'] = $obj->getId();
         } catch (\Throwable $th) {
             $this->result['abort'] = true;
             $this->result['body'] = 'No se guardo la empresa';
         }
         return $this->result;
+    }
+
+    ///
+    private function revisarIdTable(NG1Empresas $emp, array $dataSend): NG1Empresas
+    {
+        if(array_key_exists('id', $dataSend)) {
+            if($emp->getId() != $dataSend['id']) {
+                $dql = 'UPDATE ' . NG1Empresas::class . ' e '.
+                'SET e.id = :idN '.
+                'WHERE e.id = :id';
+                $this->_em->createQuery($dql)->setParameters([
+                    'idN' => $dataSend['id'], 'id' => $emp->getId()
+                ])->execute();
+            }
+        }
+        return $this->_em->find(NG1Empresas::class, $dataSend['id']);
+        // $connDb = $this->getEntityManager()->getConnection();
+        // $connDb->prepare('ALTER TABLE my_table AUTO_INCREMENT = 100;')->executeStatement();
     }
 }

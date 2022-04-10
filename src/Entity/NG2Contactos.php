@@ -52,12 +52,6 @@ class NG2Contactos implements UserInterface, PasswordAuthenticatedUserInterface
         $this->keyWeb = '0';   
     }
 
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
-
     public function getId(): ?int
     {
         return $this->id;

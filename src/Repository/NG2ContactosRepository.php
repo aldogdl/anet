@@ -93,25 +93,12 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
      */
     public function getAllContactsBy(string $tipo): \Doctrine\ORM\Query
     {
-        $dql = 'SELECT c, e FROM '. NG2Contactos::class .' c '.
-        'JOIN c.empresa e ';
-
-        if($tipo != 'anet') {
-
-            $isCot = ($tipo == 'sol') ? true :  false;
-            $dql = $dql.
-            'WHERE c.isCot = :isCot AND c.curc NOT LIKE :curc '.
-            'ORDER BY c.id ASC';
-            return $this->_em->createQuery($dql)->setParameters([
-                'isCot'=> $isCot,
-                'curc' => 'anet%'
-            ]);
-        }else{
-            $dql = $dql.
-            'WHERE c.curc LIKE :curc '.
-            'ORDER BY c.id ASC';
-            return $this->_em->createQuery($dql)->setParameter('curc', 'anet%');
-        }
+        $neg = ($tipo == 'anet') ? '' : 'NOT';
+        $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e FROM '. NG2Contactos::class .' c '.
+        'JOIN c.empresa e '.
+        'WHERE c.curc ' .$neg. ' LIKE :curc '.
+        'ORDER BY c.id ASC';
+        return $this->_em->createQuery($dql)->setParameter('curc', 'anet%');
     }
 
     /** */
@@ -129,11 +116,11 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         if(is_null($obj)) {
             $obj = new NG2Contactos();
             $obj->setEmpresa($this->_em->getPartialReference(NG1Empresas::class, $data['empresaId']));
+            $obj->setCurc('TMP');
         }
         if(array_key_exists('local', $data)) {
-            $obj->setId($data['id']);
+            $obj->setCurc($data['curc']);
         }
-        $obj->setCurc('TMP');
         $obj->setPassword($data['password']);
         $obj->setNombre($data['nombre']);
         $obj->setIsCot($data['isCot']);
@@ -142,9 +129,16 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         $obj->setRoles($data['roles']);
 
         try {
-            $this->_em->persist($obj);
-            $this->_em->flush();
+            $this->add($obj);
             $this->buildCredentials($obj);
+            if(array_key_exists('local', $data)) {
+                $obj = $this->revisarIdTable($obj, $data);
+            }
+            $this->result = [
+                'abort'=> false,
+                'msg'  => 'ok',
+                'body' => ['e'=> $obj->getEmpresa()->getId(), 'c' => $obj->getId(),'curc' => $obj->getCurc()]
+            ];
         } catch (\Throwable $th) {
             $this->result['abort'] = true;
             $this->result['msg'] = $th->getMessage();
@@ -162,31 +156,46 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
         }
 
-        $hashed = $this->passwordHasher->hashPassword($user, $user->getPassword());
-        $roles = $user->getRoles();
-        $isAdmin = true;
-        if(!in_array('ROLE_AVO', $roles)) {
-            if(!in_array('ROLE_ADMIN', $roles)) {
-                if(!in_array('ROLE_SUPER_ADMIN', $roles)) {
-                    $isAdmin = false;
+        if($user->getCurc() == 'TMP') {
+            $roles = $user->getRoles();
+            $isAdmin = true;
+            if(!in_array('ROLE_AVO', $roles)) {
+                if(!in_array('ROLE_ADMIN', $roles)) {
+                    if(!in_array('ROLE_SUPER_ADMIN', $roles)) {
+                        $isAdmin = false;
+                    }
                 }
             }
-        }
-
-        if($isAdmin) {
-            $prefix = 'a';
+            if($isAdmin) {
+                $prefix = 'a';
+            }else{
+                $prefix = (in_array('ROLE_COTZ', $roles)) ? 'c' : 's';
+            }
+            $curc = $prefix . 'net-e' . $user->getEmpresa()->getId() . 'c' .$user->getId();
+            $user->setCurc($curc);
         }else{
-            $prefix = (in_array('ROLE_COTZ', $roles)) ? 'c' : 's';
+            $curc = $user->getCurc();
         }
 
-        $curc = $prefix . 'net-e' . $user->getEmpresa()->getId() . 'c' .$user->getId();
+        $hashed = $this->passwordHasher->hashPassword($user, $user->getPassword());
         $user->setPassword($hashed);
-        $user->setCurc($curc);
-        $this->_em->persist($user);
-        $this->_em->flush();
-        $this->result = [
-            'abort' => false, 'msg' => 'ok', 'body' => ['e'=> $user->getEmpresa()->getId(), 'c' => $user->getId(),'curc' => $curc]
-        ];
+
+        $this->add($user);
     }
 
+    ///
+    private function revisarIdTable(NG2Contactos $ctc, array $dataSend): NG2Contactos
+    {
+        if(array_key_exists('id', $dataSend)) {
+            if($ctc->getId() != $dataSend['id']) {
+                $dql = 'UPDATE ' . NG2Contactos::class . ' c '.
+                'SET c.id = :idN '.
+                'WHERE c.id = :id';
+                $this->_em->createQuery($dql)->setParameters([
+                    'idN' => $dataSend['id'], 'id' => $ctc->getId()
+                ])->execute();
+            }
+        }
+        return $this->_em->find(NG2Contactos::class, $dataSend['id']);
+    }
 }
