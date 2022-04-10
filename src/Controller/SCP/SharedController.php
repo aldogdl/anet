@@ -56,10 +56,10 @@ class SharedController extends AbstractController
 
         if($ct) {
             $emp = $empEm->find(NG1Empresas::class, $ct->getEmpresa()->getId());
-            
+
             if($emp) {
-                $contactsEm->remove($ct);
-                $empEm->remove($emp);
+                $contactsEm->remove($ct, false);
+                $empEm->remove($emp, false);
                 try {
                     $contactsEm->flush();
                     $empEm->flush();
@@ -67,10 +67,22 @@ class SharedController extends AbstractController
                     $result = [
                         'abort' => true,
                         'msg'   => $th->getMessage(),
-                        'body'  => 'Error al borrar contacto'
+                        'body'  => 'Error al borrar contacto, inténtalo nuevamente'
                     ];
                 }
+            }else{
+                $result = [
+                    'abort' => true,
+                    'msg'   => 'err',
+                    'body'  => 'No se encontró la empresa con el ID ' . $ct->getEmpresa()->getId()
+                ];
             }
+        }else{
+            $result = [
+                'abort' => true,
+                'msg'   => 'err',
+                'body'  => 'No se encontró el contacto con el ID ' . $idContac
+            ];
         }
         return $this->json($result);
     }
