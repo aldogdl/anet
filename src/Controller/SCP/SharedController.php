@@ -58,11 +58,9 @@ class SharedController extends AbstractController
             $emp = $empEm->find(NG1Empresas::class, $ct->getEmpresa()->getId());
 
             if($emp) {
-                $contactsEm->remove($ct, false);
-                $empEm->remove($emp, false);
                 try {
-                    $contactsEm->flush();
-                    $empEm->flush();
+                    $contactsEm->remove($ct);
+                    $empEm->remove($emp);
                 } catch (\Throwable $th) {
                     $result = [
                         'abort' => true,

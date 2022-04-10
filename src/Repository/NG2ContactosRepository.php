@@ -87,7 +87,6 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         }        
     }
 
-    
     /**
      * Recuperamos todas las empresas y sus contactos de tipo...
      */
@@ -105,10 +104,13 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     public function seveDataContact(array $data): array
     {
         $obj = null;
+        $isEditing = false;
+        $hasBuildCredentials = true;
         if($data['id'] != 0) {
             $has = $this->_em->find(NG2Contactos::class, $data['id']);
             if($has) {
                 $obj = $has;
+                $isEditing = true;
                 $has = null;
             }
         }
@@ -121,7 +123,15 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         if(array_key_exists('local', $data)) {
             $obj->setCurc($data['curc']);
         }
-        $obj->setPassword($data['password']);
+        if($isEditing) {
+            if($data['password'] != 'same-password'){
+                $obj->setPassword($data['password']);
+            }else{
+                $hasBuildCredentials = false;
+            }
+        }else{
+            $obj->setPassword($data['password']);
+        }
         $obj->setNombre($data['nombre']);
         $obj->setIsCot($data['isCot']);
         $obj->setCargo($data['cargo']);
@@ -130,7 +140,9 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
 
         try {
             $this->add($obj);
-            $this->buildCredentials($obj);
+            if($hasBuildCredentials) {
+                $obj = $this->buildCredentials($obj);
+            }
             if(array_key_exists('local', $data)) {
                 $obj = $this->revisarIdTable($obj, $data);
             }
@@ -150,7 +162,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     /**
      * Construimos las credenciales password y curc
      */
-    public function buildCredentials(NG2Contactos $user): void
+    public function buildCredentials(NG2Contactos $user): NG2Contactos
     {
         if (!$user instanceof NG2Contactos) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
@@ -181,6 +193,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         $user->setPassword($hashed);
 
         $this->add($user);
+        return $user;
     }
 
     ///
