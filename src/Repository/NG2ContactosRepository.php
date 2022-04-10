@@ -111,8 +111,9 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
 
             if($emp) {
                 try {
-                    $this->remove($ct, false);
-                    $this->remove($emp);
+                    $this->_em->remove($ct);
+                    $this->_em->remove($emp);
+                    $this->_em->flush();
                 } catch (\Throwable $th) {
                     $this->result = [
                         'abort' => true,
