@@ -13,16 +13,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class GetController extends AbstractController
 {
     
-    #[Route('harbi/save-ip-address-harbi/{dataConnection}/', methods:['get'])]
-    public function saveIpAdressHarbi($dataConnection): Response
-    {   
-        file_put_contents('harbi_connx.txt', $dataConnection);
-        return $this->json([
-            'abort'=>false, 'msg' => 'ok',
-            'body' => 'save'
-        ]);
-    }
-
     /**
      * Checamos la ultima version del archivo de seguimiento de las ordenes
      */

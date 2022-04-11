@@ -2,6 +2,7 @@ parameters:
     phtml      : '%kernel.project_dir%/public_html'
     datafix    : '%phtml%/datafix/'
     centinela  : '%phtml%/centinela.json'
+    harbiConnx : '%phtml%/harbi_connx.json'
     imgOrdTmp  : '%phtml%/to_orden_tmp/'
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
