@@ -172,6 +172,8 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
             }
         }
 
+        // Colocamos TEMPORALMENTE el celular ya que es un campo que no se repite.
+        $obj->setCurc($data['celular']);
         if(array_key_exists('local', $data)) {
             $obj->setCurc($data['curc']);
         }else{
