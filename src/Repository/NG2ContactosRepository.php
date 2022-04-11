@@ -144,7 +144,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     {
         $obj = null;
         $isEditing = false;
-        $hasBuildCredentials = true;
+        $buildCurc = true;
         if($data['id'] != 0) {
             $has = $this->_em->find(NG2Contactos::class, $data['id']);
             if($has) {
@@ -153,24 +153,34 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
                 $has = null;
             }
         }
-
+        $password = $data['password'];
         if(is_null($obj)) {
             $obj = new NG2Contactos();
             $obj->setEmpresa($this->_em->getPartialReference(NG1Empresas::class, $data['empresaId']));
-            $obj->setCurc('TMP');
-        }
-        if(array_key_exists('local', $data)) {
-            $obj->setCurc($data['curc']);
-        }
-        if($isEditing) {
-            if($data['password'] != 'same-password'){
-                $obj->setPassword($data['password']);
-            }else{
-                $hasBuildCredentials = false;
+            if(!array_key_exists('local', $data)) {
+                $password = $this->encodePassword($obj, $password);
             }
         }else{
-            $obj->setPassword($data['password']);
+            if($isEditing) {
+                if($data['password'] != 'same-password'){
+                    $password = $this->encodePassword($obj, $password);
+                }else{
+                    $password =  $obj->getPassword();
+                }
+            }else{
+                $password =  $obj->getPassword();
+            }
         }
+
+        if(array_key_exists('local', $data)) {
+            $obj->setCurc($data['curc']);
+        }else{
+            if($isEditing) {
+                $obj = $this->buildCurc($obj, false);
+                $buildCurc = false;
+            }
+        }
+        $obj->setPassword($password);
         $obj->setNombre($data['nombre']);
         $obj->setIsCot($data['isCot']);
         $obj->setCargo($data['cargo']);
@@ -179,8 +189,8 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
 
         try {
             $this->add($obj);
-            if($hasBuildCredentials) {
-                $obj = $this->buildCredentials($obj);
+            if($buildCurc) {
+                $obj = $this->buildCurc($obj);
             }
             if(array_key_exists('local', $data)) {
                 $obj = $this->revisarIdTable($obj, $data);
@@ -201,37 +211,43 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     /**
      * Construimos las credenciales password y curc
      */
-    public function buildCredentials(NG2Contactos $user): NG2Contactos
+    public function encodePassword(NG2Contactos $user, $pass): String
     {
         if (!$user instanceof NG2Contactos) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
         }
 
-        if($user->getCurc() == 'TMP') {
-            $roles = $user->getRoles();
-            $isAdmin = true;
-            if(!in_array('ROLE_AVO', $roles)) {
-                if(!in_array('ROLE_ADMIN', $roles)) {
-                    if(!in_array('ROLE_SUPER_ADMIN', $roles)) {
-                        $isAdmin = false;
-                    }
-                }
-            }
-            if($isAdmin) {
-                $prefix = 'a';
-            }else{
-                $prefix = (in_array('ROLE_COTZ', $roles)) ? 'c' : 's';
-            }
-            $curc = $prefix . 'net-e' . $user->getEmpresa()->getId() . 'c' .$user->getId();
-            $user->setCurc($curc);
-        }else{
-            $curc = $user->getCurc();
+        return $this->passwordHasher->hashPassword($user, $pass);
+    }
+
+    /**
+     * Construimos las credenciales password y curc
+     */
+    public function buildCurc(NG2Contactos $user, bool $flush = true): NG2Contactos
+    {
+        if (!$user instanceof NG2Contactos) {
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
         }
 
-        $hashed = $this->passwordHasher->hashPassword($user, $user->getPassword());
-        $user->setPassword($hashed);
-
-        $this->add($user);
+        $roles = $user->getRoles();
+        $isAdmin = true;
+        if(!in_array('ROLE_AVO', $roles)) {
+            if(!in_array('ROLE_ADMIN', $roles)) {
+                if(!in_array('ROLE_SUPER_ADMIN', $roles)) {
+                    $isAdmin = false;
+                }
+            }
+        }
+        if($isAdmin) {
+            $prefix = 'a';
+        }else{
+            $prefix = (in_array('ROLE_COTZ', $roles)) ? 'c' : 's';
+        }
+        $curc = $prefix . 'net-e' . $user->getEmpresa()->getId() . 'c' .$user->getId();
+        $user->setCurc($curc);
+        if($flush) {
+            $this->add($user);
+        }
         return $user;
     }
 
