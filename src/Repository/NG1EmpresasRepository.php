@@ -73,9 +73,9 @@ class NG1EmpresasRepository extends ServiceEntityRepository
 
         $obj->setNombre($data['nombre']);
         $obj->setDomicilio($data['domicilio']);
-        $obj->setCp($data['cp']);
+        $obj->setCp((integer) $data['cp']);
         $obj->setIsLocal($data['isLocal']);
-        $obj->setTelFijo($data['telFijo']);
+        $obj->setTelFijo( (strlen($data['telFijo']) > 6) ? (integer) $data['telFijo'] : 0 );
         $obj->setLatLng($data['latLng']);
         try {
             $this->add($obj, true);
@@ -85,7 +85,8 @@ class NG1EmpresasRepository extends ServiceEntityRepository
             $this->result['body'] = $obj->getId();
         } catch (\Throwable $th) {
             $this->result['abort'] = true;
-            $this->result['body'] = 'No se guardo la empresa';
+            $this->result['msg'] = $th->getMessage();
+            $this->result['body'] = 'No se guardo la empresa, inténtalo nuevamente.';
         }
         return $this->result;
     }
