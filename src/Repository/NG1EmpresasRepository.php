@@ -75,7 +75,8 @@ class NG1EmpresasRepository extends ServiceEntityRepository
         $obj->setDomicilio($data['domicilio']);
         $obj->setCp((integer) $data['cp']);
         $obj->setIsLocal($data['isLocal']);
-        $obj->setTelFijo( (strlen($data['telFijo']) > 6) ? (integer) $data['telFijo'] : 0 );
+        $telFojo = (strlen($data['telFijo']) > 6) ? $data['telFijo'] : '0';
+        $obj->setTelFijo((integer) $telFojo);
         $obj->setLatLng($data['latLng']);
         try {
             $this->add($obj, true);
