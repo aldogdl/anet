@@ -27,7 +27,7 @@ class NG1Empresas
     #[ORM\Column(type: 'boolean')]
     private $isLocal;
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'string', length: 20)]
     private $telFijo;
 
     #[ORM\Column(type: 'string', length: 100)]
@@ -94,12 +94,12 @@ class NG1Empresas
         return $this;
     }
 
-    public function getTelFijo(): ?int
+    public function getTelFijo(): ?string
     {
         return $this->telFijo;
     }
 
-    public function setTelFijo(int $telFijo): self
+    public function setTelFijo(string $telFijo): self
     {
         $this->telFijo = $telFijo;
 
