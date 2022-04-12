@@ -57,6 +57,22 @@ class CentinelaService
         ];
     }
 
+    /** */
+    public function downloadCentinela(): array
+    {
+        $dataMain = [];
+        $path = $this->params->get('centinela');
+        $lock = $this->lock->createLock('centinela');
+        if($this->filesystem->exists($path)) {
+
+            if ($lock->acquire(true)) {
+                $dataMain = json_decode( file_get_contents($path), true );
+            }
+        }
+        $lock->release();
+        return $dataMain;
+    }
+
     /**
      * @see [Cotiza] GetController::enviarOrden
     */

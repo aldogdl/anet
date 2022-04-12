@@ -30,6 +30,18 @@ class GetController extends AbstractController
     }
 
     /**
+     * Descargamos el contenido del centinela cuando el FTP no funciona
+     */
+    #[Route('harbi/download-centinela/', methods:['get'])]
+    public function downloadCentinela(CentinelaService $centinela): Response
+    {   
+        return $this->json([
+            'abort' => false, 'msg' => 'ok',
+            'body' => $centinela->downloadCentinela()
+        ]);
+    }
+
+    /**
      * Checamos la ultima version del archivo de seguimiento de las ordenes
      */
     #[Route('harbi/check-version-centinela/{lastVersion}/', methods:['get'])]
