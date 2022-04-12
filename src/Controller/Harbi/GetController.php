@@ -14,7 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class GetController extends AbstractController
 {
     
-    
     #[Route('harbi/get-user-by-campo/', methods:['get'])]
     public function getUserByCampo(NG2ContactosRepository $contacsEm, Request $req): Response
     {
