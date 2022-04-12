@@ -57,6 +57,7 @@ class HarbiConnxService
         $path = $this->params->get('harbiConnx');
         if($this->filesystem->exists($path)) {
             $dataMain = json_decode( file_get_contents($path), true );
+            return (is_null($dataMain)) ? [] : $dataMain;
         }
         return $dataMain;
     }
