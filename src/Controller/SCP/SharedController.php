@@ -35,10 +35,14 @@ class SharedController extends AbstractController
     ): Response
     {   
         $data = json_decode( $req->request->get('data'), true );
-        $result = $empEm->seveDataContact($data['empresa']);
-        if(!$result['abort']) {
-            $data['contacto']['empresaId'] = $result['body']; 
-            $result = $contactsEm->seveDataContact($data['contacto']);
+        if($data['empresaId'] != 1) {
+            $result = $empEm->seveDataContact($data['empresa']);
+            if(!$result['abort']) {
+                $data['contacto']['empresaId'] = $result['body']; 
+                $result = $contactsEm->seveDataContact($data['contacto']);
+            }
+        }else{
+            $result = $contactsEm->seveDataContact($data);
         }
         return $this->json($result);
     }
