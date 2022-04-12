@@ -38,14 +38,15 @@ class HarbiConnxService
     {
         $isNew = true;
         $connxs = $this->getContent();
-        if(count($connxs) > 0) {
+        $rota = count($connxs);
+        if($rota > 0) {
             if(array_key_exists($data['key'], $connxs)) {
                 $connxs[$data['key']] = $data['conx'];
                 $isNew = false;
             }
         }
         if($isNew) {
-            $connxs[] = [$data['key'] =>  $data['conx']];
+            $connxs = [$data['key'] => $data['conx']];
         }
         $this->flush($connxs);
     }
