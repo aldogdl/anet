@@ -157,9 +157,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         if(is_null($obj)) {
             $obj = new NG2Contactos();
             $obj->setEmpresa($this->_em->getPartialReference(NG1Empresas::class, $data['empresaId']));
-            if(!array_key_exists('local', $data)) {
-                $password = $this->encodePassword($obj, $password);
-            }
+            $password = $this->encodePassword($obj, $password);
         }else{
             if($isEditing) {
                 if($data['password'] != 'same-password'){
@@ -236,7 +234,9 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         if(!in_array('ROLE_AVO', $roles)) {
             if(!in_array('ROLE_ADMIN', $roles)) {
                 if(!in_array('ROLE_SUPER_ADMIN', $roles)) {
-                    $isAdmin = false;
+                    if(!in_array('ROLE_EVAL', $roles)) {
+                        $isAdmin = false;
+                    }
                 }
             }
         }
