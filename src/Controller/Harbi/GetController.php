@@ -2,6 +2,7 @@
 
 namespace App\Controller\Harbi;
 
+use App\Repository\NG2ContactosRepository;
 use App\Repository\OrdenesRepository;
 use App\Service\CentinelaService;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,6 +14,22 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class GetController extends AbstractController
 {
     
+    
+    #[Route('harbi/get-user-by-campo/', methods:['get'])]
+    public function getUserByCampo(NG2ContactosRepository $contacsEm, Request $req): Response
+    {
+        $campo = $req->query->get('campo');
+        $valor = $req->query->get('valor');
+        $user = $contacsEm->findOneBy([$campo => $valor]);
+        $result = [];
+        $abort = true;
+        if($user) {
+            $abort = false;
+            $result = $contacsEm->toArray($user);
+        }
+        return $this->json(['abort'=>$abort, 'msg' => 'ok', 'body' => $result]);
+    }
+
     /**
      * Checamos la ultima version del archivo de seguimiento de las ordenes
      */

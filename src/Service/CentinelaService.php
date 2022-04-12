@@ -57,7 +57,9 @@ class CentinelaService
         ];
     }
 
-    /** */
+    /**
+     * @see [Cotiza] GetController::enviarOrden
+    */
     public function setNewOrden(array $data): bool
     {
         $dataMain = [];
@@ -110,12 +112,13 @@ class CentinelaService
             for ($i=0; $i < $rota; $i++) { 
                 $dataMain['stt'][$data['piezas'][$i]] = $data['stt'];
             }
+            $dataMain['non'][] = $data['idOrden'];
         }
-        $lock->release();
         if($result) {
             $dataMain['version'] = $data['version'];
             $this->filesystem->dumpFile($path, json_encode($dataMain));
         }
+        $lock->release();
         return $result;
     }
 

@@ -56,6 +56,17 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         }
     }
 
+    ///
+    public function toArray(NG2Contactos $entity): array
+    {
+        return [
+            'id' => $entity->getId(),
+            'nombre' => $entity->getNombre(),
+            'curc' => $entity->getCurc(),
+            'roles' => $entity->getRoles(),
+        ];
+    }
+
     /**
      * Used to upgrade (rehash) the user's password automatically over time.
      */

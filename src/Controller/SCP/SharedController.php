@@ -2,8 +2,6 @@
 
 namespace App\Controller\SCP;
 
-use App\Entity\NG1Empresas;
-use App\Entity\NG2Contactos;
 use App\Repository\NG1EmpresasRepository;
 use App\Repository\NG2ContactosRepository;
 use Symfony\Component\HttpFoundation\Request;
