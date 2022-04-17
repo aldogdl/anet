@@ -150,17 +150,19 @@ class OrdenesRepository extends ServiceEntityRepository
         'JOIN o.marca mk '.
         'JOIN o.modelo md '.
         'JOIN o.own u '.
-        'JOIN u.empresa e ';
-        if($idAvo != 0) {
-            $dql = $dql . 'WHERE o.id = :id ';
-            return $this->_em->createQuery($dql)->setParameter('id', $idAvo);
+        'JOIN u.empresa e '.
+        'WHERE o.avo ';
+        if($idAvo == 0) {
+            $dql = $dql . 'is NULL ORDER BY o.id DESC';
+            return $this->_em->createQuery($dql);
+        }else{
+            $dql = $dql . '= :avo ORDER BY o.id DESC';
+            return $this->_em->createQuery($dql)->setParameter('avo', $idAvo);
         }
-        $dql = $dql . 'ORDER BY o.id DESC';
-        return $this->_em->createQuery($dql);
     }
 
     /**
-     * from:Centinela, SCP
+     * from => :Centinela, :SCP
      */
     public function getDataOrdenById(string $idOrden): \Doctrine\ORM\Query
     {
@@ -174,5 +176,33 @@ class OrdenesRepository extends ServiceEntityRepository
         'JOIN u.empresa e '.
         'WHERE o.id = :id ';
         return $this->_em->createQuery($dql)->setParameter('id', $idOrden);
+    }
+
+    /**
+     * from => :SCP
+     */
+    public function asignarOrdenesToAvo(int $idAvo, array $ordenes): array
+    {
+        $avo = $this->_em->getPartialReference(NG2Contactos::class, $idAvo);
+        if($avo) {
+
+            $dql = 'UPDATE ' . Ordenes::class . ' o '.
+            'SET o.avo = :avoNew WHERE o.id IN (:idsOrdenes)';
+            try {
+                $this->_em->createQuery($dql)->setParameters([
+                    'avoNew' => $avo, 'idsOrdenes' => $ordenes
+                ])->execute();
+                $this->_em->clear();
+            } catch (\Throwable $th) {
+                $this->result['abort'] = true;
+                $this->result['msg'] = $th->getMessage();
+                $this->result['body'] = 'ERROR, al Guardar la Asignación';
+            }
+        }else{
+            $this->result['abort'] = true;
+            $this->result['msg'] = 'error';
+            $this->result['body'] = 'ERROR, No se encontró el AVO ' . $idAvo;
+        }
+        return $this->result;
     }
 }

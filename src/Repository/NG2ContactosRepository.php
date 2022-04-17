@@ -122,8 +122,8 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
 
             if($emp) {
                 try {
-                    $this->_em->remove($ct);
                     $this->_em->remove($emp);
+                    $this->_em->remove($ct);
                     $this->_em->flush();
                 } catch (\Throwable $th) {
                     $this->result = [
@@ -185,6 +185,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         $obj->setCurc($data['celular']);
         if(array_key_exists('local', $data)) {
             $obj->setCurc($data['curc']);
+            $buildCurc = false;
         }else{
             if($isEditing) {
                 $obj = $this->buildCurc($obj, false);
