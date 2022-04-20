@@ -11,17 +11,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class GetController extends AbstractController
 {
-    #[Route('centinela/get-ip-address-harbi/', methods:['get'])]
-    public function getIpAdressHarbi(): Response
-    {   
-        $path = $this->getParameter('harbiConnx');
-
-        return $this->json([
-            'abort'=>false, 'msg' => 'ok',
-            'body' => file_get_contents($path)
-        ]);
-    }
-
     #[Route('centinela/get-data-orden-by-id/{idOrden}/', methods:['get'])]
     public function getDataOrdenById(
         OrdenesRepository $ordenesEm,

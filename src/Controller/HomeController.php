@@ -22,7 +22,7 @@ class HomeController extends AbstractController
         $data = json_decode(file_get_contents($path), true);
 
         return $this->json([
-            'abort' => array_key_exists($pass, $data) ? true : false,
+            'abort' => array_key_exists($pass, $data) ? false : true,
             'msg' => array_key_exists($pass, $data) ? 'ok' : 'ERROR',
             'body' => $data[$pass]
         ]);
