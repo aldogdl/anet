@@ -9,28 +9,24 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class SharedGetController extends AbstractController
 {
-    
-    #[Route('scp/get-all-contactos-by/{tipo}/', methods:['get'])]
+    #[Route('scp/get-all-contactos-by/{tipo}/', methods: ['get'])]
     public function getAllContactsBy(
         NG2ContactosRepository $contactsEm,
         string $tipo
-    ): Response
-    {   
+    ): Response {
         $dql = $contactsEm->getAllContactsBy($tipo);
         return $this->json([
-            'abort'=>false, 'msg' => 'ok',
+            'abort' => false, 'msg' => 'ok',
             'body' => $dql->getScalarResult()
         ]);
     }
 
-    #[Route('scp/delete-contacto/{idContac}/', methods:['get'])]
+    #[Route('scp/delete-contacto/{idContac}/', methods: ['get'])]
     public function deleteContacto(
         NG2ContactosRepository $contactsEm,
         int $idContac,
-    ): Response
-    {   
+    ): Response {
         $result = $contactsEm->borrarContactoById($idContac);
         return $this->json($result);
     }
-
 }
