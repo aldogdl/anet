@@ -32,18 +32,8 @@ class HarbiConnxService
     /** */
     public function saveIp(array $data)
     {
-        $isNew = true;
         $connxs = $this->getContent();
-        $rota = count($connxs);
-        if($rota > 0) {
-            if(array_key_exists($data['key'], $connxs)) {
-                $connxs[$data['key']] = $data['conx'];
-                $isNew = false;
-            }
-        }
-        if($isNew) {
-            $connxs = [$data['key'] => $data['conx']];
-        }
+        $connxs[$data['key']] = $data['conx'];
         $this->flush($connxs);
     }
 
