@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class GetController extends AbstractController
 {
+
     #[Route('centinela/get-data-orden-by-id/{idOrden}/', methods:['get'])]
     public function getDataOrdenById(
         OrdenesRepository $ordenesEm,
