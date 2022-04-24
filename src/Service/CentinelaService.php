@@ -61,14 +61,12 @@ class CentinelaService
      * El esqueleto para una orden nueva usada para el elemento -ord- dentro del centinela
      * el cual indican los status de las ordenes en si.
      */ 
-    public function getSchemaOrdenInit(string $key, array $data): array
+    public function getSchemaOrden(array $data): array
     {
         return [
-            $key => [
-                'est' => $data['est'],
-                'stt' => $data['stt'],
-                'ruta'=> $data['rta']
-            ]
+            'est' => $data['est'],
+            'stt' => $data['stt'],
+            'ruta'=> $data['rta']
         ];
     }
 
@@ -205,8 +203,7 @@ class CentinelaService
             if(!array_key_exists('ord', $file)) {
                 $file['ord'] = [];
             }
-            $schema = $this->getSchemaOrdenInit($data['orden'], $data);
-            $file['ord'][$data['orden']] = $schema[0][$data['orden']];
+            $file['ord'][$data['orden']] = $this->getSchemaOrden($data);
             if($data['version'] != 0) {
                 $file['version'] = $data['version'];
             }
@@ -222,14 +219,7 @@ class CentinelaService
         $file = $this->getContent();
         $result = false;
         if(array_key_exists('version', $file)) {
-            if(!array_key_exists('ord', $file)) {
-                $file['ord'] = [];
-            }
-            $schema = $this->getSchemaOrdenInit($data['orden'], $data);
-            $file['ord'][$data['orden']] = $schema[0][$data['orden']];
-            if($data['version'] != 0) {
-                $file['version'] = $data['version'];
-            }
+            //TODO
             $this->flush($file);
             $result = true;
         }
@@ -244,7 +234,7 @@ class CentinelaService
         if(array_key_exists('version', $file)) {
             $ord = $data['orden'];
             if(array_key_exists($ord, $file['piezas'])) {
-                
+
                 $rota = count($file['piezas'][$ord]);
                 for ($i=0; $i < $rota; $i++) {
                     $pza = (string) $file['piezas'][$ord][$i];
