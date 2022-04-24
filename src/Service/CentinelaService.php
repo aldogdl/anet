@@ -45,6 +45,19 @@ class CentinelaService
     }
 
     /**
+     * El esqueleto para una pieza que ha sido enviada a cotizar
+     * $idCot es el proveedor a quien se le envio, s = status | r = respuesta
+     */ 
+    public function getSchemaPiezaCot(string $idCot, array $stt): array
+    {
+        return [
+            $idCot => [
+                's' => $stt['est']
+            ]
+        ];
+    }
+
+    /**
      * El esqueleto para una orden nueva usada para el elemento -ord- dentro del centinela
      * el cual indican los status de las ordenes en si.
      */ 
@@ -194,7 +207,57 @@ class CentinelaService
             }
             $schema = $this->getSchemaOrdenInit($data['orden'], $data);
             $file['ord'][$data['orden']] = $schema[0][$data['orden']];
-            $file['version'] = $data['version'];
+            if($data['version'] != 0) {
+                $file['version'] = $data['version'];
+            }
+            $this->flush($file);
+            $result = true;
+        }
+        return $result;
+    }
+
+    /** */
+    public function setNewSttToPieza(array $data): bool
+    {
+        $file = $this->getContent();
+        $result = false;
+        if(array_key_exists('version', $file)) {
+            if(!array_key_exists('ord', $file)) {
+                $file['ord'] = [];
+            }
+            $schema = $this->getSchemaOrdenInit($data['orden'], $data);
+            $file['ord'][$data['orden']] = $schema[0][$data['orden']];
+            if($data['version'] != 0) {
+                $file['version'] = $data['version'];
+            }
+            $this->flush($file);
+            $result = true;
+        }
+        return $result;
+    }
+
+    /** */
+    public function buildStatusForBuscarPiezas(array $data): bool
+    {
+        $file = $this->getContent();
+        $result = false;
+        if(array_key_exists('version', $file)) {
+            $ord = $data['orden'];
+            if(array_key_exists($ord, $file['piezas'])) {
+                
+                $rota = count($file['piezas'][$ord]);
+                for ($i=0; $i < $rota; $i++) {
+                    $pza = (string) $file['piezas'][$ord][$i];
+                    if(array_key_exists($pza, $file['stt'])) {
+                        $file['stt'][$pza]['est'] = $data['est'];
+                        $file['stt'][$pza]['stt'] = $data['stt'];
+                        $file['stt'][$pza]['ctz'] = $data['cotz'];
+                    }
+                }
+            }
+            if($data['version'] != 0) {
+                $file['version'] = $data['version'];
+            }
             $this->flush($file);
             $result = true;
         }
@@ -268,5 +331,9 @@ class CentinelaService
         return $mini;
     }
 
+    ///
+    public function setBuscarCotizacionesOrden(array $data)
+    {
 
+    }
 }

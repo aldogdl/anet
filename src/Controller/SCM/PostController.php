@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Harbi;
+namespace App\Controller\SCM;
 
 use App\Service\HarbiConnxService;
 use App\Service\StatusRutas;
@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class PostController extends AbstractController
 {
+
     /**
      * Obtenemos el request contenido decodificado como array
      *
@@ -31,26 +32,4 @@ class PostController extends AbstractController
         }
         return $content;
     }
-
-    #[Route('harbi/save-ip-address-harbi/', methods:['post'])]
-    public function saveIpAdressHarbi(Request $req, HarbiConnxService $harbi): Response
-    {   
-        $data = $this->toArray($req, 'data');
-        $harbi->saveIp($data);
-        return $this->json([
-            'abort'=>false, 'msg' => 'ok',
-            'body' => 'save'
-        ]);
-    }
-
-    #[Route('harbi/save-ruta-last/', methods:['post'])]
-    public function saveRutaLast(Request $req, StatusRutas $rutas): Response
-    {
-        $data = $this->toArray($req, 'data');
-        $rutas->setNewRuta($data);
-        return $this->json([
-            'abort'=>false, 'msg' => 'ok', 'body' => 'save'
-        ]);
-    }
-
 }

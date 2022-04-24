@@ -99,6 +99,18 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     }
 
     /**
+     * Recuperamos todas las empresas y sus contactos que son cotizadores
+     */
+    public function getAllCotizadores(): \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e FROM '. NG2Contactos::class .' c '.
+        'JOIN c.empresa e '.
+        'WHERE c.isCot = :verdadero '.
+        'ORDER BY e.nombre ASC';
+        return $this->_em->createQuery($dql)->setParameter('verdadero', true);
+    }
+
+    /**
      * Recuperamos todas las empresas y sus contactos de tipo...
      */
     public function getAllContactsBy(string $tipo): \Doctrine\ORM\Query

@@ -18,13 +18,14 @@ class HomeController extends AbstractController
     public function getAllContactsBy(
         string $pass
     ): Response {
+
         $path = $this->getParameter('harbiConnx');
         $data = json_decode(file_get_contents($path), true);
 
         return $this->json([
-            'abort' => array_key_exists($pass, $data) ? false : true,
-            'msg' => array_key_exists($pass, $data) ? 'ok' : 'ERROR',
-            'body' => $data[$pass]
+            'abort'=> array_key_exists($pass, $data) ? false : true,
+            'msg'  => array_key_exists($pass, $data) ? 'ok' : 'ERROR',
+            'body' => array_key_exists($pass, $data) ? $data[$pass] : 'ERROR'
         ]);
     }
 }

@@ -2,9 +2,7 @@
 
 namespace App\Controller\SCP\Solicitudes;
 
-use App\Repository\OrdenesRepository;
-use App\Repository\OrdenPiezasRepository;
-use App\Service\CentinelaService;
+use App\Repository\ScmOrdpzaRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,19 +31,16 @@ class PostController extends AbstractController
         return $content;
     }
 
-    #[Route('scp/change-stt-to-orden/', methods:['post'])]
-    public function changeSttToOrden(
-        Request $req,
-        OrdenesRepository $ordsEm,
-        CentinelaService $centinela
-    ): Response
-    {   
-        $data = $this->toArray($req, 'data');
-        $ordsEm->changeSttOrdenTo($data['orden'], $data);
-        $centinela->setNewSttToOrden($data);
-        // ToDoPush
-        // hacer una notificación push al solicitante del cambio de estatus de la orden
-        return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => []]);
+    /**
+     * Registramos para la SCM la orden para la busqueda de cotizaciones de una orden
+     * el centinela es actualizado en: CentinelaController::buscarCotizacionesOrden
+     */
+    #[Route('scp/buscar-cotizaciones-orden/', methods:['post'])]
+    public function buscarCotizacionesOrden(Request $req, ScmOrdpzaRepository $scmEm): Response
+    {
+        $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
+        $data = json_decode( $req->request->get('data'), true );
+        $result = $scmEm->setBuscarCotizacionesOrden($data);
+        return $this->json($result);
     }
-
 }
