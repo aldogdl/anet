@@ -46,13 +46,15 @@ class PostController extends AbstractController
 
         $result = $pzaEm->setPieza($data);
         if(!$result['abort']) {
-            
+
             // Eliminamos las fotos que han sido indicadas.
-            $has = count($data['fotosD']);
-            if($has > 0) {
-                if($data['pathF'] == 'to_orden_tmp') {
-                    for ($i=0; $i < $has; $i++) { 
-                        $cotService->removeImgOfOrdenToFolderTmp($data['fotosD'][$i]);
+            if(array_key_exists('fotosD', $data)) {
+                $has = count($data['fotosD']);
+                if($has > 0) {
+                    if($data['pathF'] == 'to_orden_tmp') {
+                        for ($i=0; $i < $has; $i++) { 
+                            $cotService->removeImgOfOrdenToFolderTmp($data['fotosD'][$i]);
+                        }
                     }
                 }
             }
