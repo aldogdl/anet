@@ -4,6 +4,7 @@ namespace App\Controller\SCP\Solicitudes;
 
 use App\Repository\OrdenPiezasRepository;
 use App\Repository\ScmOrdpzaRepository;
+use App\Service\CotizaService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -36,11 +37,26 @@ class PostController extends AbstractController
      * Editamos desde la SCP los datos de la refaccion que se esta checando
      */
     #[Route('scp/editar-data-pieza/', methods:['post'])]
-    public function editarDataPieza(Request $req, OrdenPiezasRepository $pzaEm): Response
+    public function editarDataPieza(
+        Request $req, OrdenPiezasRepository $pzaEm, CotizaService $cotService
+    ): Response
     {
         $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
         $data = $this->toArray($req, 'data');
+
         $result = $pzaEm->setPieza($data);
+        if(!$result['abort']) {
+            
+            // Eliminamos las fotos que han sido indicadas.
+            $has = count($data['fotosD']);
+            if($has > 0) {
+                if($data['pathF'] == 'to_orden_tmp') {
+                    for ($i=0; $i < $has; $i++) { 
+                        $cotService->removeImgOfOrdenToFolderTmp($data['fotosD'][$i]);
+                    }
+                }
+            }
+        }
         return $this->json($result);
     }
 
