@@ -55,4 +55,18 @@ class AO1MarcasRepository extends ServiceEntityRepository
             $this->_em->flush();
         }
     }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function getAllAutos(): \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT mrk, partial md.{id, nombre} FROM ' . AO1Marcas::class . ' mrk '.
+        'JOIN mrk.modelos md '.
+        'ORDER BY mrk.nombre ASC';
+
+        return $this->_em->createQuery($dql);
+    }
+
 }

@@ -2,6 +2,8 @@
 
 namespace App\Controller\Harbi;
 
+use App\Repository\AO1MarcasRepository;
+use App\Repository\AO2ModelosRepository;
 use App\Repository\NG2ContactosRepository;
 use App\Repository\OrdenesRepository;
 use App\Service\CentinelaService;
@@ -65,6 +67,20 @@ class GetController extends AbstractController
         return $this->json([
             'abort'=>false, 'msg' => 'ok',
             'body' => (count($data) > 0) ? $data[0] : []
+        ]);
+    }
+
+    /**
+     * Recuperamos las marcas y modelos
+     */
+    #[Route('harbi/get-all-autos/', methods:['get'])]
+    public function getAllAutos(AO1MarcasRepository $mksEm): Response
+    {   
+        $dql = $mksEm->getAllAutos();
+        $data = $dql->getArrayResult();
+        return $this->json([
+            'abort'=>false, 'msg' => 'ok',
+            'body' => $data
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Controller\SCP\Solicitudes;
 
+use App\Repository\OrdenPiezasRepository;
 use App\Repository\ScmOrdpzaRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +33,18 @@ class PostController extends AbstractController
     }
 
     /**
+     * Editamos desde la SCP los datos de la refaccion que se esta checando
+     */
+    #[Route('scp/editar-data-pieza/', methods:['post'])]
+    public function editarDataPieza(Request $req, OrdenPiezasRepository $pzaEm): Response
+    {
+        $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
+        $data = $this->toArray($req, 'data');
+        $result = $pzaEm->setPieza($data);
+        return $this->json($result);
+    }
+
+    /**
      * Registramos para la SCM la orden para la busqueda de cotizaciones de una orden
      * el centinela es actualizado en: CentinelaController::buscarCotizacionesOrden
      */
@@ -39,7 +52,7 @@ class PostController extends AbstractController
     public function buscarCotizacionesOrden(Request $req, ScmOrdpzaRepository $scmEm): Response
     {
         $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
-        $data = json_decode( $req->request->get('data'), true );
+        $data = $this->toArray($req, 'data');
         $result = $scmEm->setBuscarCotizacionesOrden($data);
         return $this->json($result);
     }

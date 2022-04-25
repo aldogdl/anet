@@ -242,7 +242,7 @@ class StatusRutas
         $estInt = '0';
         foreach ($rutas['est'] as $key => $value) {
             $newStr = s($value)->lower();
-            if($newStr->startsWith('buscando')){
+            if($newStr->containsAny('procesamiento')){
                 $estInt = $key;
                 break;
             }
@@ -255,7 +255,7 @@ class StatusRutas
             ];
         }
         return [
-            'est' => '3',
+            'est' => '2',
             'stt' => '1'
         ];
     }

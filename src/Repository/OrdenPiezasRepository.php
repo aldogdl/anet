@@ -91,7 +91,7 @@ class OrdenPiezasRepository extends ServiceEntityRepository
         $pieza->setEst($data['est']);
         $pieza->setStt($data['stt']);
         $pieza->setRuta($data['ruta']);
-        
+
         try {
             $this->_em->persist($pieza);
             $this->_em->flush();
