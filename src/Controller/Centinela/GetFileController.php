@@ -10,6 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class GetFileController extends AbstractController
 {
+    /**
+     * Retornamos una miniatura del archivo centinela, esta miniatura consta de
+     * los datos solo para un determinado avo.
+     */
     #[Route('centinela/file/get-all-data-by-id/{avo}/', methods:['get'])]
     public function getAllDataByIdAvo(CentinelaService $centinela, string $avo): Response
     {

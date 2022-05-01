@@ -111,6 +111,18 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     }
 
     /**
+     * Recuperamos el contacto por su ID
+     */
+    public function getContactoById(int $idContac): \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e FROM '. NG2Contactos::class .' c '.
+        'JOIN c.empresa e '.
+        'WHERE c.id = :idC '.
+        'ORDER BY e.nombre ASC';
+        return $this->_em->createQuery($dql)->setParameter('idC', $idContac);
+    }
+
+    /**
      * Recuperamos todas las empresas y sus contactos de tipo...
      */
     public function getAllContactsBy(string $tipo): \Doctrine\ORM\Query

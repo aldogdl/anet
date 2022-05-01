@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Lock\LockFactory;
@@ -265,6 +264,23 @@ class CentinelaService
             if($dataMain['version'] == $oldVersion) {
                 $result = true;
             }
+        }
+        return $result;
+    }
+
+    /**
+     * Checamos la version del centinela para ver si hay cambios
+    */
+    public function isSameVersionAndGetVersionNew(string $oldVersion): array
+    {
+        $dataMain = $this->getContent();
+        $result['isSame'] = false;
+        $result['newver'] = $oldVersion;
+        if(array_key_exists('version', $dataMain)) {
+            if($dataMain['version'] == $oldVersion) {
+                $result['isSame'] = true;
+            }
+            $result['newver'] = $dataMain['version'];
         }
         return $result;
     }
