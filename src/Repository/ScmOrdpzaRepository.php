@@ -78,14 +78,16 @@ class ScmOrdpzaRepository extends ServiceEntityRepository
     /** */
     public function getMsgByOrden(array $ids): \Doctrine\ORM\Query
     {
-        $avo = 'partial avo.{id, curc, roles, nombre, cargo, celular}';
-        $own = 'partial own.{id, curc, roles, nombre, cargo, celular}';
-        $dql = 'SELECT m, o, partial mk.{id, nombre}, md, '.$avo.', '.$own.' FROM ' . ScmOrdpza::class . ' m '.
+        $avo = 'partial avo.{id, curc, roles, nombre, cargo, celular, isCot}';
+        $own = 'partial own.{id, curc, roles, nombre, cargo, celular, isCot}';
+        $emp = 'partial emp.{id, nombre, domicilio, cp, telFijo, isLocal, latLng}';
+        $dql = 'SELECT m, o, partial mk.{id, nombre}, md, '.$avo.', '.$own.', '.$emp.' FROM '.ScmOrdpza::class . ' m '.
         'JOIN m.orden o '.
         'JOIN o.marca mk '.
         'JOIN o.modelo md '.
         'JOIN o.avo avo '.
         'JOIN o.own own '.
+        'JOIN own.empresa emp '.
         'WHERE m.id IN (:ids) '.
         'ORDER BY m.id ASC';
         return $this->_em->createQuery($dql)->setParameter('ids', $ids);

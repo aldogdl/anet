@@ -58,7 +58,7 @@ class GetController extends AbstractController
     }
 
     /**
-     * 
+     *
      */
     #[Route('scm/get-scmordpza/{item}/', methods:['get'])]
     public function getRequerimientos(
@@ -86,7 +86,7 @@ class GetController extends AbstractController
                 $rota = count($result);
                 if($rota > 0) {
                     $fileCenti = $centinela->getContent();
-                    for ($i=0; $i < $rota; $i++) { 
+                    for ($i=0; $i < $rota; $i++) {
                         $piezasIds = $fileCenti['piezas'][$result[$i]['orden']['id']];
                         $vltas = count($piezasIds);
                         for ($p=0; $p < $vltas; $p++) {
@@ -115,7 +115,7 @@ class GetController extends AbstractController
                 # code...
                 break;
         }
-        
+
         return $this->json($response);
     }
 
