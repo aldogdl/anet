@@ -38,7 +38,7 @@ class Ordenes
 
     #[ORM\Column(type: 'string', length: 3)]
     private $est;
-    
+
     #[ORM\Column(type: 'string', length: 3)]
     private $stt;
 
@@ -48,25 +48,10 @@ class Ordenes
     #[ORM\Column(type: 'boolean')]
     private $isNac;
 
-    #[ORM\Column(type: 'string', length: 50)]
-    private $ruta;
-
     public function __construct()
     {
         $this->piezas = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable('now');
-    }
-
-    public function getRuta(): ?string
-    {
-        return $this->ruta;
-    }
-
-    public function setRuta(string $ruta): self
-    {
-        $this->ruta = $ruta;
-
-        return $this;
     }
 
     public function getId(): ?int

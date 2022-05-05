@@ -1,14 +1,13 @@
 parameters:
     phtml      : '%kernel.project_dir%/public_html'
     datafix    : '%phtml%/datafix/'
-    centinela  : '%phtml%/centinela.json'
-    scm        : '%datafix%/scm.json'
-    scmMsgsDef : '%datafix%/scm_mensajes.json'
-    scmMsgs    : '%datafix%/scm_msgs/'
-    harbiConnx : '%phtml%/harbi_connx.json'
     imgOrdTmp  : '%phtml%/to_orden_tmp/'
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
+    centinela  : '%phtml%/centinela.json'
+    targets    : '%datafix%/targets.json'
+    rutas      : '%datafix%/rutas.json'
+    harbiConnx : '%phtml%/harbi_connx.json'
 
 services:
     # default configuration for services in *this* file

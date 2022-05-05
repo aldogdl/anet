@@ -25,11 +25,11 @@ class ScmCamp
     #[ORM\Column(type: 'json')]
     private $src = [];
 
-    #[ORM\ManyToOne(targetEntity: Ng2Contactos::class)]
+    #[ORM\ManyToOne(targetEntity: NG2Contactos::class)]
     #[ORM\JoinColumn(nullable: false)]
     private $remiter;
 
-    #[ORM\ManyToOne(targetEntity: Ng2Contactos::class)]
+    #[ORM\ManyToOne(targetEntity: NG2Contactos::class)]
     #[ORM\JoinColumn(nullable: false)]
     private $emiter;
 
@@ -45,6 +45,7 @@ class ScmCamp
 
     public function __construct()
     {
+        $this->createdAt = new \DateTimeImmutable('now');
         $this->receivers = new ArrayCollection();
     }
 
@@ -89,24 +90,24 @@ class ScmCamp
         return $this;
     }
 
-    public function getRemiter(): ?Ng2Contactos
+    public function getRemiter(): ?NG2Contactos
     {
         return $this->remiter;
     }
 
-    public function setRemiter(?Ng2Contactos $remiter): self
+    public function setRemiter(?NG2Contactos $remiter): self
     {
         $this->remiter = $remiter;
 
         return $this;
     }
 
-    public function getEmiter(): ?Ng2Contactos
+    public function getEmiter(): ?NG2Contactos
     {
         return $this->emiter;
     }
 
-    public function setEmiter(?Ng2Contactos $emiter): self
+    public function setEmiter(?NG2Contactos $emiter): self
     {
         $this->emiter = $emiter;
 

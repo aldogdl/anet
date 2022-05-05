@@ -17,7 +17,7 @@ class ScmReceivers
     #[ORM\JoinColumn(nullable: false)]
     private $camp;
 
-    #[ORM\ManyToOne(targetEntity: Ng2Contactos::class)]
+    #[ORM\ManyToOne(targetEntity: NG2Contactos::class)]
     #[ORM\JoinColumn(nullable: false)]
     private $receiver;
 
@@ -47,12 +47,12 @@ class ScmReceivers
         return $this;
     }
 
-    public function getReceiver(): ?Ng2Contactos
+    public function getReceiver(): ?NG2Contactos
     {
         return $this->receiver;
     }
 
-    public function setReceiver(?Ng2Contactos $receiver): self
+    public function setReceiver(?NG2Contactos $receiver): self
     {
         $this->receiver = $receiver;
 

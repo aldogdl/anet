@@ -70,7 +70,7 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     }
 
     /**
-     * 
+     *
      */
     public function setPieza(array $data): array
     {
@@ -90,7 +90,6 @@ class OrdenPiezasRepository extends ServiceEntityRepository
         $pieza->setObs($data['obs']);
         $pieza->setEst($data['est']);
         $pieza->setStt($data['stt']);
-        $pieza->setRuta($data['ruta']);
 
         try {
             $this->_em->persist($pieza);
@@ -105,7 +104,7 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     }
 
     /**
-     * 
+     *
      */
     public function deletePiezaAntesDeSave(int $idPza): array
     {
@@ -113,7 +112,6 @@ class OrdenPiezasRepository extends ServiceEntityRepository
         if($pieza) {
             $this->result['body']['fotos'] = $pieza->getFotos();
             $this->result['body']['orden'] = $pieza->getOrden()->getId();
-            $this->result['body']['ruta']  = $pieza->getRuta();
             try {
                 $this->_em->remove($pieza);
                 $this->_em->flush();

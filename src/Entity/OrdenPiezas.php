@@ -16,13 +16,13 @@ class OrdenPiezas
     #[ORM\ManyToOne(targetEntity: Ordenes::class, inversedBy: 'piezas')]
     #[ORM\JoinColumn(nullable: false)]
     private $orden;
-    
+
     #[ORM\Column(type: 'string', length: 3)]
     private $est;
 
     #[ORM\Column(type: 'string', length: 3)]
     private $stt;
-    
+
     #[ORM\Column(type: 'string', length: 100)]
     private $piezaName;
 
@@ -40,9 +40,6 @@ class OrdenPiezas
 
     #[ORM\Column(type: 'string', length: 255)]
     private $obs;
-
-    #[ORM\Column(type: 'string', length: 50)]
-    private $ruta;
 
     public function getId(): ?int
     {
@@ -153,18 +150,6 @@ class OrdenPiezas
     public function setOrden(?Ordenes $orden): self
     {
         $this->orden = $orden;
-
-        return $this;
-    }
-
-    public function getRuta(): ?string
-    {
-        return $this->ruta;
-    }
-
-    public function setRuta(string $ruta): self
-    {
-        $this->ruta = $ruta;
 
         return $this;
     }

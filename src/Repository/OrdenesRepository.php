@@ -6,7 +6,6 @@ use App\Entity\AO1Marcas;
 use App\Entity\AO2Modelos;
 use App\Entity\NG2Contactos;
 use App\Entity\Ordenes;
-use App\Service\StatusRutas;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -20,15 +19,11 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class OrdenesRepository extends ServiceEntityRepository
 {
-
-    private $rutas;
-
     public $result = ['abort' => false, 'msg' => 'ok', 'body' => ''];
 
-    public function __construct(ManagerRegistry $registry, StatusRutas $rtas)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Ordenes::class);
-        $this->rutas = $rtas;
     }
 
     /**
@@ -56,34 +51,32 @@ class OrdenesRepository extends ServiceEntityRepository
     }
 
     /** ------------------------------------------------------------------- */
-    
+
     /**
      * @throws ORMException
      * @throws OptimisticLockException
      */
     public function setOrden(array $orden): array
-    {   
+    {
         if($orden['id'] != 0) {
             $entity = $this->_em->find(Ordenes::class, $orden['id']);
         }else{
             $entity = new Ordenes();
             $entity->setOwn( $this->_em->getPartialReference(NG2Contactos::class, $orden['own']) );
         }
-        
+
         $entity->setMarca( $this->_em->getPartialReference(AO1Marcas::class, $orden['id_marca']) );
         $entity->setModelo( $this->_em->getPartialReference(AO2Modelos::class, $orden['id_modelo']) );
         $entity->setAnio($orden['anio']);
         $entity->setIsNac($orden['is_nacional']);
         $entity->setEst($orden['est']);
         $entity->setStt($orden['stt']);
-        $entity->setRuta($this->rutas->getLastRutaName());
 
         $this->_em->persist($entity);
         try {
             $this->_em->flush();
             $this->result['body'] = [
                 'id' => $entity->getId(),
-                'ruta' => $entity->getRuta(),
                 'created_at' => $entity->getCreatedAt(),
             ];
         } catch (\Throwable $th) {
@@ -96,10 +89,10 @@ class OrdenesRepository extends ServiceEntityRepository
     }
 
     /**
-     * 
+     *
     */
     public function getOrdenesByOwnAndEstacion(int $idUser, String $est): \Doctrine\ORM\Query
-    {   
+    {
         $dql = 'SELECT o, partial mk.{id}, partial md.{id}, partial a.{id}, partial u.{id} FROM ' . Ordenes::class . ' o '.
         'JOIN o.marca mk '.
         'JOIN o.modelo md '.
@@ -115,7 +108,7 @@ class OrdenesRepository extends ServiceEntityRepository
      * @throws OptimisticLockException
      */
     public function removeOrden(int $idOrden): array
-    {   
+    {
         $entity = $this->_em->find(Ordenes::class, $idOrden);
         if($entity) {
             $this->_em->remove($entity);
@@ -164,18 +157,30 @@ class OrdenesRepository extends ServiceEntityRepository
     /**
      * from => :Centinela, :SCP
      */
-    public function getDataOrdenById(string $idOrden): \Doctrine\ORM\Query
+    public function getDataOrdenById(string $idOrden, $withOwn = true): \Doctrine\ORM\Query
     {
-        $dql = 'SELECT o, mk, md, '.
-        'partial u.{id, nombre, cargo, celular, roles}, '.
-        'partial e.{id, nombre} '.
-        'FROM ' . Ordenes::class . ' o '.
-        'JOIN o.marca mk '.
-        'JOIN o.modelo md '.
-        'JOIN o.own u '.
-        'JOIN u.empresa e '.
-        'WHERE o.id = :id ';
-        return $this->_em->createQuery($dql)->setParameter('id', $idOrden);
+
+      $dql = 'SELECT o, mk, md ';
+      if($withOwn) {
+        $dql = $dql . ', partial u.{id, nombre, cargo, celular, roles}, partial e.{id, nombre} ';
+      }
+      $dql = $dql . 'FROM ' . Ordenes::class . ' o '.
+      'JOIN o.marca mk '.
+      'JOIN o.modelo md ';
+      if($withOwn) {
+        $dql = $dql . 'JOIN o.own u JOIN u.empresa e ';
+      }
+      $dql = $dql . 'WHERE o.id = :id ';
+      return $this->_em->createQuery($dql)->setParameter('id', $idOrden);
+    }
+
+    /**
+    *
+    */
+    public function getTargetById(int $id): array
+    {
+      $dql = $this->getDataOrdenById((string) $id, false);
+      return $dql->getArrayResult();
     }
 
     /**

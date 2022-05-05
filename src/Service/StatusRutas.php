@@ -21,29 +21,12 @@ class StatusRutas
         $this->params = $container;
         $this->filesystem = new Filesystem();
     }
-    
+
     /** */
     public function setNewRuta(array $data) {
 
-        $pathTo = $this->params->get('datafix');
-        if(!$this->filesystem->exists($pathTo)) {
-            $this->filesystem->mkdir($pathTo);
-        }
-        
-        $lastRuta = '';
-        $finder = new Finder();
-        $finder->files()->in($pathTo)->name('*.last');
-        if ($finder->hasResults()) {
-            foreach ($finder as $file) {
-                $lastRuta = $file->getRelativePathname(); 
-            }
-        }
-        if(strlen($lastRuta) > 0) {
-            $this->filesystem->remove($pathTo.$lastRuta);
-        }
-
-        file_put_contents($pathTo. $data['ver'] . '.json', json_encode($data));
-        file_put_contents($pathTo. $data['ver'] . '.last', '');
+        $pathTo = $this->params->get('rutas');
+        file_put_contents($pathTo, json_encode($data));
     }
 
     /**
@@ -61,7 +44,7 @@ class StatusRutas
         $finder->files()->in($ruta)->name('*.last');
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
-                $lastRuta = $file->getRelativePathname(); 
+                $lastRuta = $file->getRelativePathname();
             }
         }
 
@@ -92,7 +75,7 @@ class StatusRutas
         $finder->files()->in($ruta)->name('*.last');
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
-                $lastRuta = $file->getRelativePathname(); 
+                $lastRuta = $file->getRelativePathname();
             }
         }
         $ver = '0';
@@ -123,7 +106,7 @@ class StatusRutas
         $estInt = (int) $orden->getEst();
         $estInt = $estInt + 1;
         $estInt = (string) $estInt;
-        
+
         if(array_key_exists($estInt, $rutas)) {
             return [
                 'est' => $estInt,
@@ -159,7 +142,7 @@ class StatusRutas
                 }
             }
         }
-        
+
         if($estInt != '0' && $sttInt != '0') {
             return [
                 'est' => (string) $estInt,
@@ -195,7 +178,7 @@ class StatusRutas
                 }
             }
         }
-        
+
         if($estInt != '0' && $sttInt != '0') {
             return [
                 'est' => (string) $estInt,
@@ -221,7 +204,7 @@ class StatusRutas
                 break;
             }
         }
-        
+
         if($estInt != '0') {
             return [
                 'est' => (string) $estInt,
@@ -247,7 +230,7 @@ class StatusRutas
                 break;
             }
         }
-        
+
         if($estInt != '0') {
             return [
                 'est' => (string) $estInt,

@@ -3,13 +3,16 @@
 namespace App\Controller\SCM;
 
 use App\Repository\NG2ContactosRepository;
-use App\Repository\ScmOrdpzaRepository;
+use App\Repository\ScmCampRepository;
+use App\Entity\Ordenes;
 use App\Service\CentinelaService;
 use App\Service\ScmService;
+
 use Symfony\Component\Filesystem\Path;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -24,119 +27,113 @@ class GetController extends AbstractController
      */
     public function toArray(Request $req, String $campo, String $content = '0'): array
     {
-        if($content == '0') {
-            $content = $req->request->get($campo);
-        }
-        try {
-            $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw new JsonException('No se puede decodificar el body.', $e->getCode(), $e);
-        }
-        if (!\is_array($content)) {
-            throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
-        }
-        return $content;
+      if($content == '0') {
+        $content = $req->request->get($campo);
+      }
+      try {
+        $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
+      } catch (\JsonException $e) {
+        throw new JsonException('No se puede decodificar el body.', $e->getCode(), $e);
+      }
+      if (!\is_array($content)) {
+        throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
+      }
+      return $content;
     }
 
     /**
      * Revisamos si en el centinela hay una nueva version y descargamos el
-     * último contenido del archivo scm
+     * último contenido del archivo Targets
      */
     #[Route('scm/has-updates/{verCenti}/', methods:['get'])]
     public function hasUpdates(
-        CentinelaService $centinela,
-        ScmService $scm,
-        string $verCenti
+      CentinelaService $centinela, ScmService $scm, string $verCenti
     ): Response
     {
-        $result['centinela'] = $centinela->isSameVersionAndGetVersionNew($verCenti);
-        $result['scm'] = $scm->getContent();
-        return $this->json([
-            'abort'=>false, 'msg' => 'ok',
-            'body' => $result
-        ]);
+      $result['centinela'] = $centinela->isSameVersionAndGetVersionNew($verCenti);
+      $result['scm'] = $scm->getContent();
+      return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $result]);
     }
 
     /**
      *
      */
-    #[Route('scm/get-scmordpza/{item}/', methods:['get'])]
-    public function getRequerimientos(
-        ScmOrdpzaRepository $em,
-        ScmService $scm,
-        CentinelaService $centinela,
-        String $item
+    #[Route('scm/get-campaingof/{target}/', methods:['get'])]
+    public function getCampainsOf(
+        ScmCampRepository $em, ScmService $scm, CentinelaService $centinela,
+        ManagerRegistry $doctrine, String $target
     ): Response
     {
-        $response = ['abort'=>false, 'msg' => 'ok', 'body' => []];
+      $response = ['abort' => false, 'msg' => 'ok', 'body' => []];
 
-        // Obtenemos el contenido completo del archivo de mensajeria.
-        $tasks = $scm->getContent();
-        // Obtenemos el contenido completo de los manifiesto de las campañas.
-        $mensajes = $this->toArray(
-            new Request(), '', file_get_contents($this->getParameter('scmMsgsDef'))
-        );
+      // Obtenemos el contenido completo del archivo Targets.
+      // Aqui conocemos cuales son los ids de las campañas nuevas
+      $fileTargets = $scm->getContent();
+      $dql = $em->getCampaingsOfTargetByIds($fileTargets[$target]);
+      $campaings = $dql->getArrayResult();
+      $rota = count($campaings);
 
-        $result = [];
-        // Recuperamos los ids requeridos
-        switch ($item) {
-            case 'ordenes':
-                $dql = $em->getMsgByOrden($tasks[$item]);
-                $result = $dql->getArrayResult();
-                $rota = count($result);
-                if($rota > 0) {
-                    $fileCenti = $centinela->getContent();
-                    for ($i=0; $i < $rota; $i++) {
-                        $piezasIds = $fileCenti['piezas'][$result[$i]['orden']['id']];
-                        $vltas = count($piezasIds);
-                        for ($p=0; $p < $vltas; $p++) {
-                            $result[$i]['orden']['pzas'][] = [
-                                'idP' => $piezasIds[$p],
-                                'ctz' => $fileCenti['stt'][ $piezasIds[$p] ]['ctz'],
-                            ];
-                        }
-                    }
-                    $pathSmg = Path::join(
-                        $this->getParameter('scmMsgs'), $mensajes[$result[0]['msg']]['file'].'.txt'
-                    );
-                    $response['body'] = [
-                        'tit' => $mensajes[$result[0]['msg']]['tit'],
-                        'msg' => file_get_contents($pathSmg),
-                        'task'=> $result
-                    ];
-                    $tasks = $scm->clean($item);
-                }else{
-                    $response['abort']= true;
-                    $response['msg']  = 'ERROR';
-                    $response['body'] = 'No se encontraron las ordenes ' . implode(',', $tasks[$item]);
+      switch ($target) {
+
+        case 'bundle':
+          // PROTOCOLO requerido
+          // {
+          //  "id":"Es el id de la tabla donde se sacaran los datos del objetivo (target)",
+          //  "class":"Es nombre de la clase donde se encuentra el id"
+          //  "msg":"El nombre del archivo que contiene el mensaje a ser enviado"
+          // }
+          if($rota > 0) {
+
+            $fileCenti = $centinela->getContent();
+            // Obtenemos los targets de cada campaña
+            for ($i=0; $i < $rota; $i++) {
+              $emT = $doctrine->getRepository('App\\Entity\\'.$campaings[$i]['src']['class']);
+              $result = $emT->getTargetById($campaings[$i]['src']['id']);
+              if($result) {
+                $campaings[$i]['target'] = $result[0];
+
+                // Extraemos a los receiver de dicha campaña.
+                $piezasIds = $fileCenti['piezas'][$campaings[$i]['target']['id']];
+                $vultas = count($piezasIds);
+                $idsReceivers = [];
+                for ($p=0; $p < $vultas; $p++) {
+                  $idsReceivers = array_merge($idsReceivers, $fileCenti['stt'][ $piezasIds[$p] ]['ctz']);
                 }
-                break;
-            default:
-                # code...
-                break;
-        }
+                $idsReceivers = array_unique($idsReceivers);
+               sort($idsReceivers);
+               shuffle($idsReceivers);
+                $campaings['receivers'] = $idsReceivers;
+              }
+            }
 
-        return $this->json($response);
+            $response['body'] = $campaings;
+            $scm->clean($target);
+          }else{
+            $response['abort']= true;
+            $response['msg']  = 'ERROR';
+            $response['body'] = 'No se encontraron las ordenes ' . implode(',', $fileTargets[$target]);
+          }
+          break;
+        default:
+          # code...
     }
 
-    /**
-     * Recuperamos los datos del contacto para almacenarlos en disco local.
-     */
-    #[Route('scm/get-contacto-byid/{idContac}/', methods:['get'])]
-    public function getContactoById(
-        NG2ContactosRepository $em,
-        String $idContac
-    ): Response
-    {
-        $dql = $em->getContactoById($idContac);
-        $result = $dql->getScalarResult();
-        $rota = count($result);
-        return $this->json([
-            'abort'=> ($rota > 0) ? false : true,
-            'msg'  => ($rota > 0) ? 'ok' : 'Sin Resultados',
-            'body' => ($rota > 0) ? $result[0] : []
-        ]);
-    }
+    return $this->json($response);
+  }
 
-
+  /**
+   * Recuperamos los datos del contacto para almacenarlos en disco local.
+   */
+  #[Route('scm/get-contacto-byid/{idContac}/', methods:['get'])]
+  public function getContactoById(NG2ContactosRepository $em, String $idContac): Response
+  {
+    $dql = $em->getContactoById($idContac);
+    $result = $dql->getScalarResult();
+    $rota = count($result);
+    return $this->json([
+      'abort'=> ($rota > 0) ? false : true,
+      'msg'  => ($rota > 0) ? 'ok' : 'Sin Resultados',
+      'body' => ($rota > 0) ? $result[0] : []
+    ]);
+  }
 }
