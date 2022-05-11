@@ -3,7 +3,7 @@
 namespace App\Controller\SCP\Solicitudes;
 
 use App\Repository\OrdenPiezasRepository;
-use App\Repository\ScmOrdpzaRepository;
+use App\Repository\ScmCampRepository;
 use App\Service\CotizaService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,7 +52,7 @@ class PostController extends AbstractController
                 $has = count($data['fotosD']);
                 if($has > 0) {
                     if($data['pathF'] == 'to_orden_tmp') {
-                        for ($i=0; $i < $has; $i++) { 
+                        for ($i=0; $i < $has; $i++) {
                             $cotService->removeImgOfOrdenToFolderTmp($data['fotosD'][$i]);
                         }
                     }
@@ -63,15 +63,14 @@ class PostController extends AbstractController
     }
 
     /**
-     * Registramos para la SCM la orden para la busqueda de cotizaciones de una orden
-     * el centinela es actualizado en: CentinelaController::buscarCotizacionesOrden
+     * Registramos para la SCM una campaña
      */
-    #[Route('scp/buscar-cotizaciones-orden/', methods:['post'])]
-    public function buscarCotizacionesOrden(Request $req, ScmOrdpzaRepository $scmEm): Response
+    #[Route('scp/set-new-campaing/', methods:['post'])]
+    public function setNewCampaing(Request $req, ScmCampRepository $scmEm): Response
     {
         $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
         $data = $this->toArray($req, 'data');
-        $result = $scmEm->setBuscarCotizacionesOrden($data);
+        $result = $scmEm->setNewCampaing($data);
         return $this->json($result);
     }
 }

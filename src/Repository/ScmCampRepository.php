@@ -58,10 +58,10 @@ class ScmCampRepository extends ServiceEntityRepository
       $obj->setCampaing($this->_em->getPartialReference(Campaings::class, $data['camp']));
       $obj->setTarget($data['target']);
       $obj->setSrc($data['src']);
-      $obj->getRemiter($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
+      $obj->setRemiter($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
       $obj->setEmiter($this->_em->getPartialReference(NG2Contactos::class, $data['avo']));
       $obj->setSendAt($data['sendAt']);
-      
+
       try {
           $this->_em->persist($obj);
           $this->_em->flush();
@@ -82,9 +82,10 @@ class ScmCampRepository extends ServiceEntityRepository
     $emi = sprintf($txt, 'emi');
     $rem = sprintf($txt, 'rem');
     $emp = 'partial emp.{id, nombre, domicilio, cp, telFijo, isLocal, latLng}';
-    $dql = 'SELECT c, '.$emi.', '.$rem.', '.$emp.' FROM '.ScmCamp::class . ' c '.
+    $dql = 'SELECT c, cm, '.$emi.', '.$rem.', '.$emp.' FROM '.ScmCamp::class . ' c '.
     'JOIN c.emiter rem '.
     'JOIN c.remiter emi '.
+    'JOIN c.campaing cm '.
     'JOIN emi.empresa emp '.
     'WHERE c.id IN (:ids) '.
     'ORDER BY c.id ASC';

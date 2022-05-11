@@ -100,9 +100,9 @@ class GetController extends AbstractController
                   $idsReceivers = array_merge($idsReceivers, $fileCenti['stt'][ $piezasIds[$p] ]['ctz']);
                 }
                 $idsReceivers = array_unique($idsReceivers);
-               sort($idsReceivers);
-               shuffle($idsReceivers);
-                $campaings['receivers'] = $idsReceivers;
+                sort($idsReceivers);
+                shuffle($idsReceivers);
+                $campaings[$i]['receivers'] = $idsReceivers;
               }
             }
 
