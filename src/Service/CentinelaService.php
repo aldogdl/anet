@@ -8,249 +8,253 @@ use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
 
 class CentinelaService
-{   
+{
 
-    private $params;
-    private $filesystem;
-    private $lock;
+  private $params;
+  private $filesystem;
+  private $lock;
 
-    public function __construct(ParameterBagInterface $container)
-    {
-        $this->params = $container;
-        $this->filesystem = new Filesystem();
-        $this->init();
-    }
+  public function __construct(ParameterBagInterface $container)
+  {
+    $this->params = $container;
+    $this->filesystem = new Filesystem();
+    $this->init();
+  }
 
-    /** */
-    private function init() 
-    {
-        $pathLock = $this->params->get('datafix');
-        $store = new FlockStore($pathLock);
-        $this->lock = new LockFactory($store);
-    }
+  /** */
+  private function init()
+  {
+    $pathLock = $this->params->get('datafix');
+    $store = new FlockStore($pathLock);
+    $this->lock = new LockFactory($store);
+  }
 
-    /**
-     * El esqueleto para una pieza nueva
-     */ 
-    public function getSchemaInit(array $rutaPieza, string $ruta): array
-    {
-        return [
-            'stt' => [
-                'est' => $rutaPieza['est'],
-                'stt' => $rutaPieza['stt'],
-                'ruta' => $ruta
-            ]
-        ];
-    }
+  /**
+   * El esqueleto para una pieza nueva
+   */
+  public function getSchemaInit(array $rutaPieza): array
+  {
+    return [
+      'stt' => [
+        'e' => $rutaPieza['est'],
+        's' => $rutaPieza['stt']
+      ]
+    ];
+  }
 
-    /**
-     * El esqueleto para una pieza que ha sido enviada a cotizar
-     * $idCot es el proveedor a quien se le envio, s = status | r = respuesta
-     */ 
-    public function getSchemaPiezaCot(string $idCot, array $stt): array
-    {
-        return [
-            $idCot => [
-                's' => $stt['est']
-            ]
-        ];
-    }
+  /**
+   * El esqueleto para una pieza que ha sido enviada a cotizar
+   * $idCot es el proveedor a quien se le envio, s = status | r = respuesta
+   */
+  public function getSchemaPiezaCot(string $idCot, array $stt): array
+  {
+    return [
+      $idCot => [
+        's' => $stt['est']
+      ]
+    ];
+  }
 
-    /**
-     * El esqueleto para una orden nueva usada para el elemento -ord- dentro del centinela
-     * el cual indican los status de las ordenes en si.
-     */ 
-    public function getSchemaOrden(array $data): array
-    {
-        return [
-            'est' => $data['est'],
-            'stt' => $data['stt'],
-            'ruta'=> $data['rta']
-        ];
-    }
+  /**
+   * El esqueleto para una orden nueva usada para el elemento -ord- dentro del centinela
+   * el cual indican los status de las ordenes en si.
+   */
+  public function getSchemaOrden(array $data): array
+  {
+    return [
+      'e' => $data['est'],
+      's' => $data['stt']
+    ];
+  }
 
-    /**
-     * 
-    */
-    public function getContent(): array
-    {
-        $ordenes = [];
-        $path = $this->params->get('centinela');
-        $lock = $this->lock->createLock('centinela');
-        if ($lock->acquire(true)) {
-            if($this->filesystem->exists($path)) {
-                $ordenes = json_decode( file_get_contents($path), true );
-            }
+  /**
+   *
+  */
+  public function getContent(): array
+  {
+    $ordenes = [];
+    $path = $this->params->get('centinela');
+    $lock = $this->lock->createLock('centinela');
+    if ($lock->acquire(true)) {
+      if($this->filesystem->exists($path)) {
+        $ordenes = json_decode( file_get_contents($path), true );
+        if($ordenes == null) {
+          $ordenes = [];
         }
-        $lock->release();
-        return $ordenes;
+      }
     }
-    
-    /**
-     * 
-    */
-    public function flush(array $file)
-    {
-        $path = $this->params->get('centinela');
-        $lock = $this->lock->createLock('centinela');
-        if ($lock->acquire(true)) {
-            $this->filesystem->dumpFile($path, json_encode($file));
-        }
-        $lock->release();
+    $lock->release();
+    return $ordenes;
+  }
+
+  /**
+   *
+  */
+  public function flush(array $file)
+  {
+    $path = $this->params->get('centinela');
+    $lock = $this->lock->createLock('centinela');
+    if ($lock->acquire(true)) {
+      $this->filesystem->dumpFile($path, json_encode($file));
+    }
+    $lock->release();
+  }
+
+  /** */
+  public function downloadCentinela(): array
+  {
+    return $this->getContent();
+  }
+
+  /**
+   * @see [Cotiza] GetController::enviarOrden
+  */
+  public function setNewOrden(array $data): bool
+  {
+    $file = $this->getContent();
+    $result = false;
+    $addToNon = false;
+    if(array_key_exists('ordenes', $file)) {
+      $has = in_array($data['idOrden'], $file['ordenes']);
+      if($has === false) {
+        $file['ordenes'][] = $data['idOrden'];
+        $addToNon = true;
+        $result = true;
+      }
+    }else{
+      $file['ordenes'][] = $data['idOrden'];
+      $addToNon = true;
+      $result = true;
     }
 
-    /** */
-    public function downloadCentinela(): array
-    {
-        return $this->getContent();
+    if($addToNon) {
+      //--  Colocamos la nueva orden en la sección de no asignadas --
+      $file['non'][] = $data['idOrden'];
     }
 
-    /**
-     * @see [Cotiza] GetController::enviarOrden
-    */
-    public function setNewOrden(array $data): bool
-    {
-        $file = $this->getContent();
-        $result = false;
+    if(!array_key_exists('piezas', $file)) {
+      $file['piezas'] = [];
+    }
 
-        if(array_key_exists('ordenes', $file)) {
+    $addPiezas = true;
+    if(array_key_exists($data['idOrden'], $file['piezas'])) {
 
-            $has = in_array($data['idOrden'], $file['ordenes']);
-            if($has === false) {
-                $file['ordenes'][] = $data['idOrden'];
-                $result = true;               
-            }
-        }else{
-            $file['ordenes'][] = $data['idOrden'];
+      $rota = count($file['piezas'][$data['idOrden']]);
+      if($rota > 0) {
+        $addPiezas = false;
+        $rota = count($data['piezas']);
+        for ($i=0; $i < $rota; $i++) {
+          if(!in_array( $data['piezas'][$i], $file['piezas'][$data['idOrden']] )) {
+            $file['piezas'][$data['idOrden']][] = $data['piezas'][$i];
             $result = true;
+          }
         }
-
-        if(!array_key_exists('piezas', $file)) {
-            $file['piezas'] = [];
-        }
-
-        if(array_key_exists($data['idOrden'], $file['piezas'])) {
-
-            $rota = count($file['piezas'][$data['idOrden']]);
-            if($rota > 0) {
-                $rota = count($data['piezas']);
-                for ($i=0; $i < $rota; $i++) { 
-                    if(!in_array( $data['piezas'][$i], $file['piezas'][$data['idOrden']] )) {
-                        $file['piezas'][$data['idOrden']][] = $data['piezas'][$i];
-                        $result = true;
-                    }
-                }
-            }else{
-                $file['piezas'][$data['idOrden']] = $data['piezas'];
-                $result = true;
-            }
-        }else{
-            $file['piezas'][$data['idOrden']] = $data['piezas'];
-            $result = true;
-        }
-
-        $rota = count($file['piezas'][$data['idOrden']]);
-        for ($i=0; $i < $rota; $i++) { 
-            $file['stt'][$data['piezas'][$i]] = $data['stt'];
-        }
-
-        //--  Colocamos la nueva orden en la sección de no asignadas --
-        $file['non'][] = $data['idOrden'];
-
-        if($result) {
-            $file['version'] = $data['version'];
-            $this->flush($file);
-        }
-        
-        return $result;
+      }
+    }
+    if($addPiezas) {
+      $file['piezas'][$data['idOrden']] = $data['piezas'];
+      $result = true;
     }
 
-    /**
-     * @see [SCP] CentinelaController::enviarOrden
-    */
-    public function asignarOrdenes(array $asignaciones)
-    {
-        $file = $this->getContent();
-        if(array_key_exists('version', $file)) {
-
-            if(array_key_exists('avo', $file)) {
-                foreach ($asignaciones['info'] as $idAvo => $ords) {
-                    $file['avo'][$idAvo] = $ords;
-                }
-            }else{
-                $file['avo'] = $asignaciones['info'];
-            }
-            foreach ($asignaciones['info'] as $idAvo => $ords) {
-                $file['non'] = array_diff($file['non'], $ords);
-            }
-
-            $file = $this->updateVersion(
-                $asignaciones['version'],
-                $asignaciones['manifest'],
-                $file
-            );
-            $this->flush($file);
-        }
+    $rota = count($file['piezas'][$data['idOrden']]);
+    for ($i=0; $i < $rota; $i++) {
+      $file['stt'][$data['piezas'][$i]] = $data['stt'];
     }
+
+    if($result) {
+      $file['version'] = $data['version'];
+      $this->flush($file);
+    }
+
+    return $result;
+  }
+
+  /**
+   * @see [SCP] CentinelaController::enviarOrden
+  */
+  public function asignarOrdenes(array $asignaciones)
+  {
+    $file = $this->getContent();
+    if(array_key_exists('version', $file)) {
+
+      if(array_key_exists('avo', $file)) {
+        foreach ($asignaciones['info'] as $idAvo => $ords) {
+          $file['avo'][$idAvo] = $ords;
+        }
+      }else{
+        $file['avo'] = $asignaciones['info'];
+      }
+      foreach ($asignaciones['info'] as $idAvo => $ords) {
+        $file['non'] = array_diff($file['non'], $ords);
+      }
+
+      $file = $this->updateVersion(
+        $asignaciones['version'],
+        $asignaciones['manifest'],
+        $file
+      );
+      $this->flush($file);
+    }
+  }
 
     /** */
     public function setNewSttToOrden(array $data): bool
     {
-        $file = $this->getContent();
-        $result = false;
-        if(array_key_exists('version', $file)) {
-            if(!array_key_exists('ord', $file)) {
-                $file['ord'] = [];
-            }
-            $file['ord'][$data['orden']] = $this->getSchemaOrden($data);
-            if($data['version'] != 0) {
-                $file['version'] = $data['version'];
-            }
-            $this->flush($file);
-            $result = true;
+      $file = $this->getContent();
+      $result = false;
+      if(array_key_exists('version', $file)) {
+        if(!array_key_exists('ord', $file)) {
+          $file['ord'] = [];
         }
-        return $result;
+        $file['ord'][$data['orden']] = $this->getSchemaOrden($data);
+        if($data['version'] != 0) {
+          $file['version'] = $data['version'];
+        }
+        $this->flush($file);
+        $result = true;
+      }
+      return $result;
     }
 
     /** */
     public function setNewSttToPieza(array $data): bool
     {
-        $file = $this->getContent();
-        $result = false;
-        if(array_key_exists('version', $file)) {
-            //TODO
-            $this->flush($file);
-            $result = true;
-        }
-        return $result;
+      $file = $this->getContent();
+      $result = false;
+      if(array_key_exists('version', $file)) {
+        //TODO
+        $this->flush($file);
+        $result = true;
+      }
+      return $result;
     }
 
     /** */
     public function buildStatusForBuscarPiezas(array $data): bool
     {
-        $file = $this->getContent();
-        $result = false;
-        if(array_key_exists('version', $file)) {
-            $ord = $data['orden'];
-            if(array_key_exists($ord, $file['piezas'])) {
+      $file = $this->getContent();
+      $result = false;
+      if(array_key_exists('version', $file)) {
+        $ord = $data['orden'];
+        if(array_key_exists($ord, $file['piezas'])) {
 
-                $rota = count($file['piezas'][$ord]);
-                for ($i=0; $i < $rota; $i++) {
-                    $pza = (string) $file['piezas'][$ord][$i];
-                    if(array_key_exists($pza, $file['stt'])) {
-                        $file['stt'][$pza]['est'] = $data['est'];
-                        $file['stt'][$pza]['stt'] = $data['stt'];
-                        $file['stt'][$pza]['ctz'] = $data['cotz'];
-                    }
-                }
+          $rota = count($file['piezas'][$ord]);
+          for ($i=0; $i < $rota; $i++) {
+            $pza = (string) $file['piezas'][$ord][$i];
+            if(array_key_exists($pza, $file['stt'])) {
+              $file['stt'][$pza]['est'] = $data['est'];
+              $file['stt'][$pza]['stt'] = $data['stt'];
+              $file['stt'][$pza]['ctz'] = $data['cotz'];
             }
-            if($data['version'] != 0) {
-                $file['version'] = $data['version'];
-            }
-            $this->flush($file);
-            $result = true;
+          }
         }
-        return $result;
+        if($data['version'] != 0) {
+          $file['version'] = $data['version'];
+        }
+        $this->flush($file);
+        $result = true;
+      }
+      return $result;
     }
 
     /**
@@ -258,14 +262,14 @@ class CentinelaService
     */
     public function isSameVersion(string $oldVersion): bool
     {
-        $dataMain = $this->getContent();
-        $result = false;
-        if(array_key_exists('version', $dataMain)) {
-            if($dataMain['version'] == $oldVersion) {
-                $result = true;
-            }
+      $dataMain = $this->getContent();
+      $result = false;
+      if(array_key_exists('version', $dataMain)) {
+        if($dataMain['version'] == $oldVersion) {
+          $result = true;
         }
-        return $result;
+      }
+      return $result;
     }
 
     /**
@@ -273,24 +277,24 @@ class CentinelaService
     */
     public function isSameVersionAndGetVersionNew(string $oldVersion): array
     {
-        $dataMain = $this->getContent();
-        $result['isSame'] = false;
-        $result['newver'] = $oldVersion;
-        if(array_key_exists('version', $dataMain)) {
-            if($dataMain['version'] == $oldVersion) {
-                $result['isSame'] = true;
-            }
-            $result['newver'] = $dataMain['version'];
+      $dataMain = $this->getContent();
+      $result['isSame'] = false;
+      $result['newver'] = $oldVersion;
+      if(array_key_exists('version', $dataMain)) {
+        if($dataMain['version'] == $oldVersion) {
+          $result['isSame'] = true;
         }
-        return $result;
+        $result['newver'] = $dataMain['version'];
+      }
+      return $result;
     }
 
     ///
     private function updateVersion(int $version, array $manifest, array $centinela): array
     {
-        $centinela['version'] = $version;
-        $centinela['manifest'] = $manifest;
-        return $centinela;
+      $centinela['version'] = $version;
+      $centinela['manifest'] = $manifest;
+      return $centinela;
     }
 
     /**
@@ -298,43 +302,43 @@ class CentinelaService
     */
     public function buildMiniFileCentinela(string $avo): array
     {
-        $file = $this->getContent();
-        $mini = [];
-        if(array_key_exists('avo', $file)) {
-            if(array_key_exists($avo, $file['avo'])) {
+      $file = $this->getContent();
+      $mini = [];
+      if(array_key_exists('avo', $file)) {
+        if(array_key_exists($avo, $file['avo'])) {
 
-                $ordenes = $file['avo'][$avo];
-                $rota = count($ordenes);
-                if($rota > 0) {
+          $ordenes = $file['avo'][$avo];
+          $rota = count($ordenes);
+          if($rota > 0) {
 
-                    $mini = ['version' => $file['version'], 'ordenes' => $file['avo'][$avo]];
+            $mini = ['version' => $file['version'], 'ordenes' => $file['avo'][$avo]];
 
-                    $idsP = [];
-                    // Las piezas y estatus de las ordenes
-                    for ($i=0; $i < $rota; $i++) { 
+            $idsP = [];
+            // Las piezas y estatus de las ordenes
+            for ($i=0; $i < $rota; $i++) {
 
-                        if(array_key_exists($ordenes[$i], $file['piezas'])) {
-                            $mini['piezas'][ $ordenes[$i] ] = $file['piezas'][ $ordenes[$i] ];
-                            $idsP = array_merge($idsP, $file['piezas'][ $ordenes[$i] ]);
-                        }
+              if(array_key_exists($ordenes[$i], $file['piezas'])) {
+                $mini['piezas'][ $ordenes[$i] ] = $file['piezas'][ $ordenes[$i] ];
+                $idsP = array_merge($idsP, $file['piezas'][ $ordenes[$i] ]);
+              }
 
-                        if(array_key_exists($ordenes[$i], $file['ord'])) {
-                            $mini['ord'][ $ordenes[$i] ] = $file['ord'][ $ordenes[$i] ];
-                        }
-                    }
-                    
-                    // Los Status
-                    $rota = count($idsP);
-                    for ($i=0; $i < $rota; $i++) { 
-                        if(array_key_exists($idsP[$i], $file['stt'])) {
-                            $mini['stt'][ $idsP[$i] ] = $file['stt'][ $idsP[$i] ];
-                        }
-                    }
-                }
+              if(array_key_exists($ordenes[$i], $file['ord'])) {
+                $mini['ord'][ $ordenes[$i] ] = $file['ord'][ $ordenes[$i] ];
+              }
             }
+
+            // Los Status
+            $rota = count($idsP);
+            for ($i=0; $i < $rota; $i++) {
+              if(array_key_exists($idsP[$i], $file['stt'])) {
+                $mini['stt'][ $idsP[$i] ] = $file['stt'][ $idsP[$i] ];
+              }
+            }
+          }
         }
-        
-        return $mini;
+      }
+
+      return $mini;
     }
 
     ///

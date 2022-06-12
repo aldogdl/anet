@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\OrdenPiezasRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrdenPiezasRepository::class)]
@@ -40,6 +42,17 @@ class OrdenPiezas
 
     #[ORM\Column(type: 'string', length: 255)]
     private $obs;
+
+    #[ORM\OneToMany(mappedBy: 'pieza', targetEntity: OrdenResps::class, orphanRemoval: true)]
+    private $resps;
+
+    #[ORM\Column(type: 'bigint')]
+    private $idHive;
+
+    public function __construct()
+    {
+        $this->resps = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -150,6 +163,48 @@ class OrdenPiezas
     public function setOrden(?Ordenes $orden): self
     {
         $this->orden = $orden;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, OrdenResps>
+     */
+    public function getResps(): Collection
+    {
+        return $this->resps;
+    }
+
+    public function addResp(OrdenResps $resp): self
+    {
+        if (!$this->resps->contains($resp)) {
+            $this->resps[] = $resp;
+            $resp->setPieza($this);
+        }
+
+        return $this;
+    }
+
+    public function removeResp(OrdenResps $resp): self
+    {
+        if ($this->resps->removeElement($resp)) {
+            // set the owning side to null (unless already changed)
+            if ($resp->getPieza() === $this) {
+                $resp->setPieza(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getIdHive(): ?string
+    {
+        return $this->idHive;
+    }
+
+    public function setIdHive(string $idHive): self
+    {
+        $this->idHive = $idHive;
 
         return $this;
     }

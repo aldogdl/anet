@@ -30,6 +30,11 @@ class ScmReceivers
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private $readAt;
 
+    public function __construct()
+    {
+        return $this->sendAt = new \DateTimeImmutable('now');
+    }
+
     public function getId(): ?int
     {
         return $this->id;

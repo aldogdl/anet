@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\ScmReceivers;
+use App\Entity\ScmCamp;
+use App\Entity\NG2Contactos;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -45,32 +47,13 @@ class ScmReceiversRepository extends ServiceEntityRepository
         }
     }
 
-    // /**
-    //  * @return ScmReceivers[] Returns an array of ScmReceivers objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /***/
+    public function setRegMsgSended(array $data)
     {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('s.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+      $obj = new ScmReceivers();
+      $obj->setCamp($this->_em->getPartialReference(ScmCamp::class, $data['camp']));
+      $obj->setReceiver($this->_em->getPartialReference(NG2Contactos::class, $data['receiver']));
+      $obj->setStt($data['stt']);
+      $this->add($obj, true);
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?ScmReceivers
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

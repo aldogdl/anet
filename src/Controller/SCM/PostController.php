@@ -2,6 +2,7 @@
 
 namespace App\Controller\SCM;
 
+use App\Repository\ScmReceiversRepository;
 use App\Service\HarbiConnxService;
 use App\Service\ScmService;
 use App\Service\StatusRutas;
@@ -10,7 +11,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-
 
 class PostController extends AbstractController
 {
@@ -32,5 +32,19 @@ class PostController extends AbstractController
             throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
         }
         return $content;
+    }
+
+    /**
+    * Guardamos el registro de envio de un mensaje
+    */
+    #[Route('scm/set-reg-envio/', methods:['post'])]
+    public function setRegEnvio(ScmReceiversRepository $regEm, Request $req): Response
+    {
+      $data = $this->toArray($req, 'data');
+      $regEm->setRegMsgSended($data);
+
+      // TODO: saber cual es el ultimo mensaje de esta campaña para
+      // hacer un push a todos los centinelas para que sepan de este.
+      return $this->json(['abort' => false, 'msg' => 'ok', 'body' => 'saved']);
     }
 }

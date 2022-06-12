@@ -32,10 +32,10 @@ class OrdenesRepository extends ServiceEntityRepository
      */
     public function add(Ordenes $entity, bool $flush = true): void
     {
-        $this->_em->persist($entity);
-        if ($flush) {
-            $this->_em->flush();
-        }
+      $this->_em->persist($entity);
+      if ($flush) {
+        $this->_em->flush();
+      }
     }
 
     /**
@@ -58,34 +58,34 @@ class OrdenesRepository extends ServiceEntityRepository
      */
     public function setOrden(array $orden): array
     {
-        if($orden['id'] != 0) {
-            $entity = $this->_em->find(Ordenes::class, $orden['id']);
-        }else{
-            $entity = new Ordenes();
-            $entity->setOwn( $this->_em->getPartialReference(NG2Contactos::class, $orden['own']) );
-        }
+      if($orden['id'] != 0) {
+        $entity = $this->_em->find(Ordenes::class, $orden['id']);
+      }else{
+        $entity = new Ordenes();
+        $entity->setOwn( $this->_em->getPartialReference(NG2Contactos::class, $orden['own']) );
+      }
 
-        $entity->setMarca( $this->_em->getPartialReference(AO1Marcas::class, $orden['id_marca']) );
-        $entity->setModelo( $this->_em->getPartialReference(AO2Modelos::class, $orden['id_modelo']) );
-        $entity->setAnio($orden['anio']);
-        $entity->setIsNac($orden['is_nacional']);
-        $entity->setEst($orden['est']);
-        $entity->setStt($orden['stt']);
+      $entity->setMarca( $this->_em->getPartialReference(AO1Marcas::class, $orden['id_marca']) );
+      $entity->setModelo( $this->_em->getPartialReference(AO2Modelos::class, $orden['id_modelo']) );
+      $entity->setAnio($orden['anio']);
+      $entity->setIsNac($orden['is_nacional']);
+      $entity->setEst($orden['est']);
+      $entity->setStt($orden['stt']);
 
-        $this->_em->persist($entity);
-        try {
-            $this->_em->flush();
-            $this->result['body'] = [
-                'id' => $entity->getId(),
-                'created_at' => $entity->getCreatedAt(),
-            ];
-        } catch (\Throwable $th) {
-            $this->result['abort'] = true;
-            $this->result['msg'] = $th->getMessage();
-            $this->result['body'] = 'Error al capturar la Orden, Inténtalo nuevamente por favor.';
-        }
+      $this->_em->persist($entity);
+      try {
+        $this->_em->flush();
+        $this->result['body'] = [
+          'id' => $entity->getId(),
+          'created_at' => $entity->getCreatedAt(),
+        ];
+      } catch (\Throwable $th) {
+        $this->result['abort']= true;
+        $this->result['msg']  = $th->getMessage();
+        $this->result['body'] = 'Error al capturar la Orden, Inténtalo nuevamente por favor.';
+      }
 
-        return $this->result;
+      return $this->result;
     }
 
     /**

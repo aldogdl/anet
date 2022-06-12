@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ScmCamp;
 use App\Entity\Campaings;
+use App\Entity\NG2Contactos;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -58,13 +59,17 @@ class ScmCampRepository extends ServiceEntityRepository
       $obj->setCampaing($this->_em->getPartialReference(Campaings::class, $data['camp']));
       $obj->setTarget($data['target']);
       $obj->setSrc($data['src']);
-      $obj->setRemiter($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
-      $obj->setEmiter($this->_em->getPartialReference(NG2Contactos::class, $data['avo']));
+      $obj->setRemiter($this->_em->getPartialReference(NG2Contactos::class, $data['avo']));
+      $obj->setEmiter($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
       $obj->setSendAt($data['sendAt']);
 
       try {
           $this->_em->persist($obj);
           $this->_em->flush();
+          $this->result['body'] = [
+            'id' => $obj->getId(),
+            'target' => $obj->getTarget(),
+          ];
       } catch (\Throwable $th) {
           $this->result['abort'] = true;
           $this->result['msg'] = $th->getMessage();

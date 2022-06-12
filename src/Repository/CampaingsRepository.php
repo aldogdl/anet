@@ -45,32 +45,19 @@ class CampaingsRepository extends ServiceEntityRepository
         }
     }
 
-    // /**
-    //  * @return Campaings[] Returns an array of Campaings objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /***/
+    public function getCampaignBySlug(string $slug): \Doctrine\ORM\Query
     {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('c.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+      $dql = 'SELECT c FROM ' . Campaings::class . ' c '.
+      'WHERE c.slug = :slug';
+      return $this->_em->createQuery($dql)->setParameter('slug', $slug);
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?Campaings
+    /***/
+    public function getIdCampaingBySlug(string $slug): \Doctrine\ORM\Query
     {
-        return $this->createQueryBuilder('c')
-            ->andWhere('c.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+      $dql = 'SELECT partial c.{id} FROM ' . Campaings::class . ' c '.
+      'WHERE c.slug = :slug';
+      return $this->_em->createQuery($dql)->setParameter('slug', $slug);
     }
-    */
 }

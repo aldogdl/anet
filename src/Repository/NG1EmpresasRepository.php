@@ -56,40 +56,40 @@ class NG1EmpresasRepository extends ServiceEntityRepository
         return $this->_em->createQuery($dql);
     }
 
-    /** */
-    public function seveDataContact(array $data): array
-    {
-        $obj = null;
-        if($data['id'] != 0) {
-            $has = $this->_em->find(NG1Empresas::class, $data['id']);
-            if($has) {
-                $obj = $has;
-                $has = null;
-            }
-        }
-        if(is_null($obj)) {
-            $obj = new NG1Empresas();
-        }
-
-        $obj->setNombre($data['nombre']);
-        $obj->setDomicilio($data['domicilio']);
-        $obj->setCp((integer) $data['cp']);
-        $obj->setIsLocal($data['isLocal']);
-        $obj->setTelFijo($data['telFijo']);
-        $obj->setLatLng($data['latLng']);
-        try {
-            $this->add($obj, true);
-            if(array_key_exists('local', $data)) {
-                $obj = $this->revisarIdTable($obj, $data);
-            }
-            $this->result['body'] = $obj->getId();
-        } catch (\Throwable $th) {
-            $this->result['abort'] = true;
-            $this->result['msg'] = $th->getMessage();
-            $this->result['body'] = 'No se guardo la empresa, inténtalo nuevamente.';
-        }
-        return $this->result;
+  /** */
+  public function seveDataContact(array $data): array
+  {
+    $obj = null;
+    if($data['id'] != 0) {
+      $has = $this->_em->find(NG1Empresas::class, $data['id']);
+      if($has) {
+        $obj = $has;
+        $has = null;
+      }
     }
+    if(is_null($obj)) {
+      $obj = new NG1Empresas();
+    }
+
+    $obj->setNombre($data['nombre']);
+    $obj->setDomicilio($data['domicilio']);
+    $obj->setCp((integer) $data['cp']);
+    $obj->setIsLocal($data['isLocal']);
+    $obj->setTelFijo($data['telFijo']);
+    $obj->setLatLng($data['latLng']);
+    try {
+      $this->add($obj, true);
+      if(array_key_exists('local', $data)) {
+        $obj = $this->revisarIdTable($obj, $data);
+      }
+      $this->result['body'] = $obj->getId();
+    } catch (\Throwable $th) {
+      $this->result['abort'] = true;
+      $this->result['msg'] = $th->getMessage();
+      $this->result['body'] = 'No se guardo la empresa, inténtalo nuevamente.';
+    }
+    return $this->result;
+  }
 
     ///
     private function revisarIdTable(NG1Empresas $emp, array $dataSend): NG1Empresas
