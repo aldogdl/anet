@@ -190,7 +190,6 @@ class CentinelaService
 
       $file = $this->updateVersion(
         $asignaciones['version'],
-        $asignaciones['manifest'],
         $file
       );
       $this->flush($file);
@@ -290,10 +289,9 @@ class CentinelaService
     }
 
     ///
-    private function updateVersion(int $version, array $manifest, array $centinela): array
+    private function updateVersion(int $version, array $centinela): array
     {
       $centinela['version'] = $version;
-      $centinela['manifest'] = $manifest;
       return $centinela;
     }
 

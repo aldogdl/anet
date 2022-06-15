@@ -42,7 +42,7 @@ class CentinelaController extends AbstractController
   {
     $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
     $data = $this->toArray($req, 'data');
-
+    
     if(array_key_exists('info', $data)) {
       foreach ($data['info'] as $idAvo => $ords) {
         $result = $ordenes->asignarOrdenesToAvo((integer) $idAvo, $ords);
