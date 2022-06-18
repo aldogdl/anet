@@ -42,20 +42,6 @@ class GetController extends AbstractController
     }
 
     /**
-     * Revisamos si en el centinela hay una nueva version y descargamos el
-     * último contenido del archivo Targets
-     */
-    #[Route('scm/has-updates/{verCenti}/', methods:['get'])]
-    public function hasUpdates(
-      CentinelaService $centinela, ScmService $scm, string $verCenti
-    ): Response
-    {
-      $result['centinela'] = $centinela->isSameVersionAndGetVersionNew($verCenti);
-      $result['scm'] = $scm->getContent();
-      return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $result]);
-    }
-
-    /**
      *
      */
     #[Route('scm/get-campaingof/{target}/', methods:['get'])]

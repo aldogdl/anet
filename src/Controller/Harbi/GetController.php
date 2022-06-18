@@ -7,6 +7,7 @@ use App\Repository\AO2ModelosRepository;
 use App\Repository\NG2ContactosRepository;
 use App\Repository\OrdenesRepository;
 use App\Service\CentinelaService;
+use App\Service\ScmService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,16 +44,31 @@ class GetController extends AbstractController
   }
 
   /**
+   * Checamos prueba de conexion
+   */
+  #[Route('harbi/check-connx/', methods:['get'])]
+  public function checkConnx(): Response
+  {
+    return $this->json(['abort'=>false, 'body' => 'ok']);
+  }
+
+  /**
    * Checamos la ultima version del archivo de seguimiento de las ordenes
    */
-  #[Route('harbi/check-version-centinela/{lastVersion}/', methods:['get'])]
-  public function checkVersionCentinela(CentinelaService $centinela, $lastVersion): Response
+  #[Route('harbi/check-changes/{lastVersion}/', methods:['get'])]
+  public function checkCheckChanges(
+    CentinelaService $centinela, ScmService $scm, $lastVersion
+  ): Response
   {
     $isSame = $centinela->isSameVersion($lastVersion);
-    return $this->json([
-      'abort'=>false, 'msg' => 'ok',
-      'body' => $isSame
-    ]);
+    $scm = $scm->getContent();
+
+    $result['hay'] = false;
+    if(count($scm) > 0) { $result['hay'] = true; }
+    if($isSame) { $result['hay'] = true; }
+    $result['changes'] = ['scm' => $scm, 'centinela' => $isSame];
+
+    return $this->json(['abort'=>false, 'body' => $result]);
   }
 
   /**

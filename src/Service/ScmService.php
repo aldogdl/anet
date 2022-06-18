@@ -34,16 +34,16 @@ class ScmService
     */
     public function getContent(): array
     {
-        $msgs = [];
-        $path = $this->params->get('targets');
-        $lock = $this->lock->createLock('targets');
-        if ($lock->acquire(true)) {
-            if($this->filesystem->exists($path)) {
-                $msgs = json_decode( file_get_contents($path), true );
-            }
+      $msgs = [];
+      $path = $this->params->get('targets');
+      $lock = $this->lock->createLock('targets');
+      if ($lock->acquire(true)) {
+        if($this->filesystem->exists($path)) {
+          $msgs = json_decode( file_get_contents($path), true );
         }
-        $lock->release();
-        return $msgs;
+      }
+      $lock->release();
+      return $msgs;
     }
 
     /**
