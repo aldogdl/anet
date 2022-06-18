@@ -65,7 +65,7 @@ class GetController extends AbstractController
 
     $result['hay'] = false;
     if(count($scm) > 0) { $result['hay'] = true; }
-    if($isSame) { $result['hay'] = true; }
+    $result['hay'] = !$isSame;
     $result['changes'] = ['scm' => $scm, 'centinela' => $isSame];
 
     return $this->json(['abort'=>false, 'body' => $result]);
