@@ -44,7 +44,7 @@ class GetController extends AbstractController
   }
 
   /**
-   * Checamos prueba de conexion
+   * Checamos prueba de conexion con retorno sencillo
    */
   #[Route('harbi/check-connx/', methods:['get'])]
   public function checkConnx(): Response
