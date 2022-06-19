@@ -10,7 +10,7 @@ use Symfony\Component\Lock\Store\FlockStore;
 class FiltrosService
 {
 
-  private $name = 'filtro';
+  private $name = 'filtros';
   private $params;
   private $filesystem;
   private $lock;
@@ -38,6 +38,7 @@ class FiltrosService
     $items = [];
     $path = $this->params->get($this->name);
     $lock = $this->lock->createLock($this->name);
+
     if ($lock->acquire(true)) {
       if($this->filesystem->exists($path)) {
         $items = json_decode( file_get_contents($path), true );
@@ -46,15 +47,17 @@ class FiltrosService
         }
       }
     }
-    if($clean) { $this->flush([]); }
 
     $lock->release();
+    if($clean) {
+      if(count($items) > 0) {
+        $this->flush([]);
+      }
+    }
     return $items;
   }
 
-  /**
-   *
-  */
+  /** */
   public function flush(array $file)
   {
     $path = $this->params->get($this->name);

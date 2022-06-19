@@ -9,69 +9,69 @@ use Symfony\Component\Lock\Store\FlockStore;
 
 class ScmService
 {
+  private $name = 'targets';
+  private $params;
+  private $filesystem;
+  private $lock;
 
-    private $params;
-    private $filesystem;
-    private $lock;
+  public function __construct(ParameterBagInterface $container)
+  {
+      $this->params = $container;
+      $this->filesystem = new Filesystem();
+      $this->init();
+  }
 
-    public function __construct(ParameterBagInterface $container)
-    {
-        $this->params = $container;
-        $this->filesystem = new Filesystem();
-        $this->init();
-    }
+  /** */
+  private function init()
+  {
+      $pathLock = $this->params->get('datafix');
+      $store = new FlockStore($pathLock);
+      $this->lock = new LockFactory($store);
+  }
 
-    /** */
-    private function init()
-    {
-        $pathLock = $this->params->get('datafix');
-        $store = new FlockStore($pathLock);
-        $this->lock = new LockFactory($store);
-    }
-
-    /**
-     *
-    */
-    public function getContent(bool $clean = false): array
-    {
-      $msgs = [];
-      $path = $this->params->get('targets');
-      $lock = $this->lock->createLock('targets');
-      if ($lock->acquire(true)) {
-        if($this->filesystem->exists($path)) {
-          $msgs = json_decode( file_get_contents($path), true );
-        }
+  /**
+   *
+  */
+  public function getContent(bool $clean = false): array
+  {
+    $msgs = [];
+    $path = $this->params->get($this->name);
+    $lock = $this->lock->createLock($this->name);
+    if ($lock->acquire(true)) {
+      if($this->filesystem->exists($path)) {
+        $msgs = json_decode( file_get_contents($path), true );
       }
-      if($clean) {
-        $content = [];
-        $this->flush($content);
+    }
+
+    $lock->release();
+    if($clean) {
+      if(count($msgs) > 0) {
+        $this->flush([]);
       }
-      $lock->release();
-      return $msgs;
     }
+    return $msgs;
+  }
 
-    /**
-     *
-    */
-    public function clean(String $campo)
-    {
-        $content = $this->getContent();
-        $content[$campo] = [];
-        $this->flush($content);
-    }
+  /**
+   *
+  */
+  public function clean(String $campo)
+  {
+      $content = $this->getContent();
+      $content[$campo] = [];
+      $this->flush($content);
+  }
 
-    /**
-     *
-    */
-    public function flush(array $file)
-    {
-        $path = $this->params->get('targets');
-        $lock = $this->lock->createLock('targets');
-        if ($lock->acquire(true)) {
-            $this->filesystem->dumpFile($path, json_encode($file));
-        }
-        $lock->release();
+  /** */
+  public function flush(array $file)
+  {
+    $path = $this->params->get($this->name);
+    $lock = $this->lock->createLock($this->name);
+    if($lock->acquire(true)) {
+      $this->filesystem->dumpFile($path, json_encode($file));
     }
+    $lock->release();
+  }
 
   /**
    * @see

@@ -52,7 +52,7 @@ class PostController extends AbstractController
 	}
 
 	/*** */
-	#[Route('scm/get-campaings/', methods:['get'])]
+	#[Route('harbi/get-campaings/', methods:['get'])]
 	public function getCampainsOf(
 		Request $req, ScmCampRepository $em, ScmService $scm,
 		CentinelaService $centinela

@@ -9,7 +9,7 @@ use Symfony\Component\Lock\Store\FlockStore;
 
 class CentinelaService
 {
-
+  private $name = 'centinela';
   private $params;
   private $filesystem;
   private $lock;
@@ -67,14 +67,12 @@ class CentinelaService
     ];
   }
 
-  /**
-   *
-  */
+  /** */
   public function getContent(): array
   {
     $ordenes = [];
-    $path = $this->params->get('centinela');
-    $lock = $this->lock->createLock('centinela');
+    $path = $this->params->get($this->name);
+    $lock = $this->lock->createLock($this->name);
     if ($lock->acquire(true)) {
       if($this->filesystem->exists($path)) {
         $ordenes = json_decode( file_get_contents($path), true );
@@ -86,14 +84,12 @@ class CentinelaService
     $lock->release();
     return $ordenes;
   }
-
-  /**
-   *
-  */
+  
+  /** */
   public function flush(array $file)
   {
-    $path = $this->params->get('centinela');
-    $lock = $this->lock->createLock('centinela');
+    $path = $this->params->get($this->name);
+    $lock = $this->lock->createLock($this->name);
     if ($lock->acquire(true)) {
       $this->filesystem->dumpFile($path, json_encode($file));
     }
@@ -196,152 +192,147 @@ class CentinelaService
     }
   }
 
-    /** */
-    public function setNewSttToOrden(array $data): bool
-    {
-      $file = $this->getContent();
-      $result = false;
-      if(array_key_exists('version', $file)) {
-        if(!array_key_exists('ord', $file)) {
-          $file['ord'] = [];
+  /** */
+  public function setNewSttToOrden(array $data): bool
+  {
+    $file = $this->getContent();
+    $result = false;
+    if(array_key_exists('version', $file)) {
+      if(!array_key_exists('ord', $file)) {
+        $file['ord'] = [];
+      }
+      $file['ord'][$data['orden']] = $this->getSchemaOrden($data);
+      if($data['version'] != 0) {
+        $file['version'] = $data['version'];
+      }
+      $this->flush($file);
+      $result = true;
+    }
+    return $result;
+  }
+
+  /** */
+  public function setNewSttToPieza(array $data): bool
+  {
+    $file = $this->getContent();
+    $result = false;
+    if(array_key_exists('version', $file)) {
+      //TODO
+      $this->flush($file);
+      $result = true;
+    }
+    return $result;
+  }
+
+  /** */
+  public function buildStatusForBuscarPiezas(array $data): bool
+  {
+    $file = $this->getContent();
+    $result = false;
+    if(array_key_exists('version', $file)) {
+      $ord = $data['orden'];
+      if(array_key_exists($ord, $file['piezas'])) {
+
+        $rota = count($file['piezas'][$ord]);
+        for ($i=0; $i < $rota; $i++) {
+          $pza = (string) $file['piezas'][$ord][$i];
+          if(array_key_exists($pza, $file['stt'])) {
+            $file['stt'][$pza]['est'] = $data['est'];
+            $file['stt'][$pza]['stt'] = $data['stt'];
+            $file['stt'][$pza]['ctz'] = $data['cotz'];
+          }
         }
-        $file['ord'][$data['orden']] = $this->getSchemaOrden($data);
-        if($data['version'] != 0) {
-          $file['version'] = $data['version'];
-        }
-        $this->flush($file);
+      }
+      if($data['version'] != 0) {
+        $file['version'] = $data['version'];
+      }
+      $this->flush($file);
+      $result = true;
+    }
+    return $result;
+  }
+
+  /**
+   * Checamos la version del centinela para ver si hay cambios
+  */
+  public function isSameVersion(string $oldVersion): bool
+  {
+    $dataMain = $this->getContent();
+    $result = false;
+    if(array_key_exists('version', $dataMain)) {
+      if($dataMain['version'] == $oldVersion) {
         $result = true;
       }
-      return $result;
     }
+    return $result;
+  }
 
-    /** */
-    public function setNewSttToPieza(array $data): bool
-    {
-      $file = $this->getContent();
-      $result = false;
-      if(array_key_exists('version', $file)) {
-        //TODO
-        $this->flush($file);
-        $result = true;
+  /**
+   * Checamos la version del centinela para ver si hay cambios
+  */
+  public function isSameVersionAndGetVersionNew(string $oldVersion): array
+  {
+    $dataMain = $this->getContent();
+    $result['isSame'] = false;
+    $result['newver'] = $oldVersion;
+    if(array_key_exists('version', $dataMain)) {
+      if($dataMain['version'] == $oldVersion) {
+        $result['isSame'] = true;
       }
-      return $result;
+      $result['newver'] = $dataMain['version'];
     }
+    return $result;
+  }
 
-    /** */
-    public function buildStatusForBuscarPiezas(array $data): bool
-    {
-      $file = $this->getContent();
-      $result = false;
-      if(array_key_exists('version', $file)) {
-        $ord = $data['orden'];
-        if(array_key_exists($ord, $file['piezas'])) {
+  ///
+  private function updateVersion(int $version, array $centinela): array
+  {
+    $centinela['version'] = $version;
+    return $centinela;
+  }
 
-          $rota = count($file['piezas'][$ord]);
+  /**
+   * @see GetFileController::getAllOrdenesByIdAvo
+  */
+  public function buildMiniFileCentinela(string $avo): array
+  {
+    $file = $this->getContent();
+    $mini = [];
+    if(array_key_exists('avo', $file)) {
+      if(array_key_exists($avo, $file['avo'])) {
+
+        $ordenes = $file['avo'][$avo];
+        $rota = count($ordenes);
+        if($rota > 0) {
+
+          $mini = ['version' => $file['version'], 'ordenes' => $file['avo'][$avo]];
+
+          $idsP = [];
+          // Las piezas y estatus de las ordenes
           for ($i=0; $i < $rota; $i++) {
-            $pza = (string) $file['piezas'][$ord][$i];
-            if(array_key_exists($pza, $file['stt'])) {
-              $file['stt'][$pza]['est'] = $data['est'];
-              $file['stt'][$pza]['stt'] = $data['stt'];
-              $file['stt'][$pza]['ctz'] = $data['cotz'];
+
+            if(array_key_exists($ordenes[$i], $file['piezas'])) {
+              $mini['piezas'][ $ordenes[$i] ] = $file['piezas'][ $ordenes[$i] ];
+              $idsP = array_merge($idsP, $file['piezas'][ $ordenes[$i] ]);
+            }
+
+            if(array_key_exists($ordenes[$i], $file['ord'])) {
+              $mini['ord'][ $ordenes[$i] ] = $file['ord'][ $ordenes[$i] ];
             }
           }
-        }
-        if($data['version'] != 0) {
-          $file['version'] = $data['version'];
-        }
-        $this->flush($file);
-        $result = true;
-      }
-      return $result;
-    }
 
-    /**
-     * Checamos la version del centinela para ver si hay cambios
-    */
-    public function isSameVersion(string $oldVersion): bool
-    {
-      $dataMain = $this->getContent();
-      $result = false;
-      if(array_key_exists('version', $dataMain)) {
-        if($dataMain['version'] == $oldVersion) {
-          $result = true;
-        }
-      }
-      return $result;
-    }
-
-    /**
-     * Checamos la version del centinela para ver si hay cambios
-    */
-    public function isSameVersionAndGetVersionNew(string $oldVersion): array
-    {
-      $dataMain = $this->getContent();
-      $result['isSame'] = false;
-      $result['newver'] = $oldVersion;
-      if(array_key_exists('version', $dataMain)) {
-        if($dataMain['version'] == $oldVersion) {
-          $result['isSame'] = true;
-        }
-        $result['newver'] = $dataMain['version'];
-      }
-      return $result;
-    }
-
-    ///
-    private function updateVersion(int $version, array $centinela): array
-    {
-      $centinela['version'] = $version;
-      return $centinela;
-    }
-
-    /**
-     * @see GetFileController::getAllOrdenesByIdAvo
-    */
-    public function buildMiniFileCentinela(string $avo): array
-    {
-      $file = $this->getContent();
-      $mini = [];
-      if(array_key_exists('avo', $file)) {
-        if(array_key_exists($avo, $file['avo'])) {
-
-          $ordenes = $file['avo'][$avo];
-          $rota = count($ordenes);
-          if($rota > 0) {
-
-            $mini = ['version' => $file['version'], 'ordenes' => $file['avo'][$avo]];
-
-            $idsP = [];
-            // Las piezas y estatus de las ordenes
-            for ($i=0; $i < $rota; $i++) {
-
-              if(array_key_exists($ordenes[$i], $file['piezas'])) {
-                $mini['piezas'][ $ordenes[$i] ] = $file['piezas'][ $ordenes[$i] ];
-                $idsP = array_merge($idsP, $file['piezas'][ $ordenes[$i] ]);
-              }
-
-              if(array_key_exists($ordenes[$i], $file['ord'])) {
-                $mini['ord'][ $ordenes[$i] ] = $file['ord'][ $ordenes[$i] ];
-              }
-            }
-
-            // Los Status
-            $rota = count($idsP);
-            for ($i=0; $i < $rota; $i++) {
-              if(array_key_exists($idsP[$i], $file['stt'])) {
-                $mini['stt'][ $idsP[$i] ] = $file['stt'][ $idsP[$i] ];
-              }
+          // Los Status
+          $rota = count($idsP);
+          for ($i=0; $i < $rota; $i++) {
+            if(array_key_exists($idsP[$i], $file['stt'])) {
+              $mini['stt'][ $idsP[$i] ] = $file['stt'][ $idsP[$i] ];
             }
           }
         }
       }
-
-      return $mini;
     }
 
-    ///
-    public function setBuscarCotizacionesOrden(array $data)
-    {
+    return $mini;
+  }
 
-    }
 }
