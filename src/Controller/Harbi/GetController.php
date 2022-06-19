@@ -121,7 +121,6 @@ class GetController extends AbstractController
 		if($rota > 0) {
       // Obtenemos los targets de cada campaña
 			for ($i=0; $i < $rota; $i++) {
-        $campaings[$i]['src'] = ['id' => 1];
 				$result = $resps->getTargetById($campaings[$i]['target'], $campaings[$i]['src']);
         $campaings[$i]['err'] = '0';
 				if(!$result['abort']) {
@@ -137,7 +136,7 @@ class GetController extends AbstractController
 			$response['msg']  = 'ERROR';
 			$response['body'] = 'No se encontraron las campañas ' . implode(',', $ids);
 		}
-    dd($response);
+    
 		return $this->json($response);
 	}
 }
