@@ -103,8 +103,26 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
 
-  
-	/*** */
+  /** */
+	#[Route('harbi/set-test-camping/{idC}/{target}/{idT}/', methods:['get'])]
+	public function setTestCamping(
+		ScmCampRepository $em, $idC, $target, $idT
+	): Response
+	{
+    // return $this->json(['ups' => 'Sin Autorización']);
+    $data = [
+      'camp' => $idC,
+      'target' => $target,
+      'src' => ['id' => $idT],
+      'avo' => 2,
+      'own' => 4,
+      'sendAt' => 'now',
+    ];
+    $em->setNewCampaing($data);
+    return $this->json(['ok' => 'Campaña creada']);
+  }
+
+	/** */
 	#[Route('harbi/get-campaings/{campas}/', methods:['get'])]
 	public function getCampainsOf(
 		ScmCampRepository $em, OrdenRespsRepository $resps, $campas
@@ -112,14 +130,11 @@ class GetController extends AbstractController
 	{
 		$response = ['abort' => false, 'msg' => 'ok', 'body' => []];
 
-		// Obtenemos el contenido completo del archivo Targets.
-		// Aqui conocemos cuales son los ids de las campañas nuevas
 		$ids = explode(',', $campas);
 		$dql = $em->getCampaingsByIds($ids);
 		$campaings = $dql->getArrayResult();
 		$rota = count($campaings);
 		if($rota > 0) {
-      // Obtenemos los targets de cada campaña
 			for ($i=0; $i < $rota; $i++) {
 				$result = $resps->getTargetById($campaings[$i]['target'], $campaings[$i]['src']);
         $campaings[$i]['err'] = '0';
