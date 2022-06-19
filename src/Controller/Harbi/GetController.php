@@ -2,16 +2,17 @@
 
 namespace App\Controller\Harbi;
 
-use App\Repository\AO1MarcasRepository;
-use App\Repository\AO2ModelosRepository;
-use App\Repository\NG2ContactosRepository;
-use App\Repository\OrdenesRepository;
-use App\Service\CentinelaService;
-use App\Service\ScmService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use App\Repository\AO1MarcasRepository;
+use App\Repository\NG2ContactosRepository;
+use App\Repository\OrdenesRepository;
+use App\Service\CentinelaService;
+use App\Service\FiltrosService;
+use App\Service\ScmService;
 
 class GetController extends AbstractController
 {
@@ -37,10 +38,9 @@ class GetController extends AbstractController
   #[Route('harbi/download-centinela/', methods:['get'])]
   public function downloadCentinela(CentinelaService $centinela): Response
   {
-    return $this->json([
-      'abort' => false, 'msg' => 'ok',
-      'body' => $centinela->downloadCentinela()
-    ]);
+    return $this->json(
+      ['abort' => false, 'msg' => 'ok','body' => $centinela->downloadCentinela()]
+    );
   }
 
   /**
@@ -57,16 +57,22 @@ class GetController extends AbstractController
    */
   #[Route('harbi/check-changes/{lastVersion}/', methods:['get'])]
   public function checkCheckChanges(
-    CentinelaService $centinela, ScmService $scm, $lastVersion
+    CentinelaService $centinela, ScmService $scm,
+    FiltrosService $filtros, $lastVersion
   ): Response
   {
-    $isSame = $centinela->isSameVersion($lastVersion);
-    $scm = $scm->getContent();
+    $result = ['hay' => false];
 
-    $result['hay'] = false;
+    $isSame = $centinela->isSameVersion($lastVersion);
+    $result['hay'] = !$isSame;
+
+    $scm = $scm->getContent(true);
     if(count($scm) > 0) { $result['hay'] = true; }
-    $result['hay'] = ($result['hay']) ? $result['hay'] : !$isSame;
-    $result['changes'] = ['scm' => $scm, 'centinela' => $isSame];
+
+    $filtros = $filtros->getContent(true);
+    if(count($filtros) > 0) { $result['hay'] = true; }
+
+    $result['changes'] = ['scm' => $scm, 'filtros' => $filtros, 'centinela' => !$isSame];
 
     return $this->json(['abort'=>false, 'body' => $result]);
   }
@@ -80,8 +86,7 @@ class GetController extends AbstractController
     $dql = $ordEm->getDataOrdenById($idOrden);
     $data = $dql->getScalarResult();
     return $this->json([
-        'abort'=>false, 'msg' => 'ok',
-        'body' => (count($data) > 0) ? $data[0] : []
+      'abort'=>false, 'msg' => 'ok', 'body' => (count($data) > 0) ? $data[0] : []
     ]);
   }
 
@@ -93,9 +98,6 @@ class GetController extends AbstractController
   {
     $dql = $mksEm->getAllAutos();
     $data = $dql->getArrayResult();
-    return $this->json([
-        'abort'=>false, 'msg' => 'ok',
-        'body' => $data
-    ]);
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
 }

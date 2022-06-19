@@ -32,10 +32,8 @@ class ScmCampRepository extends ServiceEntityRepository
    */
   public function add(ScmCamp $entity, bool $flush = true): void
   {
-      $this->_em->persist($entity);
-      if ($flush) {
-          $this->_em->flush();
-      }
+		$this->_em->persist($entity);
+		if ($flush) { $this->_em->flush(); }
   }
 
   /**
@@ -44,10 +42,8 @@ class ScmCampRepository extends ServiceEntityRepository
    */
   public function remove(ScmCamp $entity, bool $flush = true): void
   {
-      $this->_em->remove($entity);
-      if ($flush) {
-          $this->_em->flush();
-      }
+		$this->_em->remove($entity);
+		if ($flush) {  $this->_em->flush();  }
   }
 
   /**
@@ -55,33 +51,33 @@ class ScmCampRepository extends ServiceEntityRepository
    */
   public function setNewCampaing(array $data): array
   {
-      $obj = new ScmCamp();
-      $obj->setCampaing($this->_em->getPartialReference(Campaings::class, $data['camp']));
-      $obj->setTarget($data['target']);
-      $obj->setSrc($data['src']);
-      $obj->setRemiter($this->_em->getPartialReference(NG2Contactos::class, $data['avo']));
-      $obj->setEmiter($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
-      $obj->setSendAt($data['sendAt']);
+		$obj = new ScmCamp();
+		$obj->setCampaing($this->_em->getPartialReference(Campaings::class, $data['camp']));
+		$obj->setTarget($data['target']);
+		$obj->setSrc($data['src']);
+		$obj->setRemiter($this->_em->getPartialReference(NG2Contactos::class, $data['avo']));
+		$obj->setEmiter($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
+		$obj->setSendAt($data['sendAt']);
 
-      try {
-          $this->_em->persist($obj);
-          $this->_em->flush();
-          $this->result['body'] = [
-            'id' => $obj->getId(),
-            'target' => $obj->getTarget(),
-          ];
-      } catch (\Throwable $th) {
-          $this->result['abort'] = true;
-          $this->result['msg'] = $th->getMessage();
-          $this->result['body'] = 'ERROR al Guardar la nueva campaña.';
-      }
-      return $this->result;
+		try {
+			$this->_em->persist($obj);
+			$this->_em->flush();
+			$this->result['body'] = [
+				'id' => $obj->getId(),
+				'target' => $obj->getTarget(),
+			];
+		} catch (\Throwable $th) {
+			$this->result['abort'] = true;
+			$this->result['msg'] = $th->getMessage();
+			$this->result['body'] = 'ERROR al Guardar la nueva campaña.';
+		}
+		return $this->result;
   }
 
   /**
   * Recuperamos las campañas indicadas por parametro
   */
-  public function getCampaingsOfTargetByIds(array $ids): \Doctrine\ORM\Query
+  public function getCampaingsByIds(array $ids): \Doctrine\ORM\Query
   {
     $txt = 'partial %s.{id, curc, roles, nombre, cargo, celular, isCot}';
     $emi = sprintf($txt, 'emi');

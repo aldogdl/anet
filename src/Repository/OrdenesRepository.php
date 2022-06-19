@@ -159,7 +159,6 @@ class OrdenesRepository extends ServiceEntityRepository
      */
     public function getDataOrdenById(string $idOrden, $withOwn = true): \Doctrine\ORM\Query
     {
-
       $dql = 'SELECT o, mk, md ';
       if($withOwn) {
         $dql = $dql . ', partial u.{id, nombre, cargo, celular, roles}, partial e.{id, nombre} ';

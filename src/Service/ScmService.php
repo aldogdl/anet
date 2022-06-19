@@ -32,7 +32,7 @@ class ScmService
     /**
      *
     */
-    public function getContent(): array
+    public function getContent(bool $clean = false): array
     {
       $msgs = [];
       $path = $this->params->get('targets');
@@ -41,6 +41,10 @@ class ScmService
         if($this->filesystem->exists($path)) {
           $msgs = json_decode( file_get_contents($path), true );
         }
+      }
+      if($clean) {
+        $content = [];
+        $this->flush($content);
       }
       $lock->release();
       return $msgs;
