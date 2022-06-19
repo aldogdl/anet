@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Ordenes;
 use App\Entity\OrdenResps;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -16,61 +17,76 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class OrdenRespsRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, OrdenResps::class);
-    }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function add(OrdenResps $entity, bool $flush = true): void
-    {
-        $this->_em->persist($entity);
-        if ($flush) {
-            $this->_em->flush();
-        }
-    }
+	private $result = ['abort' => false, 'msg' => 'ok', 'body' => []];
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function remove(OrdenResps $entity, bool $flush = true): void
-    {
-        $this->_em->remove($entity);
-        if ($flush) {
-            $this->_em->flush();
-        }
-    }
+	public function __construct(ManagerRegistry $registry)
+	{
+		parent::__construct($registry, OrdenResps::class);
+	}
 
-    // /**
-    //  * @return OrdenResps[] Returns an array of OrdenResps objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('o')
-            ->andWhere('o.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('o.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+	/**
+	 * @throws ORMException
+	 * @throws OptimisticLockException
+	 */
+	public function add(OrdenResps $entity, bool $flush = true): void
+	{
+		$this->_em->persist($entity);
+		if ($flush) {
+			$this->_em->flush();
+		}
+	}
 
-    /*
-    public function findOneBySomeField($value): ?OrdenResps
-    {
-        return $this->createQueryBuilder('o')
-            ->andWhere('o.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
+	/**
+	 * @throws ORMException
+	 * @throws OptimisticLockException
+	 */
+	public function remove(OrdenResps $entity, bool $flush = true): void
+	{
+		$this->_em->remove($entity);
+		if ($flush) {
+			$this->_em->flush();
+		}
+	}
+
+	/** */
+	public function getTargetById(String $target, array $src): array 
+	{
+		$msgErr = '0';
+		switch ($target) {
+			case 'orden':
+				if(array_key_exists('id', $src)) {
+					$this->result['body'] = $this->getOrden($src['id']);
+				}else{
+					$msgErr = 'No se envió el ID de la '.$target;
+				}
+				break;
+			case 'pieza':
+				# code...
+				break;
+			case 'inventario':
+				# code...
+				break;
+			
+			default:
+				# Generales
+				$this->result['body'] = [];
+				break;
+		}
+
+		if($msgErr != '0') {
+			$this->result['abort'] = true;
+			$this->result['msg'] = 'Error';
+			$this->result['body'] = $msgErr;
+		}
+		return $this->result;
+	}
+
+	/** */
+	private function getOrden(int $id): array
+	{
+		$dql = $this->_em->getRepository(Ordenes::class)->getDataOrdenById($id, false);
+		$orden = $dql->getScalarResult();
+		return ($orden) ? $orden[0] : [];
+	}
 }

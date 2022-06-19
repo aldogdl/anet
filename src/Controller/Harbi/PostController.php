@@ -8,11 +8,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-use App\Repository\ScmCampRepository;
-use App\Service\CentinelaService;
 use App\Service\HarbiConnxService;
 use App\Service\StatusRutas;
-use App\Service\ScmService;
 
 class PostController extends AbstractController
 {
@@ -49,56 +46,6 @@ class PostController extends AbstractController
 		$data = $this->toArray($req, 'data');
 		$rutas->setNewRuta($data);
 		return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => 'save']);
-	}
-
-	/*** */
-	#[Route('harbi/get-campaings/', methods:['get'])]
-	public function getCampainsOf(
-		Request $req, ScmCampRepository $em, ScmService $scm,
-		CentinelaService $centinela
-	): Response
-	{
-		$response = ['abort' => false, 'msg' => 'ok', 'body' => []];
-
-		// Obtenemos el contenido completo del archivo Targets.
-		// Aqui conocemos cuales son los ids de las campañas nuevas
-		$fileTargets = $this->toArray($req, 'data');
-		$dql = $em->getCampaingsByIds($fileTargets);
-		$campaings = $dql->getArrayResult();
-
-		$rota = count($campaings);
-		if($rota > 0) {
-
-			// $fileCenti = $centinela->getContent();
-			// // Obtenemos los targets de cada campaña
-			// for ($i=0; $i < $rota; $i++) {
-			// 	$emT = $doctrine->getRepository('App\\Entity\\'.$campaings[$i]['src']['class']);
-			// 	$result = $emT->getTargetById($campaings[$i]['src']['id']);
-			// 	if($result) {
-			// 		$campaings[$i]['target'] = $result[0];
-
-			// 		// Extraemos a los receiver de dicha campaña.
-			// 		$piezasIds = $fileCenti['piezas'][$campaings[$i]['target']['id']];
-			// 		$vultas = count($piezasIds);
-			// 		$idsReceivers = [];
-			// 		for ($p=0; $p < $vultas; $p++) {
-			// 			$idsReceivers = array_merge($idsReceivers, $fileCenti['stt'][ $piezasIds[$p] ]['ctz']);
-			// 		}
-			// 		$idsReceivers = array_unique($idsReceivers);
-			// 		sort($idsReceivers);
-			// 		shuffle($idsReceivers);
-			// 		$campaings[$i]['receivers'] = $idsReceivers;
-			// 	}
-			// }
-
-			// $response['body'] = $campaings;
-			// $scm->clean($target);
-		}else{
-			$response['abort']= true;
-			$response['msg']  = 'ERROR';
-			$response['body'] = 'No se encontraron las ordenes ' . implode(',', $fileTargets);
-		}
-		return $this->json($response);
 	}
 
 }

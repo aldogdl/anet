@@ -10,6 +10,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\AO1MarcasRepository;
 use App\Repository\NG2ContactosRepository;
 use App\Repository\OrdenesRepository;
+use App\Repository\OrdenRespsRepository;
+use App\Repository\ScmCampRepository;
 use App\Service\CentinelaService;
 use App\Service\FiltrosService;
 use App\Service\ScmService;
@@ -100,4 +102,42 @@ class GetController extends AbstractController
     $data = $dql->getArrayResult();
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
+
+  
+	/*** */
+	#[Route('harbi/get-campaings/{campas}/', methods:['get'])]
+	public function getCampainsOf(
+		ScmCampRepository $em, OrdenRespsRepository $resps, $campas
+	): Response
+	{
+		$response = ['abort' => false, 'msg' => 'ok', 'body' => []];
+
+		// Obtenemos el contenido completo del archivo Targets.
+		// Aqui conocemos cuales son los ids de las campañas nuevas
+		$ids = explode(',', $campas);
+		$dql = $em->getCampaingsByIds($ids);
+		$campaings = $dql->getArrayResult();
+		$rota = count($campaings);
+		if($rota > 0) {
+      // Obtenemos los targets de cada campaña
+			for ($i=0; $i < $rota; $i++) {
+        $campaings[$i]['src'] = ['id' => 1];
+				$result = $resps->getTargetById($campaings[$i]['target'], $campaings[$i]['src']);
+        $campaings[$i]['err'] = '0';
+				if(!$result['abort']) {
+					$campaings[$i][$campaings[$i]['target']] = $result['body'];
+				}else{
+          $campaings[$i]['err'] = $result['body'];
+        }
+			}
+
+			$response['body'] = $campaings;
+		}else{
+			$response['abort']= true;
+			$response['msg']  = 'ERROR';
+			$response['body'] = 'No se encontraron las campañas ' . implode(',', $ids);
+		}
+    dd($response);
+		return $this->json($response);
+	}
 }

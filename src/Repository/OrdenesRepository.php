@@ -157,7 +157,7 @@ class OrdenesRepository extends ServiceEntityRepository
     /**
      * from => :Centinela, :SCP
      */
-    public function getDataOrdenById(string $idOrden, $withOwn = true): \Doctrine\ORM\Query
+    public function getDataOrdenById(string $idOrden, bool $withOwn = true): \Doctrine\ORM\Query
     {
       $dql = 'SELECT o, mk, md ';
       if($withOwn) {
@@ -171,15 +171,6 @@ class OrdenesRepository extends ServiceEntityRepository
       }
       $dql = $dql . 'WHERE o.id = :id ';
       return $this->_em->createQuery($dql)->setParameter('id', $idOrden);
-    }
-
-    /**
-    *
-    */
-    public function getTargetById(int $id): array
-    {
-      $dql = $this->getDataOrdenById((string) $id, false);
-      return $dql->getArrayResult();
     }
 
     /**
