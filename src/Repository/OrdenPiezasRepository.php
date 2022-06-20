@@ -78,44 +78,45 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     return $this->_em->createQuery($dql)->setParameter('idHive', $idHive);
   }
 
-  /**
-   *
-   */
+  /** */
   public function setPieza(array $data): array
   {
-      $pieza = new OrdenPiezas();
-      $pieza->setOrden( $this->_em->getPartialReference(Ordenes::class, $data['orden']) );
-      if($data['id'] != 0) {
+    $pieza = new OrdenPiezas();
+    $pieza->setOrden( $this->_em->getPartialReference(Ordenes::class, $data['orden']) );
+    if($data['id'] != 0) {
+      if(array_key_exists('local', $data)) {
+        $pieza = new OrdenPiezas();
+      }else{
         $dql = $this->getPiezasByIdHive($data['id']);
         $hasPza = $dql->getResult();
         if($hasPza) {
           $pieza = $hasPza[0];
         }
       }
-      $pieza->setPiezaName($data['piezaName']);
-      $pieza->setOrigen($data['origen']);
-      $pieza->setLado($data['lado']);
-      $pieza->setPosicion($data['posicion']);
-      $pieza->setFotos($data['fotos']);
-      $pieza->setObs($data['obs']);
-      $pieza->setEst($data['est']);
-      $pieza->setStt($data['stt']);
-      $pieza->setIdHive($data['id']);
-      try {
-          $this->_em->persist($pieza);
-          $this->_em->flush();
-          $this->result['body']  = $pieza->getId();
-      } catch (\Throwable $th) {
-          $this->result['abort'] = true;
-          $this->result['msg'] = $th->getMessage();
-          $this->result['body']  = 'Error al guarda inténtalo nuevamente';
-      }
-      return $this->result;
+    }
+
+    $pieza->setPiezaName($data['piezaName']);
+    $pieza->setOrigen($data['origen']);
+    $pieza->setLado($data['lado']);
+    $pieza->setPosicion($data['posicion']);
+    $pieza->setFotos($data['fotos']);
+    $pieza->setObs($data['obs']);
+    $pieza->setEst($data['est']);
+    $pieza->setStt($data['stt']);
+    $pieza->setIdHive($data['id']);
+    try {
+      $this->_em->persist($pieza);
+      $this->_em->flush();
+      $this->result['body']  = $pieza->getId();
+    } catch (\Throwable $th) {
+      $this->result['abort'] = true;
+      $this->result['msg'] = $th->getMessage();
+      $this->result['body']  = 'Error al guarda inténtalo nuevamente';
+    }
+    return $this->result;
   }
 
-  /**
-   *
-   */
+  /** */
   public function deletePiezaAntesDeSave(int $idPza): array
   {
     $pieza = null;
@@ -143,25 +144,25 @@ class OrdenPiezasRepository extends ServiceEntityRepository
   /** */
   public function changeSttPiezasTo(int $idOrden, array $ruta)
   {
-      $dql = 'UPDATE ' . OrdenPiezas::class . ' o '.
-      'SET o.est = :est, o.stt = :stt '.
-      'WHERE o.orden = :id';
+    $dql = 'UPDATE ' . OrdenPiezas::class . ' o '.
+    'SET o.est = :est, o.stt = :stt '.
+    'WHERE o.orden = :id';
 
-      $this->_em->createQuery($dql)->setParameters([
-          'id' => $idOrden,
-          'est'=> $ruta['est'],
-          'stt'=> $ruta['stt'],
-      ])->execute();
-      $this->_em->clear();
+    $this->_em->createQuery($dql)->setParameters([
+        'id' => $idOrden,
+        'est'=> $ruta['est'],
+        'stt'=> $ruta['stt'],
+    ])->execute();
+    $this->_em->clear();
   }
 
   /** */
   public function getDataPiezaById(int $idPieza): \Doctrine\ORM\Query
   {
-      $dql = 'SELECT p, o.id as o_id FROM ' . OrdenPiezas::class . ' p '.
-      'JOIN p.orden o '.
-      'WHERE p.id = :id';
-      return $this->_em->createQuery($dql)->setParameter('id', $idPieza);
+    $dql = 'SELECT p, o.id as o_id FROM ' . OrdenPiezas::class . ' p '.
+    'JOIN p.orden o '.
+    'WHERE p.id = :id';
+    return $this->_em->createQuery($dql)->setParameter('id', $idPieza);
   }
 
   /**
@@ -169,10 +170,10 @@ class OrdenPiezasRepository extends ServiceEntityRepository
    */
   public function getPiezasByOrden(int $idOrden): \Doctrine\ORM\Query
   {
-      $dql = 'SELECT p, o.id as o_id FROM ' . OrdenPiezas::class . ' p '.
-      'JOIN p.orden o '.
-      'WHERE p.orden = :id';
-      return $this->_em->createQuery($dql)->setParameter('id', $idOrden);
+    $dql = 'SELECT p, o.id as o_id FROM ' . OrdenPiezas::class . ' p '.
+    'JOIN p.orden o '.
+    'WHERE p.orden = :id';
+    return $this->_em->createQuery($dql)->setParameter('id', $idOrden);
   }
 
   /**
@@ -180,9 +181,10 @@ class OrdenPiezasRepository extends ServiceEntityRepository
    */
   public function getAllOrdsPzas(array $idsOrden): \Doctrine\ORM\Query
   {
-      $dql = 'SELECT p, o FROM ' . OrdenPiezas::class . ' p '.
-      'JOIN p.orden o '.
-      'WHERE p.orden IN (:ids)';
-      return $this->_em->createQuery($dql)->setParameter('ids', $idsOrden);
+    $dql = 'SELECT p, o, partial c.{id} FROM ' . OrdenPiezas::class . ' p '.
+    'JOIN p.orden o '.
+    'JOIN o.own c '.
+    'WHERE p.orden IN (:ids)';
+    return $this->_em->createQuery($dql)->setParameter('ids', $idsOrden);
   }
 }

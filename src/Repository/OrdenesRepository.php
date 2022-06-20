@@ -59,7 +59,13 @@ class OrdenesRepository extends ServiceEntityRepository
   public function setOrden(array $orden): array
   {
     if($orden['id'] != 0) {
-      $entity = $this->_em->find(Ordenes::class, $orden['id']);
+      if(array_key_exists('local', $orden)) {
+        $entity = new Ordenes();
+        $entity->setId($orden['id']);
+        $entity->setOwn( $this->_em->getPartialReference(NG2Contactos::class, $orden['own']) );
+      }else{
+        $entity = $this->_em->find(Ordenes::class, $orden['id']);
+      }
     }else{
       $entity = new Ordenes();
       $entity->setOwn( $this->_em->getPartialReference(NG2Contactos::class, $orden['own']) );
