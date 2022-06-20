@@ -184,9 +184,9 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     $dql = 'SELECT p, o, partial c.{id}, partial a.{id}, partial mk.{id}, partial md.{id} FROM ' . OrdenPiezas::class . ' p '.
     'JOIN p.orden o '.
     'JOIN o.own c '.
-    'JOIN o.avo a '.
+    // 'JOIN o.avo a '.
     'JOIN o.marca mk '.
-    'JOIN o.modelo md '.
+    // 'JOIN o.modelo md '.
     'WHERE p.orden IN (:ids)';
     return $this->_em->createQuery($dql)->setParameter('ids', $idsOrden);
   }
