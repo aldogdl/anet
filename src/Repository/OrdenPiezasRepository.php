@@ -158,7 +158,6 @@ class OrdenPiezasRepository extends ServiceEntityRepository
   /** */
   public function getDataPiezaById(int $idPieza): \Doctrine\ORM\Query
   {
-
       $dql = 'SELECT p, o.id as o_id FROM ' . OrdenPiezas::class . ' p '.
       'JOIN p.orden o '.
       'WHERE p.id = :id';
@@ -174,5 +173,16 @@ class OrdenPiezasRepository extends ServiceEntityRepository
       'JOIN p.orden o '.
       'WHERE p.orden = :id';
       return $this->_em->createQuery($dql)->setParameter('id', $idOrden);
+  }
+
+  /**
+   * from:Harbi
+   */
+  public function getAllOrdsPzas(array $idsOrden): \Doctrine\ORM\Query
+  {
+      $dql = 'SELECT p, o FROM ' . OrdenPiezas::class . ' p '.
+      'JOIN p.orden o '.
+      'WHERE p.orden IN (:ids)';
+      return $this->_em->createQuery($dql)->setParameter('ids', $idsOrden);
   }
 }

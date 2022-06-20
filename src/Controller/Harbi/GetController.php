@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\AO1MarcasRepository;
 use App\Repository\NG2ContactosRepository;
 use App\Repository\OrdenesRepository;
+use App\Repository\OrdenPiezasRepository;
 use App\Repository\OrdenRespsRepository;
 use App\Repository\ScmCampRepository;
 use App\Service\CentinelaService;
@@ -109,7 +110,7 @@ class GetController extends AbstractController
 		ScmCampRepository $em, $idC, $target, $idT
 	): Response
 	{
-    // return $this->json(['ups' => 'Sin Autorización']);
+    return $this->json(['ups' => 'Sin Autorización']);
     $data = [
       'camp' => $idC,
       'target' => $target,
@@ -154,4 +155,28 @@ class GetController extends AbstractController
     
 		return $this->json($response);
 	}
+
+	/** */
+	#[Route('harbi/get-all-ordspzas/{ords}/', methods:['get'])]
+	public function getAllOrdsPzas(
+		OrdenPiezasRepository $piezas, $ords
+	): Response
+	{
+		$response = ['abort' => false, 'msg' => 'ok', 'body' => []];
+
+		$ids = explode(',', $ords);
+		$dql = $piezas->getAllOrdsPzas($ids);
+		$ordenes = $dql->getArrayResult();
+		if(count($ordenes) > 0) {
+			$response['body'] = $ordenes;
+		}else{
+			$response['abort']= true;
+			$response['msg']  = 'ERROR';
+			$response['body'] = 'No se encontraron las ordenes ' . implode(',', $ids);
+		}
+    
+		return $this->json($response);
+	}
+
+
 }
