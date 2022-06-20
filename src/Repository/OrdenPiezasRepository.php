@@ -181,10 +181,10 @@ class OrdenPiezasRepository extends ServiceEntityRepository
    */
   public function getAllOrdsPzas(array $idsOrden): \Doctrine\ORM\Query
   {
-    $dql = 'SELECT p, o, partial c.{id}, partial mk.{id}, partial md.{id} FROM ' . OrdenPiezas::class . ' p '.
+    $dql = 'SELECT p, o, partial c.{id}, partial a.{id}, partial mk.{id}, partial md.{id} FROM ' . OrdenPiezas::class . ' p '.
     'JOIN p.orden o '.
     'JOIN o.own c '.
-    // 'JOIN o.avo a '.
+    'JOIN o.avo a '.
     'JOIN o.marca mk '.
     'JOIN o.modelo md '.
     'WHERE p.orden IN (:ids)';
