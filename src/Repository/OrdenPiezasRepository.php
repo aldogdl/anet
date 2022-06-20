@@ -86,6 +86,7 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     if($data['id'] != 0) {
       if(array_key_exists('local', $data)) {
         $pieza = new OrdenPiezas();
+        $pieza->setId($data['id']);
       }else{
         $dql = $this->getPiezasByIdHive($data['id']);
         $hasPza = $dql->getResult();
@@ -103,7 +104,12 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     $pieza->setObs($data['obs']);
     $pieza->setEst($data['est']);
     $pieza->setStt($data['stt']);
-    $pieza->setIdHive($data['id']);
+    if(array_key_exists('local', $data)) {
+      $pieza->setIdHive($data['idHive']);
+    }else{
+      $pieza->setIdHive($data['id']);
+    }
+    
     try {
       $this->_em->persist($pieza);
       $this->_em->flush();
