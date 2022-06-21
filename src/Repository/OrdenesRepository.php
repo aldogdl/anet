@@ -91,6 +91,9 @@ class OrdenesRepository extends ServiceEntityRepository
       $this->result['body'] = 'Error al capturar la Orden, Inténtalo nuevamente por favor.';
     }
 
+    if(array_key_exists('local', $orden)) {
+      $this->revisarIdTable($entity, $orden['id']);
+    }
     return $this->result;
   }
 
@@ -205,5 +208,20 @@ class OrdenesRepository extends ServiceEntityRepository
           $this->result['body'] = 'ERROR, No se encontró el AVO ' . $idAvo;
       }
       return $this->result;
+  }
+
+  ///
+  private function revisarIdTable(Ordenes $ord, int $id)
+  {
+    if($ord->getId() != $id) {
+      $dql = 'UPDATE ' . Ordenes::class . ' e '.
+      'SET e.id = :idN '.
+      'WHERE e.id = :id';
+      $this->_em->createQuery($dql)->setParameters([
+        'idN' => $id, 'id' => $ord->getId()
+      ])->execute();
+    }
+    // $connDb = $this->getEntityManager()->getConnection();
+    // $connDb->prepare('ALTER TABLE my_table AUTO_INCREMENT = 100;')->executeStatement();
   }
 }

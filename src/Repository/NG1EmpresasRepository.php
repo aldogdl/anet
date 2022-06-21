@@ -91,21 +91,21 @@ class NG1EmpresasRepository extends ServiceEntityRepository
     return $this->result;
   }
 
-    ///
-    private function revisarIdTable(NG1Empresas $emp, array $dataSend): NG1Empresas
-    {
-        if(array_key_exists('id', $dataSend)) {
-            if($emp->getId() != $dataSend['id']) {
-                $dql = 'UPDATE ' . NG1Empresas::class . ' e '.
-                'SET e.id = :idN '.
-                'WHERE e.id = :id';
-                $this->_em->createQuery($dql)->setParameters([
-                    'idN' => $dataSend['id'], 'id' => $emp->getId()
-                ])->execute();
-            }
-        }
-        return $this->_em->find(NG1Empresas::class, $dataSend['id']);
-        // $connDb = $this->getEntityManager()->getConnection();
-        // $connDb->prepare('ALTER TABLE my_table AUTO_INCREMENT = 100;')->executeStatement();
+  ///
+  private function revisarIdTable(NG1Empresas $emp, array $dataSend): NG1Empresas
+  {
+    if(array_key_exists('id', $dataSend)) {
+      if($emp->getId() != $dataSend['id']) {
+        $dql = 'UPDATE ' . NG1Empresas::class . ' e '.
+        'SET e.id = :idN '.
+        'WHERE e.id = :id';
+        $this->_em->createQuery($dql)->setParameters([
+            'idN' => $dataSend['id'], 'id' => $emp->getId()
+        ])->execute();
+      }
     }
+    return $this->_em->find(NG1Empresas::class, $dataSend['id']);
+    // $connDb = $this->getEntityManager()->getConnection();
+    // $connDb->prepare('ALTER TABLE my_table AUTO_INCREMENT = 100;')->executeStatement();
+  }
 }

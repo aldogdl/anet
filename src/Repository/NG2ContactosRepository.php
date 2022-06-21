@@ -135,46 +135,45 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     return $this->_em->createQuery($dql)->setParameter('curc', $tipo.'%');
   }
 
-    /** */
-    public function borrarContactoById(int $idcontact): array
-    {
+  /** */
+  public function borrarContactoById(int $idcontact): array
+  {
+    $ct = $this->_em->find(NG2Contactos::class, $idcontact);
 
-        $ct = $this->_em->find(NG2Contactos::class, $idcontact);
+    if($ct) {
+      $emp = $this->_em->find(NG1Empresas::class, $ct->getEmpresa()->getId());
 
-        if($ct) {
-            $emp = $this->_em->find(NG1Empresas::class, $ct->getEmpresa()->getId());
-
-            if($emp) {
-                try {
-                    if($emp->getId() != 1) {
-                        $this->_em->remove($emp);
-                    }
-                    $this->_em->remove($ct);
-                    $this->_em->flush();
-                } catch (\Throwable $th) {
-                    $this->result = [
-                        'abort' => true,
-                        'msg'   => $th->getMessage(),
-                        'body'  => 'Error al borrar contacto, inténtalo nuevamente'
-                    ];
-                }
-            }else{
-                $this->result = [
-                    'abort' => true,
-                    'msg'   => 'err',
-                    'body'  => 'No se encontró la empresa con el ID ' . $ct->getEmpresa()->getId()
-                ];
-            }
-        }else{
-            $this->result = [
-                'abort' => true,
-                'msg'   => 'err',
-                'body'  => 'No se encontró el contacto con el ID ' . $idcontact
-            ];
+      if($emp) {
+        try {
+          if($emp->getId() != 1) {
+            $this->_em->remove($emp);
+          }
+          $this->_em->remove($ct);
+          $this->_em->flush();
+        } catch (\Throwable $th) {
+          $this->result = [
+            'abort' => true,
+            'msg'   => $th->getMessage(),
+            'body'  => 'Error al borrar contacto, inténtalo nuevamente'
+          ];
         }
-
-        return $this->result;
+      }else{
+        $this->result = [
+          'abort' => true,
+          'msg'   => 'err',
+          'body'  => 'No se encontró la empresa con el ID ' . $ct->getEmpresa()->getId()
+        ];
+      }
+    }else{
+      $this->result = [
+        'abort' => true,
+        'msg'   => 'err',
+        'body'  => 'No se encontró el contacto con el ID ' . $idcontact
+      ];
     }
+
+    return $this->result;
+  }
 
   /** */
   public function seveDataContact(array $data): array
@@ -247,17 +246,17 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     return $this->result;
   }
 
-    /**
-     * Construimos las credenciales password y curc
-     */
-    public function encodePassword(NG2Contactos $user, $pass): String
-    {
-        if (!$user instanceof NG2Contactos) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
-        }
-
-        return $this->passwordHasher->hashPassword($user, $pass);
+  /**
+   * Construimos las credenciales password y curc
+   */
+  public function encodePassword(NG2Contactos $user, $pass): String
+  {
+    if (!$user instanceof NG2Contactos) {
+      throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
     }
+
+    return $this->passwordHasher->hashPassword($user, $pass);
+  }
 
   /**
    * Construimos las credenciales password y curc

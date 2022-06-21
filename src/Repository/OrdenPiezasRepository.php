@@ -85,7 +85,6 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     $pieza->setOrden( $this->_em->getPartialReference(Ordenes::class, $data['orden']) );
     if($data['id'] != 0) {
       if(array_key_exists('local', $data)) {
-        $pieza = new OrdenPiezas();
         $pieza->setId($data['id']);
       }else{
         $dql = $this->getPiezasByIdHive($data['id']);
@@ -118,6 +117,10 @@ class OrdenPiezasRepository extends ServiceEntityRepository
       $this->result['abort'] = true;
       $this->result['msg'] = $th->getMessage();
       $this->result['body']  = 'Error al guarda inténtalo nuevamente';
+    }
+
+    if(array_key_exists('local', $data)) {
+      $this->revisarIdTable($pieza, $data['id']);
     }
     return $this->result;
   }
@@ -195,5 +198,20 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     'JOIN o.modelo md '.
     'WHERE p.orden IN (:ids)';
     return $this->_em->createQuery($dql)->setParameter('ids', $idsOrden);
+  }
+
+  ///
+  private function revisarIdTable(OrdenPiezas $pza, int $id)
+  {
+    if($pza->getId() != $id) {
+      $dql = 'UPDATE ' . OrdenPiezas::class . ' e '.
+      'SET e.id = :idN '.
+      'WHERE e.id = :id';
+      $this->_em->createQuery($dql)->setParameters([
+        'idN' => $id, 'id' => $pza->getId()
+      ])->execute();
+    }
+    // $connDb = $this->getEntityManager()->getConnection();
+    // $connDb->prepare('ALTER TABLE my_table AUTO_INCREMENT = 100;')->executeStatement();
   }
 }

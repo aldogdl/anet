@@ -2,6 +2,9 @@
 
 namespace App\Controller\Harbi;
 
+use App\Repository\AutosRegRepository;
+use App\Repository\OrdenesRepository;
+use App\Repository\OrdenPiezasRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -48,4 +51,24 @@ class PostController extends AbstractController
 		return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => 'save']);
 	}
 
+	#[Route('harbi/set-orden/', methods:['post'])]
+	public function setOrden(
+	  Request $req, OrdenesRepository $ordEm, AutosRegRepository $autoEm
+	): Response
+	{
+	  $data = $this->toArray($req, 'data');
+	  $autoEm->regAuto($data);
+	  $result = $ordEm->setOrden($data);
+	  return $this->json($result);
+	}
+	
+  #[Route('harbi/set-pieza/', methods:['post'])]
+  public function setPieza(
+    Request $req, OrdenPiezasRepository $pzasEm,
+  ): Response
+  {
+    $data = $this->toArray($req, 'data');
+    $result = $pzasEm->setPieza($data);
+    return $this->json($result);
+  }
 }
