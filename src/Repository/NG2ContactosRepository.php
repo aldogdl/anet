@@ -218,6 +218,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         $buildCurc = false;
       }
     }
+    
     $obj->setPassword($password);
     $obj->setNombre($data['nombre']);
     $obj->setIsCot($data['isCot']);

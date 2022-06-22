@@ -76,20 +76,14 @@ class ScmService
   /**
    * @see
   */
-  public function setNewMsg(array $data)
+  public function setNewMsg(int $idCamp)
   {
     $file = $this->getContent();
     $result = false;
-
-    if(!array_key_exists($data['target'], $file)) {
-      $file[$data['target']][] = $data['idCamp'];
+    $has = in_array($idCamp, $file);
+    if($has === false) {
+      $file[] = $idCamp;
       $result = true;
-    }else{
-      $has = in_array($data['idCamp'], $file[$data['target']]);
-      if($has === false) {
-        $file[$data['target']][] = $data['idCamp'];
-        $result = true;
-      }
     }
     if($result) {
       $this->flush($file);

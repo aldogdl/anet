@@ -74,27 +74,4 @@ class CentinelaController extends AbstractController
     return $this->json($result);
   }
 
-  /**
-   * Indicamos al centinela que hay una nueva orden en busqueda de cotizaciones
-   */
-  #[Route('scp/centinela/build-status-bskpzas/', methods:['post'])]
-  public function buildStatusForBuscarPiezas(
-    Request $req, CentinelaService $centinela, OrdenPiezasRepository $pzasEm,
-    ScmService $scmServ
-  ): Response
-  {
-    $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
-    $data = $this->toArray($req, 'data');
-
-    $pzasEm->changeSttPiezasTo($data['orden'], $data);
-    $isOk = $centinela->buildStatusForBuscarPiezas($data);
-    $scmServ->setNewMsg($data);
-    if($isOk) {
-      $result['abort']= false;
-      $result['msg']  = 'ok';
-      $result['body'] = 'ok';
-    }
-    return $this->json($result);
-  }
-
 }

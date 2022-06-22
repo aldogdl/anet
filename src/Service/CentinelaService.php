@@ -212,20 +212,7 @@ class CentinelaService
   }
 
   /** */
-  public function setNewSttToPieza(array $data): bool
-  {
-    $file = $this->getContent();
-    $result = false;
-    if(array_key_exists('version', $file)) {
-      //TODO
-      $this->flush($file);
-      $result = true;
-    }
-    return $result;
-  }
-
-  /** */
-  public function buildStatusForBuscarPiezas(array $data): bool
+  public function setNewSttToPiezas(array $data): bool
   {
     $file = $this->getContent();
     $result = false;
@@ -237,9 +224,8 @@ class CentinelaService
         for ($i=0; $i < $rota; $i++) {
           $pza = (string) $file['piezas'][$ord][$i];
           if(array_key_exists($pza, $file['stt'])) {
-            $file['stt'][$pza]['est'] = $data['est'];
-            $file['stt'][$pza]['stt'] = $data['stt'];
-            $file['stt'][$pza]['ctz'] = $data['cotz'];
+            $file['stt'][$pza]['e'] = $data['est'];
+            $file['stt'][$pza]['s'] = $data['stt'];
           }
         }
       }

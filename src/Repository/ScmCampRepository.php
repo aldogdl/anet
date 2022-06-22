@@ -62,10 +62,7 @@ class ScmCampRepository extends ServiceEntityRepository
 		try {
 			$this->_em->persist($obj);
 			$this->_em->flush();
-			$this->result['body'] = [
-				'id' => $obj->getId(),
-				'target' => $obj->getTarget(),
-			];
+			$this->result['body'] = $obj->getId();
 		} catch (\Throwable $th) {
 			$this->result['abort'] = true;
 			$this->result['msg'] = $th->getMessage();

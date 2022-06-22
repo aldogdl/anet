@@ -104,7 +104,9 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
 
-  /** */
+  /**
+   * Usado solo para guardar una campaña de prueba 
+  */
 	#[Route('harbi/set-test-camping/{idC}/{target}/{idT}/', methods:['get'])]
 	public function setTestCamping(
 		ScmCampRepository $em, $idC, $target, $idT
