@@ -81,8 +81,8 @@ class ScmCampRepository extends ServiceEntityRepository
     $rem = sprintf($txt, 'rem');
     $emp = 'partial emp.{id, nombre, domicilio, cp, telFijo, isLocal, latLng}';
     $dql = 'SELECT c, cm, '.$emi.', '.$rem.', '.$emp.' FROM '.ScmCamp::class . ' c '.
-    'JOIN c.emiter rem '.
-    'JOIN c.remiter emi '.
+    'JOIN c.emiter emi '.
+    'JOIN c.remiter rem '.
     'JOIN c.campaing cm '.
     'JOIN emi.empresa emp '.
     'WHERE c.id IN (:ids) '.
