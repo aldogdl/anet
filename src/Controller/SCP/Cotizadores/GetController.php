@@ -10,14 +10,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class GetController extends AbstractController
 {
-    #[Route('scp/cotizadores/get-all-cotizadores/', methods:['get'])]
-    public function getAllCotizadores(NG2ContactosRepository $contactos): Response
-    {   
-        $dql = $contactos->getAllCotizadores();
-        return $this->json([
-            'abort'=>false, 'msg' => 'ok',
-            'body' => $dql->getScalarResult()
-        ]);
-    }
+	
+	#[Route('scp/cotizadores/get-all-cotizadores/', methods:['get'])]
+	public function getAllCotizadores(NG2ContactosRepository $contactos): Response
+	{   
+		$dql = $contactos->getAllCotizadores();
+		return $this->json(['abort'=>false,'msg'=>'ok','body'=>$dql->getScalarResult()]);
+	}
 
 }

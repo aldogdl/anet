@@ -23,104 +23,109 @@ use App\Entity\NG2Contactos;
 class NG2ContactosRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
 
-    public $result = ['abort' => false, 'msg' => 'ok', 'body' => ''];
-    public $passwordHasher;
+  public $result = ['abort' => false, 'msg' => 'ok', 'body' => ''];
+  public $passwordHasher;
 
-    public function __construct(ManagerRegistry $registry, UserPasswordHasherInterface $passwordHasher)
-    {
-        parent::__construct($registry, NG2Contactos::class);
-        $this->passwordHasher = $passwordHasher;
+  public function __construct(ManagerRegistry $registry, UserPasswordHasherInterface $passwordHasher)
+  {
+      parent::__construct($registry, NG2Contactos::class);
+      $this->passwordHasher = $passwordHasher;
+  }
+
+  /**
+   * @throws ORMException
+   * @throws OptimisticLockException
+   */
+  public function add(NG2Contactos $entity, bool $flush = true): void
+  {
+      $this->_em->persist($entity);
+      if ($flush) {
+          $this->_em->flush();
+      }
+  }
+
+  /**
+   * @throws ORMException
+   * @throws OptimisticLockException
+   */
+  public function remove(NG2Contactos $entity, bool $flush = true): void
+  {
+      $this->_em->remove($entity);
+      if ($flush) {
+          $this->_em->flush();
+      }
+  }
+
+  ///
+  public function toArray(NG2Contactos $entity): array
+  {
+    return [
+      'id' => $entity->getId(),
+      'nombre' => $entity->getNombre(),
+      'curc' => $entity->getCurc(),
+      'roles' => $entity->getRoles(),
+    ];
+  }
+
+  /**
+   * Used to upgrade (rehash) the user's password automatically over time.
+   */
+  public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
+  {
+    if (!$user instanceof NG2Contactos) {
+      throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function add(NG2Contactos $entity, bool $flush = true): void
-    {
-        $this->_em->persist($entity);
-        if ($flush) {
-            $this->_em->flush();
-        }
-    }
+    $user->setPassword($newHashedPassword);
+    $this->_em->persist($user);
+    $this->_em->flush();
+  }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function remove(NG2Contactos $entity, bool $flush = true): void
-    {
-        $this->_em->remove($entity);
-        if ($flush) {
-            $this->_em->flush();
-        }
+  /**
+   *
+   */
+  public function safeTokenMessangings(array $data): void
+  {
+    $user = $this->_em->find(NG2Contactos::class, $data['user']);
+    if($user) {
+      if($data['toSafe'] == 'web') {
+          $user->setKeyWeb($data['token']);
+      }else{
+          $user->setKeyCel($data['token']);
+      }
+      $this->_em->persist($user);
+      $this->_em->flush();
     }
+  }
 
-    ///
-    public function toArray(NG2Contactos $entity): array
-    {
-        return [
-            'id' => $entity->getId(),
-            'nombre' => $entity->getNombre(),
-            'curc' => $entity->getCurc(),
-            'roles' => $entity->getRoles(),
-        ];
+  /**
+   * Recuperamos todas las empresas y sus contactos que son cotizadores
+   */
+  public function getAllCotizadores(bool $isMini = false): \Doctrine\ORM\Query
+  {   
+    if($isMini) {
+      $dql = 'SELECT partial c.{id, curc, nombre, cargo, celular}, partial e.{id, nombre, isLocal} ';
+    }else{
+      $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e ';
     }
+    $dql = $dql . 'FROM '. NG2Contactos::class . ' c '.
+    'JOIN c.empresa e '.
+    'WHERE c.isCot = :verdadero '.
+    'ORDER BY e.nombre ASC';
+    return $this->_em->createQuery($dql)->setParameter('verdadero', true);
+  }
 
-    /**
-     * Used to upgrade (rehash) the user's password automatically over time.
-     */
-    public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
-    {
-        if (!$user instanceof NG2Contactos) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
-        }
-
-        $user->setPassword($newHashedPassword);
-        $this->_em->persist($user);
-        $this->_em->flush();
-    }
-
-    /**
-     *
-     */
-    public function safeTokenMessangings(array $data): void
-    {
-        $user = $this->_em->find(NG2Contactos::class, $data['user']);
-        if($user) {
-            if($data['toSafe'] == 'web') {
-                $user->setKeyWeb($data['token']);
-            }else{
-                $user->setKeyCel($data['token']);
-            }
-            $this->_em->persist($user);
-            $this->_em->flush();
-        }
-    }
-
-    /**
-     * Recuperamos todas las empresas y sus contactos que son cotizadores
-     */
-    public function getAllCotizadores(): \Doctrine\ORM\Query
-    {
-        $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e FROM '. NG2Contactos::class .' c '.
-        'JOIN c.empresa e '.
-        'WHERE c.isCot = :verdadero '.
-        'ORDER BY e.nombre ASC';
-        return $this->_em->createQuery($dql)->setParameter('verdadero', true);
-    }
-
-    /**
-     * Recuperamos el contacto por su ID
-     */
-    public function getContactoById(int $idContac): \Doctrine\ORM\Query
-    {
-        $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e FROM '. NG2Contactos::class .' c '.
-        'JOIN c.empresa e '.
-        'WHERE c.id = :idC '.
-        'ORDER BY e.nombre ASC';
-        return $this->_em->createQuery($dql)->setParameter('idC', $idContac);
-    }
+  /**
+   * Recuperamos el contacto por su ID
+   */
+  public function getContactoById(int $idContac): \Doctrine\ORM\Query
+  {
+    $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e FROM '. NG2Contactos::class .' c '.
+    'JOIN c.empresa e '.
+    'WHERE c.id = :idC '.
+    'ORDER BY e.nombre ASC';
+    return $this->_em->createQuery($dql)->setParameter('idC', $idContac);
+  }
 
   /**
    * Recuperamos todas las empresas y sus contactos de tipo...

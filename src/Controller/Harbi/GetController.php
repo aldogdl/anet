@@ -180,5 +180,10 @@ class GetController extends AbstractController
 		return $this->json($response);
 	}
 
-
+  #[Route('harbi/get-all-cotizadores/', methods:['get'])]
+  public function getAllCotizadores(NG2ContactosRepository $contactos): Response
+  {   
+    $dql = $contactos->getAllCotizadores(true);
+    return $this->json(['abort'=>false,'msg'=>'ok','body'=>$dql->getScalarResult()]);
+  }
 }
