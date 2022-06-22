@@ -164,19 +164,27 @@ class OrdenesRepository extends ServiceEntityRepository
   }
 
   /**
-   * from => :Centinela, :SCP
+   * from => :Centinela, :SCP, :Harbi
    */
-  public function getDataOrdenById(string $idOrden, bool $withOwn = true): \Doctrine\ORM\Query
+  public function getDataOrdenById(
+    string $idOrden, bool $withOwn = true, bool $withPza = false
+  ): \Doctrine\ORM\Query
   {
     $dql = 'SELECT o, mk, md ';
     if($withOwn) {
       $dql = $dql . ', partial u.{id, nombre, cargo, celular, roles}, partial e.{id, nombre} ';
+    }
+    if($withPza) {
+      $dql = $dql . ', partial pzs.{id, piezaName, origen} ';
     }
     $dql = $dql . 'FROM ' . Ordenes::class . ' o '.
     'JOIN o.marca mk '.
     'JOIN o.modelo md ';
     if($withOwn) {
       $dql = $dql . 'JOIN o.own u JOIN u.empresa e ';
+    }
+    if($withPza) {
+      $dql = $dql . 'JOIN o.piezas pzs ';
     }
     $dql = $dql . 'WHERE o.id = :id ';
     return $this->_em->createQuery($dql)->setParameter('id', $idOrden);

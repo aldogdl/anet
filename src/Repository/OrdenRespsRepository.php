@@ -82,11 +82,13 @@ class OrdenRespsRepository extends ServiceEntityRepository
 		return $this->result;
 	}
 
-	/** */
+	/**
+	 * Obtenemos la orden sin dueño pero con sus piezas
+	*/
 	private function getOrden(int $id): array
 	{
-		$dql = $this->_em->getRepository(Ordenes::class)->getDataOrdenById($id, false);
-		$orden = $dql->getScalarResult();
+		$dql = $this->_em->getRepository(Ordenes::class)->getDataOrdenById($id, false, true);
+		$orden = $dql->getArrayResult();
 		return ($orden) ? $orden[0] : [];
 	}
 }
