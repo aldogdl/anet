@@ -33,6 +33,9 @@ class Campaings
     #[ORM\Column(type: 'string', length: 50)]
     private $msgTxt;
 
+    #[ORM\Column(type: 'boolean')]
+    private $isConFilt;
+
     public function __construct()
     {
         $this->camps = new ArrayCollection();
@@ -129,6 +132,18 @@ class Campaings
     public function setMsgTxt(string $msgTxt): self
     {
         $this->msgTxt = $msgTxt;
+
+        return $this;
+    }
+
+    public function getIsConFilt(): ?bool
+    {
+        return $this->isConFilt;
+    }
+
+    public function setIsConFilt(bool $isConFilt): self
+    {
+        $this->isConFilt = $isConFilt;
 
         return $this;
     }

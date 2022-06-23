@@ -36,6 +36,9 @@ class NG1Empresas
     #[ORM\OneToMany(mappedBy: 'empresa', targetEntity: NG2Contactos::class, orphanRemoval: true)]
     private $contactos;
 
+    #[ORM\OneToOne(mappedBy: 'cot', targetEntity: Filtros::class, cascade: ['persist', 'remove'])]
+    private $filtros;
+
     public function __construct()
     {
         $this->contactos = new ArrayCollection();
@@ -144,6 +147,23 @@ class NG1Empresas
                 $contacto->setEmpresa(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getFiltros(): ?Filtros
+    {
+        return $this->filtros;
+    }
+
+    public function setFiltros(Filtros $filtros): self
+    {
+        // set the owning side of the relation if necessary
+        if ($filtros->getCot() !== $this) {
+            $filtros->setCot($this);
+        }
+
+        $this->filtros = $filtros;
 
         return $this;
     }
