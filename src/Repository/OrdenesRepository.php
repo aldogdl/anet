@@ -218,6 +218,30 @@ class OrdenesRepository extends ServiceEntityRepository
       return $this->result;
   }
 
+  /** */
+  public function getOrdenesAndPiezas(int $page): \Doctrine\ORM\Query
+  {
+    $auto = 'partial %s.{id, nombre %s}, ';
+    $ct = 'partial %s.{id, curc, nombre, celular}, ';
+    $own = sprintf($ct, 'c');
+    $avo = sprintf($ct, 'a');
+    $mrk = sprintf($auto, 'mk', ', logo');
+    $mdl = sprintf($auto, 'md', '');
+    $e = 'partial e.{id, nombre} ';
+
+    $dql = 'SELECT o, p, '.$own.$avo.$mrk.$mdl.$e.'FROM ' . Ordenes::class . ' o ' .
+    'JOIN o.marca mk '.
+    'JOIN o.modelo md '.
+    'JOIN o.own c '.
+    'JOIN o.avo a '.
+    'JOIN c.empresa e '.
+    'JOIN o.piezas p '.
+    'WHERE o.est = 3 '.
+    '';
+
+    return $this->_em->createQuery($dql);
+  }
+
   ///
   private function revisarIdTable(Ordenes $ord, int $id)
   {
@@ -232,4 +256,5 @@ class OrdenesRepository extends ServiceEntityRepository
     // $connDb = $this->getEntityManager()->getConnection();
     // $connDb->prepare('ALTER TABLE my_table AUTO_INCREMENT = 100;')->executeStatement();
   }
+
 }

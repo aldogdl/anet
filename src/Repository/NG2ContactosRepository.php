@@ -104,12 +104,13 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
   public function getAllCotizadores(bool $isMini = false): \Doctrine\ORM\Query
   {   
     if($isMini) {
-      $dql = 'SELECT partial c.{id, curc, nombre, cargo, celular}, partial e.{id, nombre, isLocal} ';
+      $dql = 'SELECT partial c.{id, curc, nombre, cargo, celular}, partial e.{id, nombre, isLocal}, f ';
     }else{
-      $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e ';
+      $dql = 'SELECT partial c.{id, curc, roles, nombre, isCot, cargo, celular}, e, f ';
     }
     $dql = $dql . 'FROM '. NG2Contactos::class . ' c '.
     'JOIN c.empresa e '.
+    'LEFT JOIN e.filtros f '.
     'WHERE c.isCot = :verdadero '.
     'ORDER BY e.nombre ASC';
     return $this->_em->createQuery($dql)->setParameter('verdadero', true);

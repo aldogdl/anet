@@ -64,14 +64,11 @@ class GetController extends AbstractController
         return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => ['nop' => 'nop']]);
     }
 
-    /** sin checar poder borrar */
-    #[Route('api/cotizo/get-ordenes-by-own-and-seccion/{idUser}/{est}/', methods:['get'])]
-    public function getOrdenesByOwnAndEstacion(
-        OrdenesRepository $ordenes, int $idUser, String $est
-    ): Response
+    #[Route('cotizo/get-ordenes-and-piezas/{page}/', defaults:['page' => 1], methods:['get'])]
+    public function getOrdenesAndPiezas(OrdenesRepository $ordenes, int $page): Response
     {
-        $dql = $ordenes->getOrdenesByOwnAndEstacion($idUser, $est);
-        $ordens = $dql->getScalarResult();
+        $dql = $ordenes->getOrdenesAndPiezas($page);
+        $ordens = $dql->getArrayResult();
         return $this->json(['abort' => false, 'body' => $ordens]);
     }
 
@@ -84,50 +81,6 @@ class GetController extends AbstractController
         $dql = $piezas->getPiezasByListOrdenes($idsOrdenes);
         $pzas = $dql->getScalarResult();
         return $this->json(['abort' => false, 'body' => $pzas]);
-    }
-
-    /** sin checar poder borrar */
-    #[Route('cotizo/open-share-img-device/{filename}/', methods:['get'])]
-    public function openShareImgDevice(CotizaService $cotService, String $filename): Response
-    {
-        $cotService->openShareImgDevice($filename);
-        return $this->json(['abort' => false]);
-    }
-
-    /** sin checar poder borrar */
-    #[Route('api/cotizo/check-share-img-device/{filename}/{tipo}/', methods:['get'])]
-    public function checkShareImgDevice(CotizaService $cotService, String $filename, String $tipo): Response
-    {
-        $result = $cotService->checkShareImgDevice($filename, $tipo);
-        return $this->json([
-            'abort' => false, 'msg' => $tipo, 'body' => $result
-        ]);
-    }
-
-    /** sin checar poder borrar */
-    #[Route('api/cotizo/fin-share-img-device/{filename}/', methods:['get'])]
-    public function finShareImgDevice(CotizaService $cotService, String $filename): Response
-    {
-        $result = $cotService->finShareImgDevice($filename);
-        return $this->json([
-            'abort' => false, 'body' => $result
-        ]);
-    }
-
-    /** sin checar poder borrar */
-    #[Route('api/cotizo/del-share-img-device/{filename}/', methods:['get'])]
-    public function delShareImgDevice(CotizaService $cotService, String $filename): Response
-    {
-        $cotService->delShareImgDevice($filename);
-        return $this->json(['abort' => false, 'body' => '']);
-    }
-
-    /** sin checar poder borrar */
-    #[Route('api/cotizo/del-img-of-orden-tmp/{filename}/', methods:['get'])]
-    public function removeImgOfOrdenToFolderTmp(CotizaService $cotService, String $filename): Response
-    {
-        $cotService->removeImgOfOrdenToFolderTmp($filename);
-        return $this->json(['abort' => false, 'body' => '']);
     }
 
     /** sin checar poder borrar */
