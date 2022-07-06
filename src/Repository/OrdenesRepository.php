@@ -59,12 +59,17 @@ class OrdenesRepository extends ServiceEntityRepository
   public function setOrden(array $orden): array
   {
     if($orden['id'] != 0) {
-      if(array_key_exists('local', $orden)) {
-        $entity = new Ordenes();
-        $entity->setId($orden['id']);
-        $entity->setOwn( $this->_em->getPartialReference(NG2Contactos::class, $orden['own']) );
+      $entity = $this->_em->find(Ordenes::class, $orden['id']);
+      if(!$entity) {
+        if(array_key_exists('local', $orden)) {
+          $entity = new Ordenes();
+          $entity->setOwn( $this->_em->getPartialReference(NG2Contactos::class, $orden['own']) );
+        }
       }else{
-        $entity = $this->_em->find(Ordenes::class, $orden['id']);
+        $this->result['abort'] = true;
+        $this->result['msg'] = 'La Orden '.$orden['id'].' ya existe, no se guardaron los datos';
+        $this->result['body']= 'Error al guarda la orden '.$orden['id'];
+        return $this->result;
       }
     }else{
       $entity = new Ordenes();
@@ -249,12 +254,30 @@ class OrdenesRepository extends ServiceEntityRepository
       $dql = 'UPDATE ' . Ordenes::class . ' e '.
       'SET e.id = :idN '.
       'WHERE e.id = :id';
-      $this->_em->createQuery($dql)->setParameters([
-        'idN' => $id, 'id' => $ord->getId()
-      ])->execute();
+      try {
+        $this->_em->createQuery($dql)->setParameters([
+          'idN' => $id, 'id' => $ord->getId()
+        ])->execute();
+      } catch (\Throwable $th) {
+        $this->result['abort'] = true;
+        $this->result['msg'] = $th->getMessage();
+        $this->borrarAndCompactar($ord);
+      } 
     }
-    // $connDb = $this->getEntityManager()->getConnection();
-    // $connDb->prepare('ALTER TABLE my_table AUTO_INCREMENT = 100;')->executeStatement();
+  }
+
+  /** */
+  public function borrarAndCompactar(Ordenes $obj)
+  {
+    $this->_em->remove($obj);
+    $this->flush();
+
+    $dql = 'SELECT COUNT(o.id) FROM ' . Ordenes::class . ' o ';
+    $res = $this->_em->createQuery($dql)->getSingleScalarResult();
+    if($res > 0) {
+      $connDb = $this->getEntityManager()->getConnection();
+      $connDb->prepare('ALTER TABLE '.Ordenes::class.' AUTO_INCREMENT = '.$res.';')->executeStatement();
+    }
   }
 
 }

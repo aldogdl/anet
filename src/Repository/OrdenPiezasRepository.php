@@ -85,7 +85,13 @@ class OrdenPiezasRepository extends ServiceEntityRepository
     $pieza->setOrden( $this->_em->getPartialReference(Ordenes::class, $data['orden']) );
     if($data['id'] != 0) {
       if(array_key_exists('local', $data)) {
-        $pieza->setId($data['id']);
+        $entity = $this->_em->find(OrdenPiezas::class, $data['id']);
+        if($entity) {
+          $this->result['abort'] = true;
+          $this->result['msg'] = 'La Pieza '.$data['id'].' ya existe, no se guardaron los datos';
+          $this->result['body']= 'Error al guarda la pieza de la orden '.$data['orden'];
+          return $this->result;
+        }
       }else{
         $dql = $this->getPiezasByIdHive($data['id']);
         $hasPza = $dql->getResult();
@@ -201,17 +207,35 @@ class OrdenPiezasRepository extends ServiceEntityRepository
   }
 
   ///
-  private function revisarIdTable(OrdenPiezas $pza, int $id)
+  private function revisarIdTable(OrdenPiezas $ord, int $id)
   {
-    if($pza->getId() != $id) {
+    if($ord->getId() != $id) {
       $dql = 'UPDATE ' . OrdenPiezas::class . ' e '.
       'SET e.id = :idN '.
       'WHERE e.id = :id';
-      $this->_em->createQuery($dql)->setParameters([
-        'idN' => $id, 'id' => $pza->getId()
-      ])->execute();
+      try {
+        $this->_em->createQuery($dql)->setParameters([
+          'idN' => $id, 'id' => $ord->getId()
+        ])->execute();
+      } catch (\Throwable $th) {
+        $this->result['abort'] = true;
+        $this->result['msg'] = $th->getMessage();
+        $this->borrarAndCompactar($ord);
+      } 
     }
-    // $connDb = $this->getEntityManager()->getConnection();
-    // $connDb->prepare('ALTER TABLE my_table AUTO_INCREMENT = 100;')->executeStatement();
+  }
+
+  /** */
+  public function borrarAndCompactar(OrdenPiezas $obj)
+  {
+    $this->_em->remove($obj);
+    $this->flush();
+
+    $dql = 'SELECT COUNT(p.id) FROM ' . OrdenPiezas::class . ' p ';
+    $res = $this->_em->createQuery($dql)->getSingleScalarResult();
+    if($res > 0) {
+      $connDb = $this->getEntityManager()->getConnection();
+      $connDb->prepare('ALTER TABLE '.OrdenPiezas::class.' AUTO_INCREMENT = '.$res.';')->executeStatement();
+    }
   }
 }
