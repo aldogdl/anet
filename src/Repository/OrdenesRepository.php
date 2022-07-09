@@ -224,6 +224,30 @@ class OrdenesRepository extends ServiceEntityRepository
   }
 
   /** */
+  public function getOrdenAndPieza(int $id): \Doctrine\ORM\Query
+  {
+    $auto = 'partial %s.{id, nombre %s}, ';
+    $ct = 'partial %s.{id, curc, nombre, celular}, ';
+    $own = sprintf($ct, 'c');
+    $avo = sprintf($ct, 'a');
+    $mrk = sprintf($auto, 'mk', ', logo');
+    $mdl = sprintf($auto, 'md', '');
+    $e = 'partial e.{id, nombre} ';
+
+    $dql = 'SELECT o, p, '.$own.$avo.$mrk.$mdl.$e.'FROM ' . Ordenes::class . ' o ' .
+    'JOIN o.marca mk '.
+    'JOIN o.modelo md '.
+    'JOIN o.own c '.
+    'JOIN o.avo a '.
+    'JOIN c.empresa e '.
+    'JOIN o.piezas p '.
+    'WHERE o.id = :id '.
+    '';
+
+    return $this->_em->createQuery($dql)->setParameter('id', $id);
+  }
+
+  /** */
   public function getOrdenesAndPiezas(int $page): \Doctrine\ORM\Query
   {
     $auto = 'partial %s.{id, nombre %s}, ';

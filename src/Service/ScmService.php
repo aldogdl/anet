@@ -2,14 +2,17 @@
 
 namespace App\Service;
 
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\Store\FlockStore;
 
 class ScmService
 {
   private $name = 'targets';
+  private $scm = 'scm';
   private $params;
   private $filesystem;
   private $lock;
@@ -88,6 +91,58 @@ class ScmService
     if($result) {
       $this->flush($file);
     }
+  }
+
+  /**
+   * Revisamos si hay archivoa que indican que un receiver ya descargo y vio
+   * la solicitud de cotizacion enviada por link por whatsapp
+  */
+  public function hasRegsOf(String $ext): bool
+  {
+    $path = Path::normalize($this->params->get($this->scm));
+
+    $finder = new Finder();
+    $finder->files()->in($path)->name('*.'.$ext);
+    if ($finder->hasResults()) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Guardamos un archivo que indica:
+   * -> Que un receiver ya descargo y vio
+   * -> Que el receiver ya respondio 
+   * la solicitud de cotizacion enviada por link por whatsapp.
+  */
+  public function setNewRegType(String $filename)
+  {
+    $path = Path::normalize($this->params->get($this->scm));
+    if(!$this->filesystem->exists($path)) {
+      $this->filesystem->mkdir($path);
+    }
+    $this->filesystem->dumpFile($path .'/'.$filename, '');
+  }
+
+  /**
+   * Recuperamos todos los archivoa que indican:
+   * -> Que un receiver ya descargo
+   * -> Que un receiver ya respondio 
+   * y vio la solicitud de cotizacion enviada por link por whatsapp
+  */
+  public function getAllRegsOf(String $ext): array
+  {
+    $files = [];
+    $path = Path::normalize($this->params->get($this->scm));
+
+    $finder = new Finder();
+    $finder->files()->in($path)->name('*.'.$ext)->sortByAccessedTime();
+    if ($finder->hasResults()) {
+      foreach ($finder as $file) {
+        $files[] = $file->getFilenameWithoutExtension();
+      }
+    }
+    return $files;
   }
 
 }

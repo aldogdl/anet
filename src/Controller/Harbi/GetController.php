@@ -59,7 +59,7 @@ class GetController extends AbstractController
    * Checamos la ultima version del archivo de seguimiento de las ordenes
    */
   #[Route('harbi/check-changes/{lastVersion}/', methods:['get'])]
-  public function checkCheckChanges(
+  public function checkChanges(
     CentinelaService $centinela, ScmService $scm,
     FiltrosService $filtros, $lastVersion
   ): Response
@@ -69,13 +69,19 @@ class GetController extends AbstractController
     $isSame = $centinela->isSameVersion($lastVersion);
     $result['hay'] = !$isSame;
 
+    $scmSee = $scm->hasRegsOf('see');
+    $scmResp = $scm->hasRegsOf('rsp');
+
     $scm = $scm->getContent(true);
     if(count($scm) > 0) { $result['hay'] = true; }
 
     $filtros = $filtros->getContent(true);
     if(count($filtros) > 0) { $result['hay'] = true; }
 
-    $result['changes'] = ['scm' => $scm, 'filtros' => $filtros, 'centinela' => !$isSame];
+    $result['changes'] = [
+      'scm' => $scm, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
+      'filtros' => $filtros, 'centinela' => !$isSame
+    ];
 
     return $this->json(['abort'=>false, 'body' => $result]);
   }
@@ -124,6 +130,15 @@ class GetController extends AbstractController
     $em->setNewCampaing($data);
     return $this->json(['ok' => 'Campaña creada']);
   }
+
+	/** */
+	#[Route('harbi/get-filesreg-of/{type}/', methods:['get'])]
+	public function getFilesRegOf(ScmService $scm, $type): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $r['body'] = $scm->getAllRegsOf($type);
+		return $this->json($r);
+	}
 
 	/** */
 	#[Route('harbi/get-campaings/{campas}/', methods:['get'])]

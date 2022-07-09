@@ -47,7 +47,11 @@ class ScmReceiversRepository extends ServiceEntityRepository
         }
     }
 
-    /***/
+    /**
+     * Construimos el registro para crear un id unico, el cual sera guardado en
+     * el servidor remoto por cada proveedor como una key foranea, solo para
+     * identificar el registro local creado por el SCM y el remoto echo por el receiver.
+    */
     public function setRegMsgSended(array $data)
     {
       $obj = new ScmReceivers();
@@ -55,5 +59,6 @@ class ScmReceiversRepository extends ServiceEntityRepository
       $obj->setReceiver($this->_em->getPartialReference(NG2Contactos::class, $data['receiver']));
       $obj->setStt($data['stt']);
       $this->add($obj, true);
+      return $obj->getId();
     }
 }
