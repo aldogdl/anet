@@ -140,6 +140,7 @@ class ScmService
     if ($finder->hasResults()) {
       foreach ($finder as $file) {
         $files[] = $file->getFilenameWithoutExtension();
+        $this->filesystem->remove($file->getRealPath());
       }
     }
     return $files;

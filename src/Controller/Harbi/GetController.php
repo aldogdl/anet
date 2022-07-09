@@ -13,6 +13,7 @@ use App\Repository\OrdenesRepository;
 use App\Repository\OrdenPiezasRepository;
 use App\Repository\OrdenRespsRepository;
 use App\Repository\ScmCampRepository;
+use App\Repository\ScmReceiversRepository;
 use App\Service\CentinelaService;
 use App\Service\FiltrosService;
 use App\Service\ScmService;
@@ -131,12 +132,27 @@ class GetController extends AbstractController
     return $this->json(['ok' => 'Campaña creada']);
   }
 
-	/** */
+	/**
+   * Recuperamos los archivos que representan registros de descargas, vistas y
+   * respuestas de los cotizadores ante los mensajes enviados por whatsapp
+  */
 	#[Route('harbi/get-filesreg-of/{type}/', methods:['get'])]
-	public function getFilesRegOf(ScmService $scm, $type): Response
+	public function getFilesRegOf(ScmService $scm, String $type): Response
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $r['body'] = $scm->getAllRegsOf($type);
+		return $this->json($r);
+	}
+
+	/**
+   * Actualizamos los status de los registros que representan descargas, vistas y
+   * respuestas de los cotizadores ante los mensajes enviados por whatsapp
+  */
+	#[Route('harbi/set-regs-byids/{ids}/{stt}/', methods:['get'])]
+	public function setSttRegsByIds(ScmReceiversRepository $em, String $ids, String $stt): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $em->setSttRegsByIds($ids, $stt);
 		return $this->json($r);
 	}
 
