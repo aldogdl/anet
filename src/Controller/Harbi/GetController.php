@@ -65,23 +65,16 @@ class GetController extends AbstractController
     FiltrosService $filtros, $lastVersion
   ): Response
   {
-    $result = ['hay' => false];
 
     $isSame = $centinela->isSameVersion($lastVersion);
-    $result['hay'] = !$isSame;
-
     $scmSee = $scm->hasRegsOf('see');
     $scmResp = $scm->hasRegsOf('rsp');
-
     $scm = $scm->getContent(true);
-    if(count($scm) > 0) { $result['hay'] = true; }
-
     $filtros = $filtros->getContent(true);
-    if(count($filtros) > 0) { $result['hay'] = true; }
 
-    $result['changes'] = [
-      'scm' => $scm, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
-      'filtros' => $filtros, 'centinela' => !$isSame
+    $result = [
+      'centinela' => !$isSame, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
+      'scm' => $scm, 'filtros' => $filtros
     ];
 
     return $this->json(['abort'=>false, 'body' => $result]);
