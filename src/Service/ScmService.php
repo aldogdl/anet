@@ -100,7 +100,9 @@ class ScmService
   public function hasRegsOf(String $ext): bool
   {
     $path = Path::normalize($this->params->get($this->scm));
-
+    if(!$this->filesystem->exists($path)) {
+      $this->filesystem->mkdir($path);
+    }
     $finder = new Finder();
     $finder->files()->in($path)->name('*.'.$ext);
     if ($finder->hasResults()) {
@@ -134,7 +136,9 @@ class ScmService
   {
     $files = [];
     $path = Path::normalize($this->params->get($this->scm));
-
+    if(!$this->filesystem->exists($path)) {
+      $this->filesystem->mkdir($path);
+    }
     $finder = new Finder();
     $finder->files()->in($path)->name('*.'.$ext)->sortByAccessedTime();
     if ($finder->hasResults()) {
