@@ -41,8 +41,8 @@ class GetController extends AbstractController
 		]);
 	}
 
-	/** sin checar poder borrar */
-	#[Route('api/cotizo/get-user-by-campo/', methods:['get'])]
+	/** Recuperamos el id y los roles del usuario */
+	#[Route('cotizo/get-user-by-campo', methods:['get'])]
 	public function getUserByCampo(NG2ContactosRepository $contacsEm, Request $req): Response
 	{
 		$campo = $req->query->get('campo');

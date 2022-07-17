@@ -39,7 +39,7 @@ class PostController extends AbstractController
   }
 
   #[Route('api/cotiza/set-token-messaging-by-id-user/', methods:['post'])]
-  public function getUserByCampo(NG2ContactosRepository $contacsEm, Request $req): Response
+  public function setTokenMessaging(NG2ContactosRepository $contacsEm, Request $req): Response
   {
     $data = $this->toArray($req, 'data');
     $contacsEm->safeTokenMessangings($data);

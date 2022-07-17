@@ -39,6 +39,14 @@ class PostController extends AbstractController
     return $content;
   }
 
+  #[Route('cotizo/set-token-messaging-by-id-user', methods:['post'])]
+  public function setTokenMessaging(NG2ContactosRepository $contacsEm, Request $req): Response
+  {
+    $data = $this->toArray($req, 'data');
+    $contacsEm->safeTokenMessangings($data);
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => []]);
+  }
+
   #[Route('cotizo/upload-img', methods:['post'])]
   public function uploadImg(Request $req, CotizaService $cotService): Response
   {
@@ -52,14 +60,13 @@ class PostController extends AbstractController
     ]);
   }
 
-  /** sin checar poder borrar */
+  /** Guardamos la respuesta del cotizador */
   #[Route('cotizo/set-resp', methods:['post'])]
   public function setRespuesta(
     Request $req, OrdenRespsRepository $rpsEm, ScmService $scm
   ): Response
   {
     $data = $this->toArray($req, 'data');
-    file_put_contents('sabe.json', json_encode($data));
     $result = $rpsEm->setRespuesta($data);
 
     if(!$result['abort']) {
