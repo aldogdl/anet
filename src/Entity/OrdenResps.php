@@ -40,6 +40,9 @@ class OrdenResps
     #[ORM\Column(type: 'datetime_immutable')]
     private $createdAt;
 
+    #[ORM\Column(type: 'string', length: 10)]
+    private $precio;
+
     /** */
     public function __construct()
     {
@@ -150,6 +153,18 @@ class OrdenResps
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getPrecio(): ?string
+    {
+        return $this->precio;
+    }
+
+    public function setPrecio(string $precio): self
+    {
+        $this->precio = $precio;
 
         return $this;
     }
