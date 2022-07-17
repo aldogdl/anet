@@ -47,6 +47,7 @@ class OrdenResps
     public function __construct()
     {
       $this->costo = '0';
+      $this->precio = '0';
       $this->observs = '0';
       $this->fotos = [];
       $this->status = [
