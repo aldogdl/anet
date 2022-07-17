@@ -21,7 +21,7 @@ class OrdenResps
     #[ORM\JoinColumn(nullable: false)]
     private $pieza;
 
-    #[ORM\ManyToOne(targetEntity: Ng2Contactos::class)]
+    #[ORM\ManyToOne(targetEntity: NG2Contactos::class)]
     #[ORM\JoinColumn(nullable: false)]
     private $own;
 
@@ -40,13 +40,13 @@ class OrdenResps
     #[ORM\Column(type: 'datetime_immutable')]
     private $createdAt;
 
-    /***/
+    /** */
     public function __construct()
     {
       $this->costo = '0';
       $this->observs = '0';
       $this->fotos = [];
-      $this->$status = [
+      $this->status = [
         'own' => 1,
         'eval' => 0
       ];
@@ -82,12 +82,12 @@ class OrdenResps
         return $this;
     }
 
-    public function getOwn(): ?Ng2Contactos
+    public function getOwn(): ?NG2Contactos
     {
         return $this->own;
     }
 
-    public function setOwn(?Ng2Contactos $own): self
+    public function setOwn(?NG2Contactos $own): self
     {
         $this->own = $own;
 

@@ -19,16 +19,16 @@ class PostController extends AbstractController
 	 */
 	public function toArray(Request $req, String $campo): array
 	{
-			$content = $req->request->get($campo);
-			try {
-					$content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
-			} catch (\JsonException $e) {
-					throw new JsonException('No se puede decodificar el body.', $e->getCode(), $e);
-			}
-			if (!\is_array($content)) {
-					throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
-			}
-			return $content;
+		$content = $req->request->get($campo);
+		try {
+			$content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
+		} catch (\JsonException $e) {
+			throw new JsonException('No se puede decodificar el body.', $e->getCode(), $e);
+		}
+		if (!\is_array($content)) {
+			throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
+		}
+		return $content;
 	}
 
 	/**

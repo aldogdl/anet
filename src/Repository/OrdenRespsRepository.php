@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\NG2Contactos;
 use App\Entity\Ordenes;
+use App\Entity\OrdenPiezas;
 use App\Entity\OrdenResps;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
@@ -29,12 +31,14 @@ class OrdenRespsRepository extends ServiceEntityRepository
 	 * @throws ORMException
 	 * @throws OptimisticLockException
 	 */
-	public function add(OrdenResps $entity, bool $flush = true): void
+	public function add(OrdenResps $entity, bool $flush = true): int
 	{
 		$this->_em->persist($entity);
 		if ($flush) {
 			$this->_em->flush();
+			return $entity->getId();
 		}
+		return 0;
 	}
 
 	/**
@@ -47,6 +51,27 @@ class OrdenRespsRepository extends ServiceEntityRepository
 		if ($flush) {
 			$this->_em->flush();
 		}
+	}
+
+	/**
+	 * Guardamos la respuesta del cotizador
+	*/
+	public function setRespuesta(array $data): array
+	{
+		$obj = new OrdenResps();
+
+		$obj->setOrden($this->_em->getPartialReference(Ordenes::class, $data['idOrden']));
+		$obj->setPieza($this->_em->getPartialReference(OrdenPiezas::class, $data['idPieza']));
+		$obj->setOwn($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
+		$obj->setCosto($data['costo']);
+		$obj->setObservs($data['deta']);
+		$obj->setFotos($data['fotos']);
+		try {
+			$this->result['body'] = $this->add($obj);
+		} catch (\Throwable $th) {
+			$this->result = ['abort' => true, 'msg' => $th->getMessage(), 'body' => 'Error al Guardar la respuesta'];
+		}
+		return $this->result;
 	}
 
 	/** */
@@ -91,4 +116,5 @@ class OrdenRespsRepository extends ServiceEntityRepository
 		$orden = $dql->getArrayResult();
 		return ($orden) ? $orden[0] : [];
 	}
+
 }

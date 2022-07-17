@@ -65,7 +65,6 @@ class GetController extends AbstractController
     FiltrosService $filtros, $lastVersion
   ): Response
   {
-
     $isSame = $centinela->isSameVersion($lastVersion);
     $scmSee = $scm->hasRegsOf('see');
     $scmResp = $scm->hasRegsOf('rsp');

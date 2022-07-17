@@ -5,6 +5,7 @@ parameters:
     imgOrdTmp  : '%phtml%/to_orden_tmp/'
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
+    imgOrdRsp  : '%phtml%/to_orden_rsp/'
     centinela  : '%phtml%/centinela.json'
     filtros    : '%datafix%/filtros.json'
     targets    : '%datafix%/targets.json'
