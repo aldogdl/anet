@@ -142,7 +142,6 @@ class GetController extends AbstractController
     OrdenRespsRepository $rpsEm, OrdenPiezasRepository $pzaEm, $ids
   ): Response
 	{
-
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $partes = explode(',', $ids);
 		$dql = $rpsEm->getRespuestaByIds($partes);
