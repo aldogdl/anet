@@ -157,6 +157,21 @@ class OrdenPiezasRepository extends ServiceEntityRepository
   }
 
   /** */
+  public function changeSttByIdsPiezas(array $ids, array $ruta)
+  {
+    $dql = 'UPDATE ' . OrdenPiezas::class . ' o '.
+    'SET o.est = :est, o.stt = :stt '.
+    'WHERE o.id IN (:ids)';
+
+    $this->_em->createQuery($dql)->setParameters([
+        'ids' => $ids,
+        'est'=> $ruta['est'],
+        'stt'=> $ruta['stt'],
+    ])->execute();
+    $this->_em->clear();
+  }
+
+  /** */
   public function changeSttPiezasTo(int $idOrden, array $ruta)
   {
     $dql = 'UPDATE ' . OrdenPiezas::class . ' o '.

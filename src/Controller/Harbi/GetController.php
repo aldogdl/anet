@@ -136,14 +136,29 @@ class GetController extends AbstractController
 		return $this->json($r);
 	}
 
-  /** Recuperamos las respuestas y colocamos el nuevo status */
+  /** Recuperamos las respuestas y colocamos el nuevo statu a las piezas */
 	#[Route('harbi/get-resp-by-ids/{ids}', methods:['get'])]
-	public function getRespuestaByIds(OrdenRespsRepository $rpsEm, $ids): Response
+	public function getRespuestaByIds(
+    OrdenRespsRepository $rpsEm, OrdenPiezasRepository $pzaEm, $ids
+  ): Response
 	{
+
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $partes = explode(',', $ids);
 		$dql = $rpsEm->getRespuestaByIds($partes);
-    $r['body'] = $dql->getScalarResult();
+    $resps = $dql->getScalarResult();
+    $rota = count($resps);
+    if($rota > 0) {
+      $r['body'] = $resps;
+      $idPasz = [];
+      for ($i=0; $i < $rota; $i++) { 
+        $idPasz[] = $resps[$i]['p_id'];
+      }
+    }
+
+    if(count($idPasz) > 0) {
+      $pzaEm->changeSttByIdsPiezas($idPasz, ['est' => 4, 'stt' => 1]);
+    }
 		return $this->json($r);
 	}
 	
