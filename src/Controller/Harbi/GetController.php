@@ -136,6 +136,17 @@ class GetController extends AbstractController
 		return $this->json($r);
 	}
 
+  /** Recuperamos las respuestas y colocamos el nuevo status */
+	#[Route('harbi/get-resp-by-ids/{ids}', methods:['get'])]
+	public function getRespuestaByIds(OrdenRespsRepository $rpsEm, $ids): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $partes = explode(',', $ids);
+		$dql = $rpsEm->getRespuestaByIds($partes);
+    $r['body'] = $dql->getScalarResult();
+		return $this->json($r);
+	}
+	
 	/**
    * Actualizamos los status de los registros que representan descargas, vistas y
    * respuestas de los cotizadores ante los mensajes enviados por whatsapp
