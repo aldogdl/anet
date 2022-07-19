@@ -238,6 +238,31 @@ class CentinelaService
     return $result;
   }
 
+  /** */
+  public function setNewSttToPiezasByIds(array $data): bool
+  {
+    $file = $this->getContent();
+    $result = false;
+    if(array_key_exists('version', $file)) {
+
+      $rota = count($data['piezas']);
+      for ($i=0; $i < $rota; $i++) {
+        
+        $idP = ''.$data['piezas'][$i].'';
+        if(array_key_exists($idP, $file['stt'])) {
+          $file['stt'][$idP]['e'] = ''.$data['stts']['est'];
+          $file['stt'][$idP]['s'] = ''.$data['stts']['stt'];
+        }
+      }
+      if($data['version'] != 0) {
+        $file['version'] = $data['version'];
+      }
+      $this->flush($file);
+      $result = true;
+    }
+    return $result;
+  }
+
   /**
    * Checamos la version del centinela para ver si hay cambios
   */

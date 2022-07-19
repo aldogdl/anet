@@ -137,30 +137,42 @@ class GetController extends AbstractController
 	}
 
   /** Recuperamos las respuestas y colocamos el nuevo statu a las piezas */
-	#[Route('harbi/get-resp-by-ids/{ids}', methods:['get'])]
+	#[Route('harbi/get-resp-by-ids/{ids}/{ver}', methods:['get'])]
 	public function getRespuestaByIds(
-    OrdenRespsRepository $rpsEm, OrdenPiezasRepository $pzaEm, $ids
+    OrdenRespsRepository $rpsEm, OrdenPiezasRepository $pzaEm,
+    CentinelaService $centi, $ids, $ver
   ): Response
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $partes = explode(',', $ids);
+
+    // Recuperamos las respuestas
 		$dql = $rpsEm->getRespuestaByIds($partes);
-    $resps = $dql->getScalarResult();
+    $resps = $dql->getArrayResult();
+    
     $rota = count($resps);
     if($rota > 0) {
       $r['body'] = $resps;
       $idPasz = [];
       for ($i=0; $i < $rota; $i++) { 
-        $idPasz[] = $resps[$i]['p_id'];
+        $idPasz[] = $resps[$i]['pieza']['id'];
       }
     }
 
     if(count($idPasz) > 0) {
-      $pzaEm->changeSttByIdsPiezas($idPasz, ['est' => 4, 'stt' => 1]);
+      $data = [
+        'piezas' => $idPasz, 'stts' => ['est' => 4, 'stt' => 1], 'version' => $ver
+      ];
+      
+      // Cambiamos el status en la BD
+      $pzaEm->changeSttByIdsPiezas($data['piezas'], $data['stts']);
+      // Cambiamos el status en el Centinela
+      $centi->setNewSttToPiezasByIds($data);
     }
+
 		return $this->json($r);
 	}
-	
+
 	/**
    * Actualizamos los status de los registros que representan descargas, vistas y
    * respuestas de los cotizadores ante los mensajes enviados por whatsapp

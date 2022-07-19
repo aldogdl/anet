@@ -31,11 +31,14 @@ class OrdenRespsRepository extends ServiceEntityRepository
 	 * @throws ORMException
 	 * @throws OptimisticLockException
 	 */
-	public function add(OrdenResps $entity, bool $flush = true): int
+	public function add(OrdenResps $entity, bool $flush = true, bool $returnObj = false)
 	{
 		$this->_em->persist($entity);
 		if ($flush) {
 			$this->_em->flush();
+			if($returnObj) {
+				return $entity;
+			}
 			return $entity->getId();
 		}
 		return 0;
@@ -56,7 +59,7 @@ class OrdenRespsRepository extends ServiceEntityRepository
 	/**
 	 * Guardamos la respuesta del cotizador
 	*/
-	public function setRespuesta(array $data): array
+	public function setRespuesta(array $data, bool $isLocal = false): array
 	{
 		$obj = new OrdenResps();
 
@@ -66,11 +69,17 @@ class OrdenRespsRepository extends ServiceEntityRepository
 		$obj->setCosto($data['costo']);
 		$obj->setObservs($data['deta']);
 		$obj->setFotos($data['fotos']);
+
 		try {
-			$this->result['body'] = $this->add($obj);
+			$obj = $this->add($obj, true, 'obj');
+			$this->result['body'] = $obj->getId();
+			if($isLocal) {
+				$this->revisarIdTable($obj, $data['id']);
+			}
 		} catch (\Throwable $th) {
 			$this->result = ['abort' => true, 'msg' => $th->getMessage(), 'body' => 'Error al Guardar la respuesta'];
 		}
+
 		return $this->result;
 	}
 
@@ -130,4 +139,37 @@ class OrdenRespsRepository extends ServiceEntityRepository
 		return ($orden) ? $orden[0] : [];
 	}
 
+	///
+	private function revisarIdTable(OrdenResps $ord, int $id)
+	{
+		if($ord->getId() != $id) {
+			$dql = 'UPDATE ' . OrdenResps::class . ' e '.
+			'SET e.id = :idN '.
+			'WHERE e.id = :id';
+			try {
+				$this->_em->createQuery($dql)->setParameters([
+					'idN' => $id, 'id' => $ord->getId()
+				])->execute();
+
+			} catch (\Throwable $th) {
+				$this->result['abort'] = true;
+				$this->result['msg'] = $th->getMessage();
+				$this->borrarAndCompactar($ord);
+			} 
+		}
+	}
+
+	/** */
+	public function borrarAndCompactar(OrdenResps $obj)
+	{
+		$this->_em->remove($obj);
+		$this->flush();
+
+		$dql = 'SELECT COUNT(o.id) FROM ' . OrdenResps::class . ' o ';
+		$res = $this->_em->createQuery($dql)->getSingleScalarResult();
+		if($res > 0) {
+			$connDb = $this->getEntityManager()->getConnection();
+			$connDb->prepare('ALTER TABLE '.OrdenResps::class.' AUTO_INCREMENT = '.$res.';')->executeStatement();
+		}
+	}
 }

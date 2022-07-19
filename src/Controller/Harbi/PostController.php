@@ -2,15 +2,16 @@
 
 namespace App\Controller\Harbi;
 
-use App\Repository\AutosRegRepository;
-use App\Repository\OrdenesRepository;
-use App\Repository\OrdenPiezasRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+use App\Repository\AutosRegRepository;
+use App\Repository\OrdenesRepository;
+use App\Repository\OrdenPiezasRepository;
+use App\Repository\OrdenRespsRepository;
 use App\Service\HarbiConnxService;
 use App\Service\StatusRutas;
 
@@ -69,6 +70,18 @@ class PostController extends AbstractController
   {
     $data = $this->toArray($req, 'data');
     $result = $pzasEm->setPieza($data);
+    return $this->json($result);
+  }
+
+  /**
+   * Guardamos la respuesta del cotizador
+   * Generalmente usado para guardar los datos en local
+   */
+  #[Route('harbi/set-resp', methods:['post'])]
+  public function setRespuesta(Request $req, OrdenRespsRepository $rpsEm): Response
+  {
+    $data = $this->toArray($req, 'data');
+    $result = $rpsEm->setRespuesta($data, true);
     return $this->json($result);
   }
 }
