@@ -77,7 +77,7 @@ class PostController extends AbstractController
    * Guardamos la respuesta del cotizador
    * Generalmente usado para guardar los datos en local
    */
-  #[Route('harbi/set-resp', methods:['post'])]
+  #[Route('harbi/set-resp/', methods:['post'])]
   public function setRespuesta(Request $req, OrdenRespsRepository $rpsEm): Response
   {
     $data = $this->toArray($req, 'data');
