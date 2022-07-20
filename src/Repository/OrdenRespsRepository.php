@@ -163,8 +163,7 @@ class OrdenRespsRepository extends ServiceEntityRepository
 	public function borrarAndCompactar(OrdenResps $obj)
 	{
 		$this->_em->remove($obj);
-		$this->flush();
-
+		
 		$dql = 'SELECT COUNT(o.id) FROM ' . OrdenResps::class . ' o ';
 		$res = $this->_em->createQuery($dql)->getSingleScalarResult();
 		if($res > 0) {

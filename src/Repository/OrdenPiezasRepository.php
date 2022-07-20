@@ -244,7 +244,6 @@ class OrdenPiezasRepository extends ServiceEntityRepository
   public function borrarAndCompactar(OrdenPiezas $obj)
   {
     $this->_em->remove($obj);
-    $this->flush();
 
     $dql = 'SELECT COUNT(p.id) FROM ' . OrdenPiezas::class . ' p ';
     $res = $this->_em->createQuery($dql)->getSingleScalarResult();

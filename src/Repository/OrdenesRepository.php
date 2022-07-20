@@ -294,7 +294,6 @@ class OrdenesRepository extends ServiceEntityRepository
   public function borrarAndCompactar(Ordenes $obj)
   {
     $this->_em->remove($obj);
-    $this->flush();
 
     $dql = 'SELECT COUNT(o.id) FROM ' . Ordenes::class . ' o ';
     $res = $this->_em->createQuery($dql)->getSingleScalarResult();
