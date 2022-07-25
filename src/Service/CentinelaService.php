@@ -180,8 +180,13 @@ class CentinelaService
       }else{
         $file['avo'] = $asignaciones['info'];
       }
+      
       foreach ($asignaciones['info'] as $idAvo => $ords) {
-        $file['non'] = array_diff($file['non'], $ords);
+        if(array_key_exists('non', $file)) {
+          $file['non'] = array_diff($file['non'], $ords);
+        }else{
+          $file['non'] = array_diff($file['ordenes'], $ords);
+        }
       }
 
       $file = $this->updateVersion(

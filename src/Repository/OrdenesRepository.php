@@ -160,11 +160,11 @@ class OrdenesRepository extends ServiceEntityRepository
       'JOIN u.empresa e '.
       'WHERE o.avo ';
       if($idAvo == 0) {
-          $dql = $dql . 'is NULL ORDER BY o.id DESC';
-          return $this->_em->createQuery($dql);
+        $dql = $dql . 'is NULL ORDER BY o.id DESC';
+        return $this->_em->createQuery($dql);
       }else{
-          $dql = $dql . '= :avo ORDER BY o.id DESC';
-          return $this->_em->createQuery($dql)->setParameter('avo', $idAvo);
+        $dql = $dql . '= :avo ORDER BY o.id DESC';
+        return $this->_em->createQuery($dql)->setParameter('avo', $idAvo);
       }
   }
 
