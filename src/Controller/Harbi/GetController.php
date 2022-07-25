@@ -16,6 +16,7 @@ use App\Repository\ScmCampRepository;
 use App\Repository\ScmReceiversRepository;
 use App\Service\CentinelaService;
 use App\Service\FiltrosService;
+use App\Service\OrdenesAsigns;
 use App\Service\ScmService;
 
 class GetController extends AbstractController
@@ -62,7 +63,7 @@ class GetController extends AbstractController
   #[Route('harbi/check-changes/{lastVersion}/', methods:['get'])]
   public function checkChanges(
     CentinelaService $centinela, ScmService $scm,
-    FiltrosService $filtros, $lastVersion
+    FiltrosService $filtros, $lastVersion, OrdenesAsigns $ordAsigns
   ): Response
   {
     $isSame = $centinela->isSameVersion($lastVersion);
@@ -70,10 +71,11 @@ class GetController extends AbstractController
     $scmResp = $scm->hasRegsOf('rsp');
     $scm = $scm->getContent(true);
     $filtros = $filtros->getContent(true);
+    $asigns  = $ordAsigns->hasContent();
 
     $result = [
       'centinela' => !$isSame, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
-      'scm' => $scm, 'filtros' => $filtros
+      'scm' => $scm, 'filtros' => $filtros, 'asigns' => $asigns
     ];
 
     return $this->json(['abort'=>false, 'body' => $result]);

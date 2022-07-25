@@ -128,10 +128,10 @@ class CotizaService
 			$path = $this->params->get('imgOrdTmp');
 			$pathTo = Path::canonicalize($path.'/'.$imgFileName);
 			if($this->filesystem->exists($pathTo)) {
-					$this->filesystem->remove($pathTo);
+				$this->filesystem->remove($pathTo);
 			}
 			if($this->filesystem->exists($pathTo)) {
-					return true;
+				return true;
 			}
 			return false;
 	}

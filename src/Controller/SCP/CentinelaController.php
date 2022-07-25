@@ -7,6 +7,7 @@ use App\Repository\OrdenesRepository;
 use App\Repository\OrdenPiezasRepository;
 use App\Service\ScmService;
 use App\Service\CentinelaService;
+use App\Service\OrdenesAsigns;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -37,7 +38,7 @@ class CentinelaController extends AbstractController
   #[Route('scp/centinela/ordenes-asignadas/', methods:['post'])]
   public function seveDataContact(
     Request $req, CentinelaService $centinela,
-    OrdenesRepository $ordenes
+    OrdenesRepository $ordenes, OrdenesAsigns $ordAsigns
   ): Response
   {
     $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
@@ -50,6 +51,9 @@ class CentinelaController extends AbstractController
       }
       if(!$result['abort']) {
         $centinela->asignarOrdenes($data);
+        if(!$data['isLoc']) {
+          $ordAsigns->setNewOrdAsigns(''.$data['version']);
+        }
       }
     }
     return $this->json($result);
