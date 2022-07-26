@@ -110,22 +110,24 @@ class CentinelaService
     $file = $this->getContent();
     $result = false;
     $addToNon = false;
+    $iO = ''.$data['idOrden'];
+    
     if(array_key_exists('ordenes', $file)) {
-      $has = in_array($data['idOrden'], $file['ordenes']);
+      $has = in_array($iO, $file['ordenes']);
       if($has === false) {
-        $file['ordenes'][] = $data['idOrden'];
+        $file['ordenes'][] = $iO;
         $addToNon = true;
         $result = true;
       }
     }else{
-      $file['ordenes'][] = $data['idOrden'];
+      $file['ordenes'][] = $iO;
       $addToNon = true;
       $result = true;
     }
 
     if($addToNon) {
       //--  Colocamos la nueva orden en la sección de no asignadas --
-      $file['non'][] = $data['idOrden'];
+      $file['non'][] = $iO;
     }
 
     if(!array_key_exists('piezas', $file)) {
@@ -133,26 +135,27 @@ class CentinelaService
     }
 
     $addPiezas = true;
-    if(array_key_exists($data['idOrden'], $file['piezas'])) {
+    if(array_key_exists($iO, $file['piezas'])) {
 
-      $rota = count($file['piezas'][$data['idOrden']]);
+      $rota = count($file['piezas'][$iO]);
       if($rota > 0) {
         $addPiezas = false;
         $rota = count($data['piezas']);
         for ($i=0; $i < $rota; $i++) {
-          if(!in_array( $data['piezas'][$i], $file['piezas'][$data['idOrden']] )) {
-            $file['piezas'][$data['idOrden']][] = $data['piezas'][$i];
+          if(!in_array( $data['piezas'][$i], $file['piezas'][$iO] )) {
+            $file['piezas'][$iO][] = $data['piezas'][$i];
             $result = true;
           }
         }
       }
     }
+    
     if($addPiezas) {
-      $file['piezas'][$data['idOrden']] = $data['piezas'];
+      $file['piezas'][$iO] = $data['piezas'];
       $result = true;
     }
 
-    $rota = count($file['piezas'][$data['idOrden']]);
+    $rota = count($file['piezas'][$iO]);
     for ($i=0; $i < $rota; $i++) {
       $file['stt'][$data['piezas'][$i]] = $data['stt'];
     }
@@ -185,7 +188,11 @@ class CentinelaService
         if(array_key_exists('non', $file)) {
           $file['non'] = array_diff($file['non'], $ords);
         }else{
-          $file['non'] = array_diff($file['ordenes'], $ords);
+          if(array_key_exists('ordenes', $file)) {
+            $file['non'] = array_diff($file['ordenes'], $ords);
+          }else{
+            $file['non'] = [];
+          }
         }
       }
 
