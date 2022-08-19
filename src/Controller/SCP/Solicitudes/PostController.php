@@ -99,8 +99,8 @@ class PostController extends AbstractController
             $pzasEm->changeSttPiezasTo($data['camp']['src']['id'], $data['pzS']);
             $data['pzS']['orden'] = $data['camp']['src']['id'];
             $data['pzS']['version'] = $data['verC'];
-            $isOk = $centinela->setNewSttToPiezas($data['pzS']);
             $scmServ->setNewMsg($result['body']);
+            $isOk = $centinela->setNewSttToPiezas($data['pzS']);
             if(!$isOk) {
               $result['body'] = 'Error registrando status Piezas en centinela.';
             }

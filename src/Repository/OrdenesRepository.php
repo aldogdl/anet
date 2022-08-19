@@ -177,14 +177,17 @@ class OrdenesRepository extends ServiceEntityRepository
   {
     $dql = 'SELECT o, mk, md ';
     if($withOwn) {
-      $dql = $dql . ', partial u.{id, nombre, cargo, celular, roles}, partial e.{id, nombre} ';
+      $dql = $dql . ', partial u.{id, nombre, cargo, celular, roles}, partial e.{id, nombre}';
     }
+    $dql = $dql . ', partial a.{id, curc} ';
     if($withPza) {
       $dql = $dql . ', partial pzs.{id, piezaName, origen} ';
     }
     $dql = $dql . 'FROM ' . Ordenes::class . ' o '.
     'JOIN o.marca mk '.
-    'JOIN o.modelo md ';
+    'JOIN o.modelo md '.
+    'LEFT JOIN o.avo a ';
+    
     if($withOwn) {
       $dql = $dql . 'JOIN o.own u JOIN u.empresa e ';
     }

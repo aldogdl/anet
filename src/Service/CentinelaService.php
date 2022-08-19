@@ -226,27 +226,32 @@ class CentinelaService
   /** */
   public function setNewSttToPiezas(array $data): bool
   {
-    $file = $this->getContent();
     $result = false;
-    if(array_key_exists('version', $file)) {
-      $ord = $data['orden'];
-      if(array_key_exists($ord, $file['piezas'])) {
+    $file = $this->getContent();
+    $cmp = 'piezas';
+    if(array_key_exists($cmp, $file)) {
 
-        $rota = count($file['piezas'][$ord]);
-        for ($i=0; $i < $rota; $i++) {
-          $pza = (string) $file['piezas'][$ord][$i];
-          if(array_key_exists($pza, $file['stt'])) {
-            $file['stt'][$pza]['e'] = $data['est'];
-            $file['stt'][$pza]['s'] = $data['stt'];
+      if(array_key_exists('version', $file)) {
+        $ord = $data['orden'];
+        if(array_key_exists($ord, $file[$cmp])) {
+  
+          $rota = count($file[$cmp][$ord]);
+          for ($i=0; $i < $rota; $i++) {
+            $pza = (string) $file[$cmp][$ord][$i];
+            if(array_key_exists($pza, $file['stt'])) {
+              $file['stt'][$pza]['e'] = $data['est'];
+              $file['stt'][$pza]['s'] = $data['stt'];
+            }
           }
         }
+        if($data['version'] != 0) {
+          $file['version'] = $data['version'];
+        }
+        $this->flush($file);
+        $result = true;
       }
-      if($data['version'] != 0) {
-        $file['version'] = $data['version'];
-      }
-      $this->flush($file);
-      $result = true;
     }
+
     return $result;
   }
 
@@ -260,10 +265,32 @@ class CentinelaService
       $rota = count($data['piezas']);
       for ($i=0; $i < $rota; $i++) {
         
-        $idP = ''.$data['piezas'][$i].'';
-        if(array_key_exists($idP, $file['stt'])) {
-          $file['stt'][$idP]['e'] = ''.$data['stts']['est'];
-          $file['stt'][$idP]['s'] = ''.$data['stts']['stt'];
+        $idP = ''.$data['piezas'][$i]['pieza'];
+        $idO = ''.$data['piezas'][$i]['orden'];
+
+        // Rectificamos y/o creamos el campo piezas
+        if(array_key_exists('piezas', $file)) {
+          if(array_key_exists($idO, $file['piezas'])) {
+            if(!in_array($idP, $file['piezas'][$idO])) {
+              $file['piezas'][$idO] = [$idP];
+            }
+          }else{
+            $file['piezas'][$idO] = [$idP];
+          }
+        }else{
+          $file['piezas'] = [$idO => [$idP]];
+        }
+
+        // Rectificamos y/o creamos el campo stt
+        if(!array_key_exists('stt', $file)) {
+          $file['stt'] = [$idP => ['e' => $data['stts']['est'], 's' => $data['stts']['stt']]];
+        }else{
+          if(array_key_exists($idP, $file['stt'])) {
+            $file['stt'][$idP]['e'] = ''.$data['stts']['est'];
+            $file['stt'][$idP]['s'] = ''.$data['stts']['stt'];
+          }else{
+            $file['stt'][$idP] = ['e' => $data['stts']['est'], 's' => $data['stts']['stt']];
+          }
         }
       }
       if($data['version'] != 0) {

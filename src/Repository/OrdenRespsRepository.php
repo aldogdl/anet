@@ -62,7 +62,6 @@ class OrdenRespsRepository extends ServiceEntityRepository
 	public function setRespuesta(array $data, bool $isLocal = false): array
 	{
 		$obj = new OrdenResps();
-
 		$obj->setOrden($this->_em->getPartialReference(Ordenes::class, $data['idOrden']));
 		$obj->setPieza($this->_em->getPartialReference(OrdenPiezas::class, $data['idPieza']));
 		$obj->setOwn($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
@@ -86,11 +85,12 @@ class OrdenRespsRepository extends ServiceEntityRepository
 	/** */
 	public function getRespuestaByIds(array $ids): \Doctrine\ORM\Query
 	{	
-		$dql = 'SELECT r, partial o.{id}, partial p.{id}, partial c.{id} FROM ' .
+		$dql = 'SELECT r, partial o.{id}, partial p.{id}, partial c.{id}, partial a.{id} FROM ' .
 		OrdenResps::class . ' r '.
 		'JOIN r.orden o '.
 		'JOIN r.pieza p '.
 		'JOIN r.own c '.
+		'LEFT JOIN o.avo a '.
 		'WHERE r.id IN (:ids)';
 
 		return $this->_em->createQuery($dql)->setParameter('ids', $ids);
@@ -132,10 +132,14 @@ class OrdenRespsRepository extends ServiceEntityRepository
 	/**
 	 * Obtenemos la orden sin dueño pero con sus piezas
 	*/
-	private function getOrden(int $id): array
+	private function getOrden(int $id, string $hyd = 'array'): array | Ordenes
 	{
 		$dql = $this->_em->getRepository(Ordenes::class)->getDataOrdenById($id, false, true);
-		$orden = $dql->getArrayResult();
+		if($hyd == 'array') {
+			$orden = $dql->getArrayResult();
+		}else{
+			$orden = $dql->execute();
+		}
 		return ($orden) ? $orden[0] : [];
 	}
 

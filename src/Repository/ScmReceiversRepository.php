@@ -72,8 +72,24 @@ class ScmReceiversRepository extends ServiceEntityRepository
 		'SET r.stt = :stt, r.readAt = :readAt WHERE r.id IN (:ids)';
 		
 		$this->_em->createQuery($dql)->setParameters([
-				'ids' => explode(',', $ids), 'stt' => $stt, 'readAt' => $hoy
+			'ids' => explode(',', $ids), 'stt' => $stt, 'readAt' => $hoy
 		])->execute();
 		
 	}
+
+	/**
+  * Recuperamos las campañas indicadas por parametro
+  */
+  public function getRegsPushSeeByids(array $ids): \Doctrine\ORM\Query
+  {
+    $dql = 'SELECT partial rcm.{id}, partial cam.{id, target, src}, partial avo.{id, nombre}, partial rcv.{id} '.
+		'FROM ' . ScmReceivers::class . ' rcm '.
+    'JOIN rcm.camp cam '.
+    'JOIN rcm.receiver rcv '.
+    'JOIN cam.remiter avo '.
+    'WHERE rcm.id IN (:ids) '.
+    'ORDER BY avo.id ASC';
+
+    return $this->_em->createQuery($dql)->setParameter('ids', $ids);
+  }
 }

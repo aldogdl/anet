@@ -90,4 +90,5 @@ class ScmCampRepository extends ServiceEntityRepository
 
     return $this->_em->createQuery($dql)->setParameter('ids', $ids);
   }
+
 }

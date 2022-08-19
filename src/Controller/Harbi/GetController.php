@@ -153,23 +153,22 @@ class GetController extends AbstractController
     $resps = $dql->getArrayResult();
     
     $rota = count($resps);
+    $idPasz = [];
+    $cent = [];
+    $stts = ['est' => '4', 'stt' => '1'];
     if($rota > 0) {
       $r['body'] = $resps;
-      $idPasz = [];
       for ($i=0; $i < $rota; $i++) { 
         $idPasz[] = $resps[$i]['pieza']['id'];
+        $cent[] = ['pieza' => $resps[$i]['pieza']['id'], 'orden' => $resps[$i]['orden']['id']];
       }
     }
 
     if(count($idPasz) > 0) {
-      $data = [
-        'piezas' => $idPasz, 'stts' => ['est' => 4, 'stt' => 1], 'version' => $ver
-      ];
-      
       // Cambiamos el status en la BD
-      $pzaEm->changeSttByIdsPiezas($data['piezas'], $data['stts']);
+      $pzaEm->changeSttByIdsPiezas($idPasz, $stts);
       // Cambiamos el status en el Centinela
-      $centi->setNewSttToPiezasByIds($data);
+      $centi->setNewSttToPiezasByIds(['piezas' => $cent, 'stts' => $stts, 'version' => $ver]);
     }
 
 		return $this->json($r);
@@ -184,6 +183,20 @@ class GetController extends AbstractController
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $em->setSttRegsByIds($ids, $stt);
+		return $this->json($r);
+	}
+
+	/**
+   * Cada cotizador cuando abre una solicitud de cotización actualiza un registro de la
+   * tabla scm_receivers, por lo tanto, esos son los ids de bienen en el parametro para
+   * poder extraer el id de la orden y el id del avo para enviarles un push.
+  */
+	#[Route('harbi/get-regs-push-see-byids/{ids}/', methods:['get'])]
+	public function getRegsPushSeeByids(ScmReceiversRepository $em, String $ids): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $dql = $em->getRegsPushSeeByids(explode(',', $ids));
+    $r['body'] = $dql->getScalarResult();
 		return $this->json($r);
 	}
 

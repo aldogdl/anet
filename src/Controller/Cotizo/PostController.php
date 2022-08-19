@@ -70,12 +70,16 @@ class PostController extends AbstractController
     $result = $rpsEm->setRespuesta($data);
 
     if(!$result['abort']) {
-      if(array_key_exists('idsFromLink', $data)) {
-        $fileName = $result['body'] .'-'. $data['idsFromLink'];
-      }else{
-        $fileName = $result['body'] .'-'. $data['idOrden'] . '-' . $data['own'] . '-AVO-CAM-';
+      if(!array_key_exists('fromLocal', $data)) {
+        if(array_key_exists('idsFromLink', $data)) {
+          // Estas son respondidas desde el link del WhatsApp, cuentan con campaña
+          $fileName = $result['body'] .'-'. $data['idsFromLink'];
+        }else{
+          // Estas son respondidas desde la pagina de home de la app. por lo tanto no tienen campaña
+          $fileName = $result['body'] . '-cam';
+        }
+        $scm->setNewRegType($fileName.'-'.$data['id'].'.rsp');
       }
-      $scm->setNewRegType($fileName.'-'.$data['id'].'.rsp');
     }
     
     return $this->json($result);
