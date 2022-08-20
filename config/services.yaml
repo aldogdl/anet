@@ -8,9 +8,11 @@ parameters:
     imgOrdRsp  : '%phtml%/to_orden_rsp/'
     ordAsigns  : '%phtml%/ordenes_asigns/'
     centinela  : '%phtml%/centinela.json'
-    filtros    : '%datafix%/filtros.json'
+    filtros    : '%phtml%/filtros/'
+    filtrosF   : '%datafix%/filtros.json'
     targets    : '%datafix%/targets.json'
     rutas      : '%datafix%/rutas.json'
+    centiSchema: '%datafix%/centi_schema.json/'
     harbiConnx : '%phtml%/harbi_connx.json'
 
 services:

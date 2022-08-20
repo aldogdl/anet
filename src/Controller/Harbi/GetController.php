@@ -70,12 +70,13 @@ class GetController extends AbstractController
     $scmSee = $scm->hasRegsOf('see');
     $scmResp = $scm->hasRegsOf('rsp');
     $scm = $scm->getContent(true);
-    $filtros = $filtros->getContent(true);
+    $filCnt = $filtros->hasFiltrosOf('cnt');
+    $filCnm = $filtros->hasFiltrosOf('cnm');
     $asigns  = $ordAsigns->hasContent();
 
     $result = [
       'centinela' => !$isSame, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
-      'scm' => $scm, 'filtros' => $filtros, 'asigns' => $asigns
+      'scm' => $scm, 'filCnt' => $filCnt, 'filCnm' => $filCnm, 'asigns' => $asigns
     ];
 
     return $this->json(['abort'=>false, 'body' => $result]);
@@ -138,6 +139,20 @@ class GetController extends AbstractController
 		return $this->json($r);
 	}
 
+  /**
+   * Cada cotizador cuando abre una solicitud de cotización actualiza un registro de la
+   * tabla scm_receivers, por lo tanto, esos son los ids de bienen en el parametro para
+   * poder extraer el id de la orden y el id del avo para enviarles un push.
+  */
+	#[Route('harbi/get-regs-push-see-byids/{ids}/', methods:['get'])]
+	public function getRegsPushSeeByids(ScmReceiversRepository $em, String $ids): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $dql = $em->getRegsPushSeeByids(explode(',', $ids));
+    $r['body'] = $dql->getScalarResult();
+		return $this->json($r);
+	}
+
   /** Recuperamos las respuestas y colocamos el nuevo statu a las piezas */
 	#[Route('harbi/get-resp-by-ids/{ids}/{ver}', methods:['get'])]
 	public function getRespuestaByIds(
@@ -183,20 +198,6 @@ class GetController extends AbstractController
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $em->setSttRegsByIds($ids, $stt);
-		return $this->json($r);
-	}
-
-	/**
-   * Cada cotizador cuando abre una solicitud de cotización actualiza un registro de la
-   * tabla scm_receivers, por lo tanto, esos son los ids de bienen en el parametro para
-   * poder extraer el id de la orden y el id del avo para enviarles un push.
-  */
-	#[Route('harbi/get-regs-push-see-byids/{ids}/', methods:['get'])]
-	public function getRegsPushSeeByids(ScmReceiversRepository $em, String $ids): Response
-	{
-    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
-    $dql = $em->getRegsPushSeeByids(explode(',', $ids));
-    $r['body'] = $dql->getScalarResult();
 		return $this->json($r);
 	}
 

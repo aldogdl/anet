@@ -10,6 +10,7 @@ use Symfony\Component\Lock\Store\FlockStore;
 class CentinelaService
 {
   private $name = 'centinela';
+  private $schema = 'centiSchema';
   private $params;
   private $filesystem;
   private $lock;
@@ -68,18 +69,37 @@ class CentinelaService
   }
 
   /** */
+  public function getSchema(): array
+  {
+    $schema = [];
+    $path = $this->params->get($this->schema);
+    if($this->filesystem->exists($path)) {
+      $schema = json_decode( file_get_contents($path), true );
+    }
+    return $schema;
+  }
+
+  /** */
   public function getContent(): array
   {
     $ordenes = [];
+    $makeFlush = false;
     $path = $this->params->get($this->name);
     $lock = $this->lock->createLock($this->name);
     if ($lock->acquire(true)) {
       if($this->filesystem->exists($path)) {
         $ordenes = json_decode( file_get_contents($path), true );
         if($ordenes == null) {
-          $ordenes = [];
+          $makeFlush = true;
+          $ordenes = $this->getSchema();
         }
+      }else{
+        $makeFlush = true;
+        $ordenes = $this->getSchema();
       }
+    }
+    if($makeFlush) {
+      $this->flush($ordenes);
     }
     $lock->release();
     return $ordenes;

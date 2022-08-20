@@ -17,20 +17,23 @@ class Filtros
     #[ORM\JoinColumn(nullable: false)]
     private $cot;
 
-    #[ORM\Column(type: 'json', nullable: true)]
-    private $restris = [];
+    #[ORM\ManyToOne(targetEntity: AO1Marcas::class)]
+    private $marca;
 
-    #[ORM\Column(type: 'json', nullable: true)]
-    private $exceps = [];
+    #[ORM\ManyToOne(targetEntity: AO2Modelos::class)]
+    private $modelo;
 
-    #[ORM\Column(type: 'json', nullable: true)]
-    private $espes = [];
+    #[ORM\Column(type: 'integer')]
+    private $anio;
 
-    #[ORM\Column(type: 'boolean')]
-    private $isFav;
+    #[ORM\Column(type: 'string', length: 100)]
+    private $pieza;
 
-    #[ORM\Column(type: 'string', length: 50)]
-    private $plan;
+    #[ORM\Column(type: 'string', length: 1)]
+    private $grupo;
+
+    #[ORM\ManyToOne(targetEntity: PiezasName::class)]
+    private $pza;
 
     public function getId(): ?int
     {
@@ -48,64 +51,77 @@ class Filtros
 
         return $this;
     }
+
+    public function getMarca(): ?AO1Marcas
+    {
+        return $this->marca;
+    }
+
+    public function setMarca(?AO1Marcas $marca): self
+    {
+        $this->marca = $marca;
+
+        return $this;
+    }
+
+    public function getModelo(): ?AO2Modelos
+    {
+        return $this->modelo;
+    }
+
+    public function setModelo(?AO2Modelos $modelo): self
+    {
+        $this->modelo = $modelo;
+
+        return $this;
+    }
+
+    public function getAnio(): ?int
+    {
+        return $this->anio;
+    }
+
+    public function setAnio(int $anio): self
+    {
+        $this->anio = $anio;
+
+        return $this;
+    }
+
+    public function getPieza(): ?string
+    {
+        return $this->pieza;
+    }
+
+    public function setPieza(string $pieza): self
+    {
+        $this->pieza = $pieza;
+
+        return $this;
+    }
+
+    public function getGrupo(): ?string
+    {
+        return $this->grupo;
+    }
+
+    public function setGrupo(string $grupo): self
+    {
+        $this->grupo = $grupo;
+
+        return $this;
+    }
+
+    public function getPza(): ?PiezasName
+    {
+        return $this->pza;
+    }
+
+    public function setPza(?PiezasName $pza): self
+    {
+        $this->pza = $pza;
+
+        return $this;
+    }
     
-    public function getRestris(): ?array
-    {
-        return $this->restris;
-    }
-
-    public function setRestris(?array $restris): self
-    {
-        $this->restris = $restris;
-
-        return $this;
-    }
-
-    public function getExceps(): ?array
-    {
-        return $this->exceps;
-    }
-
-    public function setExceps(?array $exceps): self
-    {
-        $this->exceps = $exceps;
-
-        return $this;
-    }
-
-    public function getEspes(): ?array
-    {
-        return $this->espes;
-    }
-
-    public function setEspes(?array $espes): self
-    {
-        $this->espes = $espes;
-
-        return $this;
-    }
-
-    public function getIsFav(): ?bool
-    {
-        return $this->isFav;
-    }
-
-    public function setIsFav(bool $isFav): self
-    {
-        $this->isFav = $isFav;
-
-        return $this;
-    }
-
-    public function getPlan(): ?string
-    {
-        return $this->plan;
-    }
-
-    public function setPlan(string $plan): self
-    {
-        $this->plan = $plan;
-
-        return $this;
-    }
 }
