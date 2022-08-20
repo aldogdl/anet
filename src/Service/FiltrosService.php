@@ -76,7 +76,6 @@ class FiltrosService
           $makeFlush = true;
         }
       }else{
-        $this->filesystem->mkdir($path);
         $makeFlush = true;
         $items = $this->schema();
       }
