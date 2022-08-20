@@ -4,6 +4,7 @@ namespace App\Controller\SCP;
 
 use App\Repository\NG2ContactosRepository;
 use App\Repository\CampaingsRepository;
+use App\Repository\OrdenRespsRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -43,4 +44,20 @@ class SharedGetController extends AbstractController
       'body' => $dql->getScalarResult()
     ]);
   }
+
+  /** Recuperamos las respuestas y colocamos el nuevo statu a las piezas */
+	#[Route('scp/get-resps-by-pzas/{ids}/', methods:['get'])]
+	public function getRespuestaByIds(
+    OrdenRespsRepository $rpsEm, $ids
+  ): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $partes = explode(',', $ids);
+
+    // Recuperamos las respuestas
+		$dql = $rpsEm->getRespsByIdPzas($partes);
+    $r['body'] = $dql->getScalarResult();
+		return $this->json($r);
+	}
+
 }
