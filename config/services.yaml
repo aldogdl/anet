@@ -1,6 +1,7 @@
 parameters:
     phtml      : '%kernel.project_dir%/public_html'
     datafix    : '%phtml%/datafix/'
+    centiSchema: '%phtml%/cent_schema/centi_schema.json'
     scm        : '%phtml%/scm/'
     imgOrdTmp  : '%phtml%/to_orden_tmp/'
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
@@ -12,7 +13,6 @@ parameters:
     filtrosF   : '%datafix%/filtros.json'
     targets    : '%datafix%/targets.json'
     rutas      : '%datafix%/rutas.json'
-    centiSchema: '%datafix%/centi_schema.json/'
     harbiConnx : '%phtml%/harbi_connx.json'
 
 services:
