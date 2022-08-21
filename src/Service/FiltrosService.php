@@ -54,7 +54,7 @@ class FiltrosService
   /** */
   private function init()
   {
-    $pathLock = $this->params->get('filtrosF');
+    $pathLock = $this->params->get('datafix');
     $store = new FlockStore($pathLock);
     $this->lock = new LockFactory($store);
   }
