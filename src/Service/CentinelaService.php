@@ -75,7 +75,9 @@ class CentinelaService
   {
     $schema = $this->getSchema();
     $path = $this->params->get($this->name);
-    file_put_contents($path, json_encode($schema));
+    if(!$this->filesystem->exists($path)) {
+      file_put_contents($path, json_encode($schema));
+    }
     return $schema;
   }
 
