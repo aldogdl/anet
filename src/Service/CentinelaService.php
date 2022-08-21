@@ -372,7 +372,7 @@ class CentinelaService
   ///
   private function updateVersion(int $version, array $centinela): array
   {
-    $centinela['version'] = $version;
+    $centinela['version'] = ''.$version;
     return $centinela;
   }
 

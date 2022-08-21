@@ -35,6 +35,7 @@ class CentinelaController extends AbstractController
     return $content;
   }
 
+  /** */
   #[Route('scp/centinela/ordenes-asignadas/', methods:['post'])]
   public function seveDataContact(
     Request $req, CentinelaService $centinela,
@@ -59,6 +60,7 @@ class CentinelaController extends AbstractController
     return $this->json($result);
   }
 
+  /** */
   #[Route('scp/centinela/change-stt-to-orden/', methods:['post'])]
   public function changeSttToOrden(
     Request $req, OrdenesRepository $ordsEm, CentinelaService $centinela
