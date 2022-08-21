@@ -58,6 +58,16 @@ class GetController extends AbstractController
   }
 
   /**
+   * Creamos el schema del centinela nuevo en caso de fracaso via FTP
+   */
+  #[Route('harbi/build-centinela-schema/', methods:['get'])]
+  public function buildSchemaCentinela( CentinelaService $centinela): Response
+  {
+    $result = $centinela->buildSchemaInitBasic();
+    return $this->json(['abort'=>false, 'body' => $result]);
+  }
+
+  /**
    * Checamos la ultima version del archivo de seguimiento de las ordenes
    */
   #[Route('harbi/check-changes/{lastVersion}/', methods:['get'])]

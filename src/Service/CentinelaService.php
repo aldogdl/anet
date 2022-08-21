@@ -68,7 +68,20 @@ class CentinelaService
     ];
   }
 
-  /** */
+  /**
+   * Creamos el Schema principal inicial del centinela limpio y básico
+  */
+  public function buildSchemaInitBasic(): array
+  {
+    $schema = $this->getSchema();
+    $path = $this->params->get($this->name);
+    file_put_contents($path, json_encode($schema));
+    return $schema;
+  }
+
+  /**
+   * Obtenemos el Schema principal inicial del centinela
+  */
   public function getSchema(): array
   {
     $schema = [];
