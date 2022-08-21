@@ -10,7 +10,7 @@ config/secrets/prod/prod.decrypt.private.php
 public_html/bundles/
 public_html/datafix/
 public_html/cotiza/
-public_html/_p/
+public_html/ordenes_asigns/
 public_html/portadas/
 public_html/mrks_logos/
 public_html/to_orden_tmp/
