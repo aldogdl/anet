@@ -80,11 +80,11 @@ class FiltrosService
         $items = $this->schema();
       }
     }
+    $lock->release();
+
     if($makeFlush) {
       $this->flush($items);
     }
-
-    $lock->release();
     return $items;
   }
 

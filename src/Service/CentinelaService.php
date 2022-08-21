@@ -100,8 +100,10 @@ class CentinelaService
     $ordenes = [];
     $makeFlush = false;
     $path = $this->params->get($this->name);
-    $lock = $this->lock->createLock($this->name);
+    $lock = $this->lock->createLock($this->name, 30);
+
     if ($lock->acquire(true)) {
+      
       if($this->filesystem->exists($path)) {
         $ordenes = json_decode( file_get_contents($path), true );
         if($ordenes == null) {
@@ -113,10 +115,12 @@ class CentinelaService
         $ordenes = $this->getSchema();
       }
     }
+
+    $lock->release();
+    
     if($makeFlush) {
       $this->flush($ordenes);
     }
-    $lock->release();
     return $ordenes;
   }
   
@@ -126,6 +130,7 @@ class CentinelaService
     $path = $this->params->get($this->name);
     $lock = $this->lock->createLock($this->name);
     if ($lock->acquire(true)) {
+      $lock = $this->lock->createLock($this->name);
       $this->filesystem->dumpFile($path, json_encode($file));
     }
     $lock->release();
@@ -208,6 +213,7 @@ class CentinelaService
   */
   public function asignarOrdenes(array $asignaciones)
   {
+
     $file = $this->getContent();
     if(array_key_exists('version', $file)) {
 
