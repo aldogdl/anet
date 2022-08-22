@@ -36,7 +36,7 @@ class ScmService
       $filename = $camp['created'].'_'.$sufix.'.json';
       $path = Path::normalize($folder.'/'.$filename);
     }
-    file_put_contents($filename, json_encode($camp));
+    file_put_contents($path, json_encode($camp));
   }
 
   /**

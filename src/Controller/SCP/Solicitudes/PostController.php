@@ -74,6 +74,8 @@ class PostController extends AbstractController
     $data = $this->toArray($req, 'data');
     if(array_key_exists('slug_camp', $data)) {
       $scmServ->setNewMsg($data);
+      $result['abort'] = false;
+      $result['body'] = 'ok';
     }
     return $this->json($result);
   }
