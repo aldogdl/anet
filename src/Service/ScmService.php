@@ -25,9 +25,10 @@ class ScmService
   */
   public function setNewMsg(array $camp)
   {
-    $folder = Path::normalize($this->params->get($this->scm));
-    if(!$this->filesystem->exists($folder)) {
-      $this->filesystem->mkdir($folder);
+    $folder = $this->params->get($this->scm);
+    $path = Path::normalize($folder);
+    if(!$this->filesystem->exists($path)) {
+      $this->filesystem->mkdir($path);
     }
     $filename = $camp['created'].'.json';
     $path = Path::normalize($folder.'/'.$filename);
@@ -62,10 +63,7 @@ class ScmService
     }
     $finder = new Finder();
     $finder->files()->in($path)->name('*.'.$ext);
-    if ($finder->hasResults()) {
-      return true;
-    }
-    return false;
+    return ($finder->hasResults()) ? true : false;
   }
 
   /**
@@ -84,6 +82,28 @@ class ScmService
   }
 
   /**
+   * Recuperamos todas las campañas existentes
+  */
+  public function getAllCampings(): array
+  {
+    $files = [];
+    $path = Path::normalize($this->params->get($this->scm));
+    if(!$this->filesystem->exists($path)) {
+      $this->filesystem->mkdir($path);
+      return [];
+    }
+    $finder = new Finder();
+    $finder->files()->in($path)->name('*.json')->sortByAccessedTime();
+    if ($finder->hasResults()) {
+      foreach ($finder as $file) {
+        $files[] = json_decode($file->getContents());
+        $this->filesystem->remove($file->getRealPath());
+      }
+    }
+    return $files;
+  }
+
+  /**
    * Recuperamos todos los archivoa que indican:
    * -> Que un receiver ya descargo
    * -> Que un receiver ya respondio 
@@ -95,6 +115,7 @@ class ScmService
     $path = Path::normalize($this->params->get($this->scm));
     if(!$this->filesystem->exists($path)) {
       $this->filesystem->mkdir($path);
+      return [];
     }
     $finder = new Finder();
     $finder->files()->in($path)->name('*.'.$ext)->sortByAccessedTime();

@@ -79,14 +79,14 @@ class GetController extends AbstractController
     $isSame = $centinela->isSameVersion($lastVersion);
     $scmSee = $scm->hasRegsOf('see');
     $scmResp = $scm->hasRegsOf('rsp');
-    $scm = $scm->getContent(true);
+    $camping = $scm->hasRegsOf('json');
     $filCnt = $filtros->hasFiltrosOf('cnt');
     $filCnm = $filtros->hasFiltrosOf('cnm');
     $asigns  = $ordAsigns->hasContent();
 
     $result = [
       'centinela' => !$isSame, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
-      'scm' => $scm, 'filCnt' => $filCnt, 'filCnm' => $filCnm, 'asigns' => $asigns
+      'camping' => $camping, 'filCnt' => $filCnt, 'filCnm' => $filCnm, 'asigns' => $asigns
     ];
 
     return $this->json(['abort'=>false, 'body' => $result]);
@@ -136,6 +136,18 @@ class GetController extends AbstractController
     $em->setNewCampaing($data);
     return $this->json(['ok' => 'Campaña creada']);
   }
+
+	/**
+   * Recuperamos los archivos que representan registros de descargas, vistas y
+   * respuestas de los cotizadores ante los mensajes enviados por whatsapp
+  */
+	#[Route('harbi/get-all-campings/', methods:['get'])]
+	public function getAllCampings(ScmService $scm): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $r['body'] = $scm->getAllCampings();
+		return $this->json($r);
+	}
 
 	/**
    * Recuperamos los archivos que representan registros de descargas, vistas y
