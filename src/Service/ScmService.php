@@ -5,13 +5,10 @@ namespace App\Service;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Lock\LockFactory;
-use Symfony\Component\Lock\Store\FlockStore;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ScmService
 {
-  private $name = 'targets';
   private $scm = 'scm';
   private $params;
   private $filesystem;
@@ -19,78 +16,38 @@ class ScmService
 
   public function __construct(ParameterBagInterface $container)
   {
-      $this->params = $container;
-      $this->filesystem = new Filesystem();
-      $this->init();
-  }
-
-  /** */
-  private function init()
-  {
-      $pathLock = $this->params->get('datafix');
-      $store = new FlockStore($pathLock);
-      $this->lock = new LockFactory($store);
-  }
-
-  /**
-   *
-  */
-  public function getContent(bool $clean = false): array
-  {
-    $msgs = [];
-    $path = $this->params->get($this->name);
-    $lock = $this->lock->createLock($this->name);
-    if ($lock->acquire(true)) {
-      if($this->filesystem->exists($path)) {
-        $msgs = json_decode( file_get_contents($path), true );
-      }
-    }
-
-    $lock->release();
-    if($clean) {
-      if(count($msgs) > 0) {
-        $this->flush([]);
-      }
-    }
-    return $msgs;
-  }
-
-  /**
-   *
-  */
-  public function clean(String $campo)
-  {
-      $content = $this->getContent();
-      $content[$campo] = [];
-      $this->flush($content);
-  }
-
-  /** */
-  public function flush(array $file)
-  {
-    $path = $this->params->get($this->name);
-    $lock = $this->lock->createLock($this->name);
-    if($lock->acquire(true)) {
-      $this->filesystem->dumpFile($path, json_encode($file));
-    }
-    $lock->release();
+    $this->params = $container;
+    $this->filesystem = new Filesystem();
   }
 
   /**
    * @see
   */
-  public function setNewMsg(int $idCamp)
+  public function setNewMsg(array $camp)
   {
-    $file = $this->getContent();
-    $result = false;
-    $has = in_array($idCamp, $file);
-    if($has === false) {
-      $file[] = $idCamp;
-      $result = true;
+    $folder = Path::normalize($this->params->get($this->scm));
+    if(!$this->filesystem->exists($folder)) {
+      $this->filesystem->mkdir($folder);
     }
-    if($result) {
-      $this->flush($file);
+    $filename = $camp['created'].'.json';
+    $path = Path::normalize($folder.'/'.$filename);
+    if($this->filesystem->exists($path)) {
+      $sufix = $this->findConsecutivo();
+      $filename = $camp['created'].'_'.$sufix.'.json';
+      $path = Path::normalize($folder.'/'.$filename);
     }
+    file_put_contents($filename, json_encode($camp));
+  }
+
+  /**
+   * En caso de que el nombre del archivo exista, buscamos un sufijo consecutivo
+  */
+  private function findConsecutivo(): int
+  {
+    $path = Path::normalize($this->params->get($this->scm));
+    $finder = new Finder();
+    $finder->files()->in($path);
+    return $finder->count() + 1;
   }
 
   /**

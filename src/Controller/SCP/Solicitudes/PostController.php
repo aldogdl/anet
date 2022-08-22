@@ -68,7 +68,21 @@ class PostController extends AbstractController
    * Registramos para la SCM una campaña
    */
   #[Route('scp/solicitudes/set-new-campaing/', methods:['post'])]
-  public function setNewCampaing(
+  public function setNewCampaing( Request $req, ScmService $scmServ): Response
+  {
+    $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
+    $data = $this->toArray($req, 'data');
+    if(array_key_exists('slug_camp', $data)) {
+      $scmServ->setNewMsg($data);
+    }
+    return $this->json($result);
+  }
+
+  /**
+   * Pendiente tal ves borrar
+   */
+  #[Route('scp/solicitudes/set-reg-campaing-scm/', methods:['post'])]
+  public function setNewCampaingMsg(
     Request $req, ScmCampRepository $scmEm, CampaingsRepository $camps,
     OrdenesRepository $ordsEm, OrdenPiezasRepository $pzasEm,
     CentinelaService $centinela, ScmService $scmServ
