@@ -23,6 +23,7 @@ public_html/harbi_connx.txt
 public_html/scm/
 public_html/.___htaccess
 public_html/.__htaccess
+public_html/.htaccess
 var/
 vendor/
 ###< symfony/framework-bundle ###

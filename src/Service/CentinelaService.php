@@ -174,27 +174,19 @@ class CentinelaService
       $file['piezas'] = [];
     }
 
-    $addPiezas = true;
-    if(array_key_exists($iO, $file['piezas'])) {
+    if(!array_key_exists($iO, $file['piezas'])) {
+      $file['piezas'][$iO] = [];
+    }
 
-      $rota = count($file['piezas'][$iO]);
-      if($rota > 0) {
-        $addPiezas = false;
-        $rota = count($data['piezas']);
-        for ($i=0; $i < $rota; $i++) {
-          if(!in_array( $data['piezas'][$i], $file['piezas'][$iO] )) {
-            $file['piezas'][$iO][] = $data['piezas'][$i];
-            $result = true;
-          }
-        }
+    $rota = count($data['piezas']);
+    for ($i=0; $i < $rota; $i++) {
+      $iP = ''.$data['piezas'][$i];
+      if(!in_array($iP, $file['piezas'][$iO] )) {
+        $file['piezas'][$iO][] = $iP;
+        $result = true;
       }
     }
     
-    if($addPiezas) {
-      $file['piezas'][$iO] = $data['piezas'];
-      $result = true;
-    }
-
     $rota = count($file['piezas'][$iO]);
     for ($i=0; $i < $rota; $i++) {
       $file['stt'][$data['piezas'][$i]] = $data['stt'];
