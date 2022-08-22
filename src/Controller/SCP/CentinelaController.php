@@ -72,7 +72,10 @@ class CentinelaController extends AbstractController
     $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
     $data = $this->toArray($req, 'data');
     $ordsEm->changeSttOrdenTo($data['orden'], $data);
-    $isOk = $centinela->setNewSttToOrden($data);
+    $isOk = true;
+    if($data['version'] != 0) {
+      $isOk = $centinela->setNewSttToOrden($data);
+    }
     if($isOk) {
       $result['abort']= false;
       $result['msg']  = 'ok';

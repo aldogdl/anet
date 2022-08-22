@@ -248,8 +248,8 @@ class CentinelaService
       }
       $iO = ''.$data['orden'];
       $file['ord'][$iO] = $this->getSchemaOrden($data);
-      if(''.$data['version'] != '0') {
-        $file['version'] = ''.$data['version'];
+      if($data['version'] != 0) {
+        $file['version'] = $data['version'];
       }
       $this->flush($file);
       $result = true;
