@@ -242,6 +242,7 @@ class CentinelaService
   {
     $file = $this->getContent();
     $result = false;
+    
     if(array_key_exists('version', $file)) {
       if(!array_key_exists('ord', $file)) {
         $file['ord'] = [];
