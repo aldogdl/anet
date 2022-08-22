@@ -148,24 +148,35 @@ class OrdenesRepository extends ServiceEntityRepository
   /**
    * from:SCP
    */
+  public function getAllIdsOrdenByAvo(int $idAvo): \Doctrine\ORM\Query
+  {
+    $dql = 'SELECT partial o.{id, est} FROM ' . Ordenes::class . ' o '.
+    'WHERE o.avo = :avo ORDER BY o.id ASC';
+    return $this->_em->createQuery($dql)->setParameter('avo', $idAvo);
+  }
+
+  /**
+   * from:SCP
+   */
   public function getAllOrdenByAvo(int $idAvo): \Doctrine\ORM\Query
   {
-      $dql = 'SELECT o, mk, md, '.
-      'partial u.{id, nombre, cargo, celular, roles}, '.
-      'partial e.{id, nombre} '.
-      'FROM ' . Ordenes::class . ' o '.
-      'JOIN o.marca mk '.
-      'JOIN o.modelo md '.
-      'JOIN o.own u '.
-      'JOIN u.empresa e '.
-      'WHERE o.avo ';
-      if($idAvo == 0) {
-        $dql = $dql . 'is NULL ORDER BY o.id DESC';
-        return $this->_em->createQuery($dql);
-      }else{
-        $dql = $dql . '= :avo ORDER BY o.id DESC';
-        return $this->_em->createQuery($dql)->setParameter('avo', $idAvo);
-      }
+    $dql = 'SELECT o, mk, md, '.
+    'partial u.{id, nombre, cargo, celular, roles}, '.
+    'partial e.{id, nombre}, partial p.{id} '.
+    'FROM ' . Ordenes::class . ' o '.
+    'JOIN o.marca mk '.
+    'JOIN o.modelo md '.
+    'JOIN o.own u '.
+    'JOIN o.piezas p '.
+    'JOIN u.empresa e '.
+    'WHERE o.avo ';
+    if($idAvo == 0) {
+      $dql = $dql . 'is NULL ORDER BY o.id DESC';
+      return $this->_em->createQuery($dql);
+    }else{
+      $dql = $dql . '= :avo ORDER BY o.id DESC';
+      return $this->_em->createQuery($dql)->setParameter('avo', $idAvo);
+    }
   }
 
   /**

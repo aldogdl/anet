@@ -246,9 +246,10 @@ class CentinelaService
       if(!array_key_exists('ord', $file)) {
         $file['ord'] = [];
       }
-      $file['ord'][$data['orden']] = $this->getSchemaOrden($data);
-      if($data['version'] != 0) {
-        $file['version'] = $data['version'];
+      $iO = ''.$data['orden'];
+      $file['ord'][$iO] = $this->getSchemaOrden($data);
+      if(''.$data['version'] != '0') {
+        $file['version'] = ''.$data['version'];
       }
       $this->flush($file);
       $result = true;
