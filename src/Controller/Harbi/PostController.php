@@ -149,8 +149,8 @@ class PostController extends AbstractController
 
 		for ($i=0; $i < $rota; $i++) {
 			if(array_key_exists('orden', $data[$i])) {
-				$ordsEm->changeSttOrdenTo($data[$i]['orden'], $data['stt']);
-				$pzasEm->changeSttPiezasTo($data[$i]['orden'], $data['stt']);
+				$ordsEm->changeSttOrdenTo($data[$i]['orden'], $data[$i]['stt']);
+				$pzasEm->changeSttPiezasTo($data[$i]['orden'], $data[$i]['stt']);
 			}
 		}
 		$centi->setEstSttFromArray($data, $ver);
