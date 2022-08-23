@@ -238,6 +238,46 @@ class CentinelaService
   }
 
   /** */
+  public function setEstSttFromArray(array $data, String $version)
+  {
+
+    $cmp = 'piezas';
+    $file = $this->getContent();
+    if(array_key_exists('version', $file)) {
+
+      if(!array_key_exists('ord', $file)) {
+        $file['ord'] = [];
+      }
+
+      $rota = count($data);
+
+      for ($i=0; $i < $rota; $i++) {
+        if(array_key_exists('orden', $data[$i])) {
+
+          $iO = ''.$data[$i]['orden'];
+          $file['ord'][$iO] = $this->getSchemaOrden($data[$i]['stt']);
+
+          if(array_key_exists($iO, $file[$cmp])) {
+    
+            $vueltas = count($file[$cmp][$iO]);
+            for ($p=0; $p < $vueltas; $p++) {
+              $pza = (string) $file[$cmp][$iO][$p];
+              if(array_key_exists($pza, $file['stt'])) {
+                $file['stt'][$pza]['e'] = $data[$i]['est'];
+                $file['stt'][$pza]['s'] = $data[$i]['stt'];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    $file['version'] = $version;
+    $this->flush($file);
+    
+  }
+
+  /** */
   public function setNewSttToOrden(array $data): bool
   {
     $file = $this->getContent();

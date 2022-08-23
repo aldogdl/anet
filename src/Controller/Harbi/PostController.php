@@ -9,11 +9,13 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Repository\AutosRegRepository;
+use App\Repository\CampaingsRepository;
 use App\Repository\OrdenesRepository;
 use App\Repository\OrdenPiezasRepository;
 use App\Repository\OrdenRespsRepository;
+use App\Repository\ScmCampRepository;
+use App\Service\CentinelaService;
 use App\Service\HarbiConnxService;
-use App\Service\ScmService;
 use App\Service\StatusRutas;
 
 class PostController extends AbstractController
@@ -88,76 +90,74 @@ class PostController extends AbstractController
 
 	
   /**
-   * Registramos para la SCM una campaña
+   * Guardamos la campaña en la BD y cambiamos stt de orden y piezas
    */
   #[Route('harbi/set-new-campaing/', methods:['post'])]
-  public function setNewCampaing(Request $req, ScmService $scmServ): Response
+  public function setNewCampaingMsg(
+    Request $req, ScmCampRepository $scmEm, CampaingsRepository $camps,
+    OrdenesRepository $ordsEm, OrdenPiezasRepository $pzasEm,
+  ): Response
   {
     $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
-    $data = $this->toArray($req, 'data');
-    if(array_key_exists('slug_camp', $data)) {
-      $scmServ->setNewMsg($data);
-      $result['abort'] = false;
-      $result['body'] = 'ok';
+    $saveStt = false;
+
+		$data = $this->toArray($req, 'data');
+    if(!array_key_exists('slug_camp', $data)) {
+      return $this->json($result);
     }
+    
+    $dql = $camps->getCampaignBySlug($data['slug_camp']);
+    $campaing = $dql->getArrayResult();
+    if($campaing) {
+			
+			$result = $scmEm->setNewCampaing($data);
+      if(!$result['abort']) {
+				$data['camp'] = $campaing[0]['id'];
+				$data['priority'] = $campaing[0]['priority'];
+				$data['id'] = $result['body'];
+        $result['body'] = $data;
+				if($data['target'] == 'orden') {
+					$ordsEm->changeSttOrdenTo($data['src']['id'], $data['stt']);
+					$pzasEm->changeSttPiezasTo($data['src']['id'], $data['stt']);
+				}
+      }
+			
+    }else{
+			$result['body'] = 'No se encontró la campaña '.$data['camp']['slug_camp'];
+    }
+		
     return $this->json($result);
   }
-
-  // /**
-  //  * Pendiente tal ves borrar
-  //  */
-  // #[Route('harbi/set-reg-campaing-scm/', methods:['post'])]
-  // public function setNewCampaingMsg(
-  //   Request $req, ScmCampRepository $scmEm, CampaingsRepository $camps,
-  //   OrdenesRepository $ordsEm, OrdenPiezasRepository $pzasEm,
-  //   CentinelaService $centinela, ScmService $scmServ
-  // ): Response
-  // {
-  //   $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
-  //   $data = $this->toArray($req, 'data');
-  //   if(!array_key_exists('camp', $data)) {
-  //     return $this->json($result);
-  //   }
+	
+  /**
+   * Cambiamos stt de ordenes y sus piezas en SR
+   */
+  #[Route('harbi/set-ests-stts/', methods:['post'])]
+  public function setEstsStts(
+    Request $req, CentinelaService $centi,
+    OrdenesRepository $ordsEm, OrdenPiezasRepository $pzasEm,
+  ): Response
+  {
+    $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
     
-  //   $dql = $camps->getCampaignBySlug($data['camp']['slug_camp']);
-  //   $campaing = $dql->getArrayResult();
+		$data = $this->toArray($req, 'data');
+		$ver  = $data['version'];
+		$data = $data['ordenes'];
+		
+		$rota = count($data);
+		if($rota == 0) {
+			return $this->json($result);
+		}
 
-  //   if($campaing) {
+		for ($i=0; $i < $rota; $i++) {
+			if(array_key_exists('orden', $data)) {
+				$ordsEm->changeSttOrdenTo($data[$i]['orden'], $data['stt']);
+				$pzasEm->changeSttPiezasTo($data[$i]['orden'], $data['stt']);
+			}
+		}
+		$centi->setEstSttFromArray($data, $ver);
 
-  //     $data['camp']['camp'] = $campaing[0]['id'];
-  //     $result = $scmEm->setNewCampaing($data['camp']);
-
-  //     if(!$result['abort']) {
-
-  //       if($data['camp']['target'] == 'orden') {
-  //         $ordsEm->changeSttOrdenTo($data['camp']['src']['id'], $data['ordS']);
-  //         $data['ordS']['orden'] = $data['camp']['src']['id'];
-  //         $data['ordS']['version'] = 0;
-  //         $isOk = $centinela->setNewSttToOrden($data['ordS']);
-  //         if($isOk) {
-  //           $pzasEm->changeSttPiezasTo($data['camp']['src']['id'], $data['pzS']);
-  //           $data['pzS']['orden'] = $data['camp']['src']['id'];
-  //           $data['pzS']['version'] = $data['verC'];
-  //           $scmServ->setNewMsg($result['body']);
-  //           $isOk = $centinela->setNewSttToPiezas($data['pzS']);
-  //           if(!$isOk) {
-  //             $result['body'] = 'Error registrando status Piezas en centinela.';
-  //           }
-  //         }else{
-  //           $result['body'] = 'Error registrando status Orden en centinela.';
-  //         }
-          
-  //         if($isOk) {
-  //           $result['abort']= false;
-  //           $result['msg']  = 'ok';
-  //         }
-  //       }
-  //       return $this->json($result);
-  //     }
-  //   }else{
-  //     $result['body'] = 'No se encontró la campaña '.$data['camp']['slug_camp'];
-  //   }
-
-  //   return $this->json($result);
-  // }
+    return $this->json($result);
+  }
+	
 }

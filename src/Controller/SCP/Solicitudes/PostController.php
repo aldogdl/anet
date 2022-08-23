@@ -3,7 +3,12 @@
 namespace App\Controller\SCP\Solicitudes;
 
 use App\Repository\OrdenPiezasRepository;
+use App\Repository\ScmCampRepository;
+use App\Repository\CampaingsRepository;
+use App\Repository\OrdenesRepository;
+use App\Service\CentinelaService;
 use App\Service\CotizaService;
+use App\Service\ScmService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -58,4 +63,21 @@ class PostController extends AbstractController
     }
     return $this->json($result);
   }
+
+  /**
+   * Registramos para la SCM una campaña
+   */
+  #[Route('scp/solicitudes/set-reg-campaing-scm/', methods:['post'])]
+  public function setNewCampaing( Request $req, ScmService $scmServ): Response
+  {
+    $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
+    $data = $this->toArray($req, 'data');
+    if(array_key_exists('slug_camp', $data)) {
+      $scmServ->setNewMsg($data);
+      $result['abort'] = false;
+      $result['body'] = 'ok';
+    }
+    return $this->json($result);
+  }
+
 }
