@@ -110,10 +110,10 @@ class PostController extends AbstractController
     $campaing = $dql->getArrayResult();
     if($campaing) {
 			
+			$data['camp'] = $campaing[0]['id'];
+			$data['priority'] = $campaing[0]['priority'];
 			$result = $scmEm->setNewCampaing($data);
       if(!$result['abort']) {
-				$data['camp'] = $campaing[0]['id'];
-				$data['priority'] = $campaing[0]['priority'];
 				$data['id'] = $result['body'];
         $result['body'] = $data;
 				if($data['target'] == 'orden') {

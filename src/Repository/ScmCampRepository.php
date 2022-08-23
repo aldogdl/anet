@@ -53,10 +53,10 @@ class ScmCampRepository extends ServiceEntityRepository
   {
 		$obj = new ScmCamp();
 		$obj->setCampaing($this->_em->getPartialReference(Campaings::class, $data['camp']));
-		$obj->setTarget($data['target']);
-		$obj->setSrc($data['src']);
 		$obj->setRemiter($this->_em->getPartialReference(NG2Contactos::class, $data['avo']));
 		$obj->setEmiter($this->_em->getPartialReference(NG2Contactos::class, $data['own']));
+		$obj->setTarget($data['target']);
+		$obj->setSrc($data['src']);
 		$obj->setSendAt($data['sendAt']);
 
 		try {
