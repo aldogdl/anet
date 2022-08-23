@@ -145,19 +145,17 @@ class PostController extends AbstractController
 		$data = $data['ordenes'];
 		
 		$rota = count($data);
-		if($rota == 0) {
-			return $this->json($result);
-		}
+		if($rota == 0) { return $this->json($result); }
 
 		for ($i=0; $i < $rota; $i++) {
-			if(array_key_exists('orden', $data)) {
+			if(array_key_exists('orden', $data[$i])) {
 				$ordsEm->changeSttOrdenTo($data[$i]['orden'], $data['stt']);
 				$pzasEm->changeSttPiezasTo($data[$i]['orden'], $data['stt']);
 			}
 		}
 		$centi->setEstSttFromArray($data, $ver);
 
-    return $this->json($result);
+    return $this->json(['abort' => false, 'msg' => 'ok', 'body' => '']);
   }
 	
 }

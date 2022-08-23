@@ -240,7 +240,6 @@ class CentinelaService
   /** */
   public function setEstSttFromArray(array $data, String $version)
   {
-
     $cmp = 'piezas';
     $file = $this->getContent();
     if(array_key_exists('version', $file)) {
