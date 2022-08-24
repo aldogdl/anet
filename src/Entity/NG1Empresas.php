@@ -36,12 +36,13 @@ class NG1Empresas
     #[ORM\OneToMany(mappedBy: 'empresa', targetEntity: NG2Contactos::class, orphanRemoval: true)]
     private $contactos;
 
-    #[ORM\OneToOne(mappedBy: 'cot', targetEntity: Filtros::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToMany(mappedBy: 'emp', targetEntity: Filtros::class)]
     private $filtros;
 
     public function __construct()
     {
         $this->contactos = new ArrayCollection();
+        $this->filtros = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -151,20 +152,34 @@ class NG1Empresas
         return $this;
     }
 
-    public function getFiltros(): ?Filtros
+    /**
+     * @return Collection<int, Filtros>
+     */
+    public function getFiltros(): Collection
     {
         return $this->filtros;
     }
 
-    public function setFiltros(Filtros $filtros): self
+    public function addFiltro(Filtros $filtro): self
     {
-        // set the owning side of the relation if necessary
-        if ($filtros->getCot() !== $this) {
-            $filtros->setCot($this);
+        if (!$this->filtros->contains($filtro)) {
+            $this->filtros[] = $filtro;
+            $filtro->setEmp($this);
         }
-
-        $this->filtros = $filtros;
 
         return $this;
     }
+
+    public function removeFiltro(Filtros $filtro): self
+    {
+        if ($this->filtros->removeElement($filtro)) {
+            // set the owning side to null (unless already changed)
+            if ($filtro->getEmp() === $this) {
+                $filtro->setEmp(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

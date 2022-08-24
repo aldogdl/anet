@@ -13,9 +13,8 @@ class Filtros
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\OneToOne(inversedBy: 'filtros', targetEntity: NG1Empresas::class, cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    private $cot;
+    #[ORM\ManyToOne(targetEntity: NG1Empresas::class, inversedBy: 'filtros')]
+    private $emp;
 
     #[ORM\ManyToOne(targetEntity: AO1Marcas::class)]
     private $marca;
@@ -40,14 +39,14 @@ class Filtros
         return $this->id;
     }
 
-    public function getCot(): ?NG1Empresas
+    public function getEmp(): ?NG1Empresas
     {
-        return $this->cot;
+        return $this->emp;
     }
 
-    public function setCot(NG1Empresas $cot): self
+    public function setEmp(?NG1Empresas $emp): self
     {
-        $this->cot = $cot;
+        $this->emp = $emp;
 
         return $this;
     }
@@ -123,5 +122,6 @@ class Filtros
 
         return $this;
     }
+
     
 }

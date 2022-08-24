@@ -30,15 +30,15 @@ class AO1Marcas
     #[ORM\OneToMany(mappedBy: 'marca', targetEntity: PiezasReg::class)]
     private $piezasReg;
 
-    #[ORM\Column(type: 'boolean')]
-    private $isGama;
+    #[ORM\Column(type: 'string', length: 1)]
+    private $grupo;
 
     public function __construct()
     {
         $this->modelos = new ArrayCollection();
         $this->regs = new ArrayCollection();
         $this->piezasReg = new ArrayCollection();
-        $this->isGama = false;
+        $this->grupo = 'c';
     }
 
     public function getId(): ?int
@@ -160,15 +160,16 @@ class AO1Marcas
         return $this;
     }
 
-    public function getIsGama(): ?bool
+    public function getGrupo(): ?string
     {
-        return $this->isGama;
+        return $this->grupo;
     }
 
-    public function setIsGama(bool $isGama): self
+    public function setGrupo(string $grupo): self
     {
-        $this->isGama = $isGama;
+        $this->grupo = $grupo;
 
         return $this;
     }
+
 }
