@@ -282,8 +282,6 @@ class GetController extends AbstractController
   public function getAllCotizadores(NG2ContactosRepository $contactos): Response
   {
     $dql = $contactos->getAllCotizadores(true);
-    $res = $dql->getArrayResult();
-    dd($res);
     return $this->json(['abort'=>false,'msg'=>'ok','body'=>$dql->getArrayResult()]);
   }
 }
