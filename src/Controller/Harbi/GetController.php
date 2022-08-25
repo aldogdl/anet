@@ -149,6 +149,41 @@ class GetController extends AbstractController
 		return $this->json($r);
 	}
 
+  
+	/** */
+	#[Route('harbi/get-campaings/{campas}/', methods:['get'])]
+	public function getCampainsOf(
+		ScmCampRepository $em, OrdenRespsRepository $resps, $campas
+	): Response
+	{
+		$response = ['abort' => false, 'msg' => 'ok', 'body' => []];
+
+		$ids = explode(',', $campas);
+		$dql = $em->getCampaingsByIds($ids);
+		$campaings = $dql->getArrayResult();
+
+		$rota = count($campaings);
+		if($rota > 0) {
+			for ($i=0; $i < $rota; $i++) {
+				$result = $resps->getTargetById($campaings[$i]['target'], $campaings[$i]['src']);
+        $campaings[$i]['err'] = '0';
+				if(!$result['abort']) {
+					$campaings[$i][$campaings[$i]['target']] = $result['body'];
+				}else{
+          $campaings[$i]['err'] = $result['body'];
+        }
+			}
+
+			$response['body'] = $campaings;
+		}else{
+			$response['abort']= true;
+			$response['msg']  = 'ERROR';
+			$response['body'] = 'No se encontraron las campañas ' . implode(',', $ids);
+		}
+    
+		return $this->json($response);
+	}
+
 	/**
    * Recuperamos los archivos que representan registros de descargas, vistas y
    * respuestas de los cotizadores ante los mensajes enviados por whatsapp
@@ -221,39 +256,6 @@ class GetController extends AbstractController
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $em->setSttRegsByIds($ids, $stt);
 		return $this->json($r);
-	}
-
-	/** */
-	#[Route('harbi/get-campaings/{campas}/', methods:['get'])]
-	public function getCampainsOf(
-		ScmCampRepository $em, OrdenRespsRepository $resps, $campas
-	): Response
-	{
-		$response = ['abort' => false, 'msg' => 'ok', 'body' => []];
-
-		$ids = explode(',', $campas);
-		$dql = $em->getCampaingsByIds($ids);
-		$campaings = $dql->getArrayResult();
-		$rota = count($campaings);
-		if($rota > 0) {
-			for ($i=0; $i < $rota; $i++) {
-				$result = $resps->getTargetById($campaings[$i]['target'], $campaings[$i]['src']);
-        $campaings[$i]['err'] = '0';
-				if(!$result['abort']) {
-					$campaings[$i][$campaings[$i]['target']] = $result['body'];
-				}else{
-          $campaings[$i]['err'] = $result['body'];
-        }
-			}
-
-			$response['body'] = $campaings;
-		}else{
-			$response['abort']= true;
-			$response['msg']  = 'ERROR';
-			$response['body'] = 'No se encontraron las campañas ' . implode(',', $ids);
-		}
-    
-		return $this->json($response);
 	}
 
 	/** */

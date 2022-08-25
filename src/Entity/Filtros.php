@@ -28,6 +28,12 @@ class Filtros
     #[ORM\Column(type: 'string', length: 100)]
     private $pieza;
 
+    /**
+     * e = Excepción, Todas menos esta, no manejo esta
+     * r = Restricción, Solo esta, Manejo solo esta
+     * g = Alta Gama, Manejo solo marcas prestigiosas
+     * c = Comerciales, Manejo solo marcas comunes
+     */
     #[ORM\Column(type: 'string', length: 1)]
     private $grupo;
 
