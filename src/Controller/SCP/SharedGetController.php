@@ -69,7 +69,7 @@ class SharedGetController extends AbstractController
 
     // Recuperamos las respuestas
 		$dql = $rpsEm->getRespuestaByIds($partes);
-    $r['body'] = $dql->getArrayResult();
+    $r['body'] = $dql->getScalarResult();
 		return $this->json($r);
 	}
 
