@@ -61,8 +61,8 @@ class SharedGetController extends AbstractController
 	}
 
   /** Recuperamos la respuesta por su ID */
-	#[Route('scp/get-resp-by-ids/{ids}/', methods:['get'])]
-	public function getRespuestaByIds( OrdenRespsRepository $rpsEm, $ids ): Response
+	#[Route('scp/get-resp-por-ids/{ids}/', methods:['get'])]
+	public function getRespuestaPorIds( OrdenRespsRepository $rpsEm, $ids ): Response
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $partes = explode(',', $ids);
