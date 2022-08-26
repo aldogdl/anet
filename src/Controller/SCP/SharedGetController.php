@@ -47,7 +47,7 @@ class SharedGetController extends AbstractController
 
   /** Recuperamos las respuestas y colocamos el nuevo statu a las piezas */
 	#[Route('scp/get-resps-by-pzas/{ids}/', methods:['get'])]
-	public function getRespuestaByIds(
+	public function getRespuestaByPiezas(
     OrdenRespsRepository $rpsEm, $ids
   ): Response
 	{
@@ -57,6 +57,19 @@ class SharedGetController extends AbstractController
     // Recuperamos las respuestas
 		$dql = $rpsEm->getRespsByIdPzas($partes);
     $r['body'] = $dql->getScalarResult();
+		return $this->json($r);
+	}
+
+  /** Recuperamos la respuesta por su ID */
+	#[Route('scp/get-resp-by-ids/{ids}/', methods:['get'])]
+	public function getRespuestaByIds( OrdenRespsRepository $rpsEm, $ids ): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $partes = explode(',', $ids);
+
+    // Recuperamos las respuestas
+		$dql = $rpsEm->getRespuestaByIds($partes);
+    $r['body'] = $dql->getArrayResult();
 		return $this->json($r);
 	}
 
