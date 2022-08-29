@@ -116,10 +116,10 @@ class PostController extends AbstractController
       if(!$result['abort']) {
 				$data['id'] = $result['body'];
         $result['body'] = $data;
-				if($data['target'] == 'orden') {
-					$ordsEm->changeSttOrdenTo($data['src']['id'], $data['stt']);
-					$pzasEm->changeSttPiezasTo($data['src']['id'], $data['stt']);
-				}
+				// if($data['target'] == 'orden') {
+				// 	$ordsEm->changeSttOrdenTo($data['src']['id'], $data['stt']);
+				// 	$pzasEm->changeSttPiezasTo($data['src']['id'], $data['stt']);
+				// }
       }
 			
     }else{
@@ -153,7 +153,10 @@ class PostController extends AbstractController
 				$pzasEm->changeSttPiezasTo($data[$i]['orden'], $data[$i]['stt']);
 			}
 		}
-		$centi->setEstSttFromArray($data, $ver);
+		
+		if($ver != 'none') {
+			$centi->setEstSttFromArray($data, $ver);
+		}
 
     return $this->json(['abort' => false, 'msg' => 'ok', 'body' => '']);
   }
