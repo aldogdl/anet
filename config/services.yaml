@@ -1,6 +1,7 @@
 parameters:
     phtml      : '%kernel.project_dir%/public_html'
     datafix    : '%phtml%/datafix/'
+    rutas      : '%datafix%/rutas.json'
     centiSchema: '%phtml%/cent_schema/centi_schema.json'
     scm        : '%phtml%/scm/'
     imgOrdTmp  : '%phtml%/to_orden_tmp/'
@@ -9,10 +10,10 @@ parameters:
     imgOrdRsp  : '%phtml%/to_orden_rsp/'
     ordAsigns  : '%phtml%/ordenes_asigns/'
     centinela  : '%phtml%/centinela.json'
-    filtros    : '%phtml%/filtros/'
-    filtrosF   : '%datafix%/filtros.json'
-    rutas      : '%datafix%/rutas.json'
     harbiConnx : '%phtml%/harbi_connx.json'
+    filtros    : '%phtml%/filtros/'
+    filtrosF   : '%filtros%/filtros.json'
+    filNoTgo   : '%filtros%/filnotgo.json'
 
 services:
     # default configuration for services in *this* file

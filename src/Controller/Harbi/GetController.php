@@ -80,13 +80,13 @@ class GetController extends AbstractController
     $scmSee = $scm->hasRegsOf('see');
     $scmResp = $scm->hasRegsOf('rsp');
     $camping = $scm->hasRegsOf('json');
-    $filCnt = $filtros->hasFiltrosOf('cnt');
-    $filCnm = $filtros->hasFiltrosOf('cnm');
+    $filNtg  = $filtros->hasRegNoTng();
+    $filCnm = false;
     $asigns  = $ordAsigns->hasContent();
 
     $result = [
       'centinela' => !$isSame, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
-      'camping' => $camping, 'filCnt' => $filCnt, 'filCnm' => $filCnm, 'asigns' => $asigns
+      'camping' => $camping, 'filNtg' => $filNtg, 'filCnm' => $filCnm, 'asigns' => $asigns
     ];
 
     return $this->json(['abort'=>false, 'body' => $result]);
@@ -285,5 +285,13 @@ class GetController extends AbstractController
   {
     $dql = $contactos->getAllCotizadores(true);
     return $this->json(['abort'=>false,'msg'=>'ok','body'=>$dql->getArrayResult()]);
+  }
+
+  /** */
+  #[Route('harbi/build-file-ntg/', methods:['get'])]
+  public function buildFileNtg(FiltrosService $filtros): Response
+  {
+    $filtros->setTheRegsInFileNoTengo(true);
+    return $this->json(['abort'=>false,'msg'=>'ok','body'=>[]]);
   }
 }

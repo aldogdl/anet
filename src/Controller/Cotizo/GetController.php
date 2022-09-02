@@ -57,12 +57,15 @@ class GetController extends AbstractController
 		return $this->json(['abort' => false, 'body' => $ordens]);
 	}
 
-	#[Route('cotizo/set-new-filtro/{filtro}/', methods:['get'])]
-	public function setNewFiltro(FiltrosService $filerFS, String $filtro): Response
+	/** 
+	 * Recibimos todas las ordenes que tiene el cotizador en su dispositivo guardadas 
+	 * y retornamos las que ya no estan disponibles.
+	 */
+	#[Route('cotizo/get-all-ntg-filtros/{idsOrds}/', methods:['get'])]
+	public function getAllMyNoTengoFiltro(FiltrosService $filerFS, String $idsOrds): Response
 	{
-		// El parametro filtro debe venir con la extencion adecuada (.cnt | .cnm)
-		$dql = $filerFS->setNewFiltro($filtro);
-		return $this->json(['abort' => false, 'body' => 'ok']);
+		$caducadas = $filerFS->getMyNoTengo(explode(',', $idsOrds));
+		return $this->json(['abort' => false, 'body' => $caducadas]);
 	}
 
 }

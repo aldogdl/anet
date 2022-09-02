@@ -15,6 +15,7 @@ use App\Repository\OrdenesRepository;
 use App\Repository\OrdenPiezasRepository;
 use App\Repository\OrdenRespsRepository;
 use App\Service\CotizaService;
+use App\Service\FiltrosService;
 use App\Service\ScmService;
 use App\Service\StatusRutas;
 
@@ -83,6 +84,15 @@ class PostController extends AbstractController
     }
     
     return $this->json($result);
+  }
+
+  /** Guardamos archivo que indique que un cotizador no tiene la pieza */
+  #[Route('cotizo/set-no-tengo/', methods:['post'])]
+  public function setNoTengoPza(Request $req, FiltrosService $ntg): Response
+  {
+    $data = $this->toArray($req, 'data');
+    $ntg->setNewRegNoTengo($data['ord'].'-'.$data['cot'].'-'.$data['pza'].'.ntg');
+    return $this->json(['abort' => false, 'body' => []]);
   }
 
 }

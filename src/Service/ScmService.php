@@ -12,7 +12,6 @@ class ScmService
   private $scm = 'scm';
   private $params;
   private $filesystem;
-  private $lock;
 
   public function __construct(ParameterBagInterface $container)
   {
