@@ -50,6 +50,10 @@ class FiltrosService
   /** */
   public function setNewRegNoTengo(String $filename)
   {
+    $path = $this->params->get($this->nameFolder);
+    if(!$this->filesystem->exists($path)) {
+      $this->filesystem->mkdir($path);
+    }
     $path = Path::normalize($this->params->get($this->nameFolder) .'/'. $filename);
     file_put_contents($path, '');
   }
