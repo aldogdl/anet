@@ -5,6 +5,7 @@
 .env.local.php
 .env.*.local
 .env
+.well-known
 error_log
 config/secrets/prod/prod.decrypt.private.php
 public_html/bundles/

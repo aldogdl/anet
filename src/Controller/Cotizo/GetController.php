@@ -15,8 +15,8 @@ use App\Service\ScmService;
 class GetController extends AbstractController
 {
 
-	#[Route('api/cotizo/is-tokenapz-caducado/', methods:['get'])]
-	public function isTokenApzCaducado(): Response
+	#[Route('api/cotizo/is-token-caducado/', methods:['get'])]
+	public function isTokenCaducado(): Response
 	{
 	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => ['nop' => 'nop']]);
 	}
