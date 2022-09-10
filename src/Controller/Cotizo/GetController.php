@@ -15,6 +15,12 @@ use App\Service\ScmService;
 class GetController extends AbstractController
 {
 
+	#[Route('api/cotizo/is-tokenapz-caducado/', methods:['get'])]
+	public function isTokenApzCaducado(): Response
+	{
+	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => ['nop' => 'nop']]);
+	}
+	
 	/** Recuperamos el id y los roles del usuario */
 	#[Route('cotizo/get-user-by-campo', methods:['get'])]
 	public function getUserByCampo(NG2ContactosRepository $contacsEm, Request $req): Response
