@@ -69,4 +69,16 @@ class AO1MarcasRepository extends ServiceEntityRepository
         return $this->_em->createQuery($dql);
     }
 
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function getAllMarcas(): \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT mrk FROM ' . AO1Marcas::class . ' mrk '.
+        'ORDER BY mrk.nombre ASC';
+
+        return $this->_em->createQuery($dql);
+    }
+
 }
