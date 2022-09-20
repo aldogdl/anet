@@ -33,7 +33,7 @@ class SharedPostController extends AbstractController
   }
 
   /***/
-  #[Route('scp/seve-data-contact/', methods:['post'])]
+  #[Route('scp/guardar-datos-empcontac/', methods:['post'])]
   public function seveDataContact(
     Request $req, NG1EmpresasRepository $empEm,
     NG2ContactosRepository $contactsEm,
