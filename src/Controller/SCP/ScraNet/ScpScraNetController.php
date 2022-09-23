@@ -56,8 +56,11 @@ class ScpScraNetController extends AbstractController
   #[Route('scp/scranet/get-modelos-by-idmrk/{idmrk}/', methods: ['get'])]
   public function getAllModelosByIdMarca(AO2ModelosRepository $mdsEm, int $idmrk): Response
   {
-    $result = $mdsEm->getAllModelosByIdMarca($idmrk);
-    return $this->json($result);
+    $dql = $mdsEm->getAllModelosByIdMarca($idmrk);
+    return $this->json([
+      'abort' => false, 'msg' => 'ok',
+      'body' => $dql->getScalarResult()
+    ]);
   }
 
 
