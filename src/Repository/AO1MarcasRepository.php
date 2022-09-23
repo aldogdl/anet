@@ -91,7 +91,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 	public function getMarcaById(int $id): \Doctrine\ORM\Query
 	{
 		$dql = 'SELECT mrk FROM ' . AO1Marcas::class . ' mrk '.
-		'mrk.id = :id';
+		'WHERE mrk.id = :id';
 
 		return $this->_em->createQuery($dql)->setParameter('id', $id);
 	}
