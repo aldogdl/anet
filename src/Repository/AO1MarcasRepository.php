@@ -111,7 +111,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 				$mrk = $obj[0];
 			}
 		}
-		
+
 		$mrk->setNombre($marca['nombre']);
 		$mrk->setLogo($marca['logo']);
 		$mrk->setGrupo($marca['grupo']);
@@ -130,6 +130,8 @@ class AO1MarcasRepository extends ServiceEntityRepository
 			$this->result['msg'] = $th->getMessage();
 			$this->result['body'] = 'No se guardo la marca';
 		}
+
+		return $this->result;
 	}
 
 }
