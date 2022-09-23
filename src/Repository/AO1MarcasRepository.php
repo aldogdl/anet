@@ -112,7 +112,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 			}
 		}
 
-		$mrk->setNombre($marca['nombre']);
+		$mrk->setNombre($marca['marca']);
 		$mrk->setLogo($marca['logo']);
 		$mrk->setGrupo($marca['grupo']);
 		if(array_key_exists('simyls', $marca)) {
