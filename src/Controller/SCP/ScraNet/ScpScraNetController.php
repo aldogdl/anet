@@ -3,6 +3,7 @@
 namespace App\Controller\SCP\ScraNet;
 
 use App\Repository\AO1MarcasRepository;
+use App\Repository\AO2ModelosRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -53,9 +54,9 @@ class ScpScraNetController extends AbstractController
 
   /** */
   #[Route('scp/scranet/get-modelos-by-idmrk/{idmrk}/', methods: ['get'])]
-  public function getAllModelosByIdMarca(AO1MarcasRepository $mrksEm, int $idmrk): Response
+  public function getAllModelosByIdMarca(AO2ModelosRepository $mdsEm, int $idmrk): Response
   {
-    $result = $mrksEm->getAllModelosByIdMarca($idmrk);
+    $result = $mdsEm->getAllModelosByIdMarca($idmrk);
     return $this->json($result);
   }
 
