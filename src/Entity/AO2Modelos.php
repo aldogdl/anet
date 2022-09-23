@@ -28,6 +28,9 @@ class AO2Modelos
     #[ORM\OneToMany(mappedBy: 'modelo', targetEntity: PiezasReg::class)]
     private $piezasReg;
 
+    #[ORM\Column(type: 'json')]
+    private $simyls = [];
+
     public function __construct()
     {
         $this->regs = new ArrayCollection();
@@ -119,6 +122,18 @@ class AO2Modelos
                 $piezasReg->setModelo(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSimyls(): ?array
+    {
+        return $this->simyls;
+    }
+
+    public function setSimyls(array $simyls): self
+    {
+        $this->simyls = $simyls;
 
         return $this;
     }
