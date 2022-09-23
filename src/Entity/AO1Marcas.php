@@ -33,12 +33,15 @@ class AO1Marcas
     #[ORM\Column(type: 'string', length: 1)]
     private $grupo;
 
+    #[ORM\Column(type: 'json')]
+    private $simyls = [];
+
     public function __construct()
     {
         $this->modelos = new ArrayCollection();
         $this->regs = new ArrayCollection();
         $this->piezasReg = new ArrayCollection();
-        $this->grupo = 'c';
+        $this->grupo = 'b';
     }
 
     public function getId(): ?int
@@ -168,6 +171,18 @@ class AO1Marcas
     public function setGrupo(string $grupo): self
     {
         $this->grupo = $grupo;
+
+        return $this;
+    }
+
+    public function getSimyls(): ?array
+    {
+        return $this->simyls;
+    }
+
+    public function setSimyls(array $simyls): self
+    {
+        $this->simyls = $simyls;
 
         return $this;
     }
