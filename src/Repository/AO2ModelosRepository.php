@@ -2,14 +2,13 @@
 
 namespace App\Repository;
 
-use App\Entity\AO1Marcas;
-use App\Entity\AO2Modelos;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+
+use App\Entity\AO1Marcas;
+use App\Entity\AO2Modelos;
 
 /**
  * @method AO2Modelos|null find($id, $lockMode = null, $lockVersion = null)
@@ -21,7 +20,7 @@ class AO2ModelosRepository extends ServiceEntityRepository
 {
 
 	private $result = ['abort' => false, 'msg' => 'ok', 'body' => []];
-	
+
 	public function __construct(ManagerRegistry $registry)
 	{
 		parent::__construct($registry, AO2Modelos::class);

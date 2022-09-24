@@ -2,11 +2,12 @@
 
 namespace App\Repository;
 
-use App\Entity\AO1Marcas;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+
+use App\Entity\AO1Marcas;
 
 /**
  * @method AO1Marcas|null find($id, $lockMode = null, $lockVersion = null)
@@ -65,7 +66,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 	 */
 	public function getAllAutos(): \Doctrine\ORM\Query
 	{
-		$dql = 'SELECT mrk, partial md.{id, nombre} FROM ' . AO1Marcas::class . ' mrk '.
+		$dql = 'SELECT mrk, partial md.{id, nombre, simyls} FROM ' . AO1Marcas::class . ' mrk '.
 		'JOIN mrk.modelos md '.
 		'ORDER BY mrk.nombre ASC';
 
