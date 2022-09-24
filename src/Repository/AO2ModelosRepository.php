@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\AO1Marcas;
 use App\Entity\AO2Modelos;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\EntityManager;
@@ -60,6 +61,54 @@ class AO2ModelosRepository extends ServiceEntityRepository
 
 		return $this->_em->createQuery($dql)->setParameter('idMarca', $idMarca);
 	}
+	
 
+	/**
+	 * @throws ORMException
+	 * @throws OptimisticLockException
+	 */
+	public function getModeloById(int $id): \Doctrine\ORM\Query
+	{
+		$dql = 'SELECT md FROM ' . AO2Modelos::class . ' md '.
+		'WHERE md.id = :id ';
 
+		return $this->_em->createQuery($dql)->setParameter('id', $id);
+	}
+	
+	/**
+	 * @throws ORMException
+	 * @throws OptimisticLockException
+	 */
+	public function setModelo(array $modelo)
+	{
+		$mdl = new AO2Modelos();
+		if($modelo['id'] != 0) {
+			$dql = $this->getModeloById($modelo['id']);
+			$obj = $dql->execute();
+			if($obj) {
+				$mdl = $obj[0];
+			}
+		}else{
+			$mdl->setMarca($this->_em->getPartialReference(AO1Marcas::class, $modelo['mrkId']));
+		}
+
+		$mdl->setNombre($modelo['modelo']);
+		if(array_key_exists('simyls', $modelo)) {
+			$mdl->setSimyls($modelo['simyls']);
+		}else{
+			$mdl->setSimyls(['radec' => '0', 'aldo' => '0']);
+		}
+
+		$this->_em->persist($mdl);
+		try {
+			$this->_em->flush();
+			$this->result['body'] = $mdl->getId();
+		} catch (\Throwable $th) {
+			$this->result['abort'] = true;
+			$this->result['msg'] = $th->getMessage();
+			$this->result['body'] = 'No se guardo el Modelo';
+		}
+
+		return $this->result;
+	}
 }

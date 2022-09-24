@@ -53,6 +53,15 @@ class ScpScraNetController extends AbstractController
   }
 
   /** */
+  #[Route('scp/scranet/set-modelo/', methods: ['post'])]
+  public function setModelo(Request $req, AO2ModelosRepository $mdsEm): Response
+  {
+    $data = $this->toArray($req, 'data');
+    $result = $mdsEm->setModelo($data);
+    return $this->json($result);
+  }
+
+  /** */
   #[Route('scp/scranet/get-modelos-by-idmrk/{idmrk}/', methods: ['get'])]
   public function getAllModelosByIdMarca(AO2ModelosRepository $mdsEm, int $idmrk): Response
   {
