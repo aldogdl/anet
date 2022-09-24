@@ -19,6 +19,9 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class AO2ModelosRepository extends ServiceEntityRepository
 {
+
+	private $result = ['abort' => false, 'msg' => 'ok', 'body' => []];
+	
 	public function __construct(ManagerRegistry $registry)
 	{
 		parent::__construct($registry, AO2Modelos::class);
