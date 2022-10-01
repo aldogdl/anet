@@ -16,9 +16,12 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class PiezasNameRepository extends ServiceEntityRepository
 {
+
+    private $result = ['abort' => false, 'msg' => 'ok', 'body' => []];
+
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, PiezasReg::class);
+        parent::__construct($registry, PiezasName::class);
     }
 
     /**
@@ -29,7 +32,13 @@ class PiezasNameRepository extends ServiceEntityRepository
     {
         $this->_em->persist($entity);
         if ($flush) {
-            $this->_em->flush();
+            try {
+                $this->_em->flush();
+                $this->result['body'] = $entity->getId();
+            } catch (\Throwable $th) {
+                $this->result['abort'] = true;
+                $this->result['msg'] = $th->getMessage();
+            }
         }
     }
 
@@ -41,36 +50,67 @@ class PiezasNameRepository extends ServiceEntityRepository
     {
         $this->_em->remove($entity);
         if ($flush) {
-            $this->_em->flush();
+            try {
+                $this->_em->flush();
+            } catch (\Throwable $th) {
+                $this->result['abort'] = true;
+                $this->result['msg'] = $th->getMessage();
+            }
         }
     }
 
-    // /**
-    //  * @return PiezasReg[] Returns an array of PiezasReg objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function getPiezaById(int $id): \Doctrine\ORM\Query
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('p.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        $dql = 'SELECT p FROM ' . PiezasName::class . ' p '.
+        'WHERE p.id = :id';
+        return $this->_em->createQuery($dql)->setParameter('id', $id);
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?PiezasReg
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function setPieza(array $pieza): array
     {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        $obj = new PiezasName();
+        if(!array_key_exists('stt', $pieza)) {
+            $dql = $this->getPiezaById($pieza['id']);
+            $tmp = $dql->execute();
+            if($tmp) {
+                $obj = $tmp[0];
+            }
+        }
+        $obj->setNombre($pieza['value']);
+        $obj->setSimyls($pieza['simyls']);
+        $this->add($obj);
+        if($this->result['abort']) {
+            $this->result['body'] = 'No se pudo guardar la pieza';
+        }
+        return $this->result;
     }
-    */
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function delPieza(array $pieza): array
+    {
+        $dql = $this->getPiezaById($pieza['id']);
+        $tmp = $dql->execute();
+        if($tmp) {
+            $obj = $tmp[0];
+            $this->remove($obj);
+            if($this->result['abort']) {
+                $this->result['body'] = 'No se pudo borrar la pieza';
+            }
+        }
+
+        return $this->result;
+    }
+
+
 }

@@ -4,6 +4,7 @@ namespace App\Controller\SCP\ScraNet;
 
 use App\Repository\AO1MarcasRepository;
 use App\Repository\AO2ModelosRepository;
+use App\Repository\PiezasNameRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -41,6 +42,23 @@ class ScpScraNetController extends AbstractController
       'abort' => false, 'msg' => 'ok',
       'body' => $dql->getScalarResult()
     ]);
+  }
+
+  /** */
+  #[Route('scp/scranet/set-pieza/', methods: ['post'])]
+  public function setPieza(Request $req, PiezasNameRepository $pzaEm): Response
+  {
+    $data = $this->toArray($req, 'data');
+    $result = $pzaEm->setPieza($data);
+    return $this->json($result);
+  }
+
+  /** */
+  #[Route('scp/scranet/del-pieza/{idPza}/', methods: ['get'])]
+  public function delPieza(PiezasNameRepository $pzaEm, $idPza): Response
+  {
+    $result = $pzaEm->delPieza($idPza);
+    return $this->json($result);
   }
 
   /** */

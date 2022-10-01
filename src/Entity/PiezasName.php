@@ -21,6 +21,9 @@ class PiezasName
     #[ORM\OneToMany(mappedBy: 'pieza', targetEntity: PiezasReg::class)]
     private $piezasReg;
 
+    #[ORM\Column(type: 'json')]
+    private $simyls = [];
+
     public function __construct()
     {
         $this->piezasReg = new ArrayCollection();
@@ -69,6 +72,18 @@ class PiezasName
                 $piezasReg->setPieza(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSimyls(): ?array
+    {
+        return $this->simyls;
+    }
+
+    public function setSimyls(array $simyls): self
+    {
+        $this->simyls = $simyls;
 
         return $this;
     }
