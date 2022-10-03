@@ -3,10 +3,6 @@
 namespace App\Controller\SCP\Solicitudes;
 
 use App\Repository\OrdenPiezasRepository;
-use App\Repository\ScmCampRepository;
-use App\Repository\CampaingsRepository;
-use App\Repository\OrdenesRepository;
-use App\Service\CentinelaService;
 use App\Service\CotizaService;
 use App\Service\ScmService;
 use Symfony\Component\HttpFoundation\Response;

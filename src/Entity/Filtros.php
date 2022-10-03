@@ -22,23 +22,34 @@ class Filtros
     #[ORM\ManyToOne(targetEntity: AO2Modelos::class)]
     private $modelo;
 
-    #[ORM\Column(type: 'integer')]
-    private $anio;
-
     #[ORM\Column(type: 'string', length: 100)]
     private $pieza;
 
     /**
-     * e = Excepción, Todas menos esta, no manejo esta
-     * r = Restricción, Solo esta, Manejo solo esta
-     * g = Alta Gama, Manejo solo marcas prestigiosas
-     * c = Comerciales, Manejo solo marcas comunes
+     * a = Alta Gama, Manejo solo marcas prestigiosas
+     * b = Comerciales, Manejo solo marcas comunes
+     * c = Comerciales, Manejo Multimarcas
+     * d = Restricción, Solo esta, Manejo solo esta
+     * e = Excepción, Todas Excepto esta, no manejo esta
      */
-    #[ORM\Column(type: 'string', length: 1)]
+    #[ORM\Column(type: 'string', length: 15)]
     private $grupo;
 
     #[ORM\ManyToOne(targetEntity: PiezasName::class)]
     private $pza;
+
+    #[ORM\Column(type: 'string', length: 4)]
+    private $anioD;
+
+    #[ORM\Column(type: 'string', length: 4)]
+    private $anioH;
+
+    public function __construct()
+    {
+        $this->anioD = '0';
+        $this->anioH = '0';
+        $this->pieza = '0';
+    }
 
     public function getId(): ?int
     {
@@ -81,18 +92,6 @@ class Filtros
         return $this;
     }
 
-    public function getAnio(): ?int
-    {
-        return $this->anio;
-    }
-
-    public function setAnio(int $anio): self
-    {
-        $this->anio = $anio;
-
-        return $this;
-    }
-
     public function getPieza(): ?string
     {
         return $this->pieza;
@@ -129,5 +128,28 @@ class Filtros
         return $this;
     }
 
-    
+    public function getAnioD(): ?string
+    {
+        return $this->anioD;
+    }
+
+    public function setAnioD(string $anioD): self
+    {
+        $this->anioD = $anioD;
+
+        return $this;
+    }
+
+    public function getAnioH(): ?string
+    {
+        return $this->anioH;
+    }
+
+    public function setAnioH(string $anioH): self
+    {
+        $this->anioH = $anioH;
+
+        return $this;
+    }
+
 }
