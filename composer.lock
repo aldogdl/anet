@@ -139,7 +139,7 @@
                     "email": "schmittjoh@gmail.com"
                 }
             ],
-            "description": "PHP Doctrine Cache library is a popular cache implementation that supports many different drivers such as redis, memcache, apc, mongodb and others.",
+            "description": "PHP Doctrine Cache library is popular cache implementation that supports many different drivers such as redis, memcache, apc, mongodb and others.",
             "homepage": "https://www.doctrine-project.org/projects/cache.html",
             "keywords": [
                 "abstraction",
