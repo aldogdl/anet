@@ -8,6 +8,7 @@
 .well-known
 error_log
 config/secrets/prod/prod.decrypt.private.php
+config/saf.json
 public_html/bundles/
 public_html/datafix/
 public_html/cotiza/

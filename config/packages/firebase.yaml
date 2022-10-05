@@ -1,5 +1,5 @@
 kreait_firebase:
     projects:
         my_project:
-            credentials: '%kernel.project_dir%/config/service-account-file.json'
+            credentials: '%kernel.project_dir%/config/saf.json'
             public : false
