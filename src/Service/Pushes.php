@@ -43,7 +43,7 @@ class Pushes
         try {
             $tokensValid = $this->messaging->validateRegistrationTokens($deviceTokens);
             $sendReport = $this->messaging->sendMulticast($msg, $deviceTokens, true);
-            $res = 'sended';
+            $res = 'enviado';
         } catch (InvalidMessage $e) {
             $res = $e->errors();
         }
