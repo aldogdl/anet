@@ -2,14 +2,14 @@
 
 namespace App\Controller\SCM;
 
-use App\Repository\NG2ContactosRepository;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+use App\Repository\NG2ContactosRepository;
+use App\Service\Pushes;
 
 class GetController extends AbstractController
 {
@@ -49,5 +49,12 @@ class GetController extends AbstractController
       'msg'  => ($rota > 0) ? 'ok' : 'Sin Resultados',
       'body' => ($rota > 0) ? $result[0] : []
     ]);
+  }
+
+  #[Route('scm/push/', methods: ['get'])]
+  public function pushPr(Pushes $push): Response
+  {
+      $res = $push->sendToOwnOfIdType([]);
+      return $this->json($res);
   }
 }

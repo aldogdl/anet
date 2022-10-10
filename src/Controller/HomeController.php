@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Service\Pushes;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,12 +29,4 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('push/pr/', methods: ['get'])]
-    public function pushPr(Pushes $push): Response
-    {
-        $res = $push->sendToOwnOfIdType([
-            'df0q-LdpT2-w_axhZEFKuV:APA91bHJGhBWXOMOjZ7zrY2AwXpoYuhtCyzS9XbIZoyLyCIDMYOQ2wv8x6R-FnPY7G5BiRsz3x6g_2kpcY2tN9K6ae2bHXO0U-5G7XDaqZR9XZzJSod3xSpM3noRIp5E6VsD0FgyPkNw'
-        ]);
-        return $this->json(['send' => $res]);
-    }
 }

@@ -11,8 +11,6 @@ class FiltrosService
 {
   // En esta carpeta se guardan todos los nuevos filtros
   private $nameFolder = 'filtros';
-  // Este es el archivo que almacena todos los filtros
-  private $nameFile = 'filtrosF';
   private $nameNtg = 'filNoTgo';
   private $params;
   private $filesystem;
@@ -46,6 +44,22 @@ class FiltrosService
     return [];
   }
 
+  /** */
+  private function getContent(): array
+  {
+    $filtros = [];
+    $fileMain = $this->params->get($this->nameNtg);
+    if($this->filesystem->exists($fileMain)) {
+      $filtros = json_decode( file_get_contents($fileMain), true );
+    }    
+    return $filtros;
+  }
+
+  /** */
+  public function downloadFiltros(): array
+  {
+    return $this->getContent();
+  }
 
   /** */
   public function setNewRegNoTengo(String $filename)
@@ -58,31 +72,15 @@ class FiltrosService
     file_put_contents($path, '');
   }
 
-  /**
-   * Buscamos si algun cotizador ha dicho no la tengo
-   *@return La cantidad de registros encontrados
-  */
-  public function hasRegNoTng(): int
-  {
-    $path = $this->params->get($this->nameFolder);
-    if(!$this->filesystem->exists($path)) {
-      $this->filesystem->mkdir($path);
-      return 0;
-    }else{
-      $finder = new Finder();
-      $finder->files()->in($path)->name('*.ntg');
-      return $finder->count();
-    }
-  }
-
   /** 
    * Cada ves que harbi detecte que son 10 o mas registros, se guardará
    * en el archivo oficial de filtros.
   */
-  public function setTheRegsInFileNoTengo()
+  public function setTheRegsInFileNoTengo(): bool
   {
     $path = $this->params->get($this->nameFolder);
     $fileMain = $this->params->get($this->nameNtg);
+    $hasChanges = false;
 
     // Primeramente recogemos todos los datos de los archivos registro
     $archivos = [];
@@ -99,6 +97,7 @@ class FiltrosService
     $rota = count($archivos);
     if($rota > 0) {
 
+      $hasChanges = true;
       if($this->filesystem->exists($fileMain)) {
         $content = json_decode( file_get_contents($fileMain), true );
       }
@@ -115,6 +114,7 @@ class FiltrosService
         // [2] = El id de la pieza que no tiene
         $has = count($partes);
         if($has > 0) {
+
           // Revisamos si la orden ya existe entre la primera key
           if(array_key_exists($partes[0], $content)) {
             if(array_key_exists($partes[1], $content[$partes[0]])) {
@@ -135,7 +135,7 @@ class FiltrosService
       file_put_contents($fileMain, json_encode($content));
     }
     
-    return;
+    return $hasChanges;
   }
 
   /**

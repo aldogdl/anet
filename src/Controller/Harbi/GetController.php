@@ -38,17 +38,6 @@ class GetController extends AbstractController
   }
 
   /**
-   * Descargamos el contenido del centinela cuando el FTP no funciona
-   */
-  #[Route('harbi/download-centinela/', methods:['get'])]
-  public function downloadCentinela(CentinelaService $centinela): Response
-  {
-    return $this->json(
-      ['abort' => false, 'msg' => 'ok','body' => $centinela->downloadCentinela()]
-    );
-  }
-
-  /**
    * Checamos prueba de conexion con retorno sencillo
    */
   #[Route('harbi/check-connx/', methods:['get'])]
@@ -80,16 +69,38 @@ class GetController extends AbstractController
     $scmSee = $scm->hasRegsOf('see');
     $scmResp = $scm->hasRegsOf('rsp');
     $camping = $scm->hasRegsOf('json');
-    $filNtg  = $filtros->hasRegNoTng();
-    $filCnm = false;
+    $filNtg  = $filtros->setTheRegsInFileNoTengo();
     $asigns  = $ordAsigns->hasContent();
 
     $result = [
       'centinela' => !$isSame, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
-      'camping' => $camping, 'filNtg' => $filNtg, 'filCnm' => $filCnm, 'asigns' => $asigns
+      'camping' => $camping, 'filNtg' => $filNtg, 'asigns' => $asigns
     ];
 
     return $this->json(['abort'=>false, 'body' => $result]);
+  }
+
+  
+  /**
+   * Descargamos el contenido del centinela cuando el FTP no funciona
+   */
+  #[Route('harbi/download-centinela/', methods:['get'])]
+  public function downloadCentinela(CentinelaService $centinela): Response
+  {
+    return $this->json(
+      ['abort' => false, 'msg' => 'ok', 'body' => $centinela->downloadCentinela()]
+    );
+  }
+  
+  /**
+   * Descargamos el contenido del archivo de filtros cuando el FTP no funciona
+   */
+  #[Route('harbi/download-filtros/', methods:['get'])]
+  public function downloadFiltrosFile(FiltrosService $filtros): Response
+  {
+    return $this->json(
+      ['abort' => false, 'msg' => 'ok', 'body' => $filtros->downloadFiltros()]
+    );
   }
 
   /**
@@ -198,7 +209,7 @@ class GetController extends AbstractController
 
   /**
    * Cada cotizador cuando abre una solicitud de cotización actualiza un registro de la
-   * tabla scm_receivers, por lo tanto, esos son los ids de bienen en el parametro para
+   * tabla scm_receivers, por lo tanto, esos son los ids que vienen en el parametro para
    * poder extraer el id de la orden y el id del avo para enviarles un push.
   */
 	#[Route('harbi/get-regs-push-see-byids/{ids}/', methods:['get'])]
@@ -206,6 +217,19 @@ class GetController extends AbstractController
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $dql = $em->getRegsPushSeeByids(explode(',', $ids));
+    $r['body'] = $dql->getScalarResult();
+		return $this->json($r);
+	}
+
+  /**
+   * Todos los registros de los receptores a los cuales se les ha enviado un msg
+   * para una solicitud de cotizacion por medio de whatsapp
+  */
+	#[Route('harbi/get-regs-receivers-by-id-camp/{id}/', methods:['get'])]
+	public function getRegsReceiversByIdCamp(ScmReceiversRepository $em, String $id): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    $dql = $em->getRegsReceiversByIdCamp($id);
     $r['body'] = $dql->getScalarResult();
 		return $this->json($r);
 	}
@@ -287,11 +311,4 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false,'msg'=>'ok','body'=>$dql->getArrayResult()]);
   }
 
-  /** */
-  #[Route('harbi/build-file-ntg/', methods:['get'])]
-  public function buildFileNtg(FiltrosService $filtros): Response
-  {
-    $filtros->setTheRegsInFileNoTengo(true);
-    return $this->json(['abort'=>false,'msg'=>'ok','body'=>[]]);
-  }
 }

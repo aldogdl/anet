@@ -13,7 +13,7 @@ parameters:
     harbiConnx : '%phtml%/harbi_connx.json'
     filtros    : '%phtml%/filtros/'
     filtrosF   : '%filtros%/filtros.json'
-    filNoTgo   : '%filtros%/filnotgo.json'
+    filNoTgo   : '%phtml%/filnotgo.json'
 
 services:
     # default configuration for services in *this* file

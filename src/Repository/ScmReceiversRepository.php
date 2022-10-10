@@ -92,4 +92,17 @@ class ScmReceiversRepository extends ServiceEntityRepository
 
     return $this->_em->createQuery($dql)->setParameter('ids', $ids);
   }
+
+	/**
+  * Recuperamos los registros de los receptores por el id de la campaña
+  */
+  public function getRegsReceiversByIdCamp(int $id): \Doctrine\ORM\Query
+  {
+    $dql = 'SELECT r, partial c.{id} FROM ' . ScmReceivers::class . ' r '.
+	'JOIN r.receiver c '.
+	'WHERE r.camp = :idCamp '.
+	'ORDER BY r.receiver ASC';
+
+    return $this->_em->createQuery($dql)->setParameter('idCamp', $id);
+  }
 }
