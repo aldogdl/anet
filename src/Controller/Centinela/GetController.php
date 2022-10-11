@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class GetController extends AbstractController
 {
 
+    /** */
     #[Route('centinela/get-data-orden-by-id/{idOrden}/', methods:['get'])]
     public function getDataOrdenById(
         OrdenesRepository $ordenesEm,
@@ -26,6 +27,7 @@ class GetController extends AbstractController
         ]);
     }
 
+    /** */
     #[Route('centinela/get-data-pieza-by-id/{idPieza}/', methods:['get'])]
     public function getDataPiezaById(
         OrdenPiezasRepository $pzasEm,
