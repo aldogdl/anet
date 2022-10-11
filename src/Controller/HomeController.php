@@ -11,7 +11,7 @@ class HomeController extends AbstractController
     #[Route('/', name: 'home')]
     public function index(): Response
     {
-        return $this->json(['hola' => 'Bienvendo...']);
+        return $this->json(['hola' => 'Bienvenido...']);
     }
 
     #[Route('home-controller/get-data-connection/{pass}/', methods: ['get'])]

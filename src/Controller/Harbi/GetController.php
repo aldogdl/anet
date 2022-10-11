@@ -234,6 +234,19 @@ class GetController extends AbstractController
 		return $this->json($r);
 	}
 
+  /** Recuperamos las respuestas para el centinela de la SCP */
+	#[Route('harbi/get-resp-centinela/{idOrd}/', methods:['get'])]
+	public function getRespuestaCentinela(
+    OrdenRespsRepository $rpsEm, OrdenPiezasRepository $pzaEm, $idOrd
+  ): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
+    // Recuperamos las respuestas
+		$dql = $rpsEm->getRespuestaCentinela($idOrd);
+    $r['body'] = $dql->getScalarResult();
+		return $this->json($r);
+	}
+
   /** Recuperamos las respuestas y colocamos el nuevo statu a las piezas */
 	#[Route('harbi/get-resp-by-ids/{ids}/{ver}', methods:['get'])]
 	public function getRespuestaByIds(

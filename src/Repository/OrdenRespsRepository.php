@@ -83,6 +83,20 @@ class OrdenRespsRepository extends ServiceEntityRepository
 	}
 
 	/** */
+	public function getRespuestaCentinela(int $idOrd): \Doctrine\ORM\Query
+	{	
+		$dql = 'SELECT partial r.{id, costo}, partial o.{id}, partial p.{id}, partial c.{id}, partial a.{id} FROM ' .
+		OrdenResps::class . ' r '.
+		'JOIN r.orden o '.
+		'JOIN r.pieza p '.
+		'JOIN r.own c '.
+		'LEFT JOIN o.avo a '.
+		'WHERE r.orden = :id';
+
+		return $this->_em->createQuery($dql)->setParameter('id', $idOrd);
+	}
+	
+	/** */
 	public function getRespuestaByIds(array $ids): \Doctrine\ORM\Query
 	{	
 		$dql = 'SELECT r, partial o.{id}, partial p.{id}, partial c.{id}, partial a.{id} FROM ' .
