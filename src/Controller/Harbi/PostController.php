@@ -84,22 +84,24 @@ class PostController extends AbstractController
   public function setRespuesta(Request $req, OrdenRespsRepository $rpsEm): Response
   {
     $data = $this->toArray($req, 'data');
-    $result = $rpsEm->setRespuesta($data, true);
+    $isLocal = false;
+    if(array_key_exists('fromLocal', $data)) {
+      $isLocal = $data['fromLocal'];
+    }
+    $result = $rpsEm->setRespuesta($data, $isLocal);
     return $this->json($result);
   }
-
-	
+  
   /**
+   * [BORRAR] Posiblemente hay que borrar, ya no se registran las campañas en SL
    * Guardamos la campaña en la BD y cambiamos stt de orden y piezas
    */
   #[Route('harbi/set-new-campaing/', methods:['post'])]
   public function setNewCampaingMsg(
-    Request $req, ScmCampRepository $scmEm, CampaingsRepository $camps,
-    OrdenesRepository $ordsEm, OrdenPiezasRepository $pzasEm,
+    Request $req, ScmCampRepository $scmEm, CampaingsRepository $camps
   ): Response
   {
     $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
-    $saveStt = false;
 
 		$data = $this->toArray($req, 'data');
     if(!array_key_exists('slug_camp', $data)) {
@@ -111,15 +113,17 @@ class PostController extends AbstractController
     if($campaing) {
 			
 			$data['camp'] = $campaing[0]['id'];
-			$data['priority'] = $campaing[0]['priority'];
+			$data['priority']= $campaing[0]['priority'];
+			$data['emiter']  = '';
+			$data['remiter'] = '';
+			$data['campaing']= $campaing[0];
 			$result = $scmEm->setNewCampaing($data);
       if(!$result['abort']) {
-				$data['id'] = $result['body'];
+				$data['id'] = $result['body']['id'];
+        $data['emiter'] = $result['body']['emiter'];
+        unset($result['body']['remiter']['empresa']);
+			  $data['remiter'] = $result['body']['remiter'];
         $result['body'] = $data;
-				// if($data['target'] == 'orden') {
-				// 	$ordsEm->changeSttOrdenTo($data['src']['id'], $data['stt']);
-				// 	$pzasEm->changeSttPiezasTo($data['src']['id'], $data['stt']);
-				// }
       }
 			
     }else{
@@ -141,24 +145,46 @@ class PostController extends AbstractController
     $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
     
 		$data = $this->toArray($req, 'data');
-		$ver  = $data['version'];
-		$data = $data['ordenes'];
-		
-		$rota = count($data);
-		if($rota == 0) { return $this->json($result); }
+    if(array_key_exists('ordenes', $data)) {
+      $ordenes = $data['ordenes'];
+      if(array_key_exists('version', $data)) {
+        $ver  = $data['version'];
+        $data = [];
+        $rota = count($ordenes);
+        if($rota > 0) {
+          
+          for ($i=0; $i < $rota; $i++) {
+            if(array_key_exists('orden', $ordenes[$i])) {
+              $ordsEm->changeSttOrdenTo($ordenes[$i]['orden'], $ordenes[$i]['stt']);
+              $pzasEm->changeSttPiezasTo($ordenes[$i]['orden'], $ordenes[$i]['stt']);
+            }
+          }
+          
+          if($ver != 'none') {
+            $centi->setEstSttFromArray($ordenes, $ver);
+          }
+        }
 
-		for ($i=0; $i < $rota; $i++) {
-			if(array_key_exists('orden', $data[$i])) {
-				$ordsEm->changeSttOrdenTo($data[$i]['orden'], $data[$i]['stt']);
-				$pzasEm->changeSttPiezasTo($data[$i]['orden'], $data[$i]['stt']);
-			}
-		}
-		
-		if($ver != 'none') {
-			$centi->setEstSttFromArray($data, $ver);
-		}
+      }
+    }	
 
     return $this->json(['abort' => false, 'msg' => 'ok', 'body' => '']);
   }
+
+  /** */
+  #[Route('harbi/upload-img-thumb/', methods:['post'])]
+  public function uploadImg(Request $req): Response
+  {
+    $image = $req->request->get('image');
+    $filename = $req->request->get('filename');
+    $pathTo = $this->getParameter('imgOrdTmp');
+    $filehandler = fopen($pathTo.'/'.$filename, 'wb'); 
+    fwrite($filehandler, base64_decode($image));
+    $result = fclose($filehandler); 
 	
+    return $this->json([
+      'abort' => ($result === false) ? true : false, 'msg' => 'ok', 'body' => $result/1000
+    ]);
+  }
+
 }

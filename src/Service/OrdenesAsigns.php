@@ -23,7 +23,6 @@ class OrdenesAsigns
   {
     $base = $this->params->get($this->name);
     if($this->filesystem->exists($base)) {
-
       $finder = new Finder();
       $finder->files()->in($base)->name('*.txt');
       if ($finder->hasResults()) {
@@ -33,6 +32,7 @@ class OrdenesAsigns
         return true;
       }
     }
+
     return false;
   }
 

@@ -2,8 +2,7 @@
 
 namespace App\Controller\Cotizo;
 
-use App\Repository\AutosRegRepository;
-
+use App\Repository\FiltrosRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -17,7 +16,6 @@ use App\Repository\OrdenRespsRepository;
 use App\Service\CotizaService;
 use App\Service\FiltrosService;
 use App\Service\ScmService;
-use App\Service\StatusRutas;
 
 class PostController extends AbstractController
 {
@@ -40,7 +38,7 @@ class PostController extends AbstractController
     return $content;
   }
 
-  #[Route('cotizo/set-token-messaging-by-id-user', methods:['post'])]
+  #[Route('cotizo/set-token-messaging-by-id-user/', methods:['post'])]
   public function setTokenMessaging(NG2ContactosRepository $contacsEm, Request $req): Response
   {
     $data = $this->toArray($req, 'data');
@@ -48,7 +46,7 @@ class PostController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => []]);
   }
 
-  #[Route('cotizo/upload-img', methods:['post'])]
+  #[Route('cotizo/upload-img/', methods:['post'])]
   public function uploadImg(Request $req, CotizaService $cotService): Response
   {
     $data = $this->toArray($req, 'data');
@@ -62,37 +60,94 @@ class PostController extends AbstractController
   }
 
   /** Guardamos la respuesta del cotizador */
-  #[Route('cotizo/set-resp', methods:['post'])]
+  #[Route('cotizo/set-resp/', methods:['post'])]
   public function setRespuesta(
     Request $req, OrdenRespsRepository $rpsEm, ScmService $scm
   ): Response
   {
     $data = $this->toArray($req, 'data');
+    
     $result = $rpsEm->setRespuesta($data);
 
     if(!$result['abort']) {
       if(!array_key_exists('fromLocal', $data)) {
-        if(array_key_exists('idsFromLink', $data)) {
-          // Estas son respondidas desde el link del WhatsApp, cuentan con campaña
-          $fileName = $result['body'] .'-'. $data['idsFromLink'];
-        }else{
-          // Estas son respondidas desde la pagina de home de la app. por lo tanto no tienen campaña
-          $fileName = $result['body'] . '-cam';
-        }
-        $scm->setNewRegType($fileName.'-'.$data['id'].'.rsp');
+        $fileName = $data['idOrden'].'-'. $data['own'].'-'. $data['idPieza'];
+        $scm->setNewRegType($fileName.'-'.$data['id'].'.rsp', $data);
       }
     }
     
     return $this->json($result);
   }
 
-  /** Guardamos archivo que indique que un cotizador no tiene la pieza */
-  #[Route('cotizo/set-no-tengo/', methods:['post'])]
-  public function setNoTengoPza(Request $req, FiltrosService $ntg): Response
+  /**
+   * Buscamos una nueva carnada para el cotizador para que no salga del estanque
+   * A su ves:
+   * B) Creamos el archivo de visto.
+  */
+  #[Route('cotizo/fetch-carnada/', methods:['post'])]
+  public function fetchCarnada(
+    Request $req, OrdenesRepository $ordEm, FiltrosService $filts
+  ): Response
+  {
+    $ansuelo = $this->toArray($req, 'data');
+    // Recuperamos las no tengo de usuario para filtrar el resultado de la carnaada
+    $ntgo = $filts->getNtnByIdCot($ansuelo['ct']);
+
+    // Buscamos una orden que conicida con el ansuelo
+    $res = $ordEm->fetchCarnadaByAnsuelo($ansuelo, $ntgo);
+    return $this->json(['abort' => false, 'body' => $res]);
+  }
+  
+  /**
+   * Buscamos las ordenes y sus piezas que el usuario halla apartado
+  */
+  #[Route('cotizo/get-piezas-apartadas/', methods:['post'])]
+  public function getPzasApartadas( Request $req, OrdenesRepository $ordEm): Response
   {
     $data = $this->toArray($req, 'data');
-    $ntg->setNewRegNoTengo($data['ord'].'-'.$data['cot'].'-'.$data['pza'].'.ntg');
-    return $this->json(['abort' => false, 'body' => []]);
+    $res  = [];
+    if(array_key_exists('ap', $data)) {
+      $dql = $ordEm->getOrdenesAndPiezasApartadas($data['ap']);
+      $res = $dql->getArrayResult();
+    }
+    return $this->json(['abort' => false, 'body' => $res]);
+  }
+  
+  /**
+   * REVISAR NO IMPLEMENTADO
+   * C) Guardamos el filtro de que maneja esta marca.
+  */
+  #[Route('cotizo/grabar-filtro/', methods:['post'])]
+  public function grabarFiltro(
+    Request $req, FiltrosRepository $filEm, NG2ContactosRepository $contacEm
+  ): Response
+  {
+    
+    $data = $this->toArray($req, 'data');
+    $res = [];
+
+    // Grabar filtros
+    if($data['setF']) {
+      $idEmp = $contacEm->getIdEmpresaByIdContacto($data['ct']);
+      if($idEmp != 0) {
+
+        $save = true;
+        if(!array_key_exists('mk', $data['at'])) {
+          if(!array_key_exists('idOrdCurrent', $data['at'])) {
+            $save = false;
+          }
+        }
+
+        if($save) {
+          $dataFilter = [
+            'emp' => $idEmp, 'marca' => $data['at']['mk'], 'grupo' => 't'
+          ];
+          $filEm->setFiltro($dataFilter, $idEmp);
+        }
+      }
+    }
+
+    return $this->json(['abort' => false, 'body' => $res]);
   }
 
 }

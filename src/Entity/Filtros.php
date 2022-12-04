@@ -31,6 +31,7 @@ class Filtros
      * c = Comerciales, Manejo Multimarcas
      * d = Restricción, Solo esta, Manejo solo esta
      * e = Excepción, Todas Excepto esta, no manejo esta
+     * t = Tambien, Filtro que especifica lo que realmente maneja ya que lo ha cotizado
      */
     #[ORM\Column(type: 'string', length: 15)]
     private $grupo;

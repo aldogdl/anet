@@ -98,6 +98,14 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     }
   }
 
+  public function getTokensByIds(array $ids): array
+  {
+    $tokens = [];
+    $dql = 'SELECT partial c.{id, keyCel} FROM ' . NG2Contactos::class . ' c '.
+    'WHERE c.id IN (:ids)';
+    return $this->_em->createQuery($dql)->setParameter('ids', $ids)->getArrayResult();
+  }
+
   /**
    * Recuperamos todas las empresas y sus contactos que son cotizadores
    */
@@ -121,6 +129,24 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
   }
 
   /**
+   * Recuperamos la empresas y su contactos por medio de su ID, es generalmente
+   * para cuando se esta creando una campaña y este dato no esta en el archivo local
+   */
+  public function getContactById(int $id, bool $isAvo = false): \Doctrine\ORM\Query
+  { 
+    $dql = 'SELECT partial c.{id, curc, nombre, cargo, celular, roles} ';
+    if(!$isAvo) {
+      $dql = $dql . ', partial e.{id, nombre, isLocal} ';
+    }
+    $dql = $dql . 'FROM '. NG2Contactos::class . ' c ';
+    if(!$isAvo) {
+      $dql = $dql . 'JOIN c.empresa e ';
+    }
+    $dql = $dql . 'WHERE c.id = :id ';
+    return $this->_em->createQuery($dql)->setParameter('id', $id);
+  }
+
+  /**
    * Recuperamos el contacto por su ID
    */
   public function getContactoById(int $idContac): \Doctrine\ORM\Query
@@ -130,6 +156,21 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     'WHERE c.id = :idC '.
     'ORDER BY e.nombre ASC';
     return $this->_em->createQuery($dql)->setParameter('idC', $idContac);
+  }
+
+  /**
+   * Recuperamos el id de la empresa que pertenece el contacto
+   */
+  public function getIdEmpresaByIdContacto(int $idContac): int
+  {
+    $dql = 'SELECT partial c.{id}, partial e.{id} FROM '. NG2Contactos::class .' c '.
+    'JOIN c.empresa e '.
+    'WHERE c.id = :idC';
+    $res = $this->_em->createQuery($dql)->setParameter('idC', $idContac)->execute();
+    if($res) {
+      return $res[0]->getEmpresa()->getId();
+    }
+    return 0;
   }
 
   /**

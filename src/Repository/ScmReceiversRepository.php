@@ -52,7 +52,7 @@ class ScmReceiversRepository extends ServiceEntityRepository
 	 * el servidor remoto por cada proveedor como una key foranea, solo para
 	 * identificar el registro local creado por el SCM y el remoto echo por el receiver.
 	*/
-	public function setRegMsgSended(array $data)
+	public function setRegMsgSended(array $data): int
 	{
 		$obj = new ScmReceivers();
 		$obj->setCamp($this->_em->getPartialReference(ScmCamp::class, $data['camp']));
@@ -62,22 +62,77 @@ class ScmReceiversRepository extends ServiceEntityRepository
 		return $obj->getId();
 	}
 
-	/**
-	 * Actualizamos status de los registros
-	*/
-	public function setSttRegsByIds(String $ids, String $stt)
+	/** */
+	public function spellParams(String $params): array
 	{
-		$hoy = new \DateTimeImmutable('now');
-		$dql = 'UPDATE ' . ScmReceivers::class . ' r '.
-		'SET r.stt = :stt, r.readAt = :readAt WHERE r.id IN (:ids)';
-		
-		$this->_em->createQuery($dql)->setParameters([
-			'ids' => explode(',', $ids), 'stt' => $stt, 'readAt' => $hoy
-		])->execute();
-		
+		$regs = explode(',', $params);
+		$rota = count($regs);
+		$seeFin = [];
+		// Ej. 14-6-2-nth
+		for ($i=0; $i < $rota; $i++) {
+			$see = [];
+			$partes = explode('-', $regs[$i]);
+			$see['ord'] = $partes[0];
+			$see['cot'] = $partes[1];
+			$see['avo'] = $partes[2];
+			try {
+				$see['pre'] = $partes[3];
+			} catch (\Throwable $th) {}
+			$seeFin[$see['avo']][] = $see;
+		}
+
+		// Buscamos la campaña adecuada
+		foreach ($seeFin as $avo => $reg) {
+			$seeFin[$avo] = $this->fetchIdCampainByIdOrden($avo, $reg);
+		}
+		return $seeFin;
+	}
+	
+	/** */
+	public function getIdsRegsLast(int $cant): array
+	{
+		$results = [];
+		$dql = 'SELECT partial cr.{id, sendAt, readAt}, partial c.{id, target}, partial cot.{id}, partial avo.{id} '.
+		'FROM ' . ScmReceivers::class . ' cr '.
+		'JOIN cr.receiver cot '.
+		'JOIN cr.camp c '.
+		'JOIN c.remiter avo '.
+		'ORDER BY cr.id DESC';
+
+		$results = $this->_em->createQuery($dql)->setMaxResults($cant)
+			->getScalarResult();
+
+		return $results;
+	}
+	
+	/** */
+	public function fetchIdCampainByIdOrden(String $idAvo, array $reg): array
+	{
+		$dql = 'SELECT c FROM ' . ScmCamp::class . ' c '.
+		'WHERE c.remiter = :avo';
+		$results = $this->_em->createQuery($dql)->setParameter('avo', $idAvo)->getArrayResult();
+		$usadas = [];
+		$forSave = [];
+		$rota = count($results);
+		$vueltas = count($reg);
+		for ($r=0; $r < $vueltas; $r++) { 
+			for ($i=0; $i < $rota; $i++) { 
+				if($results[$i]['src']['id'] == (integer) $reg[$r]['ord']) {
+					if(!in_array($results[$i]['id'], $usadas)) {
+						$reg[$r]['cam'] = $results[$i]['id'];
+						$reg[$r]['send'] = $results[$i]['createdAt'];
+						$forSave[] = $reg[$r];
+						$usadas[] = $results[$i]['id'];
+					}
+					continue;
+				}
+			}
+		}
+
+		return $forSave;
 	}
 
-	/**
+  /**
   * Recuperamos las campañas indicadas por parametro
   */
   public function getRegsPushSeeByids(array $ids): \Doctrine\ORM\Query

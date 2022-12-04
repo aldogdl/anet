@@ -66,6 +66,22 @@ class ScmService
     return ($finder->hasResults()) ? true : false;
   }
 
+  
+  /**
+   * Revisamos si hay archivoa que indican que un receiver ya
+   * realizo alguna actividad en la app
+  */
+  public function hasRegsAny(): bool
+  {
+    $path = Path::normalize($this->params->get($this->scm));
+    if(!$this->filesystem->exists($path)) {
+      $this->filesystem->mkdir($path);
+    }
+    $finder = new Finder();
+    $finder->files()->in($path)->notName('*.rsp');
+    return ($finder->hasResults()) ? true : false;
+  }
+
   /**
    * Guardamos un archivo que indica:
    * -> Que un receiver ya descargo y vio
@@ -104,7 +120,29 @@ class ScmService
   }
 
   /**
-   * Recuperamos todos los archivoa que indican:
+   * Recuperamos todos los archivos
+  */
+  public function getAll(bool $delete = true): array
+  {
+    $files = [];
+    $path = Path::normalize($this->params->get($this->scm));
+    if($this->filesystem->exists($path)) {
+      $finder = new Finder();
+      $finder->files()->in($path)->notName('*.rsp')->sortByName();
+      if ($finder->hasResults()) {
+        foreach ($finder as $file) {
+          $files[] = $file->getFilenameWithoutExtension();
+          if($delete) {
+            $this->filesystem->remove($file->getRealPath());
+          }
+        }
+      }
+    }
+    return $files;
+  }
+
+  /**
+   * Recuperamos todos los archivos que indican:
    * -> Que un receiver ya descargo
    * -> Que un receiver ya respondio 
    * y vio la solicitud de cotizacion enviada por link por whatsapp
@@ -126,6 +164,34 @@ class ScmService
       }
     }
     return $files;
+  }
+
+  /**
+   * Desmenusamos el link de cualquier archivo enviado por parametro
+  */
+  public function spellLink(String $filename): array
+  {
+    $partes = explode('-', $filename);
+    $rota = count($partes);
+    for ($l=0; $l < $rota; $l++) { 
+      if(strpos($partes[$l], '.')) {
+        $sub = explode('.', $partes[$l]);
+        $partes[$l] = $sub[0];
+        $partes[] = $sub[1];
+      }
+    }
+    $rota = count($partes);
+    if($partes[$rota-1] == 'see') {
+      return [
+        'orden' => $partes[0],
+        'user'  => $partes[1],
+        'avo'   => $partes[2],
+        'from'  => $partes[3],
+        'time'  => $partes[4],
+        'type'  => $partes[5],
+      ];
+    }
+    return $partes;
   }
 
 }

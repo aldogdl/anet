@@ -247,7 +247,7 @@ class CentinelaService
       if(!array_key_exists('ord', $file)) {
         $file['ord'] = [];
       }
-
+      
       $rota = count($data);
 
       for ($i=0; $i < $rota; $i++) {
@@ -262,8 +262,8 @@ class CentinelaService
             for ($p=0; $p < $vueltas; $p++) {
               $pza = (string) $file[$cmp][$iO][$p];
               if(array_key_exists($pza, $file['stt'])) {
-                $file['stt'][$pza]['e'] = $data[$i]['est'];
-                $file['stt'][$pza]['s'] = $data[$i]['stt'];
+                $file['stt'][$pza]['e'] = $data[$i]['stt']['est'];
+                $file['stt'][$pza]['s'] = $data[$i]['stt']['stt'];
               }
             }
           }

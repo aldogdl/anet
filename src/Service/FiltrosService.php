@@ -44,6 +44,29 @@ class FiltrosService
     return [];
   }
 
+  /**
+   * Recuperamos todos los archivos
+  */
+  public function getAllNoTengo(bool $delete = true): array
+  {
+    $files = [];
+    $path = Path::normalize($this->params->get($this->nameFolder));
+    
+    if($this->filesystem->exists($path)) {
+      $finder = new Finder();
+      $finder->files()->in($path)->name('*.ntg')->sortByName();
+      if ($finder->hasResults()) {
+        foreach ($finder as $file) {
+          $files[] = $file->getFilenameWithoutExtension();
+          if($delete) {
+            $this->filesystem->remove($file->getRealPath());
+          }
+        }
+      }
+    }
+    return $files;
+  }
+
   /** */
   private function getContent(): array
   {
@@ -78,22 +101,12 @@ class FiltrosService
   */
   public function setTheRegsInFileNoTengo(): bool
   {
-    $path = $this->params->get($this->nameFolder);
     $fileMain = $this->params->get($this->nameNtg);
     $hasChanges = false;
+    $content = [];
 
     // Primeramente recogemos todos los datos de los archivos registro
-    $archivos = [];
-    $finder = new Finder();
-    $finder->files()->in($path)->name('*.ntg')->sortByName();
-    if ($finder->hasResults()) {
-      foreach ($finder as $file) {
-        $archivos[] = $file->getFilenameWithoutExtension();
-        $this->filesystem->remove($file->getRealPath());
-      }
-    }
-
-    $content = [];
+    $archivos = $this->getAllNoTengo(false);
     $rota = count($archivos);
     if($rota > 0) {
 
@@ -103,15 +116,22 @@ class FiltrosService
       }
  
       for ($i=0; $i < $rota; $i++) {
-        // Corroboramos que no tenga la extencion.
-        $file = str_replace('.ntg', '', $archivos[$i]);
-        $file = trim($file);
+        // apr__1-6-2pp1__1669432499307
         // Partimos el nombre del archivo por su sep -
-        $partes = explode('-', $file);
+        $garbash = explode('__', $archivos[$i]);
+        $ids = $garbash[1];
+        if(strpos($ids, 'pp') !== false) {
+          $ids = str_replace('pp', '-', $ids);
+        }
+        $partes = explode('-', $ids);
         // El resultado del archivo es:
         // [0] = El id de la orden
         // [1] = El id del cotizador
-        // [2] = El id de la pieza que no tiene
+        // [2] = El id del AVO --> El cual es eliminado
+        // [3] = El id de la pieza que no tiene
+        unset($partes[2]);
+        $partes = array_values($partes);
+
         $has = count($partes);
         if($has > 0) {
 
@@ -139,29 +159,53 @@ class FiltrosService
   }
 
   /**
-   * El cotizador al iniciar la app de cotizo, esta corroborará si han
-   * cambiando los registros de no la tengo, esto con la finalidad de 
-   * mantener los menos datos posibles guardados en el dispositivo del usuario
-   * @return Los ids de las ordenes que ya no existen en el archivo de registro.
+   * Recuperamos todas las piezas del cotizador que nos ha indicado que no la tiene
+   * @return array Los ids de las piezas que no tiene.
   */
-  public function getMyNoTengo(array $lstOrds): array
+  public function getMyAllNtnByidCot(int $idCot): array
   {
     $items = [];
-    $caducos = [];
+    $finded = [];
     $path = $this->params->get($this->nameNtg);
 
     if($this->filesystem->exists($path)) {
       $items = json_decode( file_get_contents($path), true );
-      $rota = count($lstOrds);
-      for ($i=0; $i < $rota; $i++) { 
-        if(!array_key_exists($lstOrds[$i], $items)) {
-          $caducos[] = $lstOrds[$i];
+
+      foreach ($items as $idOrden => $cotz) {
+        if(array_key_exists(''.$idCot, $items[$idOrden])) {
+          $finded[$idOrden] = $items[$idOrden][$idCot];
         }
       }
-      return $caducos;
-    }else{
-      return $lstOrds;
     }
+    return $finded;
+  }
+
+  /**
+   * Recuperamos todas las piezas del cotizador que nos ha indicado que no la tiene
+   * @return array Los ids de las piezas que no tiene.
+  */
+  public function getNtnByidCot(int $idCot): array
+  {
+    $items = [];
+    $finded = [];
+    $ordenes = [];
+    $piezas = [];
+    $path = $this->params->get($this->nameNtg);
+
+    if($this->filesystem->exists($path)) {
+      $items = json_decode( file_get_contents($path), true );
+
+      foreach ($items as $idOrden => $cotz) {
+        if(array_key_exists(''.$idCot, $items[$idOrden])) {
+          $finded[$idOrden] = $items[$idOrden][$idCot];
+          $piezas = array_merge($piezas, $items[$idOrden][$idCot]);
+          $ordenes[] = $idOrden;
+        }
+      }
+    }
+    sort($piezas);
+    sort($ordenes);
+    return [ 'array' => $finded, 'pzas' => $piezas, 'ords' => $ordenes ];
   }
 
 }

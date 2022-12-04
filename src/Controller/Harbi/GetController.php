@@ -7,17 +7,19 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-use App\Repository\AO1MarcasRepository;
-use App\Repository\NG2ContactosRepository;
-use App\Repository\OrdenesRepository;
-use App\Repository\OrdenPiezasRepository;
-use App\Repository\OrdenRespsRepository;
-use App\Repository\ScmCampRepository;
-use App\Repository\ScmReceiversRepository;
-use App\Service\CentinelaService;
-use App\Service\FiltrosService;
-use App\Service\OrdenesAsigns;
+use App\Service\Pushes;
 use App\Service\ScmService;
+use App\Service\OrdenesAsigns;
+use App\Service\FiltrosService;
+use App\Service\CentinelaService;
+use App\Repository\OrdenesRepository;
+use App\Repository\ScmCampRepository;
+use App\Repository\AO1MarcasRepository;
+use App\Repository\CampaingsRepository;
+use App\Repository\OrdenRespsRepository;
+use App\Repository\OrdenPiezasRepository;
+use App\Repository\NG2ContactosRepository;
+use App\Repository\ScmReceiversRepository;
 
 class GetController extends AbstractController
 {
@@ -66,21 +68,35 @@ class GetController extends AbstractController
   ): Response
   {
     $isSame = $centinela->isSameVersion($lastVersion);
-    $scmSee = $scm->hasRegsOf('see');
-    $scmResp = $scm->hasRegsOf('rsp');
-    $camping = $scm->hasRegsOf('json');
-    $filNtg  = $filtros->setTheRegsInFileNoTengo();
-    $asigns  = $ordAsigns->hasContent();
+    $asigns = $ordAsigns->hasContent();
+    // Elementos que no guardan registro en el centinela File.
+    $iris = $scm->hasRegsAny();
+    $resp = $scm->hasRegsOf('rsp');
+    $camping= $scm->hasRegsOf('json');
+    $ntg = $filtros->setTheRegsInFileNoTengo();
 
     $result = [
-      'centinela' => !$isSame, 'scmSee' => $scmSee, 'scmResp' => $scmResp,
-      'camping' => $camping, 'filNtg' => $filNtg, 'asigns' => $asigns
+      'centinela' => !$isSame, 'iris' => $iris, 'resp' => $resp,
+      'camping' => $camping, 'ntg' => $ntg, 'asigns' => $asigns
     ];
 
     return $this->json(['abort'=>false, 'body' => $result]);
   }
 
-  
+  /**
+   * 
+  */
+	#[Route('harbi/get-iris-total/', methods:['get'])]
+	public function getRegIris(ScmService $scm, FiltrosService $filtros): Response
+	{
+    $r = ['abort' => false, 'msg' => 'ok', 'body' => ['scm' => [], 'ntg' => []]];
+
+    $r['body']['scm'] = $scm->getAll(true);
+    $r['body']['ntg'] = $filtros->getAllNoTengo(true);
+
+		return $this->json($r);
+	}
+
   /**
    * Descargamos el contenido del centinela cuando el FTP no funciona
    */
@@ -100,6 +116,19 @@ class GetController extends AbstractController
   {
     return $this->json(
       ['abort' => false, 'msg' => 'ok', 'body' => $filtros->downloadFiltros()]
+    );
+  }
+
+  /**
+   * Descargamos el contenido del archivo de opcotizo (open cotizo), el cual nos indica
+   * la apertura de la app, 
+   */
+  #[Route('harbi/download-opcotizo/', methods:['get'])]
+  public function downloadOpCotizoFile(FiltrosService $filtros): Response
+  {
+    $data = file_get_contents('opcotizo.json');
+    return $this->json(
+      ['abort' => false, 'msg' => 'ok', 'body' => $data]
     );
   }
 
@@ -160,7 +189,6 @@ class GetController extends AbstractController
 		return $this->json($r);
 	}
 
-  
 	/** */
 	#[Route('harbi/get-campaings/{campas}/', methods:['get'])]
 	public function getCampainsOf(
@@ -191,7 +219,6 @@ class GetController extends AbstractController
 			$response['msg']  = 'ERROR';
 			$response['body'] = 'No se encontraron las campañas ' . implode(',', $ids);
 		}
-    
 		return $this->json($response);
 	}
 
@@ -236,9 +263,7 @@ class GetController extends AbstractController
 
   /** Recuperamos las respuestas para el centinela de la SCP */
 	#[Route('harbi/get-resp-centinela/{idOrd}/', methods:['get'])]
-	public function getRespuestaCentinela(
-    OrdenRespsRepository $rpsEm, OrdenPiezasRepository $pzaEm, $idOrd
-  ): Response
+	public function getRespuestaCentinela(OrdenRespsRepository $rpsEm, $idOrd): Response
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     // Recuperamos las respuestas
@@ -260,11 +285,12 @@ class GetController extends AbstractController
     // Recuperamos las respuestas
 		$dql = $rpsEm->getRespuestaByIds($partes);
     $resps = $dql->getArrayResult();
-    
+
     $rota = count($resps);
     $idPasz = [];
     $cent = [];
     $stts = ['est' => '4', 'stt' => '1'];
+
     if($rota > 0) {
       $r['body'] = $resps;
       for ($i=0; $i < $rota; $i++) { 
@@ -280,18 +306,6 @@ class GetController extends AbstractController
       $centi->setNewSttToPiezasByIds(['piezas' => $cent, 'stts' => $stts, 'version' => $ver]);
     }
 
-		return $this->json($r);
-	}
-
-	/**
-   * Actualizamos los status de los registros que representan descargas, vistas y
-   * respuestas de los cotizadores ante los mensajes enviados por whatsapp
-  */
-	#[Route('harbi/set-regs-byids/{ids}/{stt}/', methods:['get'])]
-	public function setSttRegsByIds(ScmReceiversRepository $em, String $ids, String $stt): Response
-	{
-    $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
-    $em->setSttRegsByIds($ids, $stt);
 		return $this->json($r);
 	}
 
@@ -317,11 +331,115 @@ class GetController extends AbstractController
 		return $this->json($response);
 	}
 
+  /** */
   #[Route('harbi/get-all-cotz/', methods:['get'])]
   public function getAllCotizadores(NG2ContactosRepository $contactos): Response
   {
     $dql = $contactos->getAllCotizadores(true);
     return $this->json(['abort'=>false,'msg'=>'ok','body'=>$dql->getArrayResult()]);
+  }
+
+  /**
+   * Recuperamos los datos de una campaña para almacenarlas en archivos locales
+   */
+  #[Route('harbi/get-camp-for-build/{idOwn}/{idAvo}/{slugCamp}/', methods:['get'])]
+  public function getCampForBuild(
+    NG2ContactosRepository $contactos, CampaingsRepository $camps,
+    int $idOwn, int $idAvo, String $slugCamp): Response
+  {
+    $result = ['abort' => true, 'msg' => 'err', 'body' => []];
+    if($slugCamp == '') {
+      return $this->json($result);
+    }
+
+    $dql = $camps->getCampaignBySlug($slugCamp);
+    $campaing = $dql->getArrayResult();
+    $data = [];
+    if($campaing) {
+
+      $data['camp'] = $campaing[0]['id'];
+			$data['priority']= $campaing[0]['priority'];
+			$data['slug']= $campaing[0]['slug'];
+			$data['titulo']= $campaing[0]['titulo'];
+			$data['despec']= $campaing[0]['despec'];
+			$data['msgTxt']= $campaing[0]['msgTxt'];
+			$data['isConFilt']= $campaing[0]['isConFilt'];
+      $dql = $contactos->getContactById($idOwn);
+      $remi = $dql->getArrayResult();
+			$data['emiter']  = ($remi) ? $remi[0] : [];;
+      $dql = $contactos->getContactById($idAvo, true);
+      $remi = $dql->getArrayResult();
+			$data['remiter'] = ($remi) ? $remi[0] : [];
+    }
+
+    return $this->json(['abort'=>false,'msg'=>'ok','body'=>[$data]]);
+  }
+
+  
+  /**
+   * y liberamos la orden, el prefijo lib es solo para proteccion.
+  */
+  #[Route('harbi/liberar-ordenes/{idOrden}/', methods: ['get'])]
+  public function liberarOrdenes(OrdenesRepository $ordEm, String $idOrden): Response
+  {
+    $res = ['result' => 'ok', 'msg' => '', 'body' => []];
+    if(strpos($idOrden, 'lib') !== false) {
+
+      $idOrden = trim(str_replace('lib-', '', $idOrden));
+      $ids = explode(',', $idOrden);
+      if(count($ids) > 0) {
+        // Cambiamos el status 
+        $ordEm->changeSttOrdenTo($ids, ['est' => '3', 'stt' => '2']);
+      }
+    }
+
+    return $this->json($res);
+  }
+
+  /**
+   * Enviar notificaciones a los cotizadores cuando una campaña
+   * se ha terminado de enviar.
+  */
+  #[Route('harbi/push-finish-camp/{idOrden}/{idCamp}/{idAvo}/{idsCot}/', methods: ['get'])]
+  public function pushFinishCamp(
+    NG2ContactosRepository $em, Pushes $push,
+    String $idOrden, String $idCamp, String $idAvo, String $idsCot): Response
+  {
+    $res = ['result' => 'ok', 'unknown' => [], 'invalid' => []];
+    if(strpos($idsCot, 'pfc') !== false) {
+
+      $idsCot = trim(str_replace('pfc-', '', $idsCot));
+      $ids = explode(',', $idsCot);
+      if(count($ids) > 0) {
+        $sentTo = $em->getTokensByIds($ids);
+        if(count($sentTo) > 0) {
+          $res = $push->sendToOwnFinCamp($idOrden, $idCamp, $idAvo, $sentTo);
+        }
+      }
+    }
+
+    return $this->json($res);
+  }
+
+  /**
+   * Sin uso aun, esta echo para mandar varios tipos de notificaciones segun el parametro
+  */
+  #[Route('harbi/push-type/{param}/', methods: ['get'])]
+  public function pushType(
+    NG2ContactosRepository $em, Pushes $push, OrdenesRepository $ordEm,
+    String $param): Response
+  {
+    $res = ['ok Gracias'];
+    if(strpos($param, 'scm') !== false) {
+      $ids = explode(',', $param);
+      if(count($ids) > 0) {
+        $sentTo = $em->getTokensByIds($ids);
+        if(count($sentTo) > 0) {
+          // $res = $push->sendToOwnOfIdType($sentTo);
+        }
+      }
+    }
+    return $this->json($res);
   }
 
 }

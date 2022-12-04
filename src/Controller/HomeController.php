@@ -15,18 +15,17 @@ class HomeController extends AbstractController
     }
 
     #[Route('home-controller/get-data-connection/{pass}/', methods: ['get'])]
-    public function getAllContactsBy(
-        string $pass
-    ): Response {
+    public function getAllContactsBy( string $pass ): Response {
 
-        $path = $this->getParameter('harbiConnx');
-        $data = json_decode(file_get_contents($path), true);
-
-        return $this->json([
-            'abort'=> array_key_exists($pass, $data) ? false : true,
-            'msg'  => array_key_exists($pass, $data) ? 'ok' : 'ERROR',
-            'body' => array_key_exists($pass, $data) ? $data[$pass] : 'ERROR'
-        ]);
+        if($pass == '2536H') {
+            $path = $this->getParameter('harbiConnx');
+            $data = json_decode(file_get_contents($path), true);
+    
+            return $this->json([
+                'abort'=> false, 'msg'  => 'ok', 'body' => $data
+            ]);
+        }
+        return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => 'Hola Intruso...']);
     }
 
 }

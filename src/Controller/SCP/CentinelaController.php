@@ -2,10 +2,7 @@
 
 namespace App\Controller\SCP;
 
-use App\Entity\OrdenPiezas;
 use App\Repository\OrdenesRepository;
-use App\Repository\OrdenPiezasRepository;
-use App\Service\ScmService;
 use App\Service\CentinelaService;
 use App\Service\OrdenesAsigns;
 use Symfony\Component\HttpFoundation\Request;
@@ -60,6 +57,7 @@ class CentinelaController extends AbstractController
         }
       }
     }
+    
     return $this->json($result);
   }
 

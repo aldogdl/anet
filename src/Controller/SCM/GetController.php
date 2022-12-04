@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Repository\NG2ContactosRepository;
-use App\Service\Pushes;
+
 
 class GetController extends AbstractController
 {
@@ -51,10 +51,4 @@ class GetController extends AbstractController
     ]);
   }
 
-  #[Route('scm/push/', methods: ['get'])]
-  public function pushPr(Pushes $push): Response
-  {
-      $res = $push->sendToOwnOfIdType([]);
-      return $this->json($res);
-  }
 }

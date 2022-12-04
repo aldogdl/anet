@@ -2,11 +2,11 @@
 
 namespace App\Service;
 
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\Finder\Finder;
 
 class CotizaService
 {   
@@ -92,7 +92,7 @@ class CotizaService
 		$isRename = false;
 		$path = $this->params->get('imgOrdTmp');
 		if(!$this->filesystem->exists($path)) {
-				$this->filesystem->mkdir($path);
+			$this->filesystem->mkdir($path);
 		}
 		$pathTo = Path::canonicalize($path.'/'.$nombreArchivo);
 		// Necesitamos ver si es la imagen compartida y revisar los nombres

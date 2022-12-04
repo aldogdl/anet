@@ -1,19 +1,55 @@
-RewriteEngine On
-SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
-
-RewriteCond %{HTTP:Authorization} ^(.*)
-RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
-
-RewriteCond %{SERVER_PORT} 80
-RewriteRule ^(.*)$ https://autoparnet.com/$1 [R,L]
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [QSA,L]
-
-# php -- BEGIN cPanel-generated handler, do not edit
-# Configure el paquete “ea-php81” como el lenguaje de programación predeterminado “PHP”.
-<IfModule mime_module>
-  AddHandler application/x-httpd-ea-php81___lsphp .php .php8 .phtml
+<IfModule mod_rewrite.c>
+    Options -MultiViews
+    RewriteEngine On
+    SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
-# php -- END cPanel-generated handler, do not edit
+
+<IfModule !mod_rewrite.c>
+    <IfModule mod_alias.c>
+        RedirectMatch 302 ^/$ /index.php/
+    </IfModule>
+</IfModule>
+# DirectoryIndex public_html/index.php
+
+# <IfModule mod_negotiation.c>
+#     Options -MultiViews
+# </IfModule>
+
+# <IfModule mod_rewrite.c>
+#     RewriteEngine On
+#     #RewriteCond %{SERVER_PORT} 80
+
+#     RewriteCond %{REQUEST_URI}::$0 ^(/.+)/(.*)::\2$
+#     RewriteRule .* - [E=BASE:%1]
+#     RewriteCond %{HTTP:Authorization} ^(.*)
+
+    
+#     RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+#     SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+#     RewriteCond %{ENV:REDIRECT_STATUS} =""
+#     RewriteRule ^index\.php(?:/(.*)|$) %{ENV:BASE}/$1 [R=301,L]
+#     RewriteCond %{REQUEST_FILENAME} -f
+#     RewriteCond %{REQUEST_FILENAME} !-d
+#     RewriteCond %{REQUEST_FILENAME} !-f
+#     RewriteCond %{QUERY_STRING} !^$
+#     RewriteCond %{QUERY_STRING} ^$
+#     RewriteCond %{REQUEST_URI} !^/(favicon\.ico|apple-touch-icon.*\.png)$ [NC]
+#     RewriteCond %{REQUEST_URI} !^.*(\.ico|\.png|\.jpg|\.bmp)$ [NC]
+#     RewriteCond %{REQUEST_URI} ^/(favicon\.ico|apple-touch-icon.*\.png)$ [NC,OR]
+#     RewriteCond %{REQUEST_URI} ^.*(\.ico|\.png|\.jpg|\.bmp)$ [NC]
+    
+#     RewriteRule .? - [END]
+#     RewriteRule ^(.*)$ index.php [QSA,L]
+# </IfModule>
+
+# <IfModule !mod_rewrite.c>
+#     <IfModule mod_alias.c>
+#         # When mod_rewrite is not available, we instruct a temporary redirect of
+#         # the start page to the front controller explicitly so that the website
+#         # and the generated links can still be used.
+#         RedirectMatch 307 ^/$ /index.php/
+#         # RedirectTemp cannot be used instead
+#     </IfModule>
+# </IfModule>

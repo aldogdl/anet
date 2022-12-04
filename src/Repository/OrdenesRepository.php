@@ -6,6 +6,9 @@ use App\Entity\AO1Marcas;
 use App\Entity\AO2Modelos;
 use App\Entity\NG2Contactos;
 use App\Entity\Ordenes;
+
+use Doctrine\ORM\Query;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
@@ -132,11 +135,11 @@ class OrdenesRepository extends ServiceEntityRepository
   }
 
   /** */
-  public function changeSttOrdenTo(int $idOrden, array $estStt)
+  public function changeSttOrdenTo(array $idOrden, array $estStt)
   {
     $dql = 'UPDATE ' . Ordenes::class . ' o '.
     'SET o.est = :est, o.stt = :stt '.
-    'WHERE o.id = :id';
+    'WHERE o.id IN (:id)';
     $this->_em->createQuery($dql)->setParameters([
       'id'  => $idOrden,
       'est' => $estStt['est'],
@@ -237,6 +240,72 @@ class OrdenesRepository extends ServiceEntityRepository
       return $this->result;
   }
 
+  /**
+   * @param $ntg son todas ordenes que el cotizador a indicado como no tengo
+  */
+  public function fetchCarnadaByAnsuelo(array $data, array $ntg): array
+  {
+    // Recuperar los filtros del cotizador
+    $r = $this->fetchCarnada($data, $ntg['pzas']);
+    return $r;
+  }
+
+  /**
+   * 
+  */
+  private function fetchCarnada(array $data, array $pizas): array
+  {
+    $has = false;
+    if(array_key_exists('md', $data)) {
+
+      $findedIn = 'Modelo';
+      $dql = 'SELECT partial o.{id}, partial p.{id} FROM ' . Ordenes::class . ' o ' .
+      'JOIN o.piezas p '.
+      'WHERE o.est = :est AND o.modelo = :md '.
+      'AND o.id NOT LIKE :idOrd AND p.origen NOT LIKE :origen AND p.id NOT IN (:pzas) '.
+      'ORDER BY o.id DESC';
+      $has = $this->_em->createQuery($dql)->setParameters([
+        'est' => '3', 'md' => $data['md'], 'idOrd' => $data['ido'],
+        'origen' => 'GENÉRICA%', 'pzas' => $pizas
+      ])->execute();
+    }
+
+    if(!$has) {
+      if(array_key_exists('mk', $data)) {
+
+        $findedIn = 'Marca';
+        $dql = 'SELECT partial o.{id}, partial p.{id} FROM ' . Ordenes::class . ' o ' .
+        'JOIN o.piezas p '.
+        'WHERE o.est = :est AND o.marca = :mk AND o.id NOT LIKE :idOrd AND '.
+        'p.origen NOT LIKE :origen AND p.id NOT IN (:pzas) '.
+        'ORDER BY o.id DESC';
+        $has = $this->_em->createQuery($dql)->setParameters([
+          'est' => '3', 'mk' => $data['mk'], 'idOrd' => $data['ido'],
+          'origen' => 'GENÉRICA%', 'pzas' => $pizas
+        ])->execute();
+      }
+    }
+    // 
+    if(!$has) {
+      $findedIn = 'Otros';
+      $dql = 'SELECT partial o.{id}, partial p.{id} FROM ' . Ordenes::class . ' o ' .
+      'JOIN o.piezas p '.
+      'WHERE o.est = :est AND o.id NOT LIKE :idOrd AND p.origen NOT LIKE :origen '.
+      'AND p.id NOT IN (:pzas) ORDER BY o.id DESC';
+      $has = $this->_em->createQuery($dql)->setParameters([
+        'est' => '3', 'idOrd' => $data['ido'], 'origen' => 'GENÉRICA%', 'pzas' => $pizas
+      ])->execute();
+    }
+
+    if($has) {
+      $dql = $this->getOrdenAndPieza($has[0]->getId());
+      $ord = $dql->getArrayResult();
+      return [ 'from' => $findedIn, 'orden' => $ord[0] ];
+    }
+    
+    return [];
+  }
+
   /** */
   public function getOrdenAndPieza(int $id): \Doctrine\ORM\Query
   {
@@ -261,9 +330,22 @@ class OrdenesRepository extends ServiceEntityRepository
     return $this->_em->createQuery($dql)->setParameter('id', $id);
   }
 
-  /** */
-  public function getOrdenesAndPiezas(int $page): \Doctrine\ORM\Query
+  /**
+   * Usado para recuperar todas las ordenes en la app de cotizo las cuales estan
+   * publicadas para su cotización por parte del Cotizador.
+  */
+  public function getOrdenesAndPiezas(String $callFrom): \Doctrine\ORM\Query
   {
+    $stt1 = '1';
+    $stt2 = '2';
+    
+    $stt = 'o.stt = :stt1 OR o.stt = stt2 ';
+    $values = ['stt1' => $stt1, 'stt2' => $stt2];
+    if($callFrom == 'home') {
+      $stt = 'o.stt = :stt2 ';
+      $values = ['stt2' => $stt2];
+    }
+
     $auto = 'partial %s.{id, nombre %s}, ';
     $ct = 'partial %s.{id, curc, nombre, celular}, ';
     $own = sprintf($ct, 'c');
@@ -279,10 +361,45 @@ class OrdenesRepository extends ServiceEntityRepository
     'JOIN o.avo a '.
     'JOIN c.empresa e '.
     'JOIN o.piezas p '.
-    'WHERE o.est = 3 '.
-    '';
+    'WHERE o.est > 2 AND o.est < 6 AND '. $stt .
+    'ORDER BY o.id DESC';
 
-    return $this->_em->createQuery($dql);
+    return $this->_em->createQuery($dql)->setParameters($values);
+  }
+
+  /** */
+  public function getOrdenesAndPiezasApartadas(array $data): \Doctrine\ORM\Query
+  {
+
+    $ords = [];
+    $pzas = [];
+    $rota = count($data);
+    for ($i=0; $i < $rota; $i++) { 
+      $ords[] = $data[$i]['ord'];
+      $pzas = array_merge($data[$i]['pza'], $pzas);
+    }
+    
+    $auto = 'partial %s.{id, nombre %s}, ';
+    $ct = 'partial %s.{id, curc, nombre, celular}, ';
+    $own = sprintf($ct, 'c');
+    $avo = sprintf($ct, 'a');
+    $mrk = sprintf($auto, 'mk', ', logo');
+    $mdl = sprintf($auto, 'md', '');
+    $e = 'partial e.{id, nombre} ';
+
+    $dql = 'SELECT o, p, '.$own.$avo.$mrk.$mdl.$e.'FROM ' . Ordenes::class . ' o ' .
+    'JOIN o.marca mk '.
+    'JOIN o.modelo md '.
+    'JOIN o.own c '.
+    'JOIN o.avo a '.
+    'JOIN c.empresa e '.
+    'JOIN o.piezas p WITH p.id IN (:pzas) '.
+    'WHERE o.id IN (:ords) AND o.est = 3 '.
+    'ORDER BY o.id DESC';
+
+    return $this->_em->createQuery($dql)->setParameters([
+      'ords' => $ords, 'pzas' => $pzas
+    ]);
   }
 
   ///
@@ -317,4 +434,20 @@ class OrdenesRepository extends ServiceEntityRepository
     }
   }
 
+  ///
+  public function paginador(\Doctrine\ORM\Query $query, int $page = 1, $mode = 'scalar', int $limit = 19): array
+  {
+    if($mode == 'array') {
+      $query->setHydrationMode(Query::HYDRATE_ARRAY);
+    }else{
+      $query->setHydrationMode(Query::HYDRATE_SCALAR);
+    }
+    $query = $query->setFirstResult($limit * ($page - 1))->setMaxResults($limit);
+    $pag = new Paginator($query);
+    $totalItems = $pag->count();
+    $pagesCount = ceil($totalItems / $limit);
+    return [
+      'data' => ['total' => $totalItems, 'tpages'=> $pagesCount], 'results' => $pag
+    ];
+  }
 }

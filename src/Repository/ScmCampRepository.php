@@ -19,7 +19,7 @@ use Doctrine\Persistence\ManagerRegistry;
 class ScmCampRepository extends ServiceEntityRepository
 {
 
-  public $result = ['abort' => false, 'msg' => 'ok', 'body' => ''];
+  public $result = ['abort' => false, 'msg' => 'ok', 'body' => []];
 
   public function __construct(ManagerRegistry $registry)
   {
@@ -62,10 +62,34 @@ class ScmCampRepository extends ServiceEntityRepository
 		try {
 			$this->_em->persist($obj);
 			$this->_em->flush();
-			$this->result['body'] = $obj->getId();
+			$this->result['body']['id'] = $obj->getId();
+      $dql = $this->_em->getRepository(NG2Contactos::class)->getContactoById($data['own']);
+      $emiter = $dql->getArrayResult();
+      if($emiter) {
+        $this->result['body']['emiter'] = $emiter[0];
+      }else{
+        $this->result['abort'] = true;
+        $this->result['msg'] = 'error';
+        $this->result['body'] = 'ERROR no se encontró el emisor ' . $data['own'];
+        return $this->result;
+      }
+      if($data['avo'] != $emiter[0]['id']) {
+        $dql = $this->_em->getRepository(NG2Contactos::class)->getContactoById($data['avo']);
+        $remiter = $dql->getArrayResult();
+        if($remiter) {
+          $this->result['body']['remiter'] = $remiter[0];
+        }else{
+          $this->result['abort'] = true;
+          $this->result['msg'] = 'error';
+          $this->result['body'] = 'ERROR no se encontró el remitente ' . $data['avo'];
+        }
+      }else{
+        $this->result['body']['remiter'] = $this->result['body']['emiter'];
+      }
+
 		} catch (\Throwable $th) {
 			$this->result['abort'] = true;
-			$this->result['msg'] = $th->getMessage();
+			$this->result['msg'] = 'ERROR';
 			$this->result['body'] = 'ERROR al Guardar la nueva campaña.';
 		}
 		return $this->result;

@@ -62,7 +62,7 @@ class PostController extends AbstractController
   {
     $data = $this->toArray($req, 'data');
     $file = $req->files->get($data['campo']);
-
+    
     $result = $cotService->upImgOfOrdenToFolderTmp($data['filename'], $file);
     if(strpos($result, 'rename') !== false) {
       $partes = explode('::', $result);

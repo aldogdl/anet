@@ -23,11 +23,12 @@ public_html/request.log
 public_html/filnotgo.json
 public_html/centinela.json
 public_html/harbi_connx.txt
-public_html/scm/
-public_html/filtros/
+public_html/htacces.zip
+public_html/.htaccess
 public_html/.___htaccess
 public_html/.__htaccess
-public_html/.htaccess
+public_html/scm/
+public_html/filtros/
 var/
 vendor/
 ###< symfony/framework-bundle ###
