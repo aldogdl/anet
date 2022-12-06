@@ -140,6 +140,7 @@ class OrdenesRepository extends ServiceEntityRepository
     $dql = 'UPDATE ' . Ordenes::class . ' o '.
     'SET o.est = :est, o.stt = :stt '.
     'WHERE o.id IN (:id)';
+    
     $this->_em->createQuery($dql)->setParameters([
       'id'  => $idOrden,
       'est' => $estStt['est'],

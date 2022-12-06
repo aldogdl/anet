@@ -104,8 +104,15 @@ class PostController extends AbstractController
     $data['est'] = $sttOrd['est'];
     $data['stt'] = $sttOrd['stt'];
     $result = $pzasEm->setPieza($data);
+
     if(!$result['abort']) {
-      $ordenEm->changeSttOrdenTo($data['orden'], $sttOrd);
+      $ids = [];
+      if(gettype($data['orden']) == 'integer') {
+        $ids = [$data['orden']];
+      }else{
+        $ids = $data['orden'];
+      }
+      $ordenEm->changeSttOrdenTo($ids, $sttOrd);
       $idPza = $result['body'];
       $result['body'] = [
         'id'  => $idPza,
