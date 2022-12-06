@@ -173,7 +173,13 @@ class GetController extends AbstractController
 
       $stts = $rutas->getAllRutas();
       $sttOrd = $rutas->getEstInitDeProcesosByOrden($stts);
-      $ordenEm->changeSttOrdenTo($idOrden, $sttOrd);
+      $ids = [];
+      if(!is_array($idOrden)) {
+        $ids = [$idOrden];
+      }else{
+        $ids = $idOrden;
+      }
+      $ordenEm->changeSttOrdenTo($ids, $sttOrd);
 
       $sttPza = $rutas->getEstInitDeLasPiezas($stts);
       $pzasEm->changeSttPiezasTo($idOrden, $sttPza);
