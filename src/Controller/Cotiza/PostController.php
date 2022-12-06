@@ -107,7 +107,7 @@ class PostController extends AbstractController
 
     if(!$result['abort']) {
       $ids = [];
-      if(gettype($data['orden']) == 'integer') {
+      if(!is_array($data['orden'])) {
         $ids = [$data['orden']];
       }else{
         $ids = $data['orden'];
