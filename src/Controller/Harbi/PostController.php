@@ -155,7 +155,13 @@ class PostController extends AbstractController
           
           for ($i=0; $i < $rota; $i++) {
             if(array_key_exists('orden', $ordenes[$i])) {
-              $ordsEm->changeSttOrdenTo($ordenes[$i]['orden'], $ordenes[$i]['stt']);
+              $ids = [];
+              if(!is_array($ordenes[$i]['orden'])) {
+                $ids = [$ordenes[$i]['orden']];
+              }else{
+                $ids = $ordenes[$i]['orden'];
+              }
+              $ordsEm->changeSttOrdenTo($ids, $ordenes[$i]['stt']);
               $pzasEm->changeSttPiezasTo($ordenes[$i]['orden'], $ordenes[$i]['stt']);
             }
           }
