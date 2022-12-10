@@ -66,7 +66,6 @@ class ScmService
     return ($finder->hasResults()) ? true : false;
   }
 
-  
   /**
    * Revisamos si hay archivoa que indican que un receiver ya
    * realizo alguna actividad en la app
@@ -78,7 +77,7 @@ class ScmService
       $this->filesystem->mkdir($path);
     }
     $finder = new Finder();
-    $finder->files()->in($path)->notName('*.rsp');
+    $finder->files()->in($path)->notName(['*.rsp', '*.json']);
     return ($finder->hasResults()) ? true : false;
   }
 

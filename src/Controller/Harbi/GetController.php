@@ -156,27 +156,6 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
 
-  /**
-   * Usado solo para guardar una campaña de prueba 
-  */
-	#[Route('harbi/set-test-camping/{idC}/{target}/{idT}/', methods:['get'])]
-	public function setTestCamping(
-		ScmCampRepository $em, $idC, $target, $idT
-	): Response
-	{
-    return $this->json(['ups' => 'Sin Autorización']);
-    $data = [
-      'camp' => $idC,
-      'target' => $target,
-      'src' => ['id' => $idT],
-      'avo' => 2,
-      'own' => 4,
-      'sendAt' => 'now',
-    ];
-    $em->setNewCampaing($data);
-    return $this->json(['ok' => 'Campaña creada']);
-  }
-
 	/**
    * Recuperamos los archivos que representan registros de descargas, vistas y
    * respuestas de los cotizadores ante los mensajes enviados por whatsapp

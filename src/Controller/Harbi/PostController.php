@@ -93,47 +93,6 @@ class PostController extends AbstractController
   }
   
   /**
-   * [BORRAR] Posiblemente hay que borrar, ya no se registran las campañas en SL
-   * Guardamos la campaña en la BD y cambiamos stt de orden y piezas
-   */
-  #[Route('harbi/set-new-campaing/', methods:['post'])]
-  public function setNewCampaingMsg(
-    Request $req, ScmCampRepository $scmEm, CampaingsRepository $camps
-  ): Response
-  {
-    $result = ['abort' => true, 'msg' => 'error', 'body' => 'ERROR, No se recibieron datos.'];
-
-		$data = $this->toArray($req, 'data');
-    if(!array_key_exists('slug_camp', $data)) {
-      return $this->json($result);
-    }
-    
-    $dql = $camps->getCampaignBySlug($data['slug_camp']);
-    $campaing = $dql->getArrayResult();
-    if($campaing) {
-			
-			$data['camp'] = $campaing[0]['id'];
-			$data['priority']= $campaing[0]['priority'];
-			$data['emiter']  = '';
-			$data['remiter'] = '';
-			$data['campaing']= $campaing[0];
-			$result = $scmEm->setNewCampaing($data);
-      if(!$result['abort']) {
-				$data['id'] = $result['body']['id'];
-        $data['emiter'] = $result['body']['emiter'];
-        unset($result['body']['remiter']['empresa']);
-			  $data['remiter'] = $result['body']['remiter'];
-        $result['body'] = $data;
-      }
-			
-    }else{
-			$result['body'] = 'No se encontró la campaña '.$data['camp']['slug_camp'];
-    }
-		
-    return $this->json($result);
-  }
-	
-  /**
    * Cambiamos stt de ordenes y sus piezas en SR
    */
   #[Route('harbi/set-ests-stts/', methods:['post'])]
