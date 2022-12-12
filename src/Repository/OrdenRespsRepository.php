@@ -70,7 +70,7 @@ class OrdenRespsRepository extends ServiceEntityRepository
 		$obj->setFotos($data['fotos']);
 
 		try {
-			$obj = $this->add($obj, true, 'obj');
+			$obj = $this->add($obj, true, true);
 			$this->result['body'] = $obj->getId();
 			if($isLocal) {
 				$this->revisarIdTable($obj, $data['id']);
