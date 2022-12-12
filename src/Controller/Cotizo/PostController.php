@@ -66,16 +66,15 @@ class PostController extends AbstractController
   ): Response
   {
     $data = $this->toArray($req, 'data');
-    
     $result = $rpsEm->setRespuesta($data);
 
     if(!$result['abort']) {
       if(!array_key_exists('fromLocal', $data)) {
         $fileName = $data['idOrden'].'-'. $data['own'].'-'. $data['idPieza'];
-        $scm->setNewRegType($fileName.'-'.$result['body'].'.rsp', $data);
+        $scm->setNewRegType($fileName.'-'.$result['body'].'-'.$data['id'].'.rsp', $data);
       }
     }
-    
+
     return $this->json($result);
   }
 
