@@ -72,7 +72,7 @@ class PostController extends AbstractController
     if(!$result['abort']) {
       if(!array_key_exists('fromLocal', $data)) {
         $fileName = $data['idOrden'].'-'. $data['own'].'-'. $data['idPieza'];
-        $scm->setNewRegType($fileName.'-'.$data['id'].'.rsp', $data);
+        $scm->setNewRegType($fileName.'-'.$result['body'].'.rsp', $data);
       }
     }
     
