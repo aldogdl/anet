@@ -354,9 +354,8 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false,'msg'=>'ok','body'=>[$data]]);
   }
 
-  
   /**
-   * y liberamos la orden, el prefijo lib es solo para proteccion.
+   * Liberamos la orden, el prefijo lib es solo para proteccion.
   */
   #[Route('harbi/liberar-ordenes/{idOrden}/', methods: ['get'])]
   public function liberarOrdenes(OrdenesRepository $ordEm, String $idOrden): Response

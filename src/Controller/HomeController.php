@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Service\WebHook;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,6 +27,13 @@ class HomeController extends AbstractController
             ]);
         }
         return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => 'Hola Intruso...']);
+    }
+
+    #[Route('webhook/', methods: ['get'])]
+    public function webHook(WebHook $wh): Response {
+
+        $has = $wh->sendMy();
+        return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => $has]);
     }
 
 }
