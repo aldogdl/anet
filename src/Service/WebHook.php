@@ -26,7 +26,7 @@ class WebHook
             );
             $statusCode = $response->getStatusCode();
             if($statusCode == 200) {
-                return json_encode($response->getContent());
+                return 'Se acaba de meter algo';
             }
             return 'Error '.$statusCode;
         }
