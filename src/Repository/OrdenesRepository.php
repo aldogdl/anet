@@ -340,7 +340,7 @@ class OrdenesRepository extends ServiceEntityRepository
     $stt1 = '1';
     $stt2 = '2';
     
-    $stt = 'o.stt = :stt1 OR o.stt = stt2 ';
+    $stt = 'o.stt = :stt1 OR o.stt = :stt2 ';
     $values = ['stt1' => $stt1, 'stt2' => $stt2];
     if($callFrom == 'home') {
       $stt = 'o.stt = :stt2 ';
