@@ -7,6 +7,8 @@
 .env
 .well-known
 error_log
+.subversion/
+front_door/
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
 public_html/bundles/
