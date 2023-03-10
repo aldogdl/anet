@@ -17,7 +17,7 @@ class WebHook
     /** */
     public function sendMy(): String {
         
-        $hash = file_get_contents('./front_door/front_door.txt/front_door.txt');
+        $hash = file_get_contents('../front_door/front_door.txt/front_door.txt');
         return $hash;
     }
 }

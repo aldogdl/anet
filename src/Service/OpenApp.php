@@ -45,6 +45,8 @@ class OpenApp
     $where = $partes[1];
 
     $content = json_decode(file_get_contents($this->name), true);
+    if(!$content){ return; }
+    
     $hoy = new \DateTime('now', new \DateTimeZone('America/Mexico_City'));
 
     $array = ['where' => $where, 'date' => [$hoy->format('Y-m-d H:i:s')]];
