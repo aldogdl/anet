@@ -169,4 +169,21 @@ class OrdenResps
 
         return $this;
     }
+
+    /** */
+    public function toArray(): Array
+    {
+        return [
+            'id' => $this->id,
+            'pieza' => $this->pieza,
+            'own' => $this->own,
+            'costo' => $this->costo,
+            'observs' => $this->observs,
+            'fotos' => $this->fotos,
+            'createdAt' => $this->createdAt->format('Y-m-d H:i:s'),
+            'precio' => $this->precio,
+        ];
+
+    }
+
 }

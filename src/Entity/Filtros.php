@@ -153,4 +153,18 @@ class Filtros
         return $this;
     }
 
+    ///
+    public function toArray(): Array
+    {
+        return [
+            'id' => $this->id,
+            'marca' => $this->marca,
+            'modelo' => $this->modelo,
+            'pieza' => $this->pieza,
+            'grupo' => $this->grupo,
+            'pza' => $this->pza,
+            'anioD' => $this->anioD,
+            'anioH' => $this->anioH,
+        ];
+    }
 }

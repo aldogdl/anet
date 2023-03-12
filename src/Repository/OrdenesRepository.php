@@ -59,7 +59,7 @@ class OrdenesRepository extends ServiceEntityRepository
    * @throws ORMException
    * @throws OptimisticLockException
    */
-  public function setOrden(array $orden): array
+  public function setOrden(array $orden, String $pathNifi): array
   {
     if($orden['id'] != 0) {
       $entity = $this->_em->find(Ordenes::class, $orden['id']);
@@ -88,11 +88,23 @@ class OrdenesRepository extends ServiceEntityRepository
 
     $this->_em->persist($entity);
     try {
+
       $this->_em->flush();
+      /// Hacemos el guardado de la orden en archivo para nifi
+      $file = $entity->toArray();
+      $content = 0;
+      $filename = $pathNifi.$entity->getId().'.json';
+      if($file) {
+        $content = file_put_contents($filename, json_encode($file));
+      }
+
       $this->result['body'] = [
         'id' => $entity->getId(),
         'created_at' => $entity->getCreatedAt(),
+        'content' => $content,
+        'filename' => $entity->getId().'.json'
       ];
+
     } catch (\Throwable $th) {
       $this->result['abort']= true;
       $this->result['msg']  = $th->getMessage();

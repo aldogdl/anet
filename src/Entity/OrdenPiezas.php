@@ -187,6 +187,7 @@ class OrdenPiezas
 
     public function removeResp(OrdenResps $resp): self
     {
+
         if ($this->resps->removeElement($resp)) {
             // set the owning side to null (unless already changed)
             if ($resp->getPieza() === $this) {
@@ -207,5 +208,28 @@ class OrdenPiezas
         $this->idHive = $idHive;
 
         return $this;
+    }
+
+    /** */
+    public function toArray(): Array
+    {
+        $respuestas = [];
+        $rota = count($this->resps);
+        for ($i=0; $i < $rota; $i++) { 
+            $respuestas[] = $this->resps[$i]->toArray();
+        }
+        return [
+            'id' => $this->id,
+            'idHive' => $this->idHive,
+            'est' => $this->est,
+            'stt' => $this->stt,
+            'piezaName' => $this->piezaName,
+            'origen' => $this->origen,
+            'lado' => $this->lado,
+            'posicion' => $this->posicion,
+            'fotos' => $this->fotos,
+            'obs' => $this->obs,
+            'resps' => $respuestas,
+        ];
     }
 }

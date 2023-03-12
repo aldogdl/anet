@@ -8,6 +8,7 @@ parameters:
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
     imgOrdRsp  : '%phtml%/to_orden_rsp/'
+    nifiFld    : '%phtml%/nifi/'
     ordAsigns  : '%phtml%/ordenes_asigns/'
     centinela  : '%phtml%/centinela.json'
     harbiConnx : '%phtml%/harbi_connx.json'
@@ -29,5 +30,4 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+

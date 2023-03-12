@@ -182,4 +182,23 @@ class NG1Empresas
         return $this;
     }
 
+    ///
+    public function toArray(): Array
+    {
+        $filts = [];
+        $rota = count($this->filtros);
+        for ($i=0; $i < $rota; $i++) { 
+            $filts[] = $this->filtros[$i]->toArray();
+        }
+        return [
+            'id' => $this->id,
+            'nombre' => $this->nombre,
+            'domicilio' => $this->domicilio,
+            'cp' => $this->cp,
+            'isLocal' => $this->isLocal,
+            'telFijo' => $this->telFijo,
+            'latLng' => $this->latLng,
+            'filtros' => $filts,
+        ];
+    }
 }

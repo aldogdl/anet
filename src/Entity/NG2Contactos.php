@@ -211,4 +211,20 @@ class NG2Contactos implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    ///
+    public function toArray(): Array
+    {
+        return [
+            'id' => $this->id,
+            'curc' => $this->curc,
+            'roles' => $this->roles,
+            'nombre' => $this->nombre,
+            'isCot' => $this->isCot,
+            'cargo' => $this->cargo,
+            'celular' => $this->celular,
+            'keyCel' => $this->keyCel,
+            'keyWeb' => $this->keyWeb,
+            'empresa' => $this->empresa->toArray(),
+        ];
+    }
 }

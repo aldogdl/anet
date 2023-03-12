@@ -15,6 +15,7 @@ use App\Repository\OrdenesRepository;
 use App\Repository\OrdenPiezasRepository;
 use App\Service\CotizaService;
 use App\Service\StatusRutas;
+use App\Service\WebHook;
 
 class PostController extends AbstractController
 {
@@ -48,12 +49,18 @@ class PostController extends AbstractController
 
   #[Route('api/cotiza/set-orden/', methods:['post'])]
   public function setOrden(
-    Request $req, OrdenesRepository $ordEm, AutosRegRepository $autoEm
+    Request $req, WebHook $wh,
+    OrdenesRepository $ordEm, AutosRegRepository $autoEm
   ): Response
   {
     $data = $this->toArray($req, 'data');
     $autoEm->regAuto($data);
-    $result = $ordEm->setOrden($data);
+    $result = $ordEm->setOrden($data, $this->getParameter('nifiFld'));
+    if(array_key_exists('content', $result)) {
+      if($result['content'] > 0) {
+        $wh->sendMy('solicitud_creada', $result['filename']);
+      }
+    }
     return $this->json($result);
   }
 

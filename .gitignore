@@ -30,6 +30,7 @@ public_html/.htaccess
 public_html/.___htaccess
 public_html/.__htaccess
 public_html/scm/
+public_html/nifi/
 public_html/filtros/
 var/
 vendor/

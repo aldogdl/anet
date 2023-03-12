@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace App\Controller\Centinela;
 
 use App\Repository\OrdenesRepository;
@@ -34,7 +36,7 @@ class GetController extends AbstractController
         string $idPieza
     ): Response
     {
-        $dql = $pzasEm->getDataPiezaById($idPieza);
+        $dql = $pzasEm->getDataPiezaById((int) $idPieza);
         $pieza = $dql->getScalarResult();
         return $this->json([
             'abort'=>false, 'msg' => 'ok',

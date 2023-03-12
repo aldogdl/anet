@@ -28,12 +28,4 @@ class HomeController extends AbstractController
         }
         return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => 'Hola Intruso...']);
     }
-
-    #[Route('webhook/', methods: ['get'])]
-    public function webHook(WebHook $wh): Response {
-
-        $has = $wh->sendMy();
-        return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => $has]);
-    }
-
 }
