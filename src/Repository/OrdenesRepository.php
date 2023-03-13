@@ -90,6 +90,7 @@ class OrdenesRepository extends ServiceEntityRepository
     try {
 
       $this->_em->flush();
+      
       /// Hacemos el guardado de la orden en archivo para nifi
       $file = $entity->toArray();
       $content = 0;

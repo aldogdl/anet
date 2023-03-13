@@ -61,9 +61,9 @@ class PostController extends AbstractController
     $isOk = false;
     
     $resWh = ['abort' => true, 'msg' => 'Error al enviar WebHook'];
-    if(array_key_exists('content', $result)) {
-      if($result['content'] > 0) {
-        $resWh = $wh->sendMy('solicitud_creada', $result['filename']);
+    if(array_key_exists('content', $result['body'])) {
+      if($result['body']['content'] > 0) {
+        $resWh = $wh->sendMy('solicitud_creada', $result['body']['filename']);
         $isOk = !$resWh['abort'];
       }else{
         $resWh['msg'] = 'Sin contenido el archivo creado de la solicitud nueva';
@@ -73,7 +73,7 @@ class PostController extends AbstractController
     }
 
     if(!$isOk) {
-      file_put_contents( $rootNifi.'fails/'.$result['filename'],  json_encode($resWh) );
+      file_put_contents( $rootNifi.'fails/'.$result['body']['filename'],  json_encode($resWh) );
     }
     return $this->json($result);
   }
