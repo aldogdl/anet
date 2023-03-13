@@ -56,6 +56,7 @@ class PostController extends AbstractController
     $data = $this->toArray($req, 'data');
     $autoEm->regAuto($data);
     $rootNifi = $this->getParameter('nifiFld');
+
     $result = $ordEm->setOrden($data, $rootNifi);
     $isOk = false;
     
@@ -72,7 +73,7 @@ class PostController extends AbstractController
     }
 
     if(!$isOk) {
-      file_put_contents( $rootNifi.'/fails/'.$result['id'],  json_encode($resWh) );
+      file_put_contents( $rootNifi.'fails/'.$result['filename'],  json_encode($resWh) );
     }
     return $this->json($result);
   }
