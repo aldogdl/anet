@@ -55,17 +55,24 @@ class PostController extends AbstractController
   {
     $data = $this->toArray($req, 'data');
     $autoEm->regAuto($data);
-    $result = $ordEm->setOrden($data, $this->getParameter('nifiFld'));
+    $rootNifi = $this->getParameter('nifiFld');
+    $result = $ordEm->setOrden($data, $rootNifi);
     $isOk = false;
+    
+    $resWh = ['abort' => true, 'msg' => 'Error al enviar WebHook'];
     if(array_key_exists('content', $result)) {
       if($result['content'] > 0) {
         $resWh = $wh->sendMy('solicitud_creada', $result['filename']);
         $isOk = !$resWh['abort'];
+      }else{
+        $resWh['msg'] = 'Sin contenido el archivo creado de la solicitud nueva';
       }
+    }else{
+      $resWh['msg'] = 'No se creó correctamente el archivo de la solicitud nueva';
     }
 
     if(!$isOk) {
-      file_put_contents( $result.'/fails/'.$result['id'],  json_encode($resWh) );
+      file_put_contents( $rootNifi.'/fails/'.$result['id'],  json_encode($resWh) );
     }
     return $this->json($result);
   }
