@@ -10,12 +10,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class NiFiController extends AbstractController
 {
+    /**
+     * 
+     */
     #[Route('nifi/', name: 'home')]
     public function index(): Response
     {
         return $this->json(['hola' => 'Bienvenido...']);
     }
 
+    /**
+     * 
+     */
     #[Route('nifi/get-ordenes-ids/', methods: ['GET'])]
     public function getOrdenesIds(WebHook $wh, OrdenesRepository $em): Response
     {
@@ -28,7 +34,10 @@ class NiFiController extends AbstractController
         }
         return $this->json(['abort'=> true, 'msg' => $ids]);
     }
-
+    
+    /**
+     * 
+     */
     #[Route('nifi/orden/{id}/', methods: ['GET'])]
     public function getOrden(WebHook $wh, OrdenesRepository $em, int $id): Response
     {

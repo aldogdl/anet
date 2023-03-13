@@ -56,10 +56,16 @@ class PostController extends AbstractController
     $data = $this->toArray($req, 'data');
     $autoEm->regAuto($data);
     $result = $ordEm->setOrden($data, $this->getParameter('nifiFld'));
+    $isOk = false;
     if(array_key_exists('content', $result)) {
       if($result['content'] > 0) {
-        $wh->sendMy('solicitud_creada', $result['filename']);
+        $resWh = $wh->sendMy('solicitud_creada', $result['filename']);
+        $isOk = !$resWh['abort'];
       }
+    }
+
+    if(!$isOk) {
+      file_put_contents( $result.'/fails/'.$result['id'],  json_encode($resWh) );
     }
     return $this->json($result);
   }
