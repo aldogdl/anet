@@ -141,10 +141,9 @@ class OrdenesRepository extends ServiceEntityRepository
           "resource"  => $entity->getId().'.json',
           "creado"    => $date->format('Y-m-d h:m:s')
         ];
-        $resWh = $wh->sendMy($payload, $pathNifi);
-        $isOk = !$resWh['abort'];
+        $isOk = $wh->sendMy($payload, $pathNifi);
         if(!$isOk) {
-          file_put_contents( $pathNifi.'fails/'.$filename,  json_encode($resWh) );
+          file_put_contents( $pathNifi.'fails/'.$filename,  json_encode($payload) );
         }
       }
     }

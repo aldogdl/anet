@@ -164,10 +164,9 @@ class GetController extends AbstractController
           "creado"    => $date->format('Y-m-d h:m:s')
         ];
 		$pathNifi = $this->getParameter('nifiFld');
-        $resWh = $wh->sendMy($payload, $pathNifi);
-		$isOk = !$resWh['abort'];
+        $isOk = $wh->sendMy($payload, $pathNifi);
         if(!$isOk) {
-          file_put_contents( $pathNifi.'fails/'.microtime().'.json',  json_encode($resWh) );
+          file_put_contents( $pathNifi.'fails/'.microtime().'.json',  json_encode($payload) );
         }
 	}
 }
