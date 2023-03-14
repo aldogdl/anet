@@ -135,11 +135,9 @@ class OrdenesRepository extends ServiceEntityRepository
 
       if($resWh['msg'] == '') {
         $isOk = false;
-        $date = new \DateTime('now');
         $payload = [
           "evento"    => "creada_solicitud",
-          "resource"  => $entity->getId().'.json',
-          "creado"    => $date->format('Y-m-d h:m:s')
+          "resource"  => $entity->getId().'.json'
         ];
         $isOk = $wh->sendMy($payload, $pathNifi);
         if(!$isOk) {

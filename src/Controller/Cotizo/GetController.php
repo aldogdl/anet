@@ -152,7 +152,6 @@ class GetController extends AbstractController
 		int $idPza = 0, int $idAvo = 0
 	)
 	{
-		$date = new \DateTime('now');
         $payload = [
           "evento"    => 'whastapp_api',
 		  "solicitud" => $idSol,
@@ -161,7 +160,6 @@ class GetController extends AbstractController
 		  "accFrom"   => $accFrom,
           "cotizador" => $idUser,
           "avo"       => $idAvo,
-          "creado"    => $date->format('Y-m-d h:m:s')
         ];
 		$pathNifi = $this->getParameter('nifiFld');
         $isOk = $wh->sendMy($payload, $pathNifi);

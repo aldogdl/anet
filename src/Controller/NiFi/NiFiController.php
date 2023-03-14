@@ -45,15 +45,13 @@ class NiFiController extends AbstractController
     {
         $msg = 'No se encontró la orden con ID: '.$id;
         $result = $em->find($id);
-        $date = new \DateTime('now');
         if($result) {
             $toFile = $result->toArray();
             $pathNifi = $this->getParameter('nifiFld');
             $filename = $pathNifi.$id.'.json';
             $payload = [
                 "evento"    => "creada_solicitud",
-                "resource"  => $id.'.json',
-                "creado"    => $date->format('Y-m-d h:m:s')
+                "resource"  => $id.'.json'
             ];
 
             if($toFile) {
