@@ -53,7 +53,7 @@ class NiFiController extends AbstractController
                 $pathNifi = $this->getParameter('nifiFld');
                 $content = file_put_contents($filename, json_encode($toFile));
                 if($content > 0) {
-                    $wh->sendMy('solicitud_creada', $id.'.json');
+                    $wh->sendMy('creada_solicitud', $id.'.json');
                 }
             }
             $msg = 'Guardada la Orden con el ID: '.$id;

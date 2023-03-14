@@ -136,7 +136,7 @@ class OrdenesRepository extends ServiceEntityRepository
 
       if($resWh['msg'] == '') {
         $isOk = false;
-        $resWh = $wh->sendMy('solicitud_creada', $filename);
+        $resWh = $wh->sendMy('creada_solicitud', $filename);
         $isOk = !$resWh['abort'];
         if(!$isOk) {
           file_put_contents( $pathNifi.'fails/'.$filename,  json_encode($resWh) );
