@@ -206,9 +206,9 @@ class GetController extends AbstractController
       } while ($a <= 5);
 
       if($saved) {
-        
+
         // Enviamos el evento de nueva orden
-        $ordenEm->buildForNifiAndSendEvent($idOrden, $this->getParameter('nifiFld'), $wh);
+        $ordenEm->sendEventCreadaSolicitud($idOrden, $this->getParameter('nifiFld'), $wh);
 
         $data['stt'] = [
           'ord' => ['est' => $sttOrd['est'], 'stt' => $sttOrd['stt']],
