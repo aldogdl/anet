@@ -125,55 +125,55 @@ class CotizaService
 	/** */
 	public function removeImgOfOrdenToFolderTmp(string $imgFileName): bool
 	{
-			$path = $this->params->get('imgOrdTmp');
-			$pathTo = Path::canonicalize($path.'/'.$imgFileName);
-			if($this->filesystem->exists($pathTo)) {
-				$this->filesystem->remove($pathTo);
-			}
-			if($this->filesystem->exists($pathTo)) {
-				return true;
-			}
-			return false;
+		$path = $this->params->get('imgOrdTmp');
+		$pathTo = Path::canonicalize($path.'/'.$imgFileName);
+		if($this->filesystem->exists($pathTo)) {
+			$this->filesystem->remove($pathTo);
+		}
+		if($this->filesystem->exists($pathTo)) {
+			return true;
+		}
+		return false;
 	}
 
 	/** */
 	public function saveFileSharedImgFromDevices(array $data): bool
 	{
-			$finder = new Finder();
-			$pathImgs = $this->params->get('imgOrdTmp');
-			if(!$this->filesystem->exists($pathImgs)) {
-					$this->filesystem->mkdir($pathImgs);
-			}else{
-					$finder->files()->in($pathImgs)->name('*'.$data['orden'] .'-'. $data['idPiezaTmp'] .'*');
-					if ($finder->hasResults()) {
-							foreach ($finder as $file) {
-									$data['files'][] = $file->getRelativePathname();
-							}
-					}
+		$finder = new Finder();
+		$pathImgs = $this->params->get('imgOrdTmp');
+		if(!$this->filesystem->exists($pathImgs)) {
+			$this->filesystem->mkdir($pathImgs);
+		}else{
+			$finder->files()->in($pathImgs)->name('*'.$data['orden'] .'-'. $data['idPiezaTmp'] .'*');
+			if ($finder->hasResults()) {
+				foreach ($finder as $file) {
+					$data['files'][] = $file->getRelativePathname();
+				}
 			}
+		}
 			
-			$path = $this->params->get('shareimgDev');
-			if(!$this->filesystem->exists($path)) {
-					$this->filesystem->mkdir($path);
-			}
-			$pathTo = Path::canonicalize($path.'/'.$data['filename'].'.json');
-			file_put_contents($pathTo, json_encode($data));
-			if($this->filesystem->exists($pathTo)) {
-					return true;
-			}
-			return false;
+		$path = $this->params->get('shareimgDev');
+		if(!$this->filesystem->exists($path)) {
+			$this->filesystem->mkdir($path);
+		}
+		$pathTo = Path::canonicalize($path.'/'.$data['filename'].'.json');
+		file_put_contents($pathTo, json_encode($data));
+		if($this->filesystem->exists($pathTo)) {
+			return true;
+		}
+		return false;
 	}
 
 	/** */
 	public function openShareImgDevice(String $filename)
 	{
-			$path = $this->params->get('shareimgDev');
-			$path = $path . '/' . $filename . '.json';
-			if($this->filesystem->exists($path)) {
-					$data = json_decode(file_get_contents($path), true);
-					$data['isOpen'] = true;
-					$this->filesystem->dumpFile($path, json_encode($data));
-			}
+		$path = $this->params->get('shareimgDev');
+		$path = $path . '/' . $filename . '.json';
+		if($this->filesystem->exists($path)) {
+			$data = json_decode(file_get_contents($path), true);
+			$data['isOpen'] = true;
+			$this->filesystem->dumpFile($path, json_encode($data));
+		}
 	}
 
 	/**
@@ -183,13 +183,13 @@ class CotizaService
 	*/
 	public function updateFilenameInFileShare(String $nombreArchivo, String $filename)
 	{
-			$path = $this->params->get('shareimgDev');
-			$path = Path::canonicalize($path . '/' . $nombreArchivo . '.json');
-			$data = json_decode(file_get_contents($path), true);
-			if(!in_array($filename, $data['files'])) {
-					$data['files'][] = $filename;
-			}
-			$this->filesystem->dumpFile($path, json_encode($data));
+		$path = $this->params->get('shareimgDev');
+		$path = Path::canonicalize($path . '/' . $nombreArchivo . '.json');
+		$data = json_decode(file_get_contents($path), true);
+		if(!in_array($filename, $data['files'])) {
+				$data['files'][] = $filename;
+		}
+		$this->filesystem->dumpFile($path, json_encode($data));
 	}
 
 	/**
@@ -197,11 +197,11 @@ class CotizaService
 	*/
 	public function finShareImgDevice(String $nombreArchivo)
 	{
-			$path = $this->params->get('shareimgDev');
-			$path = Path::canonicalize($path . '/' . $nombreArchivo . '.json');
-			$data = json_decode(file_get_contents($path), true);
-			$data['isFinish'] = true;
-			$this->filesystem->dumpFile($path, json_encode($data));
+		$path = $this->params->get('shareimgDev');
+		$path = Path::canonicalize($path . '/' . $nombreArchivo . '.json');
+		$data = json_decode(file_get_contents($path), true);
+		$data['isFinish'] = true;
+		$this->filesystem->dumpFile($path, json_encode($data));
 	}
 
 	/**
@@ -209,39 +209,39 @@ class CotizaService
 	*/
 	public function delShareImgDevice(String $nombreArchivo)
 	{
-			$path = $this->params->get('shareimgDev');
-			$path = Path::canonicalize($path . '/' . $nombreArchivo . '.json');
-			$this->filesystem->remove($path);
+		$path = $this->params->get('shareimgDev');
+		$path = Path::canonicalize($path . '/' . $nombreArchivo . '.json');
+		$this->filesystem->remove($path);
 	}
 
 	/** */
 	public function checkShareImgDevice(String $filename, String $tipoChequeo): array
 	{
-			$path = $this->params->get('shareimgDev');
-			$path = $path . '/' . $filename . '.json';
-			$data = [];
-			if($this->filesystem->exists($path)) {
-					$data = json_decode(file_get_contents($path), true);
+		$path = $this->params->get('shareimgDev');
+		$path = $path . '/' . $filename . '.json';
+		$data = [];
+		if($this->filesystem->exists($path)) {
+			$data = json_decode(file_get_contents($path), true);
+		}
+		
+		$res = false;
+		if($tipoChequeo == 'isOpen') {
+			if(array_key_exists('isOpen', $data)) {
+				if($data['isOpen']) {
+						$res = true;
+				}
 			}
-			
-			$res = false;
-			if($tipoChequeo == 'isOpen') {
-					if(array_key_exists('isOpen', $data)) {
-							if($data['isOpen']) {
-									$res = true;
-							}
-					}
-			}
+		}
 
-			if($tipoChequeo == 'fotos') {
-					if(array_key_exists('files', $data)) {
-							return [
-									'result' => true,
-									'isFinish' => (array_key_exists('isFinish', $data)) ? true : false,
-									'fotos'  => $data['files']
-							];
-					}
+		if($tipoChequeo == 'fotos') {
+			if(array_key_exists('files', $data)) {
+				return [
+					'result' => true,
+					'isFinish' => (array_key_exists('isFinish', $data)) ? true : false,
+					'fotos'  => $data['files']
+				];
 			}
-			return ['result' => $res];
+		}
+		return ['result' => $res];
 	}
 }

@@ -6,6 +6,7 @@ use App\Entity\AO1Marcas;
 use App\Entity\AO2Modelos;
 use App\Entity\NG2Contactos;
 use App\Entity\Ordenes;
+use App\Service\WebHook;
 
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -59,7 +60,7 @@ class OrdenesRepository extends ServiceEntityRepository
    * @throws ORMException
    * @throws OptimisticLockException
    */
-  public function setOrden(array $orden, String $pathNifi): array
+  public function setOrden(array $orden): array
   {
     if($orden['id'] != 0) {
       $entity = $this->_em->find(Ordenes::class, $orden['id']);
@@ -90,20 +91,9 @@ class OrdenesRepository extends ServiceEntityRepository
     try {
 
       $this->_em->flush();
-      
-      /// Hacemos el guardado de la orden en archivo para nifi
-      $file = $entity->toArray();
-      $content = 0;
-      $filename = $pathNifi.$entity->getId().'.json';
-      if($file) {
-        $content = file_put_contents($filename, json_encode($file));
-      }
-
       $this->result['body'] = [
         'id' => $entity->getId(),
-        'created_at' => $entity->getCreatedAt(),
-        'content' => $content,
-        'filename' => $entity->getId().'.json'
+        'created_at' => $entity->getCreatedAt()
       ];
 
     } catch (\Throwable $th) {
@@ -116,6 +106,43 @@ class OrdenesRepository extends ServiceEntityRepository
       $this->revisarIdTable($entity, $orden['id']);
     }
     return $this->result;
+  }
+
+  /**
+   * Hacemos el guardado de la orden en archivo para nifi
+  */
+  public function buildForNifiAndSendEvent(int $idOrden, String $pathNifi, WebHook $wh): void
+  {
+
+    $resWh = ['abort' => true, 'msg' => ''];
+    $entity = $this->_em->find(Ordenes::class, $idOrden);
+    if(!$entity){ $resWh['msg'] = 'No se encontró la orden '.$idOrden; }
+
+    if($resWh['msg'] == '') {
+      
+      $filename = $pathNifi.$entity->getId().'.json';
+      $file = $entity->toArray();
+      if(count($file) == 0) {
+        $resWh['msg'] = 'No se recuperó el array de la orden '.$idOrden;
+      }
+
+      if($resWh['msg'] == '') {
+
+        $content = file_put_contents($filename, json_encode($file));
+        if($content == 0) {
+          $resWh['msg'] = 'No se guardo correctamente en el archivo la orden '.$idOrden;
+        }
+      }
+
+      if($resWh['msg'] == '') {
+        $isOk = false;
+        $resWh = $wh->sendMy('solicitud_creada', $filename);
+        $isOk = !$resWh['abort'];
+        if(!$isOk) {
+          file_put_contents( $pathNifi.'fails/'.$filename,  json_encode($resWh) );
+        }
+      }
+    }
   }
 
   /**

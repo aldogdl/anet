@@ -15,7 +15,7 @@ use App\Repository\OrdenesRepository;
 use App\Repository\OrdenPiezasRepository;
 use App\Service\CotizaService;
 use App\Service\StatusRutas;
-use App\Service\WebHook;
+
 
 class PostController extends AbstractController
 {
@@ -48,33 +48,13 @@ class PostController extends AbstractController
   }
 
   #[Route('api/cotiza/set-orden/', methods:['post'])]
-  public function setOrden(
-    Request $req, WebHook $wh,
-    OrdenesRepository $ordEm, AutosRegRepository $autoEm
-  ): Response
+  public function setOrden(Request $req, OrdenesRepository $ordEm, AutosRegRepository $autoEm): Response
   {
     $data = $this->toArray($req, 'data');
     $autoEm->regAuto($data);
-    $rootNifi = $this->getParameter('nifiFld');
 
-    $result = $ordEm->setOrden($data, $rootNifi);
-    $isOk = false;
-    
-    $resWh = ['abort' => true, 'msg' => 'Error al enviar WebHook'];
-    if(array_key_exists('content', $result['body'])) {
-      if($result['body']['content'] > 0) {
-        $resWh = $wh->sendMy('solicitud_creada', $result['body']['filename']);
-        $isOk = !$resWh['abort'];
-      }else{
-        $resWh['msg'] = 'Sin contenido el archivo creado de la solicitud nueva';
-      }
-    }else{
-      $resWh['msg'] = 'No se creó correctamente el archivo de la solicitud nueva';
-    }
+    $result = $ordEm->setOrden($data);
 
-    if(!$isOk) {
-      file_put_contents( $rootNifi.'fails/'.$result['body']['filename'],  json_encode($resWh) );
-    }
     return $this->json($result);
   }
 
@@ -124,6 +104,7 @@ class PostController extends AbstractController
     $sttOrd = $rutas->getEstOrdenConPiezas($stts);
     $data['est'] = $sttOrd['est'];
     $data['stt'] = $sttOrd['stt'];
+
     $result = $pzasEm->setPieza($data);
 
     if(!$result['abort']) {

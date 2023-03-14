@@ -15,6 +15,7 @@ use App\Repository\OrdenPiezasRepository;
 use App\Service\CentinelaService;
 use App\Service\CotizaService;
 use App\Service\StatusRutas;
+use App\Service\WebHook;
 
 class GetController extends AbstractController
 {
@@ -163,7 +164,7 @@ class GetController extends AbstractController
   #[Route('api/cotiza/enviar-orden/{idOrden}/', methods:['get'])]
   public function enviarOrden(
     OrdenesRepository $ordenEm, OrdenPiezasRepository $pzasEm,
-    CentinelaService $centinela, StatusRutas $rutas,
+    CentinelaService $centinela, StatusRutas $rutas, WebHook $wh,
     $idOrden
   ): Response
   {
@@ -205,6 +206,10 @@ class GetController extends AbstractController
       } while ($a <= 5);
 
       if($saved) {
+        
+        // Enviamos el evento de nueva orden
+        $ordenEm->buildForNifiAndSendEvent($idOrden, $this->getParameter('nifiFld'), $wh);
+
         $data['stt'] = [
           'ord' => ['est' => $sttOrd['est'], 'stt' => $sttOrd['stt']],
           'pza' => ['est' => $sttPza['est'], 'stt' => $sttPza['stt']],
@@ -217,4 +222,5 @@ class GetController extends AbstractController
 
     return $this->json($result);
   }
+
 }
