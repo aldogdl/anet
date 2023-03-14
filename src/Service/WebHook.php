@@ -23,8 +23,8 @@ class WebHook
             $res = base64_decode($hash);
             $uri = 'https://'.$res.'.ngrok.io';
             $date = new \DateTime('now');
-            $dataEvent['creado'] = $date->format('Y-m-d h:j:s');
-            
+            $dataEvent['creado'] = $date->format('Y-m-d h:i:s');
+
             $response = $this->client->request(
                 'POST', $uri, [
                     'query' => ['anet-key' => '2536anet!1975-event'],
