@@ -13,6 +13,7 @@ use App\Repository\OrdenesRepository;
 use App\Service\FiltrosService;
 use App\Service\OpenApp;
 use App\Service\ScmService;
+use App\Service\WebHook;
 
 class GetController extends AbstractController
 {
@@ -45,14 +46,16 @@ class GetController extends AbstractController
 	 * */
 	#[Route('cotizo/get-orden-and-pieza/{idOrden}/{idUser}', methods:['get'])]
 	public function getOrdeneAndPieza(
-		OrdenesRepository $ordenes, OpenApp $openApp, String $idOrden, String $idUser
+		OrdenesRepository $ordenes, OpenApp $openApp, WebHook $wh,
+		String $idOrden, String $idUser
 	): Response
 	{
 		$dql = $ordenes->getOrdenAndPieza($idOrden);
 		$orden = $dql->getArrayResult();
 
 		// guardamos Un registro para saber quien abrio la app
-		$openApp->setNewApertura($idUser);
+		$this->sendNotifictEvent($idUser, $idOrden, 'atendida_solicitud', $wh);
+		// $openApp->setNewApertura($idUser);
 		return $this->json([
 			'abort' => false, 'msg' => 'ok', 'body' => ($orden) ? $orden[0] : []
 		]);
@@ -60,7 +63,7 @@ class GetController extends AbstractController
 
 	#[Route('cotizo/get-ordenes-and-piezas/{callFrom}/{page}/{idUser}/{limit}/', defaults:['page' => 1], methods:['get'])]
 	public function getOrdenesAndPiezas(
-		OrdenesRepository $ordenes, OpenApp $openApp,
+		OrdenesRepository $ordenes, OpenApp $openApp, WebHook $wh,
 		String $callFrom, int $page, String $idUser, int $limit
 	): Response
 	{
@@ -70,8 +73,10 @@ class GetController extends AbstractController
 		foreach ($paginator['results'] as $post) {
 			$ordens[] = $post;
 		}
+
 		// guardamos Un registro para saber quien abrio la app
-		$openApp->setNewApertura($idUser);
+		$this->sendNotifictEvent($idUser, 0, 'appertura_cotizo', $wh, $callFrom);
+		// $openApp->setNewApertura($idUser);
 		return $this->json(['abort' => false, 'msg' => $paginator['data'], 'body' => $ordens]);
 	}
 
@@ -80,15 +85,53 @@ class GetController extends AbstractController
 	 */
 	#[Route('cotizo/set-reg-of/{filename}/', methods:['get'])]
 	public function setOrdenVista(
-		ScmService $scm, FiltrosService $ntg, String $filename
+		ScmService $scm, FiltrosService $ntg, WebHook $wh, String $filename
 	): Response
 	{
+		// nth__435-0-2pp252__1678746986516.ntg
+		// seca__274-40-2cc0__1678734510562.see
+		$partes = explode('__', $filename);
+		$solicitud = 0;
+		$cotizador = 0;
+		$pieza = 0;
+		$avo = 0;
+
+		$accFrom = $partes[0];
+		$pedazos = explode('-', $partes[1]);
+		$solicitud = $pedazos[0];
+		$cotizador = $pedazos[1];
+		if(strpos($partes[1], 'pp') !== false){
+			// Esta involucrada una pieza || 435-0-2pp252
+			$pedazos2 = explode('pp', $pedazos[2]);
+			$avo = $pedazos2[0];
+			$pieza = $pedazos2[1];
+		}
+		if(strpos($partes[1], 'cc')  !== false){
+			// Esta involucrada una solicitud || 274-40-2cc0
+			$pedazos2 = explode('pp', $pedazos[2]);
+			$avo = $pedazos2[0];
+			$pieza = $pedazos2[1];
+		}
+
+		$accion = '';
 		if(strpos($filename, 'see') !== false || strpos($filename, 'pap') !== false) {
-			$scm->setNewRegType($filename);
+			// $scm->setNewRegType($filename);
+			$accion = 'vista_solicitud';
 		}
 		if(strpos($filename, 'ntg') !== false) {
-			$ntg->setNewRegNoTengo($filename);
+			// $ntg->setNewRegNoTengo($filename);
+			$accion = 'noTengo_solicitud';
 		}
+		// dd(
+		// 	$accFrom,
+		// 	$solicitud,
+		// 	$cotizador,
+		// 	$pieza,
+		// 	$avo,
+		// );
+		$this->sendNotifictEvent(
+			$cotizador, $solicitud, $accion, $wh, $accFrom, $pieza, $avo
+		);
 		return $this->json(['abort' => false, 'body' => 'que haces aqui']);
 	}
 
@@ -103,4 +146,28 @@ class GetController extends AbstractController
 		return $this->json(['abort' => false, 'body' => $ntgo]);
 	}
 
+	///
+	private function sendNotifictEvent(
+		int $idUser, int $idSol, string $event, WebHook $wh, string $accFrom = '',
+		int $idPza = 0, int $idAvo = 0
+	)
+	{
+		$date = new \DateTime('now');
+        $payload = [
+          "evento"    => 'whastapp_api',
+		  "solicitud" => $idSol,
+		  "piezas"    => $idPza,
+		  "accion"    => $event,
+		  "accFrom"   => $accFrom,
+          "cotizador" => $idUser,
+          "avo"       => $idAvo,
+          "creado"    => $date->format('Y-m-d h:m:s')
+        ];
+		$pathNifi = $this->getParameter('nifiFld');
+        $resWh = $wh->sendMy($payload, $pathNifi);
+		$isOk = !$resWh['abort'];
+        if(!$isOk) {
+          file_put_contents( $pathNifi.'fails/'.microtime().'.json',  json_encode($resWh) );
+        }
+	}
 }
