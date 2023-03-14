@@ -111,7 +111,7 @@ class OrdenesRepository extends ServiceEntityRepository
   /**
    * Hacemos el guardado de la orden en archivo para nifi
   */
-  public function buildForNifiAndSendEvent(int $idOrden, String $pathNifi, WebHook $wh): void
+  public function sendEventCreadaSolicitud(int $idOrden, String $pathNifi, WebHook $wh): void
   {
 
     $resWh = ['abort' => true, 'msg' => ''];
@@ -127,7 +127,6 @@ class OrdenesRepository extends ServiceEntityRepository
       }
 
       if($resWh['msg'] == '') {
-
         $content = file_put_contents($filename, json_encode($file));
         if($content == 0) {
           $resWh['msg'] = 'No se guardo correctamente en el archivo la orden '.$idOrden;
@@ -136,7 +135,13 @@ class OrdenesRepository extends ServiceEntityRepository
 
       if($resWh['msg'] == '') {
         $isOk = false;
-        $resWh = $wh->sendMy('creada_solicitud', $filename);
+        $date = new \DateTime('now');
+        $payload = [
+          "evento"    => "creada_solicitud",
+          "resource"  => $entity->getId().'.json',
+          "creado"    => $date->format('Y-m-d h:m:s')
+        ];
+        $resWh = $wh->sendMy($payload, $pathNifi);
         $isOk = !$resWh['abort'];
         if(!$isOk) {
           file_put_contents( $pathNifi.'fails/'.$filename,  json_encode($resWh) );
