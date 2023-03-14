@@ -23,18 +23,20 @@ class NiFiController extends AbstractController
      * 
      */
     #[Route('nifi/get-ordenes-ids/', methods: ['GET'])]
-    public function getOrdenesIds(WebHook $wh, OrdenesRepository $em): Response
+    public function getOrdenesIds(OrdenesRepository $em): Response
     {
         $ids = [];
         $result = $em->findAll();
         if($result) {
             foreach ($result as $orden) {
-                $ids[] = $orden->getId();
+                if(!in_array($orden->getId(), $ids)) {
+                    $ids[] = $orden->getId();
+                }
             }
         }
         return $this->json(['abort'=> true, 'msg' => $ids]);
     }
-    
+
     /**
      * 
      */
