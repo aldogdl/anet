@@ -75,7 +75,7 @@ class GetController extends AbstractController
 		}
 
 		// guardamos Un registro para saber quien abrio la app
-		$this->sendNotifictEvent($idUser, 0, 'appertura_cotizo', $wh, $callFrom);
+		$this->sendNotifictEvent((int) $idUser, 0, 'appertura_cotizo', $wh, $callFrom);
 		// $openApp->setNewApertura($idUser);
 		return $this->json(['abort' => false, 'msg' => $paginator['data'], 'body' => $ordens]);
 	}
