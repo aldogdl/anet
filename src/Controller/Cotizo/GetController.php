@@ -54,7 +54,7 @@ class GetController extends AbstractController
 		$orden = $dql->getArrayResult();
 
 		// guardamos Un registro para saber quien abrio la app
-		$this->sendNotifictEvent($idUser, $idOrden, 'atendida_solicitud', $wh);
+		$this->sendNotifictEvent((int) $idUser, (int) $idOrden, 'atendida_solicitud', $wh);
 		// $openApp->setNewApertura($idUser);
 		return $this->json([
 			'abort' => false, 'msg' => 'ok', 'body' => ($orden) ? $orden[0] : []
@@ -130,7 +130,7 @@ class GetController extends AbstractController
 		// 	$avo,
 		// );
 		$this->sendNotifictEvent(
-			$cotizador, $solicitud, $accion, $wh, $accFrom, $pieza, $avo
+			(int) $cotizador, (int) $solicitud, $accion, $wh, $accFrom, (int) $pieza, (int) $avo
 		);
 		return $this->json(['abort' => false, 'body' => 'que haces aqui']);
 	}
