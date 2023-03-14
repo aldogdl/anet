@@ -28,7 +28,7 @@ class WebHook
                     'headers' => [
                         'Content-Type' => 'application/json',
                     ],
-                    'body' => $dataEvent
+                    'json' => $dataEvent
                 ]
             );
             $statusCode = $response->getStatusCode();
