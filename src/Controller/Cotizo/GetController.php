@@ -160,11 +160,9 @@ class GetController extends AbstractController
 		  "accFrom"   => $accFrom,
           "cotizador" => $idUser,
           "avo"       => $idAvo,
+		  "source"   => "",
         ];
 		$pathNifi = $this->getParameter('nifiFld');
-        $isOk = $wh->sendMy($payload, $pathNifi);
-        if(!$isOk) {
-          file_put_contents( $pathNifi.'fails/'.microtime().'.json',  json_encode($payload) );
-        }
+        $wh->sendMy($payload, $pathNifi);
 	}
 }

@@ -50,8 +50,8 @@ class NiFiController extends AbstractController
             $pathNifi = $this->getParameter('nifiFld');
             $filename = $pathNifi.$id.'.json';
             $payload = [
-                "evento"    => "creada_solicitud",
-                "resource"  => $id.'.json'
+                "evento" => "creada_solicitud",
+                "source" => $id.'.json'
             ];
 
             if($toFile) {

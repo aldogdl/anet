@@ -137,12 +137,9 @@ class OrdenesRepository extends ServiceEntityRepository
         $isOk = false;
         $payload = [
           "evento"    => "creada_solicitud",
-          "resource"  => $entity->getId().'.json'
+          "source"  => $entity->getId().'.json'
         ];
-        $isOk = $wh->sendMy($payload, $pathNifi);
-        if(!$isOk) {
-          file_put_contents( $pathNifi.'fails/'.$filename,  json_encode($payload) );
-        }
+        $wh->sendMy($payload, $pathNifi);
       }
     }
   }
