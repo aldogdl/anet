@@ -78,8 +78,9 @@ class NiFiController extends AbstractController
             $mode = $req->query->get('hub_mode');
             $challenge = $req->query->get('hub_challenge');
     
-            return $this->json($challenge);
+            return new Response($challenge);
         }
+
         return $this->json( [], 500 );
     }
 
