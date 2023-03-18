@@ -15,7 +15,8 @@ parameters:
     filtros    : '%phtml%/filtros/'
     filtrosF   : '%filtros%/filtros.json'
     filNoTgo   : '%phtml%/filnotgo.json'
-
+    getWaToken : '%env(resolve:WA_TOKEN)%'
+    
 services:
     # default configuration for services in *this* file
     _defaults:

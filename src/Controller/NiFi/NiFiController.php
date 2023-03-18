@@ -7,6 +7,7 @@ use App\Service\WebHook;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 
 class NiFiController extends AbstractController
 {
@@ -64,4 +65,22 @@ class NiFiController extends AbstractController
         }
         return $this->json(['abort'=> true, 'msg' => $msg]);
     }
+
+    /**
+     * 
+     */
+    #[Route('wa/wh/', methods: ['GET'])]
+    public function verifyWa(Request $req): Response
+    {
+        $verify = $req->query->get('hub_verify_token');
+        if($verify == $this->getParameter('getWaToken')) {
+
+            $mode = $req->query->get('hub_mode');
+            $challenge = $req->query->get('hub_challenge');
+    
+            return $this->json($challenge);
+        }
+        return $this->json( [], 500 );
+    }
+
 }
