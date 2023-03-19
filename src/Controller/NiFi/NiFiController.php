@@ -86,9 +86,10 @@ class NiFiController extends AbstractController
 
         if($req->getMethod() == 'POST') {
 
+            $filename = round(microtime(true) * 1000);
             $has = $req->getContent();
             if($has) {
-                file_put_contents('mesaje_'.microtime()*1000, $has);
+                file_put_contents('mesaje_'.$filename.'.json', $has);
             }
             return new Response('', 200);
         }
