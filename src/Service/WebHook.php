@@ -15,7 +15,7 @@ class WebHook
     }
 
     /** */
-    public function sendMy(array $dataEvent, String $rootNifi): bool {
+    public function sendMy(array $dataEvent, String $rootNifi, String $token): bool {
 
         $hash = file_get_contents('../front_door/front_door.txt/front_door.txt');
         if($hash) {
@@ -27,13 +27,14 @@ class WebHook
 
             $response = $this->client->request(
                 'POST', $uri, [
-                    'query' => ['anet-key' => '2536anet!1975-event'],
+                    'query' => ['anet-key' => $token],
                     'headers' => [
                         'Content-Type' => 'application/json',
                     ],
                     'json' => $dataEvent
                 ]
             );
+            
             $statusCode = $response->getStatusCode();
             if($statusCode != 200) {
                 file_put_contents($rootNifi.'fails/'.(microtime()*1000).'.json', $dataEvent);

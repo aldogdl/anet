@@ -58,7 +58,9 @@ class NiFiController extends AbstractController
             if($toFile) {
                 $content = file_put_contents($filename, json_encode($toFile));
                 if($content > 0) {
-                    $wh->sendMy($payload, $pathNifi);
+                    $wh->sendMy(
+                        $payload, $pathNifi, $this->getParameter('getAnToken')
+                    );
                 }
             }
             $msg = 'Guardada la Orden con el ID: '.$id;
@@ -70,7 +72,7 @@ class NiFiController extends AbstractController
      * Endpoint para la verificacion de conección
      */
     #[Route('wa/wh/', methods: ['GET', 'POST'])]
-    public function verifyWa(Request $req): Response
+    public function verifyWa(WebHook $wh, Request $req): Response
     {
         if($req->getMethod() == 'GET') {
 
@@ -78,9 +80,10 @@ class NiFiController extends AbstractController
             if($verify == $this->getParameter('getWaToken')) {
     
                 $mode = $req->query->get('hub_mode');
-                $challenge = $req->query->get('hub_challenge');
-        
-                return new Response($challenge);
+                if($mode == 'subscribe') {
+                    $challenge = $req->query->get('hub_challenge');
+                    return new Response($challenge);
+                }
             }
         }
 
@@ -89,11 +92,22 @@ class NiFiController extends AbstractController
             $filename = round(microtime(true) * 1000);
             $has = $req->getContent();
             if($has) {
-                file_put_contents('mesaje_'.$filename.'.json', $has);
+                $path = $this->getParameter('waMessag').'wa_'.$filename.'.json';
+                $bytes = file_put_contents($path, $has);
+                $wh->sendMy(
+                    [
+                        'event'  => 'wa_message',
+                        'source' => $path,
+                        'message'=> $has
+                    ],
+                    $this->getParameter('getWaToken'),
+                    $this->getParameter('getAnToken')
+                );
+                if($bytes > 0) {
+                    return new Response('', 200);
+                }
             }
-            return new Response('', 200);
         }
-        
 
         return $this->json( [], 500 );
     }

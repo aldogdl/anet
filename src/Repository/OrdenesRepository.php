@@ -139,7 +139,7 @@ class OrdenesRepository extends ServiceEntityRepository
           "evento"    => "creada_solicitud",
           "source"  => $entity->getId().'.json'
         ];
-        $wh->sendMy($payload, $pathNifi);
+        $wh->sendMy($payload, $pathNifi, $this->getParameter('getAnToken'));
       }
     }
   }

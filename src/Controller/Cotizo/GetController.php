@@ -162,7 +162,6 @@ class GetController extends AbstractController
           "avo"       => $idAvo,
 		  "source"   => "",
         ];
-		$pathNifi = $this->getParameter('nifiFld');
-        $wh->sendMy($payload, $pathNifi);
+        $wh->sendMy($payload, $this->getParameter('nifiFld'), $this->getParameter('getAnToken'));
 	}
 }
