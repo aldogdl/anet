@@ -69,33 +69,32 @@ class NiFiController extends AbstractController
     /**
      * Endpoint para la verificacion de conección
      */
-    #[Route('wa/wh/', methods: ['GET'])]
+    #[Route('wa/wh/', methods: ['GET', 'POST'])]
     public function verifyWa(Request $req): Response
     {
-        $verify = $req->query->get('hub_verify_token');
-        if($verify == $this->getParameter('getWaToken')) {
+        if($req->getMethod() == 'GET') {
 
-            $mode = $req->query->get('hub_mode');
-            $challenge = $req->query->get('hub_challenge');
+            $verify = $req->query->get('hub_verify_token');
+            if($verify == $this->getParameter('getWaToken')) {
     
-            return new Response($challenge);
+                $mode = $req->query->get('hub_mode');
+                $challenge = $req->query->get('hub_challenge');
+        
+                return new Response($challenge);
+            }
         }
+
+        if($req->getMethod() == 'POST') {
+
+            $has = $req->getContent();
+            if($has) {
+                file_put_contents('mesaje_'.microtime()*1000, $has);
+            }
+            return new Response('', 200);
+        }
+        
 
         return $this->json( [], 500 );
-    }
-    
-    /**
-     * Endpoint para la llegada de notificaciones
-     */
-    #[Route('wa/wh/', methods: ['POST'])]
-    public function setWa(Request $req): Response
-    {
-        $has = $req->getContent();
-        if($has) {
-            file_put_contents('mesaje_'.microtime()*1000, $has);
-        }
-
-        return new Response('', 200);
     }
 
 }
