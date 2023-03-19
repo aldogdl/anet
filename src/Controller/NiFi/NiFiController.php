@@ -67,7 +67,7 @@ class NiFiController extends AbstractController
     }
 
     /**
-     * 
+     * Endpoint para la verificacion de conección
      */
     #[Route('wa/wh/', methods: ['GET'])]
     public function verifyWa(Request $req): Response
@@ -82,6 +82,20 @@ class NiFiController extends AbstractController
         }
 
         return $this->json( [], 500 );
+    }
+    
+    /**
+     * Endpoint para la llegada de notificaciones
+     */
+    #[Route('wa/wh/', methods: ['POST'])]
+    public function setWa(Request $req): Response
+    {
+        $has = $req->getContent();
+        if($has) {
+            file_put_contents('mesaje_'.microtime()*1000, $has);
+        }
+
+        return new Response('', 200);
     }
 
 }
