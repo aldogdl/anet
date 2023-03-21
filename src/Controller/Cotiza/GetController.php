@@ -208,7 +208,9 @@ class GetController extends AbstractController
       if($saved) {
 
         // Enviamos el evento de nueva orden
-        $ordenEm->sendEventCreadaSolicitud($idOrden, $this->getParameter('nifiFld'), $wh);
+        $ordenEm->sendEventCreadaSolicitud(
+          $idOrden, $this->getParameter('nifiFld'), $wh, $this->getParameter('getAnToken')
+        );
 
         $data['stt'] = [
           'ord' => ['est' => $sttOrd['est'], 'stt' => $sttOrd['stt']],

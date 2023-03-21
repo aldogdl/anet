@@ -111,9 +111,11 @@ class OrdenesRepository extends ServiceEntityRepository
   /**
    * Hacemos el guardado de la orden en archivo para nifi
   */
-  public function sendEventCreadaSolicitud(int $idOrden, String $pathNifi, WebHook $wh): void
+  public function sendEventCreadaSolicitud(
+    int $idOrden, String $pathNifi, WebHook $wh, String $anetToken
+  ): void
   {
-
+    
     $resWh = ['abort' => true, 'msg' => ''];
     $entity = $this->_em->find(Ordenes::class, $idOrden);
     if(!$entity){ $resWh['msg'] = 'No se encontró la orden '.$idOrden; }
@@ -139,7 +141,7 @@ class OrdenesRepository extends ServiceEntityRepository
           "evento"    => "creada_solicitud",
           "source"  => $entity->getId().'.json'
         ];
-        $wh->sendMy($payload, $pathNifi, $this->getParameter('getAnToken'));
+        $wh->sendMy($payload, $pathNifi, $anetToken);
       }
     }
   }

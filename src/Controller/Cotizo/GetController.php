@@ -82,8 +82,9 @@ class GetController extends AbstractController
 
 	/**
 	 * Creamos el archivo de visto.
+	 * antes ruta: cotizo/set-reg-of/{filename}/
 	 */
-	#[Route('cotizo/set-reg-of/{filename}/', methods:['get'])]
+	#[Route('cotizo/{filename}/', methods:['get'])]
 	public function setOrdenVista(
 		ScmService $scm, FiltrosService $ntg, WebHook $wh, String $filename
 	): Response
@@ -110,7 +111,7 @@ class GetController extends AbstractController
 			// Esta involucrada una solicitud || 274-40-2cc0
 			$pedazos2 = explode('pp', $pedazos[2]);
 			$avo = $pedazos2[0];
-			$pieza = $pedazos2[1];
+			$pieza = (count($pedazos2) > 1) ? $pedazos2[1] : '';
 		}
 
 		$accion = '';
