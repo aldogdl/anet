@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class HomeController extends AbstractController
 {
-    #[Route('/', name: 'home')]
+    #[Route('/', methods: ['get'])]
     public function index(): Response
     {
         return $this->json(['hola' => 'Bienvenido...']);
