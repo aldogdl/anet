@@ -94,8 +94,9 @@ class GetController extends AbstractController
 		$partes = explode('__', $filename);
 		if(count($partes) < 2) {
 			$rootNifi = $this->getParameter('nifiFld');
+			$fileN = round(microtime(true) * 1000);
 			file_put_contents(
-				$rootNifi.'fails/fallo_cotizo_set_orden_vista_1.json',
+				$rootNifi.'fails/fallo_cotizo_set_orden_vista_1'.$fileN.'.json',
 				json_encode([
 					'status' => 'error de filename',
 					'ruta'  => 'cotizo/{filename}/',
@@ -163,11 +164,12 @@ class GetController extends AbstractController
 		$partes = explode('__', $filename);
 		if(count($partes) < 2) {
 			$rootNifi = $this->getParameter('nifiFld');
+			$fileN = round(microtime(true) * 1000);
 			file_put_contents(
-				$rootNifi.'fails/fallo_cotizo_set_orden_vista_1.json',
+				$rootNifi.'fails/fallo_cotizo_set_orden_vista_2'.$fileN.'.json',
 				json_encode([
 					'status' => 'error de filename',
-					'ruta'  => 'cotizo/{filename}/',
+					'ruta'  => 'cotizo/set-reg-of/{filename}/',
 					'body'   => $filename
 				])
 			);
