@@ -38,10 +38,14 @@ class WebHook
             $statusCode = $response->getStatusCode();
             if($statusCode != 200) {
 
-                $file = microtime()*1000;
+                $filename = round(microtime(true) * 1000);
                 file_put_contents(
-                    $rootNifi.'fails/'.$file.'.json',
-                    json_encode($dataEvent)
+                    $rootNifi.'fails/'.$filename.'.json',
+                    json_encode([
+                        'status' => $statusCode,
+                        'razon'  => $response->getContent(),
+                        'body'   => $dataEvent
+                    ])
                 );
                 return false;
             }

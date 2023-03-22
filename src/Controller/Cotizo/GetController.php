@@ -92,6 +92,87 @@ class GetController extends AbstractController
 		// nth__435-0-2pp252__1678746986516.ntg
 		// seca__274-40-2cc0__1678734510562.see
 		$partes = explode('__', $filename);
+		if(count($partes) < 2) {
+			$rootNifi = $this->getParameter('nifiFld');
+			file_put_contents(
+				$rootNifi.'fails/fallo_cotizo_set_orden_vista_1.json',
+				json_encode([
+					'status' => 'error de filename',
+					'ruta'  => 'cotizo/{filename}/',
+					'body'   => $filename
+				])
+			);
+			return $this->json(['abort' => false, 'body' => 'que haces aqui']);
+		}
+		$solicitud = 0;
+		$cotizador = 0;
+		$pieza = 0;
+		$avo = 0;
+
+		$accFrom = $partes[0];
+		$pedazos = explode('-', $partes[1]);
+		$solicitud = $pedazos[0];
+		$cotizador = $pedazos[1];
+		if(strpos($partes[1], 'pp') !== false){
+			// Esta involucrada una pieza || 435-0-2pp252
+			$pedazos2 = explode('pp', $pedazos[2]);
+			$avo = $pedazos2[0];
+			$pieza = $pedazos2[1];
+		}
+		if(strpos($partes[1], 'cc')  !== false){
+			// Esta involucrada una solicitud || 274-40-2cc0
+			$pedazos2 = explode('pp', $pedazos[2]);
+			$avo = $pedazos2[0];
+			$pieza = (count($pedazos2) > 1) ? $pedazos2[1] : '';
+		}
+
+		$accion = '';
+		if(strpos($filename, 'see') !== false || strpos($filename, 'pap') !== false) {
+			// $scm->setNewRegType($filename);
+			$accion = 'vista_solicitud';
+		}
+		if(strpos($filename, 'ntg') !== false) {
+			// $ntg->setNewRegNoTengo($filename);
+			$accion = 'noTengo_solicitud';
+		}
+		// dd(
+		// 	$accFrom,
+		// 	$solicitud,
+		// 	$cotizador,
+		// 	$pieza,
+		// 	$avo,
+		// );
+		$this->sendNotifictEvent(
+			(int) $cotizador, (int) $solicitud, $accion, $wh, $accFrom, (int) $pieza, (int) $avo
+		);
+		return $this->json(['abort' => false, 'body' => 'que haces aqui']);
+	}
+
+	/**
+	 * Este metodo esta duplicado, ya que en algun sistema que no se cual es, es
+	 * esta ruta solicitada y entro sistema es la ruta de arriba la que se solicita.
+	 * mal muy mal, se unificará en al siguiente version.
+	 */
+	#[Route('cotizo/set-reg-of/{filename}/', methods:['get'])]
+	public function setOrdenVistaDos(
+		ScmService $scm, FiltrosService $ntg, WebHook $wh, String $filename
+	): Response
+	{
+		// nth__435-0-2pp252__1678746986516.ntg
+		// seca__274-40-2cc0__1678734510562.see
+		$partes = explode('__', $filename);
+		if(count($partes) < 2) {
+			$rootNifi = $this->getParameter('nifiFld');
+			file_put_contents(
+				$rootNifi.'fails/fallo_cotizo_set_orden_vista_1.json',
+				json_encode([
+					'status' => 'error de filename',
+					'ruta'  => 'cotizo/{filename}/',
+					'body'   => $filename
+				])
+			);
+			return $this->json(['abort' => false, 'body' => 'que haces aqui']);
+		}
 		$solicitud = 0;
 		$cotizador = 0;
 		$pieza = 0;
