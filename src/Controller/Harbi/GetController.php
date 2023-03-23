@@ -114,7 +114,6 @@ class GetController extends AbstractController
   #[Route('harbi/download-filtros/', methods:['get'])]
   public function downloadFiltrosFile(FiltrosService $filtros): Response
   {
-    file_put_contents('sabe_campas2.json', $filtros->downloadFiltros());
     return $this->json(
       ['abort' => false, 'msg' => 'ok', 'body' => $filtros->downloadFiltros()]
     );
@@ -165,7 +164,6 @@ class GetController extends AbstractController
 	public function getAllCampings(ScmService $scm): Response
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
-    file_put_contents('sabe_campas.json', $r);
     $r['body'] = $scm->getAllCampings();
 		return $this->json($r);
 	}
@@ -177,7 +175,6 @@ class GetController extends AbstractController
 	): Response
 	{
 		$response = ['abort' => false, 'msg' => 'ok', 'body' => []];
-    file_put_contents('sabe.json', $campas);
 		$ids = explode(',', $campas);
 		$dql = $em->getCampaingsByIds($ids);
 		$campaings = $dql->getArrayResult();
