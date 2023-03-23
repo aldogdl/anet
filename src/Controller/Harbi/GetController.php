@@ -165,6 +165,7 @@ class GetController extends AbstractController
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
     $r['body'] = $scm->getAllCampings();
+    file_put_contents('sabe_campas.json', $r);
 		return $this->json($r);
 	}
 
