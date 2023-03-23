@@ -79,7 +79,7 @@ class GetController extends AbstractController
       'centinela' => !$isSame, 'iris' => $iris, 'resp' => $resp,
       'camping' => $camping, 'ntg' => $ntg, 'asigns' => $asigns
     ];
-    file_put_contents('sabe_campas3.json', $result);
+    file_put_contents('sabe_campas3.json', json_encode($result));
     return $this->json(['abort'=>false, 'body' => $result]);
   }
 
