@@ -79,7 +79,7 @@ class GetController extends AbstractController
       'centinela' => !$isSame, 'iris' => $iris, 'resp' => $resp,
       'camping' => $camping, 'ntg' => $ntg, 'asigns' => $asigns
     ];
-    file_put_contents('sabe_campas3.json', json_encode($result));
+
     return $this->json(['abort'=>false, 'body' => $result]);
   }
 
@@ -165,8 +165,8 @@ class GetController extends AbstractController
 	public function getAllCampings(ScmService $scm): Response
 	{
     $r = ['abort' => false, 'msg' => 'ok', 'body' => []];
-    $r['body'] = $scm->getAllCampings();
     file_put_contents('sabe_campas.json', $r);
+    $r['body'] = $scm->getAllCampings();
 		return $this->json($r);
 	}
 
