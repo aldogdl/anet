@@ -175,7 +175,7 @@ class GetController extends AbstractController
 	): Response
 	{
 		$response = ['abort' => false, 'msg' => 'ok', 'body' => []];
-
+    file_put_contents('sabe.json', $campas);
 		$ids = explode(',', $campas);
 		$dql = $em->getCampaingsByIds($ids);
 		$campaings = $dql->getArrayResult();

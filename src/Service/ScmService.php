@@ -29,13 +29,16 @@ class ScmService
     if(!$this->filesystem->exists($path)) {
       $this->filesystem->mkdir($path);
     }
+
     $filename = $camp['created'].'.json';
     $path = Path::normalize($folder.'/'.$filename);
+
     if($this->filesystem->exists($path)) {
       $sufix = $this->findConsecutivo();
       $filename = $camp['created'].'_'.$sufix.'.json';
       $path = Path::normalize($folder.'/'.$filename);
     }
+    
     $camp['filename'] = $filename;
     file_put_contents($path, json_encode($camp));
   }
