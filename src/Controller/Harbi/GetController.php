@@ -79,7 +79,7 @@ class GetController extends AbstractController
       'centinela' => !$isSame, 'iris' => $iris, 'resp' => $resp,
       'camping' => $camping, 'ntg' => $ntg, 'asigns' => $asigns
     ];
-
+    file_put_contents('sabe_campas3.json', $result);
     return $this->json(['abort'=>false, 'body' => $result]);
   }
 
@@ -114,6 +114,7 @@ class GetController extends AbstractController
   #[Route('harbi/download-filtros/', methods:['get'])]
   public function downloadFiltrosFile(FiltrosService $filtros): Response
   {
+    file_put_contents('sabe_campas2.json', $filtros->downloadFiltros());
     return $this->json(
       ['abort' => false, 'msg' => 'ok', 'body' => $filtros->downloadFiltros()]
     );
