@@ -24,6 +24,7 @@ class WaService
    
     /** */
     private function hidratarEnity(array $message) {
+        
         $this->msg = new WaEntity($message);
         $this->urlMsg = 'https://graph.facebook.com/v16.0/'.
             $this->msg->acount->phoneNumberId .'/messages';
@@ -32,7 +33,11 @@ class WaService
     /** */
     public function setFileOrden(String $pathFile, String $filename): void
     {
-        $sort = json_decode( file_get_contents($pathFile), true );
+        $sort = [];
+        try {
+            $sort = json_decode( file_get_contents($pathFile), true );
+        } catch (\Throwable $th) {}
+
         if(!in_array($filename, $sort)) {
             $sort[] = $filename;
         }
