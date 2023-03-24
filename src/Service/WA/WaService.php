@@ -24,7 +24,7 @@ class WaService
    
     /** */
     private function hidratarEnity(array $message) {
-        
+
         $this->msg = new WaEntity($message);
         $this->urlMsg = 'https://graph.facebook.com/v16.0/'.
             $this->msg->acount->phoneNumberId .'/messages';
@@ -35,9 +35,14 @@ class WaService
     {
         $sort = [];
         try {
-            $sort = json_decode( file_get_contents($pathFile), true );
-        } catch (\Throwable $th) {}
-
+            $content = file_get_contents($pathFile);
+            if($content) {
+                $sort = json_decode( $content, true );
+            }
+        } catch (\Throwable $th) {
+            file_put_contents('error_wa.txt', $th->getMessage());
+        }
+        
         if(!in_array($filename, $sort)) {
             $sort[] = $filename;
         }
