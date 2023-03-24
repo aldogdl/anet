@@ -2,6 +2,7 @@
 
 namespace App\Controller\WA;
 
+use App\Service\WA\Dom\WaEntity;
 use App\Service\WA\WaService;
 use App\Service\WebHook;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,7 +36,7 @@ class WaController extends AbstractController
             $filename = round(microtime(true) * 1000);
             $has = $req->getContent();
             if($has) {
-                $path = $this->getParameter('waMessag').'wa_'.$filename.'.json';
+                $path  = $this->getParameter('waMessag').'wa_'.$filename.'.json';
                 $bytes = file_put_contents($path, $has);
                 $waS->setFileOrden($this->getParameter('waSort'), $filename);
                 $wh->sendMy(
@@ -43,7 +44,7 @@ class WaController extends AbstractController
                         'evento' => 'wa_message',
                         'source' => $filename,
                         'pathTo' => $path,
-                        'payload'=> $has,
+                        'payload'=> json_decode($has),
                     ],
                     $this->getParameter('getWaToken'),
                     $this->getParameter('getAnToken')
