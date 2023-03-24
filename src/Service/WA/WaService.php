@@ -8,9 +8,7 @@ use App\Service\WA\Dom\WaEntity;
 
 class WaService
 {
-    private $token = 'EAACYKUGlPw0BAA3R7n4cKZBv5PgUvZCvvkohmWlRh3nfpcTcr6Li4n8GcaqbEzhXS7nb3oX7GEUclW5jZB8QQaEaYoMqTosaPSZA7AcyZBO6P1RI1OW9qFkNCEZCG7T5grAL78rf1blnYudcsWMC1LiLvJ3Mt1fsW6n8o8On5vKBKFbYw7jgFhZAAuMTI4lPs763O9FQwZCtbICWbb7rQy3t';
-    private $idPhone = '101972776181175';
-
+    private $token = '';
     private $client;
     private $urlMsg;
     private $payloads;
