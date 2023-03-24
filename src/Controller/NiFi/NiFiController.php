@@ -68,48 +68,4 @@ class NiFiController extends AbstractController
         return $this->json(['abort'=> true, 'msg' => $msg]);
     }
 
-    /**
-     * Endpoint para la verificacion de conección
-     */
-    #[Route('wa/wh/', methods: ['GET', 'POST'])]
-    public function verifyWa(WebHook $wh, Request $req): Response
-    {
-        if($req->getMethod() == 'GET') {
-
-            $verify = $req->query->get('hub_verify_token');
-            if($verify == $this->getParameter('getWaToken')) {
-    
-                $mode = $req->query->get('hub_mode');
-                if($mode == 'subscribe') {
-                    $challenge = $req->query->get('hub_challenge');
-                    return new Response($challenge);
-                }
-            }
-        }
-
-        if($req->getMethod() == 'POST') {
-
-            $filename = round(microtime(true) * 1000);
-            $has = $req->getContent();
-            if($has) {
-                $path = $this->getParameter('waMessag').'wa_'.$filename.'.json';
-                $bytes = file_put_contents($path, $has);
-                $wh->sendMy(
-                    [
-                        'event'  => 'wa_message',
-                        'source' => $path,
-                        'message'=> $has
-                    ],
-                    $this->getParameter('getWaToken'),
-                    $this->getParameter('getAnToken')
-                );
-                if($bytes > 0) {
-                    return new Response('', 200);
-                }
-            }
-        }
-
-        return $this->json( [], 500 );
-    }
-
 }

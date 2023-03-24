@@ -33,6 +33,7 @@ public_html/scm/
 public_html/nifi/
 public_html/nifi/fails/
 public_html/filtros/
+public_html/wa/
 var/
 vendor/
 ###< symfony/framework-bundle ###

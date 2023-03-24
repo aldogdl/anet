@@ -136,7 +136,6 @@ class OrdenesRepository extends ServiceEntityRepository
       }
 
       if($resWh['msg'] == '') {
-        $isOk = false;
         $payload = [
           "evento"    => "creada_solicitud",
           "source"  => $entity->getId().'.json'
