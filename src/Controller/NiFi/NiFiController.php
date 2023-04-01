@@ -7,7 +7,8 @@ use App\Service\WebHook;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class NiFiController extends AbstractController
 {
@@ -68,4 +69,20 @@ class NiFiController extends AbstractController
         return $this->json(['abort'=> true, 'msg' => $msg]);
     }
 
+    /** */
+    #[Route('broker/assets/{filename}/{path}/{cacheable}/', methods: ['GET'])]
+    public function getImageWa(String $filename, String $path, String $cacheable): Response
+    {
+        $path = $this->getParameter($path);
+        $full = $path.$filename;
+        $header = [];
+        if($cacheable == 'y') {
+            $header = ['Cache-Control' => 'max-age=7200'];
+        }
+        if(file_exists($full)) {
+            return new BinaryFileResponse($full, 200, $header);
+        }
+
+        return new JsonResponse('El Archivo no existe', 404);
+    }
 }

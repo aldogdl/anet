@@ -16,7 +16,7 @@ class WaAcountEntity {
         $this->object = $message['object'];
         $this->messagingProduct = $message['entry'][0]['changes'][0]['value']['messaging_product'];
         $this->displayPhoneNumber = $message['entry'][0]['changes'][0]['value']['metadata']['display_phone_number'];
-        $this->phoneNumberId = $message['entry'][0]['changes'][0]['value']['metadata']['phone_number_id'];;
+        $this->phoneNumberId = $message['entry'][0]['changes'][0]['value']['metadata']['phone_number_id'];
     }
 
     /** */
