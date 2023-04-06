@@ -146,6 +146,22 @@ class OrdenesRepository extends ServiceEntityRepository
   }
 
   /**
+   * Hacemos una simulación del guardado de la orden en archivo para nifi
+  */
+  public function simiSendEventCreadaSolicitud(
+    int $idOrden, String $pathNifi, WebHook $wh, String $anetToken
+  ): void
+  {
+    $resWh = ['abort' => true, 'msg' => '']; 
+    $filename = $pathNifi.$idOrden.'.json';
+    $payload = [
+      "evento"  => "creada_solicitud",
+      "source"  => $idOrden.'.json'
+    ];
+    $wh->sendMy($payload, $pathNifi, $anetToken);
+  }
+
+  /**
    *
   */
   public function getOrdenesByOwnAndEstacion(int $idUser, String $est): \Doctrine\ORM\Query

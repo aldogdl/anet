@@ -225,4 +225,18 @@ class GetController extends AbstractController
     return $this->json($result);
   }
 
+  /**
+   * Endpoint para simular una solicitud
+   */
+  #[Route('cotiza-simula-sol/{idSol}/', methods:["GET"])]
+  public function simularSolicitudNueva(
+    OrdenesRepository $ordenEm, WebHook $wh, int $idSol
+  ): Response {
+
+    $ordenEm->simiSendEventCreadaSolicitud(
+      $idSol, $this->getParameter('nifiFld'), $wh, $this->getParameter('getAnToken')
+    );
+    return $this->json(['ok' => 'Trabajo Realizado']);
+  }
+
 }
