@@ -14,6 +14,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * @method Ordenes|null find($id, $lockMode = null, $lockVersion = null)
@@ -137,8 +138,9 @@ class OrdenesRepository extends ServiceEntityRepository
 
       if($resWh['msg'] == '') {
         $payload = [
-          "evento"    => "creada_solicitud",
-          "source"  => $entity->getId().'.json'
+          "evento"  => "creada_solicitud",
+          "source"  => $entity->getId().'.json',
+          "payload" => $file
         ];
         $wh->sendMy($payload, $pathNifi, $anetToken);
       }
@@ -152,13 +154,21 @@ class OrdenesRepository extends ServiceEntityRepository
     int $idOrden, String $pathNifi, WebHook $wh, String $anetToken
   ): void
   {
+
     $resWh = ['abort' => true, 'msg' => '']; 
-    $filename = $pathNifi.$idOrden.'.json';
-    $payload = [
-      "evento"  => "creada_solicitud",
-      "source"  => $idOrden.'.json'
-    ];
-    $wh->sendMy($payload, $pathNifi, $anetToken);
+    $entity = $this->_em->find(Ordenes::class, $idOrden);
+    if(!$entity){ $resWh['msg'] = 'No se encontró la orden '.$idOrden; }
+
+    if($resWh['msg'] == '') {
+      
+      $file = $entity->toArray();
+      $payload = [
+        "evento"  => "creada_solicitud",
+        "source"  => $idOrden.'.json',
+        "payload" => $file
+      ];
+      $wh->sendMy($payload, $pathNifi, $anetToken);
+    }
   }
 
   /**
