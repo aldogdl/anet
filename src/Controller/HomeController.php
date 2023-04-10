@@ -28,8 +28,8 @@ class HomeController extends AbstractController
         return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => 'Hola Intruso...']);
     }
 
-    #[Route('backcore/update-url-front-door/{pass}/{key}/', methods: ['GET'])]
-    public function updateUrlFrontDoor( string $pass, string $key ): Response
+    #[Route('backcore/update-url-nfrok/{pass}/{key}/', methods: ['GET'])]
+    public function updateUrlNfrok( string $pass, string $key ): Response
     {
         $res = base64_decode($key);
         if($res == $this->getParameter('getAnToken')) {

@@ -20,8 +20,7 @@ class WebHook
         $hash = file_get_contents('../front_door/front_door.txt/front_door.txt');
         if($hash) {
 
-            $res = base64_decode($hash);
-            $uri = 'https://'.$res.'.ngrok.io';
+            $uri = base64_decode($hash);
             $date = new \DateTime('now');
             $dataEvent['creado'] = $date->format('Y-m-d h:i:s');
 
@@ -34,7 +33,7 @@ class WebHook
                     'json' => $dataEvent
                 ]
             );
-            
+
             $statusCode = $response->getStatusCode();
             if($statusCode != 200) {
 
