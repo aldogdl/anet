@@ -37,7 +37,10 @@ class WaController extends AbstractController
             $filename = round(microtime(true) * 1000);
             $pathTo = $this->getParameter('waMessag');
             $path  = $pathTo.'/wa_'.$filename.'.json';
-
+            if(!is_dir($pathTo)) {
+                mkdir($pathTo);
+            }
+            
             $has = $req->getContent();
             if($has) {
 
