@@ -52,7 +52,7 @@ class WaController extends AbstractController
                     $pathTk = $this->getParameter('waTk');
                     $token  = file_get_contents($pathTk);
                     // _cotizar
-                    if( mb_strpos($motive->body, 'continuar' ) !== 0) {
+                    if( mb_strpos($motive->body, 'continuar' ) !== false) {
 
                         $waS->hidratarAcount($message, $token);
                         $msg = 'Gracias!! 😃👍\nEnvía las FOTOGRAFÍAS por favor. '.$motive->waId;
