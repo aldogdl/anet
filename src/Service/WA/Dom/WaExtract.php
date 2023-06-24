@@ -33,6 +33,9 @@ class WaExtract {
         $this->type = 'status';
         $this->body = $mapValue['statuses'][0]['status'];
         $this->waId = $mapValue['statuses'][0]['recipient_id'];
+        if(mb_strpos($this->waId, '521') !== false) {
+            $this->waId = str_replace('521', '52', $this->waId);
+        }
         $this->timeStamp = $mapValue['statuses'][0]['timestamp'];
 
         if(array_key_exists('conversation', $mapValue['statuses'][0])) {

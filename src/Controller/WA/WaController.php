@@ -55,8 +55,10 @@ class WaController extends AbstractController
                     if( mb_strpos($motive->body, 'continuar' ) !== false) {
 
                         $waS->hidratarAcount($message, $token);
-                        $msg = 'Gracias!! 😃👍\nEnvía las FOTOGRAFÍAS por favor. '.$motive->waId;
-                        $result = $waS->msgText('+523316195698', $msg, $motive->id);
+                        $msg = 'Gracias!! 😃👍.\n';
+                        $msg = $msg.'Envía las FOTOGRAFÍAS por favor.';
+                        $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
+                        file_put_contents('file_image_'.$motive->waId, '');
 
                         if(count($result) > 0) {
                             file_put_contents(
@@ -70,18 +72,22 @@ class WaController extends AbstractController
                     }
 
                     if($motive->type == 'image') {
-
-                        $waS->hidratarAcount($message, $token);
-                        $msg = 'Ok!!👌🏼\n DETALLES de la Pieza.';
-                        $result = $waS->msgText('+523316195698', $msg, $motive->id);
-                        if(count($result) > 0) {
-                            file_put_contents(
-                                $pathTo.'/fails_'.$filename.'.json',
-                                json_encode([
-                                    'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
-                                    'body'   => $result
-                                ])
-                            );
+                        
+                        if(is_file('file_image_'.$motive->waId)) {
+                            unlink('file_image_'.$motive->waId);
+                            $waS->hidratarAcount($message, $token);
+                            $msg = 'Ok!!👌🏼 '.
+                            'DETALLES de la Pieza.';
+                            $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
+                            if(count($result) > 0) {
+                                file_put_contents(
+                                    $pathTo.'/fails_'.$filename.'.json',
+                                    json_encode([
+                                        'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
+                                        'body'   => $result
+                                    ])
+                                );
+                            }
                         }
                     }
 
