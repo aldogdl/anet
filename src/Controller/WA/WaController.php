@@ -30,6 +30,12 @@ class WaController extends AbstractController
                 }
             }
         }
+        
+        $path  = $this->getParameter('waMessag').'pru_connection.json';
+        file_put_contents($path, json_encode([
+            'code' => $req->getMethod(),
+            'body' => $req->getContent(),
+        ]));
 
         if($req->getMethod() == 'POST') {
 
@@ -49,8 +55,6 @@ class WaController extends AbstractController
                     $bytes = file_put_contents($path, $token);
 
                     if( mb_strpos($motive->body, '_cotizar') !== 0) {
-
-
                         $waS->hidratarAcount($message, $token);
                         $msg = 'Envia hasta 8 FOTOGRAFÍAS, primeramente.';
                         $waS->msgText('+'.$motive->waId, $msg, $motive->id);
