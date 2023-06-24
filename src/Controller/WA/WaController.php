@@ -18,11 +18,6 @@ class WaController extends AbstractController
     #[Route('wa/wh/', methods: ['GET', 'POST'])]
     public function verifyWa(WebHook $wh, WaService $waS, Request $req): Response
     {
-        $path  = $this->getParameter('waMessag').'pru_connection.json';
-        file_put_contents($path, json_encode([
-            'code' => $req->getMethod(),
-            'body' => $req->getContent(),
-        ]));
 
         if($req->getMethod() == 'GET') {
 
@@ -51,10 +46,7 @@ class WaController extends AbstractController
                     $pathTk= $this->getParameter('waTk');
                     $token = file_get_contents($pathTk);
 
-                    $path  = $this->getParameter('waMessag').'pru_'.$filename.'.json';
-                    $bytes = file_put_contents($path, $token);
-
-                    if( mb_strpos($motive->body, '_cotizar') !== 0) {
+                    if( mb_strpos($motive->body, '_cotizar' ) !== 0) {
                         $waS->hidratarAcount($message, $token);
                         $msg = 'Envia hasta 8 FOTOGRAFÍAS, primeramente.';
                         $waS->msgText('+'.$motive->waId, $msg, $motive->id);
