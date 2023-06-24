@@ -4,6 +4,7 @@ namespace App\Service\WA\Dom;
 
 class WaExtract {
 
+    public String $id = '0';
     public String $waId = '';
     public String $body = '';
     public String $type = '';
@@ -49,7 +50,8 @@ class WaExtract {
 
     /** */
     private function extractMessage(array $mapValue) {
-
+        
+        $this->id   = $mapValue['messages'][0]['id'];
         $this->waId = $mapValue['messages'][0]['from'];
         $this->timeStamp = $mapValue['messages'][0]['timestamp'];
 
@@ -90,6 +92,7 @@ class WaExtract {
     public function toArray(): array {
 
         return [
+            'id'   => $this->id,
             'waId' => $this->waId,
             'body' => $this->body,
             'type' => $this->type,

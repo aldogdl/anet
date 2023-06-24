@@ -12,11 +12,12 @@ class WaAcountEntity {
 
     public function __construct(array $message)
     {
+        $msgValue = $message['entry'][0]['changes'][0]['value'];
         $this->id = $message['entry'][0]['id'];
         $this->object = $message['object'];
-        $this->messagingProduct = $message['entry'][0]['changes'][0]['value']['messaging_product'];
-        $this->displayPhoneNumber = $message['entry'][0]['changes'][0]['value']['metadata']['display_phone_number'];
-        $this->phoneNumberId = $message['entry'][0]['changes'][0]['value']['metadata']['phone_number_id'];
+        $this->messagingProduct = $msgValue['messaging_product'];
+        $this->displayPhoneNumber = $msgValue['metadata']['display_phone_number'];
+        $this->phoneNumberId = $msgValue['metadata']['phone_number_id'];
     }
 
     /** */
