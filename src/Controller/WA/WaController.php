@@ -55,7 +55,24 @@ class WaController extends AbstractController
                     if( mb_strpos($motive->body, 'continuar' ) !== 0) {
 
                         $waS->hidratarAcount($message, $token);
-                        $msg = 'Gracias!! 😃👍\nEnvía las FOTOGRAFÍAS por favor.';
+                        $msg = 'Gracias!! 😃👍\nEnvía las FOTOGRAFÍAS por favor. '.$motive->waId;
+                        $result = $waS->msgText('+523316195698', $msg, $motive->id);
+
+                        if(count($result) > 0) {
+                            file_put_contents(
+                                $pathTo.'/fails_'.$filename.'.json',
+                                json_encode([
+                                    'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
+                                    'body'   => $result
+                                ])
+                            );
+                        }
+                    }
+
+                    if($motive->type == 'image') {
+
+                        $waS->hidratarAcount($message, $token);
+                        $msg = 'Ok!!👌🏼\n DETALLES de la Pieza.';
                         $result = $waS->msgText('+523316195698', $msg, $motive->id);
                         if(count($result) > 0) {
                             file_put_contents(
