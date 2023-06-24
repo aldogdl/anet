@@ -53,6 +53,7 @@ class WaController extends AbstractController
                         $msg = 'Envia hasta 8 FOTOGRAFÍAS, primeramente.';
                         $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
                         if(count($result) > 0) {
+                            
                             file_put_contents(
                                 $pathTo.'/fails_'.$filename.'.json',
                                 json_encode([

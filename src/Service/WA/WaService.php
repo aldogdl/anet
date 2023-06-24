@@ -62,14 +62,8 @@ class WaService
         }
 
         $result = $this->send($body);
-        
-        if($result['statuscode'] != 200) {
-            return [
-                'result' => $result,
-                'message'=> $body
-            ];
-        }
-        return [];
+
+        return ($result['statuscode'] != 200) ? $result : [];
     }
 
     /** */
@@ -107,7 +101,8 @@ class WaService
         
         return [
             'statuscode' => $response->getStatusCode(),
-            'response' => $response->toArray(),
+            'response'   => $response->toArray(),
+            'message'    => $bodySend
         ];
     }
 
