@@ -60,7 +60,7 @@ class WaService
             }
             $body['context'] = ['message_id' => $context];
         }
-        file_put_contents('sabeeeee.json', json_encode($body));
+        
         $result = $this->send($body);
 
         return ($result['statuscode'] != 200) ? $result : [];
@@ -98,7 +98,13 @@ class WaService
                 'json' => $bodySend
             ]
         );
-        
+        file_put_contents('sabeeeee.json', json_encode(
+            [
+                'statuscode' => $response->getStatusCode(),
+                'response'   => $response->toArray(),
+                'message'    => $bodySend
+            ]
+        ));
         return [
             'statuscode' => $response->getStatusCode(),
             'response'   => $response->toArray(),
