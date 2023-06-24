@@ -57,6 +57,22 @@ class WaService
         $this->send($text);
     }
 
+    
+    /** */
+    public function hidratarAcount(array $message): WaAcountEntity
+    {
+        $acount = new WaAcountEntity($message);
+        $this->urlMsg = $this->urlMsgBase.$acount->phoneNumberId .'/messages';
+        return $acount;
+    }
+
+    /** */
+    public function hidratarEnity(array $message)
+    {
+        $this->msg = new WaEntity($message);
+        $this->urlMsg = $this->urlMsgBase.$this->msg->acount->phoneNumberId .'/messages';
+    }
+    
     /** */
     public function send(array $bodySend)
     {
@@ -94,19 +110,5 @@ class WaService
             "to" => $to,
         ];
     }
-    
-    /** */
-    private function hidratarAcount(array $message): WaAcountEntity
-    {
-        $acount = new WaAcountEntity($message);
-        $this->urlMsg = $this->urlMsgBase.$acount->phoneNumberId .'/messages';
-        return $acount;
-    }
 
-    /** */
-    private function hidratarEnity(array $message)
-    {
-        $this->msg = new WaEntity($message);
-        $this->urlMsg = $this->urlMsgBase.$this->msg->acount->phoneNumberId .'/messages';
-    }
 }
