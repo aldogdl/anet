@@ -35,8 +35,7 @@ class WaController extends AbstractController
 
             $filename = round(microtime(true) * 1000);
             $has = $req->getContent();
-            $path  = $this->getParameter('waMessag').'motive_'.$filename.'.json';
-            $bytes = file_put_contents($path, $has);
+
             if($has) {
 
                 $message = json_decode($has, true);
@@ -45,10 +44,14 @@ class WaController extends AbstractController
                 if($motive->type != 'status') {
 
                     if( mb_strpos($motive->body, '_cotizar') !== 0) {
-                        $waS->hidratarAcount($message);
+
+                        $pathTk= $this->getParameter('waTk');
+                        $token = file_get_contents($pathTk);
+                        $waS->hidratarAcount($message, $token);
                         $msg = 'Envia hasta 8 FOTOGRAFÍAS, primeramente.';
                         $waS->msgText('+'.$motive->waId, $msg, $motive->id);
                     }
+                    
                     $path  = $this->getParameter('waMessag').'wa_'.$filename.'.json';
                     $bytes = file_put_contents($path, $has);
 

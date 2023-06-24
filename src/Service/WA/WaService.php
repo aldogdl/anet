@@ -11,7 +11,7 @@ class WaService
 {
     private $urlMsgBase = 'https://graph.facebook.com/v17.0/';
 
-    private $token = 'EAACYKUGlPw0BAL5MvWiHlrMTaRrmZBcGLsYZAw6PszdRspxwYwNuXZCGZBnxR8QIkpAiA9z1HOruSA41ooPJiN5hx9mbDIGMUlG9ZBisnDdabG4a3MjrBiKHTEX0d4KSDZAHteV8SUwtfIIInocvkjmAnU6IiuUGTjOLpvKPMmcZBrYtVnlbTa8zAlEQsXyIMd9IuEtq3ATpHvsMCNvyBq9';
+    private $token = '';
     private $client;
     private $urlMsg;
 
@@ -51,7 +51,7 @@ class WaService
         $body = $this->getBasicBody($to);
         $body['type'] = 'text';
         $body['text'] = $text;
-        
+
         if($context != '') {
             if(mb_strpos($context, 'wamid.') !== false) {
                 $context = str_replace('wamid.', '', $context);
@@ -62,8 +62,13 @@ class WaService
     }
 
     /** */
-    public function hidratarAcount(array $message): WaAcountEntity
-    {
+    public function hidratarAcount(array $message, String $token): WaAcountEntity
+    {   
+        $tk = '';
+        if(mb_strpos($token, 'aldo_') !== false) {
+            $tk = str_replace('aldo_', '', $token);
+        }
+        $this->token = $tk;
         $acount = new WaAcountEntity($message);
         $this->urlMsg = $this->urlMsgBase.$acount->phoneNumberId .'/messages';
         return $acount;

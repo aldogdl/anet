@@ -17,6 +17,7 @@ parameters:
     filtrosF   : '%filtros%/filtros.json'
     filNoTgo   : '%phtml%/filnotgo.json'
     waMessag   : '%phtml%/wa/'
+    waTk       : '%phtml%/tkwa.txt'
     waCots     : '%phtml%/wa_cots/'
     waSort     : '%phtml%/wa/_orden_put.json'
     getWaToken : '%env(resolve:WA_TOKEN)%'
