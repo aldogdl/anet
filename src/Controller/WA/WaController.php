@@ -57,7 +57,7 @@ class WaController extends AbstractController
                                 $pathTo.'/fails_'.$filename.'.json',
                                 json_encode([
                                     'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
-                                    'body'   => $message
+                                    'body'   => $result
                                 ])
                             );
                         }

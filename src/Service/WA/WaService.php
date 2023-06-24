@@ -60,9 +60,14 @@ class WaService
             }
             $body['context'] = ['message_id' => $context];
         }
-        $status = $this->send($body);
-        if($status != 200) {
-            return $body;
+
+        $result = $this->send($body);
+        
+        if($result['statuscode'] != 200) {
+            return [
+                'result' => $result,
+                'message'=> $body
+            ];
         }
         return [];
     }
@@ -88,7 +93,7 @@ class WaService
     }
 
     /** */
-    public function send(array $bodySend): int
+    public function send(array $bodySend): array
     {
         $response = $this->client->request(
             'POST', $this->urlMsg, [
@@ -100,7 +105,10 @@ class WaService
             ]
         );
         
-        return $response->getStatusCode();
+        return [
+            'statuscode' => $response->getStatusCode(),
+            'response' => $response->toArray(),
+        ];
     }
 
     /** */
