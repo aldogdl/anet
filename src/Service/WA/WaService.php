@@ -89,34 +89,16 @@ class WaService
     /** */
     public function send(array $bodySend): array
     {
-        try {
-            $response = $this->client->request(
-                'POST', $this->urlMsg, [
-                    'headers' => [
-                        'Authorization' => 'Bearer '.$this->token,
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => $bodySend
-                ]
-            );
-        } catch (\Throwable $th) {
-            file_put_contents('sabeeeeeeeeeeeee.json', json_encode(
-                [
-                    'error' => $th->getMessage(),
-                    'statuscode' => $response->getStatusCode(),
-                    'response'   => $response->getContent(),
-                    'message'    => $bodySend
-                ]
-            ));
-        }
-
-        file_put_contents('sabeeeee.json', json_encode(
-            [
-                'statuscode' => $response->getStatusCode(),
-                'response'   => $response->getContent(),
-                'message'    => $bodySend
+        $response = $this->client->request(
+            'POST', $this->urlMsg, [
+                'headers' => [
+                    'Authorization' => 'Bearer '.$this->token,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $bodySend
             ]
-        ));
+        );
+
         return [
             'statuscode' => $response->getStatusCode(),
             'response'   => $response->getContent(),
