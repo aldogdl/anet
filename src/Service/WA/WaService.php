@@ -55,9 +55,9 @@ class WaService
         $body['text'] = $text;
 
         if($context != '') {
-            if(mb_strpos($context, 'wamid.') !== false) {
-                $context = str_replace('wamid.', '', $context);
-            }
+            // if(mb_strpos($context, 'wamid.') !== false) {
+            //     $context = str_replace('wamid.', '', $context);
+            // }
             $body['context'] = ['message_id' => $context];
         }
         
