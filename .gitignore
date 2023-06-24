@@ -35,6 +35,7 @@ public_html/nifi/
 public_html/nifi/fails/
 public_html/filtros/
 public_html/wa/
+public_html/wa_cots/
 var/
 vendor/
 ###< symfony/framework-bundle ###

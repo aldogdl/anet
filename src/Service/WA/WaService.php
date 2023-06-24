@@ -5,6 +5,7 @@ namespace App\Service\WA;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use App\Service\WA\BuildPayloadMsg;
 use App\Service\WA\Dom\WaEntity;
+use App\Service\WA\Dom\WaExtract;
 
 class WaService
 {
@@ -28,25 +29,6 @@ class WaService
         $this->msg = new WaEntity($message);
         $this->urlMsg = 'https://graph.facebook.com/v16.0/'.
             $this->msg->acount->phoneNumberId .'/messages';
-    }
-
-    /** */
-    public function setFileOrden(String $pathFile, String $filename): void
-    {
-        $sort = [];
-        try {
-            $content = file_get_contents($pathFile);
-            if($content) {
-                $sort = json_decode( $content, true );
-            }
-        } catch (\Throwable $th) {
-            file_put_contents('error_wa.txt', $th->getMessage());
-        }
-        
-        if(!in_array($filename, $sort)) {
-            $sort[] = $filename;
-        }
-        file_put_contents($pathFile, json_encode($sort));
     }
 
     /** */

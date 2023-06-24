@@ -5,10 +5,9 @@ namespace App\Service\WA;
 class BuildPayloadMsg {
 
     private $tipos = [
-        'text' => 'text',
+        'text'  => 'text',
         'image' => 'image',
         'interactive' => 'interactive',
-        'text' => 'text',
     ];
 
     private $messageProduct = "whatsapp";

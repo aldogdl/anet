@@ -18,17 +18,18 @@ class WaEntity {
     public function __construct(array $message)
     {
         $this->acount = new WaAcountEntity($message);
-        if(array_key_exists('statuses', $message['entry'][0]['changes'][0]['value'])) {
+
+        $mapValue = $message['entry'][0]['changes'][0]['value'];
+        if(array_key_exists('statuses', $mapValue)) {
             $this->status = new WaStatusEntity(
-                $message['entry'][0]['changes'][0]['value']['statuses'][0]
+                $mapValue['statuses'][0]
             );
             $this->type = 'status';
             $this->value = $this->status->status;
         }
-        if(array_key_exists('messages', $message['entry'][0]['changes'][0]['value'])) {
-            $this->message = new WaMessageEntity(
-                $message['entry'][0]['changes'][0]['value']
-            );
+
+        if(array_key_exists('messages', $mapValue)) {
+            $this->message = new WaMessageEntity($mapValue);
             $this->type = 'message';
             $this->value = $this->message->type;
         }

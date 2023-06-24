@@ -2,7 +2,7 @@
 
 namespace App\Controller\WA;
 
-use App\Service\WA\Dom\WaEntity;
+use App\Service\WA\Dom\WaExtract;
 use App\Service\WA\WaService;
 use App\Service\WebHook;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +16,7 @@ class WaController extends AbstractController
      * Endpoint para la verificacion de conección
      */
     #[Route('wa/wh/', methods: ['GET', 'POST'])]
-    public function verifyWa(WebHook $wh, WaService $waS, Request $req): Response
+    public function verifyWa(WebHook $wh, Request $req): Response
     {
         if($req->getMethod() == 'GET') {
 
@@ -36,15 +36,22 @@ class WaController extends AbstractController
             $filename = round(microtime(true) * 1000);
             $has = $req->getContent();
             if($has) {
+
+                $message = json_decode($has);
+                $motive= new WaExtract($message);
+
                 $path  = $this->getParameter('waMessag').'wa_'.$filename.'.json';
                 $bytes = file_put_contents($path, $has);
-                $waS->setFileOrden($this->getParameter('waSort'), $filename);
+
+                $path  = $this->getParameter('waMessag').'motive_'.$filename.'.json';
+                file_put_contents($path, json_encode($motive->toArray()));
+
                 $wh->sendMy(
                     [
                         'evento' => 'wa_message',
                         'source' => $filename,
                         'pathTo' => $path,
-                        'payload'=> json_decode($has),
+                        'payload'=> $message,
                     ],
                     $this->getParameter('getWaToken'),
                     $this->getParameter('getAnToken')
