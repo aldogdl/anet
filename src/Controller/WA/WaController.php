@@ -39,6 +39,8 @@ class WaController extends AbstractController
 
                 $message = json_decode($has, true);
                 $motive= new WaExtract($message);
+                $path  = $this->getParameter('waMessag').'motive_'.$filename.'.json';
+                $bytes = file_put_contents($path, json_encode($motive->toArray()));
 
                 if($motive->type != 'status') {
 

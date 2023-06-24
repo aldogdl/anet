@@ -51,6 +51,7 @@ class WaService
         $body = $this->getBasicBody($to);
         $body['type'] = 'text';
         $body['text'] = $text;
+        
         if($context != '') {
             if(mb_strpos($context, 'wamid.') !== false) {
                 $context = str_replace('wamid.', '', $context);
@@ -60,7 +61,6 @@ class WaService
         $this->send($text);
     }
 
-    
     /** */
     public function hidratarAcount(array $message): WaAcountEntity
     {
