@@ -7,9 +7,9 @@ class WaExtract {
     public String $waId = '';
     public String $body = '';
     public String $type = '';
-    public bool $canResponse = false;
-    public String $timeStamp = '';
     public String $expira = '';
+    public String $timeStamp = '';
+    public bool $canResponse = false;
 
     /** */
     public function __construct(array $message)
