@@ -31,7 +31,7 @@ class WaController extends AbstractController
     
                 $mode = $req->query->get('hub_mode');
                 if($mode == 'subscribe') {
-                    $challenge = $req->query->get('hub_challenge_aldo');
+                    $challenge = $req->query->get('hub_challenge');
                     return new Response($challenge);
                 }
             }
