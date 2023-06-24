@@ -35,12 +35,12 @@ class WaController extends AbstractController
 
             $filename = round(microtime(true) * 1000);
             $has = $req->getContent();
+            $path  = $this->getParameter('waMessag').'motive_'.$filename.'.json';
+            $bytes = file_put_contents($path, $has);
             if($has) {
 
                 $message = json_decode($has, true);
                 $motive= new WaExtract($message);
-                $path  = $this->getParameter('waMessag').'motive_'.$filename.'.json';
-                $bytes = file_put_contents($path, json_encode($motive->toArray()));
 
                 if($motive->type != 'status') {
 
