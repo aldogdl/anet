@@ -52,6 +52,9 @@ class WaService
         $body['type'] = 'text';
         $body['text'] = $text;
         if($context != '') {
+            if(mb_strpos($context, 'wamid.') !== false) {
+                $context = str_replace('wamid.', '', $context);
+            }
             $body['context'] = ['message_id' => $context];
         }
         $this->send($text);
@@ -72,7 +75,7 @@ class WaService
         $this->msg = new WaEntity($message);
         $this->urlMsg = $this->urlMsgBase.$this->msg->acount->phoneNumberId .'/messages';
     }
-    
+
     /** */
     public function send(array $bodySend)
     {
