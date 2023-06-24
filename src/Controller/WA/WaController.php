@@ -46,6 +46,8 @@ class WaController extends AbstractController
     
                     $path  = $this->getParameter('waMessag').'motive_'.$filename.'.json';
                     file_put_contents($path, json_encode($motive->toArray()));
+                }else {
+                    $bytes = 1;
                 }
 
                 $wh->sendMy(
@@ -58,6 +60,7 @@ class WaController extends AbstractController
                     $this->getParameter('getWaToken'),
                     $this->getParameter('getAnToken')
                 );
+
                 if($bytes > 0) {
                     return new Response('', 200);
                 }
