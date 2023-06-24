@@ -23,7 +23,7 @@ class WaController extends AbstractController
             'code' => $req->getMethod(),
             'body' => $req->getContent(),
         ]));
-        
+
         if($req->getMethod() == 'GET') {
 
             $verify = $req->query->get('hub_verify_token');
@@ -31,7 +31,7 @@ class WaController extends AbstractController
     
                 $mode = $req->query->get('hub_mode');
                 if($mode == 'subscribe') {
-                    $challenge = $req->query->get('hub_challenge');
+                    $challenge = $req->query->get('hub_challenge_aldo');
                     return new Response($challenge);
                 }
             }
