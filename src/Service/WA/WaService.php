@@ -42,7 +42,9 @@ class WaService
     }
 
     /** */
-    public function msgText(String $to, String $msg, String $context = '', String $urlPreview = '') {
+    public function msgText(
+        String $to, String $msg, String $context = '', String $urlPreview = ''
+    ): array {
 
         $text = ['body' =>  $msg, 'preview_url' => false];
         if($urlPreview != '') {
@@ -58,7 +60,11 @@ class WaService
             }
             $body['context'] = ['message_id' => $context];
         }
-        $this->send($text);
+        $status = $this->send($body);
+        if($status != 200) {
+            return $body;
+        }
+        return [];
     }
 
     /** */
@@ -82,7 +88,7 @@ class WaService
     }
 
     /** */
-    public function send(array $bodySend)
+    public function send(array $bodySend): int
     {
         $response = $this->client->request(
             'POST', $this->urlMsg, [
@@ -94,20 +100,7 @@ class WaService
             ]
         );
         
-        $statusCode = $response->getStatusCode();
-        if($statusCode != 200) {
-
-            $filename = round(microtime(true) * 1000);
-            file_put_contents(
-                'fails/'.$filename.'.json',
-                json_encode([
-                    'status' => $statusCode,
-                    'razon'  => $response->getContent(),
-                    'body'   => []
-                ])
-            );
-            return false;
-        }
+        return $response->getStatusCode();
     }
 
     /** */

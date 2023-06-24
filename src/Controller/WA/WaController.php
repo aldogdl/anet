@@ -43,16 +43,27 @@ class WaController extends AbstractController
 
                 if($motive->type != 'status') {
 
-                    $pathTk= $this->getParameter('waTk');
-                    $token = file_get_contents($pathTk);
+                    $pathTo = $this->getParameter('waMessag');
+                    $pathTk = $this->getParameter('waTk');
+                    $token  = file_get_contents($pathTk);
+                    // _cotizar
+                    if( mb_strpos($motive->body, 'continuar' ) !== 0) {
 
-                    if( mb_strpos($motive->body, '_cotizar' ) !== 0) {
                         $waS->hidratarAcount($message, $token);
                         $msg = 'Envia hasta 8 FOTOGRAFÍAS, primeramente.';
-                        $waS->msgText('+'.$motive->waId, $msg, $motive->id);
+                        $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
+                        if(count($result) > 0) {
+                            file_put_contents(
+                                $pathTo.'/fails_'.$filename.'.json',
+                                json_encode([
+                                    'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
+                                    'body'   => $message
+                                ])
+                            );
+                        }
                     }
 
-                    $path  = $this->getParameter('waMessag').'wa_'.$filename.'.json';
+                    $path  = $pathTo.'/wa_'.$filename.'.json';
                     $bytes = file_put_contents($path, $has);
 
                 }else {
