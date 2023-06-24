@@ -18,11 +18,11 @@ class WaController extends AbstractController
     #[Route('wa/wh/', methods: ['GET', 'POST'])]
     public function verifyWa(WebHook $wh, WaService $waS, Request $req): Response
     {
-        // $path  = $this->getParameter('waMessag').'pru_connection.json';
-        // file_put_contents($path, json_encode([
-        //     'code' => $req->getMethod(),
-        //     'body' => $req->getContent(),
-        // ]));
+        $path  = $this->getParameter('waMessag').'pru_connection.json';
+        file_put_contents($path, json_encode([
+            'code' => $req->getMethod(),
+            'body' => $req->getContent(),
+        ]));
 
         if($req->getMethod() == 'GET') {
 
