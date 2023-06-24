@@ -18,6 +18,12 @@ class WaController extends AbstractController
     #[Route('wa/wh/', methods: ['GET', 'POST'])]
     public function verifyWa(WebHook $wh, WaService $waS, Request $req): Response
     {
+        $path  = $this->getParameter('waMessag').'pru_connection.json';
+        file_put_contents($path, json_encode([
+            'code' => $req->getMethod(),
+            'body' => $req->getContent(),
+        ]));
+        
         if($req->getMethod() == 'GET') {
 
             $verify = $req->query->get('hub_verify_token');
@@ -31,12 +37,6 @@ class WaController extends AbstractController
             }
         }
         
-        $path  = $this->getParameter('waMessag').'pru_connection.json';
-        file_put_contents($path, json_encode([
-            'code' => $req->getMethod(),
-            'body' => $req->getContent(),
-        ]));
-
         if($req->getMethod() == 'POST') {
 
             $filename = round(microtime(true) * 1000);
