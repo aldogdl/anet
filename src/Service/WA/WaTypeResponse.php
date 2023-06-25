@@ -27,6 +27,7 @@ class WaTypeResponse extends WaService {
     /** */
     public function __construct(WaMessageDto $waEx, array $msg, String $pTo, String $pToken)
     {
+        $this->token      = '';
         $this->metaMsg    = $waEx;
         $this->pathToken  = $pToken;
         $this->pathToWa   = $pTo;
