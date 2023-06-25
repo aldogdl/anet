@@ -72,7 +72,7 @@ class WaTypeResponse extends WaService {
                 $this->setErrorInFile($result);
             }else{
                 $this->buildStepsCots();
-                $this->saveMsgResult = false;
+                $this->saveMsgResult = true;
             }
             return;
         }
