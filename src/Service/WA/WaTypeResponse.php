@@ -118,6 +118,9 @@ class WaTypeResponse {
 
                 if(!$this->isValidCosto()) {
                     $result = $this->sendMsg($this->msgResp['errCosto']);
+                    if(count($result) > 0) {
+                        $this->setErrorInFile($result);
+                    }
                     return;
                 }
 
@@ -154,7 +157,7 @@ class WaTypeResponse {
             }
         }
 
-        $entera = $this->isDigit($partes[0]);
+        $entera = $this->isDigit($str);
         if($entera != '-1') {
             $this->metaMsg->body = $entera.'.00';
             return true;
