@@ -68,14 +68,15 @@ class WaTypeResponse {
             }
         }
 
+        // Exclusivo para pruebas y capacitaciones
         if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd:c' ) !== false) {
     
             $result = $this->sendMsg($this->msgResp['cotizar']);
             if(count($result) > 0) {
                 $this->setErrorInFile($result);
             }else{
-                $this->buildStepsCots();
-                $this->saveMsgResult = true;
+                $this->buildStepsCots(true);
+                $this->saveMsgResult = false;
             }
             return;
         }
@@ -144,7 +145,7 @@ class WaTypeResponse {
         if(mb_strpos($str, 'mil') !== false) {
             return false;
         }
-        
+
         $str = str_replace('$', '', $str);
         $str = str_replace(',', '', $str);
 
@@ -210,13 +211,14 @@ class WaTypeResponse {
      * Construimos el archivo de pasos de cotización que sirve como referencia
      * para saber en que campo estamos escribiendo actualmente
      */
-    private function buildStepsCots(): void
+    private function buildStepsCots(bool $isTest = false): void
     {
         $newCotsSteps = [
             'fotos'    => 'wait',
             'detalles' => 'wait',
             'costo'    => 'wait',
             'grax'     => 'wait',
+            'isTest'   => $isTest,
         ];
         if(!is_file($this->fileToCot)) {
             file_put_contents($this->fileToCot, json_encode($newCotsSteps));
@@ -231,10 +233,12 @@ class WaTypeResponse {
      */
     private function setCampoCotAs(String $campo, String $value) : bool
     {
-        $this->saveMsgResult = true;
         $content = $this->getContentFileCot();
         if(count($content) == 0) {
             return false;
+        }
+        if(!$content['isTest']) {
+            $this->saveMsgResult = true;
         }
         
         if($campo == 'graxCot') {

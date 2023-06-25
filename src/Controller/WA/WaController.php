@@ -49,7 +49,6 @@ class WaController extends AbstractController
                 $isMsgOk = true;
                 $filename = round(microtime(true) * 1000);
                 $path  = $pathTo.'/wa_'.$filename.'.json';
-                $pathT = $pathTo.'/preuba_'.$filename.'.json';
 
                 if($metadata->type != 'status') {
 
@@ -59,10 +58,6 @@ class WaController extends AbstractController
                     $isMsgOk = $r->saveMsgResult;
                     if($isMsgOk) {
                         file_put_contents($path, $has);
-                        file_put_contents($pathT, json_encode([
-                            'response' => $r->metaMsg->toArray(),
-                            'message'  => $message
-                        ]));
                     }
                 }
 
