@@ -55,7 +55,7 @@ class WaController extends AbstractController
                     if( mb_strpos($motive->body, 'continuar' ) !== false) {
 
                         $waS->hidratarAcount($message, $token);
-                        $msg = '😃👍 Gracias!!\n Envia las *FOTOGRAF\u00cdAS* por favor.';
+                        $msg = '😃👍 Gracias!!.. \n Envia *FOTOGRAFÍAS* por favor.';
                         $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
                         file_put_contents('file_image_'.$motive->waId, '');
 
@@ -79,7 +79,7 @@ class WaController extends AbstractController
                             $waS->hidratarAcount($message, $token);
                             // $msg = 'Ok!!👌🏼\\n'.
                             // 'DETALLES de la Pieza.';
-                            $msg = '👌🏼 Ok!! \n *DETALLES* de la Pieza.';
+                            $msg = '👌🏼 Ok!! ahora los *DETALLES* de la Pieza.';
                             $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
                             if(count($result) > 0) {
                                 file_put_contents(
@@ -90,6 +90,22 @@ class WaController extends AbstractController
                                     ])
                                 );
                             }
+                        }
+                    }
+
+                    if($motive->type == 'text') {
+                        
+                        $waS->hidratarAcount($message, $token);
+                        $msg = '👌🏼 Muy bien!! Tú mejor *COSTO* cuál sería?.';
+                        $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
+                        if(count($result) > 0) {
+                            file_put_contents(
+                                $pathTo.'/fails_'.$filename.'.json',
+                                json_encode([
+                                    'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
+                                    'body'   => $result
+                                ])
+                            );
                         }
                     }
 
