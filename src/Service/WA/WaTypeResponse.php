@@ -92,14 +92,14 @@ class WaTypeResponse {
                 $msgSend = $cotCurrent->determinarStep($has);
                 if($cotCurrent->isOkSend) {
                     if($msgSend != '' && $cotCurrent->stepFinder != '') {
-                        $this->waS->msgText($this->metaMsg->waId, $msg);
+                        $this->waS->msgText($this->metaMsg->waId, $msgSend);
                         $this->waS->msgText(
                             $this->metaMsg->waId, $this->msgResp[$cotCurrent->stepFinder]
                         );
                     }
                 }
                 return;
-                
+
             }else{
 
                 $result = $this->sendMsg($this->msgResp['fotos']);
