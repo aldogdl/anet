@@ -54,9 +54,9 @@ class WaService
         $body['type'] = 'text';
         $body['text'] = $text;
 
-        if($context != '') {
-            $body['context'] = ['message_id' => $context];
-        }
+        // if($context != '') {
+        //     $body['context'] = ['message_id' => $context];
+        // }
         
         $result = $this->send($body);
 
