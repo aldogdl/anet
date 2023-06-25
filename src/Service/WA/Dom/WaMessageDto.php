@@ -5,6 +5,7 @@ namespace App\Service\WA\Dom;
 class WaMessageDto {
 
     public String $id = '0';
+    public String $context = '0';
     public String $waId = '';
     public String $body = '';
     public String $type = '';

@@ -49,14 +49,20 @@ class WaController extends AbstractController
                 $isMsgOk = true;
                 $filename = round(microtime(true) * 1000);
                 $path  = $pathTo.'/wa_'.$filename.'.json';
+                $pathT = $pathTo.'/preuba_'.$filename.'.json';
 
                 if($metadata->type != 'status') {
+
                     $r = new WaTypeResponse(
                         $metadata, $message, $pathTo, $this->getParameter('waTk')
                     );
                     $isMsgOk = $r->saveMsgResult;
                     if($isMsgOk) {
                         file_put_contents($path, $has);
+                        file_put_contents($pathT, json_encode([
+                            'response' => $metadata->toArray(),
+                            'message'  => $message
+                        ]));
                     }
                 }
 

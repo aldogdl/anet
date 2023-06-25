@@ -65,14 +65,14 @@ class WaTypeResponse extends WaService {
             }
         }
 
-        if(mb_strpos($this->metaMsg->body, 'cmd:c' ) !== false) {
+        if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd:c' ) !== false) {
     
             $result = $this->sendMsg($this->msgResp['cotizar']);
             if(count($result) > 0) {
                 $this->setErrorInFile($result);
             }else{
                 $this->buildStepsCots();
-                $this->saveMsgResult = true;
+                $this->saveMsgResult = false;
             }
             return;
         }
