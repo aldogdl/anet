@@ -10,7 +10,7 @@ class WaTypeResponse {
     
     private WaService $waS;
     private $msgFix = 'En 5 segundos recibirás otra *Oportunidad de VENTA*💰, ¡No la dejes pasar!.'; 
-    private WaMessageDto $metaMsg;
+    public WaMessageDto $metaMsg;
     private array $message;
     private String $pathToken;
     private String $pathToWa;

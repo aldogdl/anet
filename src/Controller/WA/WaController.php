@@ -60,7 +60,7 @@ class WaController extends AbstractController
                     if($isMsgOk) {
                         file_put_contents($path, $has);
                         file_put_contents($pathT, json_encode([
-                            'response' => $metadata->toArray(),
+                            'response' => $r->metaMsg->toArray(),
                             'message'  => $message
                         ]));
                     }
