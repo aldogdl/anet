@@ -103,14 +103,17 @@ class WaMessageDto {
     /** */
     public function toArray(): array
     {
-
         return [
-            'id'   => $this->id,
-            'waId' => $this->waId,
-            'body' => $this->body,
-            'type' => $this->type,
+            'id'     => $this->id,
+            'context'=> $this->context,
+            'waId'   => $this->waId,
+            'campo'  => $this->campoResponsed,
+            'body'   => $this->body,
+            'type'   => $this->type,
+            'expira' => $this->expira,
             'canResponse' => $this->canResponse,
-            'timeStamp' => $this->timeStamp
+            'timeStamp'   => $this->timeStamp
         ];
     }
+
 }
