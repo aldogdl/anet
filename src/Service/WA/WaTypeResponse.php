@@ -25,7 +25,12 @@ class WaTypeResponse {
         'costo'    => '🤝🏻 Muy bien!! Tú mejor *COSTO* por favor. 😃',
         'graxCot'  => '😃👍 Mil Gracias!! Éxito en tu venta. ',
         'noTengo'  => '😃👍 Enterados!!. ',
-        'errCosto' => '⚠️ Envía SÓLO NÚMERO para el *costo* por favor. ',
+        'errCosto' => '⚠️ Envía SÓLO NÚMERO para el *costo* por favor. '
+    ];
+    private array  $msgRespPendientes = [
+        'fotos'    => '😃👍 No haz enviado las *FOTOs* de esta pieza.',
+        'detalles' => '👌🏼 No indicaste los *DETALLES* de esta Pieza.',
+        'costo'    => '🤝🏻 Faltó indicar cual es tú mejor *COSTO*. 😃'
     ];
 
     /** */
@@ -94,7 +99,7 @@ class WaTypeResponse {
                     if($msgSend != '' && $cotCurrent->stepFinder != '') {
                         $this->waS->msgText($this->metaMsg->waId, $msgSend);
                         $this->waS->msgText(
-                            $this->metaMsg->waId, $this->msgResp[$cotCurrent->stepFinder]
+                            $this->metaMsg->waId, $this->msgRespPendientes[$cotCurrent->stepFinder]
                         );
                     }
                 }
