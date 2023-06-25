@@ -140,7 +140,11 @@ class WaTypeResponse {
      */
     private function isValidCosto() : bool
     {
-        $str = $this->metaMsg->body;
+        $str = mb_strtolower($this->metaMsg->body);
+        if(mb_strpos($str, 'mil') !== false) {
+            return false;
+        }
+        
         $str = str_replace('$', '', $str);
         $str = str_replace(',', '', $str);
 
