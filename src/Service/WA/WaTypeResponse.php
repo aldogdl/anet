@@ -2,22 +2,25 @@
 
 namespace App\Service\WA;
 
+use App\Service\WA\Dom\CotizandoPzaDto;
 use App\Service\WA\Dom\WaMessageDto;
+use App\Service\WA\ContinueWithCot;
 
 class WaTypeResponse {
 
     public bool $saveMsgResult;
     
-    private WaService $waS;
     private $msgFix = 'En 5 segundos recibirás otra *Oportunidad de VENTA*💰, ¡No la dejes pasar!.'; 
+    private WaService $waS;
     public WaMessageDto $metaMsg;
     private array $message;
     private String $pathToken;
     private String $pathToWa;
+    private String $pathToSols;
     private String $fileToCot;
     private String $token;
     private array  $msgResp = [
-        'cotizar'  => '😃👍 Gracias!!.. Envia *FOTOGRAFÍAS* por favor.',
+        'fotos'    => '😃👍 Gracias!!.. Envia *FOTOGRAFÍAS* por favor.',
         'detalles' => '👌🏼 Ok!!. Ahora los *DETALLES* de la Pieza.',
         'costo'    => '🤝🏻 Muy bien!! Tú mejor *COSTO* por favor. 😃',
         'graxCot'  => '😃👍 Mil Gracias!! Éxito en tu venta. ',
@@ -26,12 +29,16 @@ class WaTypeResponse {
     ];
 
     /** */
-    public function __construct(WaMessageDto $waEx, WaService $ws, array $msg, String $pTo, String $pToken)
+    public function __construct(
+        WaMessageDto $waEx, WaService $ws, array $msg, String $pTo, String $pToken,
+        String $pToSolicitudes
+    )
     {
         $this->token      = '';
         $this->metaMsg    = $waEx;
         $this->pathToken  = $pToken;
         $this->pathToWa   = $pTo;
+        $this->pathToSols = $pToSolicitudes;
         $this->message    = $msg;
         $this->waS        = $ws;
         $this->fileToCot  = $this->pathToWa.'/_cotizar-'.$this->metaMsg->waId.'.json';
@@ -39,10 +46,13 @@ class WaTypeResponse {
 
         $this->execute();    
     }
-    
+
     /** */
     private function execute()
     {
+        $isCot  = false;
+        $isTest = false;
+
         if($this->metaMsg->type == 'reply') {
 
             if(mb_strpos($this->metaMsg->body, '_notengo' ) !== false) {
@@ -56,27 +66,48 @@ class WaTypeResponse {
             }
 
             if(mb_strpos($this->metaMsg->body, '_cotizar' ) !== false) {
-    
-                $result = $this->sendMsg($this->msgResp['cotizar']);
-                if(count($result) > 0) {
-                    $this->setErrorInFile($result);
-                }else{
-                    $this->buildStepsCots();
-                    $this->saveMsgResult = true;
-                }
-                return;
+                $isCot = true;
+                $this->saveMsgResult = true;
             }
         }
 
         // Exclusivo para pruebas y capacitaciones
         if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd:c' ) !== false) {
-    
-            $result = $this->sendMsg($this->msgResp['cotizar']);
-            if(count($result) > 0) {
-                $this->setErrorInFile($result);
+            $isCot  = true;
+            $isTest = true;
+            $this->saveMsgResult = false;
+        }
+
+        if($isCot) {
+
+            // Revisamos si no hay una cotización en curso
+            $has = $this->getContentFileCot();
+            if(count($has) > 0) {
+
+                $msg = '*Cuentas con una Cotización en curso*. ';
+                $msg = $msg.'🔎 _Buscando datos_. Espera un momento, por favor.';
+                $result = $this->sendMsg($msg);
+
+                $cotCurrent = new FinderPiezaSolicitud($this->pathToSols);
+                $msgSend = $cotCurrent->determinarStep($has);
+                if($cotCurrent->isOkSend) {
+                    if($msgSend != '' && $cotCurrent->stepFinder != '') {
+                        $this->waS->msgText($this->metaMsg->waId, $msg);
+                        $this->waS->msgText(
+                            $this->metaMsg->waId, $this->msgResp[$cotCurrent->stepFinder]
+                        );
+                    }
+                }
+                return;
+                
             }else{
-                $this->buildStepsCots(true);
-                $this->saveMsgResult = false;
+
+                $result = $this->sendMsg($this->msgResp['fotos']);
+                if(count($result) > 0) {
+                    $this->setErrorInFile($result);
+                }else{
+                    $this->buildStepsCots($isTest);
+                }
             }
             return;
         }
@@ -213,16 +244,12 @@ class WaTypeResponse {
      */
     private function buildStepsCots(bool $isTest = false): void
     {
-        $newCotsSteps = [
-            'fotos'    => 'wait',
-            'detalles' => 'wait',
-            'costo'    => 'wait',
-            'grax'     => 'wait',
-            'isTest'   => $isTest,
-        ];
         if(!is_file($this->fileToCot)) {
-            file_put_contents($this->fileToCot, json_encode($newCotsSteps));
+            $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
+            file_put_contents($this->fileToCot, json_encode($steps->toArray()));
             file_put_contents('file_image_'.$this->metaMsg->waId, '');
+        }else{
+            
         }
     }
 
@@ -240,7 +267,7 @@ class WaTypeResponse {
         if(!$content['isTest']) {
             $this->saveMsgResult = true;
         }
-        
+
         if($campo == 'graxCot') {
             unlink($this->fileToCot);
         }else{
@@ -255,16 +282,19 @@ class WaTypeResponse {
      */
     private function getContentFileCot() : array
     {
+        $content = [];
         if(is_file($this->fileToCot)) {
+
             $content = file_get_contents($this->fileToCot);
             try {
                 $content = json_decode($content, true);
             } catch (\Throwable $th) {
+
                 $this->setErrorInFile([
                     'error'  => $th->getMessage(),
                     'message'=> $content
                 ]);
-                return [];
+                $content = [];
             }
         }
 

@@ -38,22 +38,22 @@ class WaController extends AbstractController
             $has = $req->getContent();
             if($has) {
 
+                $isMsgOk = true;
                 $message = json_decode($has, true);
                 $metadata= new WaMessageDto($message);
-
+               
                 $pathTo = $this->getParameter('waMessag');
                 if(!is_dir($pathTo)) {
                     mkdir($pathTo);
                 }
-                
-                $isMsgOk = true;
                 $filename = round(microtime(true) * 1000);
                 $path  = $pathTo.'/wa_'.$filename.'.json';
 
                 if($metadata->type != 'status') {
 
                     $r = new WaTypeResponse(
-                        $metadata, $waS, $message, $pathTo, $this->getParameter('waTk')
+                        $metadata, $waS, $message, $pathTo, $this->getParameter('waTk'),
+                        $this->getParameter('nifiFld')
                     );
                     $isMsgOk = $r->saveMsgResult;
                     if($isMsgOk) {

@@ -61,6 +61,10 @@ class WaMessageDto {
         $typeBody = $mapValue['messages'][0]['type'];
         $body = $mapValue['messages'][0][$typeBody];
 
+        if(array_key_exists('context', $mapValue['messages'][0])) {
+            $this->context = $mapValue['messages'][0]['context']['id'];
+        }
+
         if($typeBody == 'interactive') {
             if(array_key_exists('type', $body)) {
                 $typeBody = $body['type'];
