@@ -28,8 +28,8 @@ class WaTypeResponse {
         'errCosto' => '⚠️ Envía SÓLO NÚMERO para el *costo* por favor. '
     ];
     private array  $msgRespPendientes = [
-        'fotos'    => '😃👍 No haz enviado las *FOTOs* de esta pieza.',
-        'detalles' => '👌🏼 No indicaste los *DETALLES* de esta Pieza.',
+        'fotos'    => '😃👍 No haz enviado las *FOTOS* de esta pieza.',
+        'detalles' => '👌🏼 Faltó indicar los *DETALLES* de esta Pieza.',
         'costo'    => '🤝🏻 Faltó indicar cual es tú mejor *COSTO*. 😃'
     ];
 
