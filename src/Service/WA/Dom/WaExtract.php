@@ -57,7 +57,9 @@ class WaExtract {
         $this->id   = $mapValue['messages'][0]['id'];
         $this->waId = $mapValue['messages'][0]['from'];
         $this->timeStamp = $mapValue['messages'][0]['timestamp'];
-
+        if(mb_strpos($this->waId, '521') !== false) {
+            $this->waId = str_replace('521', '52', $this->waId);
+        }
         $typeBody = $mapValue['messages'][0]['type'];
         $body = $mapValue['messages'][0][$typeBody];
 
