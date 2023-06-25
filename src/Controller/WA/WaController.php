@@ -74,9 +74,11 @@ class WaController extends AbstractController
                     if($motive->type == 'image') {
                         
                         if(is_file('file_image_'.$motive->waId)) {
+
                             unlink('file_image_'.$motive->waId);
+
                             $waS->hidratarAcount($message, $token);
-                            $msg = 'Ok!!👌🏼 '.
+                            $msg = 'Ok!!👌🏼\\n'.
                             'DETALLES de la Pieza.';
                             $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
                             if(count($result) > 0) {
