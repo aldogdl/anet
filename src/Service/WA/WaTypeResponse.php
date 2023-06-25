@@ -89,8 +89,7 @@ class WaTypeResponse {
             $has = $this->getContentFileCot();
             if(count($has) > 0) {
 
-                $msg = '*Cuentas con una Cotización en curso*. ';
-                $msg = $msg.'🔎 _Buscando datos_. Espera un momento, por favor.';
+                $msg = '✋🏼 No terminaste de *COTIZAR* la pieza siguiente:';
                 $result = $this->sendMsg($msg);
 
                 $cotCurrent = new FinderPiezaSolicitud($this->pathToSols);
