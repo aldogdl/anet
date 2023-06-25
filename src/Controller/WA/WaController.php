@@ -55,7 +55,7 @@ class WaController extends AbstractController
                     if( mb_strpos($motive->body, 'continuar' ) !== false) {
 
                         $waS->hidratarAcount($message, $token);
-                        $msg = 'Gracias!! 😃👍.\\n';
+                        $msg = 'Gracias!! 😃👍...\\n';
                         $msg = $msg.'Envía las FOTOGRAFÍAS por favor.';
                         $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
                         file_put_contents('file_image_'.$motive->waId, '');
