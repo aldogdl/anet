@@ -54,7 +54,7 @@ class WaController extends AbstractController
                 if($metadata->type != 'status') {
 
                     $r = new WaTypeResponse(
-                        $metadata, $message, $pathTo, $this->getParameter('waTk')
+                        $metadata, $waS, $message, $pathTo, $this->getParameter('waTk')
                     );
                     $isMsgOk = $r->saveMsgResult;
                     if($isMsgOk) {

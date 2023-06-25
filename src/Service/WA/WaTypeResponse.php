@@ -4,10 +4,11 @@ namespace App\Service\WA;
 
 use App\Service\WA\Dom\WaMessageDto;
 
-class WaTypeResponse extends WaService {
+class WaTypeResponse {
 
     public bool $saveMsgResult;
-
+    
+    private WaService $waS;
     private $msgFix = 'En 5 segundos recibirás otra *Oportunidad de VENTA*💰, ¡No la dejes pasar!.'; 
     private WaMessageDto $metaMsg;
     private array $message;
@@ -25,13 +26,14 @@ class WaTypeResponse extends WaService {
     ];
 
     /** */
-    public function __construct(WaMessageDto $waEx, array $msg, String $pTo, String $pToken)
+    public function __construct(WaMessageDto $waEx, WaService $ws, array $msg, String $pTo, String $pToken)
     {
         $this->token      = '';
         $this->metaMsg    = $waEx;
         $this->pathToken  = $pToken;
         $this->pathToWa   = $pTo;
         $this->message    = $msg;
+        $this->waS        = $ws;
         $this->fileToCot  = $this->pathToWa.'/_cotizar-'.$this->metaMsg->waId.'.json';
         $this->saveMsgResult = false;
 
@@ -280,10 +282,10 @@ class WaTypeResponse extends WaService {
 
         if($this->token == '') {
             $this->token  = file_get_contents($this->pathToken);
-            $this->hidratarAcount($this->message, $this->token);
+            $this->waS->hidratarAcount($this->message, $this->token);
         }
 
-        return $this->msgText('+'.$this->metaMsg->waId, $msg, $this->metaMsg->id);
+        return $this->waS->msgText('+'.$this->metaMsg->waId, $msg, $this->metaMsg->id);
     }
 
 }
