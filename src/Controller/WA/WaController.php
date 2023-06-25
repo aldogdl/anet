@@ -55,8 +55,7 @@ class WaController extends AbstractController
                     if( mb_strpos($motive->body, 'continuar' ) !== false) {
 
                         $waS->hidratarAcount($message, $token);
-                        $msg = 'Gracias!! 😃👍...\\n';
-                        $msg = $msg.'Envía las FOTOGRAFÍAS por favor.';
+                        $msg = '😃👍 Gracias!!...\nEnvía las FOTOGRAFÍAS por favor.';
                         $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
                         file_put_contents('file_image_'.$motive->waId, '');
 
@@ -78,8 +77,9 @@ class WaController extends AbstractController
                             unlink('file_image_'.$motive->waId);
 
                             $waS->hidratarAcount($message, $token);
-                            $msg = 'Ok!!👌🏼\\n'.
-                            'DETALLES de la Pieza.';
+                            // $msg = 'Ok!!👌🏼\\n'.
+                            // 'DETALLES de la Pieza.';
+                            $msg = '👌🏼 Ok!!\nDETALLES de la Pieza.';
                             $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
                             if(count($result) > 0) {
                                 file_put_contents(
