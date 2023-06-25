@@ -2,7 +2,8 @@
 
 namespace App\Controller\WA;
 
-use App\Service\WA\Dom\WaExtract;
+use App\Service\WA\WaTypeResponse;
+use App\Service\WA\Dom\WaMessageDto;
 use App\Service\WA\WaService;
 use App\Service\WebHook;
 use Symfony\Component\HttpFoundation\Response;
@@ -33,100 +34,46 @@ class WaController extends AbstractController
         }
 
         if($req->getMethod() == 'POST') {
-
-            $filename = round(microtime(true) * 1000);
-            $pathTo = $this->getParameter('waMessag');
-            $path  = $pathTo.'/wa_'.$filename.'.json';
-            if(!is_dir($pathTo)) {
-                mkdir($pathTo);
-            }
-
+            
             $has = $req->getContent();
             if($has) {
 
                 $message = json_decode($has, true);
-                $motive= new WaExtract($message);
+                $metadata= new WaMessageDto($message);
 
-                if($motive->type != 'status') {
+                $pathTo = $this->getParameter('waMessag');
+                if(!is_dir($pathTo)) {
+                    mkdir($pathTo);
+                }
+                
+                $isMsgOk = true;
+                $filename = round(microtime(true) * 1000);
+                $path  = $pathTo.'/wa_'.$filename.'.json';
 
-                    $pathTk = $this->getParameter('waTk');
-                    $token  = file_get_contents($pathTk);
-                    // _cotizar
-                    if( mb_strpos($motive->body, 'continuar' ) !== false) {
-
-                        $waS->hidratarAcount($message, $token);
-                        $msg = '😃👍 Gracias!!.. Envia *FOTOGRAFÍAS* por favor.';
-                        $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
-                        file_put_contents('file_image_'.$motive->waId, '');
-
-                        if(count($result) > 0) {
-                            file_put_contents(
-                                $pathTo.'/fails_'.$filename.'.json',
-                                json_encode([
-                                    'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
-                                    'body'   => $result
-                                ])
-                            );
-                        }
+                if($metadata->type != 'status') {
+                    $r = new WaTypeResponse(
+                        $metadata, $message, $pathTo, $this->getParameter('waTk')
+                    );
+                    $isMsgOk = $r->saveMsgResult;
+                    if($isMsgOk) {
+                        file_put_contents($path, $has);
                     }
-
-                    if($motive->type == 'image') {
-                        
-                        if(is_file('file_image_'.$motive->waId)) {
-
-                            unlink('file_image_'.$motive->waId);
-
-                            $waS->hidratarAcount($message, $token);
-                            $msg = '👌🏼 Ok!! ahora los *DETALLES* de la Pieza.';
-                            $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
-                            if(count($result) > 0) {
-                                file_put_contents(
-                                    $pathTo.'/fails_'.$filename.'.json',
-                                    json_encode([
-                                        'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
-                                        'body'   => $result
-                                    ])
-                                );
-                            }
-                        }
-                    }
-
-                    if($motive->type == 'text') {
-                        
-                        $waS->hidratarAcount($message, $token);
-                        $msg = '👌🏼 Muy bien!! Tú mejor *COSTO* cuál sería?.';
-                        $result = $waS->msgText('+'.$motive->waId, $msg, $motive->id);
-                        if(count($result) > 0) {
-                            file_put_contents(
-                                $pathTo.'/fails_'.$filename.'.json',
-                                json_encode([
-                                    'razon'  => 'Mensaje no se pudo enviar a WhatsApp',
-                                    'body'   => $result
-                                ])
-                            );
-                        }
-                    }
-
-                    $bytes = file_put_contents($path, $has);
-
-                }else {
-                    $bytes = 1;
                 }
 
-                $wh->sendMy(
-                    [
-                        'evento' => 'wa_message',
-                        'source' => $filename,
-                        'pathTo' => $path,
-                        'payload'=> $message,
-                    ],
-                    $this->getParameter('getWaToken'),
-                    $this->getParameter('getAnToken')
-                );
-
-                if($bytes > 0) {
-                    return new Response('', 200);
+                if($isMsgOk) {
+                    $wh->sendMy(
+                        [
+                            'evento' => 'wa_message',
+                            'source' => $filename,
+                            'pathTo' => $path,
+                            'payload'=> $message,
+                        ],
+                        $this->getParameter('getWaToken'),
+                        $this->getParameter('getAnToken')
+                    );
                 }
+
+                return new Response('', 200);
             }
         }
 

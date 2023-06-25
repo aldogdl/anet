@@ -2,16 +2,17 @@
 
 namespace App\Service\WA\Dom;
 
-class WaExtract {
+class WaMessageDto {
 
     public String $id = '0';
     public String $waId = '';
     public String $body = '';
     public String $type = '';
+    public String $campoResponsed = '';
     public String $expira = '';
     public String $timeStamp = '';
     public bool $canResponse = false;
-
+    
     /** */
     public function __construct(array $message)
     {
@@ -28,15 +29,12 @@ class WaExtract {
     }
 
     /** */
-    private function extractStatus(array $mapValue) {
-
+    private function extractStatus(array $mapValue) : void
+    {
         $this->type = 'status';
         $this->body = $mapValue['statuses'][0]['status'];
-        $this->waId = $mapValue['statuses'][0]['recipient_id'];
-        if(mb_strpos($this->waId, '521') !== false) {
-            $this->waId = str_replace('521', '52', $this->waId);
-        }
         $this->timeStamp = $mapValue['statuses'][0]['timestamp'];
+        $this->extractWaId($mapValue['statuses'][0]['recipient_id']);
 
         if(array_key_exists('conversation', $mapValue['statuses'][0])) {
             if(array_key_exists('expiration_timestamp', $mapValue['statuses'][0]['conversation'])) {
@@ -52,14 +50,13 @@ class WaExtract {
     }
 
     /** */
-    private function extractMessage(array $mapValue) {
+    private function extractMessage(array $mapValue) : void
+    {
         
         $this->id   = $mapValue['messages'][0]['id'];
-        $this->waId = $mapValue['messages'][0]['from'];
         $this->timeStamp = $mapValue['messages'][0]['timestamp'];
-        if(mb_strpos($this->waId, '521') !== false) {
-            $this->waId = str_replace('521', '52', $this->waId);
-        }
+        $this->extractWaId($mapValue['messages'][0]['from']);
+        
         $typeBody = $mapValue['messages'][0]['type'];
         $body = $mapValue['messages'][0][$typeBody];
 
@@ -94,7 +91,17 @@ class WaExtract {
     }
 
     /** */
-    public function toArray(): array {
+    private function extractWaId(String $data) : void
+    {
+        $this->waId = $data;
+        if(mb_strpos($this->waId, '521') !== false) {
+            $this->waId = str_replace('521', '52', $this->waId);
+        }
+    }
+
+    /** */
+    public function toArray(): array
+    {
 
         return [
             'id'   => $this->id,
