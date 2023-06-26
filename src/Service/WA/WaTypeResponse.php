@@ -20,17 +20,17 @@ class WaTypeResponse {
     private String $token;
     private array  $msgResp = [
         'fotos'    => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor.",
-        'detalles' => "👌🏼 Ok!!. Ahora los *DETALLES* de la Pieza.",
-        'costo'    => "🤝🏻 Muy bien!! Tú mejor *COSTO* por favor. 😃",
-        'graxCot'  => "😃👍 Mil Gracias!! Éxito en tu venta. ",
-        'noTengo'  => "😃👍 Enterados!!. ",
-        'errCosto' => "⚠️ Envía SÓLO NÚMERO para el *costo* por favor. ",
+        'detalles' => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.",
+        'costo'    => "🤝🏻 Muy bien!!\n Tú mejor *COSTO* por favor. 😃",
+        'graxCot'  => "😃👍 Mil Gracias!! Éxito en tu venta.\n",
+        'noTengo'  => "😃👍 Enterados!!.\n",
+        'errCosto' => "⚠️ Para el *costo*\n Envía SÓLO NÚMERO por favor. ",
         'noFinCot' => "✋🏼 No terminaste de *COTIZAR* la pieza siguiente:"
     ];
     private array  $msgRespPendientes = [
-        'fotos'    => "😃👍 No haz enviado las *FOTOS* de esta pieza.",
-        'detalles' => "👌🏼 Faltó indicar los *DETALLES* de esta Pieza.",
-        'costo'    => "🤝🏻 Faltó indicar cual es tú mejor *COSTO*. 😃"
+        'fotos'    => "⚠️ No haz enviado.\n Las *FOTOS* de esta pieza.",
+        'detalles' => "⚠️ Faltó indicar...\n Los *DETALLES* de esta Pieza.",
+        'costo'    => "⚠️ Faltó escribir...\n Cual sería tú mejor *COSTO*. 😃"
     ];
 
     /** */
