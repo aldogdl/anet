@@ -50,7 +50,7 @@ class WaController extends AbstractController
                 $path  = $pathTo.'/wa_'.$filename.'.json';
                 $metadata->pathToBackup = $path;
 
-                if($metadata->type != 'status') {
+                if($metadata->type != 'status' && $metadata->type != 'login') {
 
                     $r = new WaTypeResponse(
                         $metadata, $waS, $message, $pathTo, $this->getParameter('waTk'),
