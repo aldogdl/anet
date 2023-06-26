@@ -47,6 +47,8 @@ class WebHook
                     ])
                 );
                 return false;
+            }else{
+                unlink($dataEvent['pathTo']);
             }
         }
 
