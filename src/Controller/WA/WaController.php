@@ -63,9 +63,11 @@ class WaController extends AbstractController
                     );
 
                     $metadata = $r->metaMsg;
-                    $isMsgOk  = $r->saveMsgResult;
-                    if($isMsgOk) {
-                        file_put_contents($path, $has);
+                    if($metadata->type != 'login') {
+                        $isMsgOk  = $r->saveMsgResult;
+                        if($isMsgOk) {
+                            file_put_contents($path, $has);
+                        }
                     }
                 }
 
