@@ -2,7 +2,6 @@
 
 namespace App\Service\WA;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use App\Service\WA\Dom\CotizandoPzaDto;
 
 class FinderPiezaSolicitud {

@@ -46,6 +46,7 @@ class WaController extends AbstractController
                 if(!is_dir($pathTo)) {
                     mkdir($pathTo);
                 }
+
                 $filename = round(microtime(true) * 1000);
                 $path  = $pathTo.'/wa_'.$filename.'.json';
                 $pathPr= $pathTo.'/pr_'.$filename.'.json';
@@ -53,7 +54,7 @@ class WaController extends AbstractController
 
                 $metadata->pathToBackup = $path;
 
-                if($metadata->type != 'status' && $metadata->type != 'login') {
+                if($metadata->type != 'status') {
 
                     $r = new WaTypeResponse(
                         $metadata, $waS, $message, $pathTo, $this->getParameter('waTk'),
@@ -61,9 +62,11 @@ class WaController extends AbstractController
                     );
 
                     $metadata = $r->metaMsg;
-                    $isMsgOk = $r->saveMsgResult;
-                    if($isMsgOk) {
-                        file_put_contents($path, $has);
+                    if($metadata->type != 'login') {
+                        $isMsgOk  = $r->saveMsgResult;
+                        if($isMsgOk) {
+                            file_put_contents($path, $has);
+                        }
                     }
                 }
 

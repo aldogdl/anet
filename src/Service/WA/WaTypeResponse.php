@@ -25,7 +25,8 @@ class WaTypeResponse {
         'graxCot'  => "😃👍 Mil Gracias!! Éxito en tu venta.\n",
         'noTengo'  => "😃👍 Enterados!!.\n",
         'errCosto' => "⚠️ Para el *costo*\n Envía SÓLO NÚMERO por favor. ",
-        'noFinCot' => "✋🏼 No terminaste de *COTIZAR* la pieza siguiente:"
+        'noFinCot' => "✋🏼 No terminaste de *COTIZAR* la pieza siguiente:",
+        'login'    => "✋🏼 Buen Día!! el Sistema Autoparnet, ya *Inició tu sesion de hoy*, Gracias!! 😃",
     ];
     private array  $msgRespPendientes = [
         'fotos'    => "⚠️ No haz enviado.\n Las *FOTOS* de esta pieza.",
@@ -57,6 +58,17 @@ class WaTypeResponse {
     {
         $isCot  = false;
         $isTest = false;
+        
+        if($this->metaMsg->type == 'login') {
+
+            $this->metaMsg->msgResponse = $this->msgResp['login'];
+            $result = $this->sendMsg($this->metaMsg->msgResponse);
+            if(count($result) > 0) {
+                $this->metaMsg->msgError = $result;
+                $this->setErrorInFile($this->metaMsg->msgError);
+            }
+            return;
+        }
 
         if($this->metaMsg->type == 'reply') {
 
@@ -190,9 +202,9 @@ class WaTypeResponse {
         if($fetchPza->isOkSend) {
 
             if($msgFetched != '' && $fetchPza->stepFinder != '') {
-                $this->waS->msgText($this->metaMsg->waId, $msgFetched);
+                $this->waS->msgText($this->metaMsg->phone, $msgFetched);
                 $this->waS->msgText(
-                    $this->metaMsg->waId, $this->msgRespPendientes[$fetchPza->stepFinder]
+                    $this->metaMsg->phone, $this->msgRespPendientes[$fetchPza->stepFinder]
                 );
             }
         }    
@@ -356,7 +368,7 @@ class WaTypeResponse {
             $this->waS->hidratarAcount($this->message, $this->token);
         }
 
-        return $this->waS->msgText('+'.$this->metaMsg->waId, $msg, $this->metaMsg->id);
+        return $this->waS->msgText('+'.$this->metaMsg->phone, $msg, $this->metaMsg->id);
     }
 
 }
