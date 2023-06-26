@@ -37,6 +37,7 @@ class WaMessageDto {
     private function extractStatus(array $mapValue) : void
     {
         $this->type = 'status';
+        $this->id = $mapValue['statuses'][0]['id'];
         $this->body = $mapValue['statuses'][0]['status'];
         $this->timeStamp = $mapValue['statuses'][0]['timestamp'];
         $this->extractPhoneFromWaId($mapValue['statuses'][0]['recipient_id']);
