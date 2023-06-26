@@ -8,6 +8,7 @@ class WaMessageDto {
     public String $context = '0';
     public String $waId = '';
     public String $phone = '';
+    public String $from = '';
     public String $body = '';
     public String $type = '';
     public String $campoResponsed = '';
@@ -25,11 +26,18 @@ class WaMessageDto {
 
         if(array_key_exists('statuses', $mapValue)) {
             $this->extractStatus($mapValue);
+            $this->from = $this->body;
             return;
         }
         
         if(array_key_exists('messages', $mapValue)) {
             $this->extractMessage($mapValue);
+        }
+
+        if(array_key_exists('contacts', $mapValue)) {
+            if(array_key_exists('profile', $mapValue['contacts'][0])) {
+                $this->from = $mapValue['contacts'][0]['profile']['name'];
+            }
         }
     }
 
@@ -151,6 +159,7 @@ class WaMessageDto {
             'context'=> $this->context,
             'waId'   => $this->waId,
             'phone'  => $this->phone,
+            'from'   => $this->from,
             'campo'  => $this->campoResponsed,
             'body'   => $this->body,
             'type'   => $this->type,
