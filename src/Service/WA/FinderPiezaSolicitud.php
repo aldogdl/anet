@@ -70,8 +70,8 @@ class FinderPiezaSolicitud {
 
         if($pza) {
             $this->isOkSend = true;
-            $msg = '*'.$pza['piezaName'].'* '.$pza['posicion'].' '.$pza['lado'].' de ';
-            return $msg.'*'.$sol['modelo']['nombre'].'* '.$sol['anio'].' '.$sol['marca']['nombre'];
+            $msg = '*'.$pza['piezaName']."* \n".$pza['posicion']."\n".$pza['lado']."\n";
+            return $msg.'🚘 *'.$sol['modelo']['nombre'].'* '.$sol['anio'].' '.$sol['marca']['nombre'];
         }
 
         return '';

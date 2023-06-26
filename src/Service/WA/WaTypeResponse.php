@@ -26,7 +26,7 @@ class WaTypeResponse {
         'graxCot'  => "😃👍 Mil Gracias!! Éxito en tu venta. ",
         'noTengo'  => "😃👍 Enterados!!. ",
         'errCosto' => "⚠️ Envía SÓLO NÚMERO para el *costo* por favor. ",
-        'noFinCot' => "✋🏼 No terminaste\n de *COTIZAR* la pieza siguiente"
+        'noFinCot' => "✋🏼 No terminaste de *COTIZAR* la pieza siguiente:"
     ];
     private array  $msgRespPendientes = [
         'fotos'    => "😃👍 No haz enviado las *FOTOS* de esta pieza.",
