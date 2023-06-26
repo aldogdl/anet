@@ -112,6 +112,10 @@ class WaMessageDto {
 
         $palclas = ['autoparnet', 'estoy', 'atenderte', 'piezas', 'necesitas'];
         $txt = mb_strtolower($this->body);
+        $txt = str_replace(',', '', $txt);
+        $txt = str_replace('.', '', $txt);
+        $txt = str_replace('?', '', $txt);
+        $txt = str_replace('¿', '', $txt);
         $txt = trim($txt);
         $partes = explode(' ', $txt);
         
