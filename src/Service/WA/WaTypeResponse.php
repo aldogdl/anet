@@ -20,17 +20,18 @@ class WaTypeResponse {
     private String $fileToCot;
     private String $token;
     private array  $msgResp = [
-        'fotos'    => '😃👍 Gracias!!.. Envia *FOTOGRAFÍAS* por favor.',
-        'detalles' => '👌🏼 Ok!!. Ahora los *DETALLES* de la Pieza.',
-        'costo'    => '🤝🏻 Muy bien!! Tú mejor *COSTO* por favor. 😃',
-        'graxCot'  => '😃👍 Mil Gracias!! Éxito en tu venta. ',
-        'noTengo'  => '😃👍 Enterados!!. ',
-        'errCosto' => '⚠️ Envía SÓLO NÚMERO para el *costo* por favor. '
+        'fotos'    => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor.",
+        'detalles' => "👌🏼 Ok!!. Ahora los *DETALLES* de la Pieza.",
+        'costo'    => "🤝🏻 Muy bien!! Tú mejor *COSTO* por favor. 😃",
+        'graxCot'  => "😃👍 Mil Gracias!! Éxito en tu venta. ",
+        'noTengo'  => "😃👍 Enterados!!. ",
+        'errCosto' => "⚠️ Envía SÓLO NÚMERO para el *costo* por favor. ",
+        'noFinCot' => "✋🏼 No terminaste\n de *COTIZAR* la pieza siguiente"
     ];
     private array  $msgRespPendientes = [
-        'fotos'    => '😃👍 No haz enviado las *FOTOS* de esta pieza.',
-        'detalles' => '👌🏼 Faltó indicar los *DETALLES* de esta Pieza.',
-        'costo'    => '🤝🏻 Faltó indicar cual es tú mejor *COSTO*. 😃'
+        'fotos'    => "😃👍 No haz enviado las *FOTOS* de esta pieza.",
+        'detalles' => "👌🏼 Faltó indicar los *DETALLES* de esta Pieza.",
+        'costo'    => "🤝🏻 Faltó indicar cual es tú mejor *COSTO*. 😃"
     ];
 
     /** */
@@ -89,8 +90,7 @@ class WaTypeResponse {
             $has = $this->getContentFileCot();
             if(count($has) > 0) {
 
-                $msg = '✋🏼 No terminaste de *COTIZAR* la pieza siguiente:';
-                $result = $this->sendMsg($msg);
+                $result = $this->sendMsg($this->msgResp['noFinCot']);
 
                 $cotCurrent = new FinderPiezaSolicitud($this->pathToSols);
                 $msgSend = $cotCurrent->determinarStep($has);
