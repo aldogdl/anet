@@ -48,6 +48,9 @@ class WaController extends AbstractController
                 }
                 $filename = round(microtime(true) * 1000);
                 $path  = $pathTo.'/wa_'.$filename.'.json';
+                $pathPr= $pathTo.'/pr_'.$filename.'.json';
+                file_put_contents($pathPr, $has);
+                
                 $metadata->pathToBackup = $path;
 
                 if($metadata->type != 'status' && $metadata->type != 'login') {
