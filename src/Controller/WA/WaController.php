@@ -41,13 +41,14 @@ class WaController extends AbstractController
                 $isMsgOk = true;
                 $message = json_decode($has, true);
                 $metadata= new WaMessageDto($message);
-               
+
                 $pathTo = $this->getParameter('waMessag');
                 if(!is_dir($pathTo)) {
                     mkdir($pathTo);
                 }
                 $filename = round(microtime(true) * 1000);
                 $path  = $pathTo.'/wa_'.$filename.'.json';
+                $metadata->pathToBackup = $path;
 
                 if($metadata->type != 'status') {
 
@@ -55,6 +56,8 @@ class WaController extends AbstractController
                         $metadata, $waS, $message, $pathTo, $this->getParameter('waTk'),
                         $this->getParameter('nifiFld')
                     );
+
+                    $metadata = $r->metaMsg;
                     $isMsgOk = $r->saveMsgResult;
                     if($isMsgOk) {
                         file_put_contents($path, $has);
@@ -62,12 +65,13 @@ class WaController extends AbstractController
                 }
 
                 if($isMsgOk) {
+                    // 'payload'=> $message,
                     $wh->sendMy(
                         [
                             'evento' => 'wa_message',
                             'source' => $filename,
                             'pathTo' => $path,
-                            'payload'=> $message,
+                            'payload'=> $metadata,
                         ],
                         $this->getParameter('getWaToken'),
                         $this->getParameter('getAnToken')

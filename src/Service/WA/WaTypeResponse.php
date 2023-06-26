@@ -4,7 +4,6 @@ namespace App\Service\WA;
 
 use App\Service\WA\Dom\CotizandoPzaDto;
 use App\Service\WA\Dom\WaMessageDto;
-use App\Service\WA\ContinueWithCot;
 
 class WaTypeResponse {
 
@@ -63,9 +62,11 @@ class WaTypeResponse {
 
             if(mb_strpos($this->metaMsg->body, '_notengo' ) !== false) {
 
-                $result = $this->sendMsg($this->msgResp['noTengo'].$this->msgFix);
+                $this->metaMsg->msgResponse = $this->msgResp['noTengo'].$this->msgFix;
+                $result = $this->sendMsg($this->metaMsg->msgResponse);
                 if(count($result) > 0) {
-                    $this->setErrorInFile($result);
+                    $this->metaMsg->msgError = $result;
+                    $this->setErrorInFile($this->metaMsg->msgError);
                 }
                 $this->saveMsgResult = true;
                 return;
@@ -86,31 +87,23 @@ class WaTypeResponse {
 
         if($isCot) {
 
-            // Revisamos si no hay una cotización en curso
+            // Revisamos si no hay una cotización en curso, primeramente lo que
+            // hacemos es revisar si existe un archivo de cotizacion de este waId
             $has = $this->getContentFileCot();
             if(count($has) > 0) {
 
-                $result = $this->sendMsg($this->msgResp['noFinCot']);
-
-                $cotCurrent = new FinderPiezaSolicitud($this->pathToSols);
-                $msgSend = $cotCurrent->determinarStep($has);
-                if($cotCurrent->isOkSend) {
-                    if($msgSend != '' && $cotCurrent->stepFinder != '') {
-                        $this->waS->msgText($this->metaMsg->waId, $msgSend);
-                        $this->waS->msgText(
-                            $this->metaMsg->waId, $this->msgRespPendientes[$cotCurrent->stepFinder]
-                        );
-                    }
-                }
+                $this->responseOnCotEnProgreso($has);
                 return;
-
             }else{
 
-                $result = $this->sendMsg($this->msgResp['fotos']);
+                $this->metaMsg->msgResponse = $this->msgResp['fotos'];
+                $result = $this->sendMsg($this->metaMsg->msgResponse);
                 if(count($result) > 0) {
-                    $this->setErrorInFile($result);
+                    $this->metaMsg->msgError = $result;
+                    $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
-                    $this->buildStepsCots($isTest);
+
+                   $this->buildStepsCots($isTest);
                 }
             }
             return;
@@ -119,6 +112,9 @@ class WaTypeResponse {
         // Si el mensaje no es por medio de un boton, revisamos su entrada
         $isWelcome = $this->checkinMessage();
         if(!$isWelcome) {
+            // Si el contacto no cuenta con un archivo de cotizacion en curso
+            // es que quiso comunicarse con nosotros. POR HACER...
+            $this->saveMsgResult = false;
             return;
         }
 
@@ -127,9 +123,12 @@ class WaTypeResponse {
             if(is_file('file_image_'.$this->metaMsg->waId)) {
 
                 unlink('file_image_'.$this->metaMsg->waId);
-                $result = $this->sendMsg($this->msgResp['detalles']);
+
+                $this->metaMsg->msgResponse = $this->msgResp['detalles'];
+                $result = $this->sendMsg($this->metaMsg->msgResponse);
                 if(count($result) > 0) {
-                    $this->setErrorInFile($result);
+                    $this->metaMsg->msgError = $result;
+                    $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
                     $this->setCampoCotAs('fotos', 'ok');
                 }
@@ -141,33 +140,62 @@ class WaTypeResponse {
             
             if($this->metaMsg->campoResponsed == 'detalles') {
                 
-                $result = $this->sendMsg($this->msgResp['costo']);
+                $this->metaMsg->msgResponse = $this->msgResp['costo'];
+                $result = $this->sendMsg($this->metaMsg->msgResponse);
                 if(count($result) > 0) {
-                    $this->setErrorInFile($result);
+                    $this->metaMsg->msgError = $result;
+                    $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
                     $this->setCampoCotAs('detalles', 'ok');
                 }
+
                 return;
             }
 
             if($this->metaMsg->campoResponsed == 'costo') {
 
                 if(!$this->isValidCosto()) {
-                    $result = $this->sendMsg($this->msgResp['errCosto']);
+
+                    $this->metaMsg->msgResponse = $this->msgResp['errCosto'];
+                    $result = $this->sendMsg($this->metaMsg->msgResponse);
                     if(count($result) > 0) {
-                        $this->setErrorInFile($result);
+                        $this->metaMsg->msgError = $result;
+                        $this->setErrorInFile($this->metaMsg->msgError);
                     }
+
                     return;
                 }
 
-                $result = $this->sendMsg($this->msgResp['graxCot'].$this->msgFix);
+                $this->metaMsg->msgResponse = $this->msgResp['graxCot'].$this->msgFix;
+                $result = $this->sendMsg($this->metaMsg->msgResponse);
                 if(count($result) > 0) {
-                    $this->setErrorInFile($result);
+                    $this->metaMsg->msgError = $result;
+                    $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
                     $this->setCampoCotAs('graxCot', 'ok');
                 }
             }
         }
+    }
+
+    /**
+     * Se encontró una cotizacion en progreso y respondemos a esta situacion
+     */
+    private function responseOnCotEnProgreso(array $cot) : void
+    {
+        $this->sendMsg($this->msgResp['noFinCot']);
+
+        $fetchPza = new FinderPiezaSolicitud($this->pathToSols);
+        $msgFetched = $fetchPza->determinarPzaAndStepCot($cot);
+        if($fetchPza->isOkSend) {
+
+            if($msgFetched != '' && $fetchPza->stepFinder != '') {
+                $this->waS->msgText($this->metaMsg->waId, $msgFetched);
+                $this->waS->msgText(
+                    $this->metaMsg->waId, $this->msgRespPendientes[$fetchPza->stepFinder]
+                );
+            }
+        }    
     }
 
     /**
@@ -252,8 +280,6 @@ class WaTypeResponse {
             $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
             file_put_contents($this->fileToCot, json_encode($steps->toArray()));
             file_put_contents('file_image_'.$this->metaMsg->waId, '');
-        }else{
-            
         }
     }
 

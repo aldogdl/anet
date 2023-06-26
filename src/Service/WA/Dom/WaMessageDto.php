@@ -10,8 +10,11 @@ class WaMessageDto {
     public String $body = '';
     public String $type = '';
     public String $campoResponsed = '';
+    public String $msgResponse = '';
     public String $expira = '';
     public String $timeStamp = '';
+    public String $pathToBackup = '';
+    public array $msgError = [];
     public bool $canResponse = false;
     
     /** */
@@ -116,7 +119,10 @@ class WaMessageDto {
             'type'   => $this->type,
             'expira' => $this->expira,
             'canResponse' => $this->canResponse,
-            'timeStamp'   => $this->timeStamp
+            'msgResponse' => $this->msgResponse,
+            'timeStamp'   => $this->timeStamp,
+            'pathToBackup'=> $this->pathToBackup,
+            'msgError'    => $this->msgError,
         ];
     }
 

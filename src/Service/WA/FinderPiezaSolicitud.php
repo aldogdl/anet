@@ -23,7 +23,7 @@ class FinderPiezaSolicitud {
      * cotizando para recordarle al cotizador tanto pieza como el
      * campo.
     */
-    public function determinarStep(array $cot) : String {
+    public function determinarPzaAndStepCot(array $cot) : String {
         
         $msg = '😔 _Lo sentimos mucho_, la pieza que deseas cotizar';
         $msg = $msg.' *ya no esta disponible*. Pronto recibirás nuevas';
