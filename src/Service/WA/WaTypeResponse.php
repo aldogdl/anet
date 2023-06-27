@@ -111,6 +111,7 @@ class WaTypeResponse {
                 $this->metaMsg->msgResponse = $this->msgResp['fotos'];
                 $result = $this->sendMsg($this->metaMsg->msgResponse);
                 if(count($result) > 0) {
+
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
@@ -332,6 +333,12 @@ class WaTypeResponse {
             $content = file_get_contents($this->fileToCot);
             try {
                 $content = json_decode($content, true);
+                $this->metaMsg->idSol  = $content['idSol'];
+                $this->metaMsg->idPza  = $content['idPza'];
+                $this->metaMsg->idHive = $content['idHive'];
+                if($this->metaMsg->campoResponsed == '') {
+                    $this->metaMsg->campoResponsed = $content['accion'];
+                }
             } catch (\Throwable $th) {
 
                 $this->setErrorInFile([
