@@ -65,8 +65,10 @@ class WaController extends AbstractController
                     $metadata = $r->metaMsg;
                     if($metadata->type != 'login') {
                         $isMsgOk  = $r->saveMsgResult;
-                        if($isMsgOk) {
-                            file_put_contents($path, $has);
+                        if($metadata->type != 'image') {
+                            if($isMsgOk) {
+                                file_put_contents($path, $has);
+                            }
                         }
                     }
                 }

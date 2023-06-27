@@ -146,7 +146,10 @@ class WaTypeResponse {
                 }else{
                     $this->setCampoCotAs('fotos', 'ok');
                 }
+            }else{
+                $this->saveMsgResult = true;
             }
+
             return;
         }
 
