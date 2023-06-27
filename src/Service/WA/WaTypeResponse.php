@@ -105,7 +105,9 @@ class WaTypeResponse {
             if(count($has) > 0) {
 
                 $this->responseOnCotEnProgreso($has);
+                $this->saveMsgResult = false;
                 return;
+                
             }else{
 
                 $this->metaMsg->msgResponse = $this->msgResp['fotos'];
