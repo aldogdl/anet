@@ -6,7 +6,7 @@ class CotizandoPzaDto {
 
     public String $idPza     = '0';
     public String $idSol     = '0';
-    public String $timeSend  = '0';
+    public String $idHive    = '0';
     public String $indexConv = '0';
     public String $accion    = '0';
     public String $fotos     = 'wait';
@@ -38,7 +38,7 @@ class CotizandoPzaDto {
             $this->idPza     = $partes[1];
             $this->idSol     = $partes[2];
             $this->accion    = $partes[4];
-            $this->timeSend  = $partes[3];
+            $this->idHive    = $partes[3];
         }
     }
 
@@ -49,7 +49,7 @@ class CotizandoPzaDto {
     {
         $this->idPza     = $data['idPza'];
         $this->idSol     = $data['idSol'];
-        $this->timeSend  = $data['timeSend'];
+        $this->idHive    = $data['idHive'];
         $this->indexConv = $data['indexConv'];
         $this->accion    = $data['accion'];
         $this->fotos     = $data['fotos'];
@@ -60,12 +60,24 @@ class CotizandoPzaDto {
     }
 
     /** **/
+    public function setDataResponse(WaMessageDto $msg) : WaMessageDto {
+
+        $msg->idSol  = $this->idSol;
+        $msg->idPza  = $this->idPza;
+        $msg->idHive = $this->idHive;
+        if($msg->campoResponsed == '') {
+            $msg->campoResponsed = $this->accion;
+        }
+        return $msg;
+    }
+
+    /** **/
     public function toArray() : array {
 
         return [
             'idPza'     => $this->idPza,
             'idSol'     => $this->idSol,
-            'timeSend'  => $this->timeSend,
+            'idHive  '  => $this->idHive,
             'indexConv' => $this->indexConv,
             'accion'    => $this->accion,
             'fotos'     => $this->fotos,

@@ -3,10 +3,13 @@
 namespace App\Service\WA\Dom;
 
 class WaMessageDto {
-
+    
     public String $id = '0';
     public String $context = '0';
     public String $waId = '';
+    public int $idPza = 0;
+    public int $idSol = 0;
+    public int $idHive = 0;
     public String $phone = '';
     public String $from = '';
     public String $body = '';
@@ -158,6 +161,9 @@ class WaMessageDto {
             'id'     => $this->id,
             'context'=> $this->context,
             'waId'   => $this->waId,
+            'idSol'  => $this->idSol,
+            'idPza'  => $this->idPza,
+            'idHive' => $this->idHive,
             'phone'  => $this->phone,
             'from'   => $this->from,
             'campo'  => $this->campoResponsed,

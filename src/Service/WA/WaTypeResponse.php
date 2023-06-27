@@ -72,7 +72,7 @@ class WaTypeResponse {
 
         if($this->metaMsg->type == 'reply') {
 
-            if(mb_strpos($this->metaMsg->body, '_notengo' ) !== false) {
+            if( mb_strpos($this->metaMsg->body, '_notengo' ) !== false) {
 
                 $this->metaMsg->msgResponse = $this->msgResp['noTengo'].$this->msgFix;
                 $result = $this->sendMsg($this->metaMsg->msgResponse);
@@ -84,7 +84,7 @@ class WaTypeResponse {
                 return;
             }
 
-            if(mb_strpos($this->metaMsg->body, '_cotizar' ) !== false) {
+            if( mb_strpos($this->metaMsg->body, '_cotizar' ) !== false) {
                 $isCot = true;
                 $this->saveMsgResult = true;
             }
@@ -118,6 +118,7 @@ class WaTypeResponse {
                    $this->buildStepsCots($isTest);
                 }
             }
+
             return;
         }
 
@@ -292,6 +293,7 @@ class WaTypeResponse {
             $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
             file_put_contents($this->fileToCot, json_encode($steps->toArray()));
             file_put_contents('file_image_'.$this->metaMsg->waId, '');
+            $this->metaMsg = $steps->setDataResponse($this->metaMsg);
         }
     }
 
