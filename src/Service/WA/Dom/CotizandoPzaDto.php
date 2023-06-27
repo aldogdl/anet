@@ -87,4 +87,5 @@ class CotizandoPzaDto {
             'isTest'    => $this->isTest,
         ];
     }
+    
 }

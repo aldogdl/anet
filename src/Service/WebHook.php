@@ -47,10 +47,13 @@ class WebHook
                     ])
                 );
                 return false;
-            }else{
                 
-                if(is_file($dataEvent['pathTo'])) {
-                    unlink($dataEvent['pathTo']);
+            }else{
+
+                if(array_key_exists('pathTo', $dataEvent)) {
+                    if(is_file($dataEvent['pathTo'])) {
+                        unlink($dataEvent['pathTo']);
+                    }
                 }
             }
         }
