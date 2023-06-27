@@ -77,7 +77,7 @@ class CotizandoPzaDto {
         return [
             'idPza'     => $this->idPza,
             'idSol'     => $this->idSol,
-            'idHive  '  => $this->idHive,
+            'idHive'    => $this->idHive,
             'indexConv' => $this->indexConv,
             'accion'    => $this->accion,
             'fotos'     => $this->fotos,
