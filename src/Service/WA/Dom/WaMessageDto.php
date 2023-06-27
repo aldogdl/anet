@@ -7,9 +7,9 @@ class WaMessageDto {
     public String $id = '0';
     public String $context = '0';
     public String $waId = '';
-    public int $idPza = 0;
-    public int $idSol = 0;
-    public int $idHive = 0;
+    public String $idPza = '0';
+    public String $idSol = '0';
+    public String $idHive= '0';
     public String $phone = '';
     public String $from = '';
     public String $body = '';
