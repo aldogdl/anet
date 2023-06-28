@@ -9,7 +9,7 @@ class WaTypeResponse {
 
     public bool $saveMsgResult;
     
-    private $msgFix = 'En 5 segundos recibirás otra *Oportunidad de VENTA*💰, ¡No la dejes pasar!.'; 
+    private $msgFix = "\nEn 5 segundos recibirás otra *Oportunidad de VENTA*💰,\n¡No la dejes pasar!."; 
     private WaService $waS;
     public WaMessageDto $metaMsg;
     private array $message;
@@ -107,7 +107,7 @@ class WaTypeResponse {
                 $this->responseOnCotEnProgreso($has);
                 $this->saveMsgResult = false;
                 return;
-                
+
             }else{
 
                 $this->metaMsg->msgResponse = $this->msgResp['fotos'];

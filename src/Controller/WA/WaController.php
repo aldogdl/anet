@@ -74,7 +74,6 @@ class WaController extends AbstractController
                 }
 
                 if($isMsgOk) {
-                    // 'payload'=> $message,
                     $wh->sendMy(
                         [
                             'evento' => 'wa_message',
