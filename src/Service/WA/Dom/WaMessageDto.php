@@ -185,6 +185,7 @@ class WaMessageDto {
             'timeStamp'   => $this->timeStamp,
             'pathToBackup'=> $this->pathToBackup,
             'msgError'    => $this->msgError,
+            'metasImage'  => $this->metasImage,
         ];
     }
 
