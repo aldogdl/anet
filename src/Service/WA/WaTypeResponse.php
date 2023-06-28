@@ -20,7 +20,7 @@ class WaTypeResponse {
     private String $token;
     private array  $msgResp = [
         'fotos'    => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor.",
-        'detalles' => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.\n\n📷 Puedes enviar *más fotos* si lo deseas.",
+        'detalles' => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.\n\n📷 _Puedes enviar *más fotos* si lo deseas._",
         'costo'    => "🤝🏻 Muy bien!!\n Tú mejor *COSTO* por favor. 😃",
         'graxCot'  => "😃👍 Mil Gracias!! Éxito en tu venta.\n",
         'noTengo'  => "😃👍 Enterados!!.\n",
