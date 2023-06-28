@@ -20,6 +20,7 @@ class WaMessageDto {
     public String $timeStamp = '';
     public String $pathToBackup = '';
     public array $msgError = [];
+    public array $metasImage = [];
     public bool $canResponse = false;
     
     /** */
@@ -112,6 +113,15 @@ class WaMessageDto {
             if(array_key_exists('mime_type', $body)) {
                 $this->type = 'image';
                 $this->body = $body['id'];
+                $caption = '';
+                if(array_key_exists('caption', $body)) {
+                    $caption = $body['caption'];
+                }
+                $this->metasImage = [
+                    'caption' => $caption,
+                    'mime_type' => $body['mime_type'],
+                    'sha256' => $body['sha256'],
+                ];
             }
         }
 
