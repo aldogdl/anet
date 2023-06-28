@@ -20,7 +20,7 @@ class WaTypeResponse {
     private String $token;
     private array  $msgResp = [
         'fotos'    => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor.",
-        'detalles' => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.",
+        'detalles' => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.\n\nPuedes enviar *más fotos* si lo deseas.",
         'costo'    => "🤝🏻 Muy bien!!\n Tú mejor *COSTO* por favor. 😃",
         'graxCot'  => "😃👍 Mil Gracias!! Éxito en tu venta.\n",
         'noTengo'  => "😃👍 Enterados!!.\n",
@@ -56,7 +56,7 @@ class WaTypeResponse {
     /** */
     private function execute()
     {
-        $isCot  = false;
+        $isInitCot  = false;
         $isTest = false;
         
         if($this->metaMsg->type == 'login') {
@@ -85,19 +85,19 @@ class WaTypeResponse {
             }
 
             if( mb_strpos($this->metaMsg->body, '_cotizar' ) !== false) {
-                $isCot = true;
+                $isInitCot = true;
                 $this->saveMsgResult = true;
             }
         }
 
         // Exclusivo para pruebas y capacitaciones
         if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd:c' ) !== false) {
-            $isCot  = true;
+            $isInitCot  = true;
             $isTest = true;
             $this->saveMsgResult = false;
         }
 
-        if($isCot) {
+        if($isInitCot) {
 
             // Revisamos si no hay una cotización en curso, primeramente lo que
             // hacemos es revisar si existe un archivo de cotizacion de este waId
@@ -126,30 +126,49 @@ class WaTypeResponse {
         }
 
         // Si el mensaje no es por medio de un boton, revisamos su entrada
-        $isWelcome = $this->checkinMessage();
-        if(!$isWelcome) {
+        $cotResult = $this->checkinMessage();
+        if(!$cotResult['hasCampo']) {
             // Si el contacto no cuenta con un archivo de cotizacion en curso
-            // es que quiso comunicarse con nosotros. POR HACER...
+            // es que quiso comunicarse con nosotros. TODO(POR HACER)...
             $this->saveMsgResult = false;
             return;
         }
+        
+        $theCot = new CotizandoPzaDto(false);
+        $theCot->fromArray($cotResult['coti']);
+        $cotResult = [];
 
         if($this->metaMsg->type == 'image') {
-            
+
+            $sendMsg = false;
+            $saveMsg = true;
             if(is_file('file_image_'.$this->metaMsg->waId)) {
 
                 unlink('file_image_'.$this->metaMsg->waId);
+                $sendMsg = true;
+            }else{
+                // Ya se recibieron fotos y se envio el mensaje de detalles
+                // pero si vuelve el cotizador a enviar otras fotos entonces
+                // le re-enviacmos el mensjae de detalles, pero ya no guardamos
+                // el campo ok en fotos dentro del objeto cotizador
+                if($theCot->fotos == 'ok' && $theCot->detalles == 'wait') {
+                    $sendMsg = true;
+                    $saveMsg = false;
+                }
+            }
+            $this->saveMsgResult = true;
 
+            if($sendMsg) {
                 $this->metaMsg->msgResponse = $this->msgResp['detalles'];
                 $result = $this->sendMsg($this->metaMsg->msgResponse);
                 if(count($result) > 0) {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
-                    $this->setCampoCotAs('fotos', 'ok');
+                    if($saveMsg) {
+                        $this->setCampoCotAs('fotos', 'ok');
+                    }
                 }
-            }else{
-                $this->saveMsgResult = true;
             }
 
             return;
@@ -273,20 +292,26 @@ class WaTypeResponse {
      * espera esta respondiendo.
      * @return false | true
     */
-    private function checkinMessage() : bool
+    private function checkinMessage() : array
     {
         $content = $this->getContentFileCot();
         if(count($content) == 0) {
             return false;
         }
 
+        $result = [
+            'coti' => $content,
+            'hasCampo' => false,
+        ];
+
         foreach ($content as $paso => $value) {
             if($value == 'wait') {
                 $this->metaMsg->campoResponsed = $paso;
-                return true;
+                $result['hasCampo'] = true;
+                return $result;
             }
         }
-        return false;
+        return $result;
     }
 
     /**
