@@ -59,7 +59,8 @@ class WaService
         }
         
         $result = $this->send($body);
-
+        file_put_contents('result.json', json_encode($result));
+        
         return ($result['statuscode'] != 200) ? $result : [];
     }
 
