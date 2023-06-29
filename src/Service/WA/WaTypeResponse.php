@@ -112,6 +112,8 @@ class WaTypeResponse {
 
                 $this->metaMsg->msgResponse = $this->msgResp['fotos'];
                 $result = $this->sendMsg($this->metaMsg->msgResponse);
+                file_put_contents($this->metaMsg->type.'.json', json_encode($result));
+                
                 if(count($result) > 0) {
 
                     $this->metaMsg->msgError = $result;
