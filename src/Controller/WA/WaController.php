@@ -117,4 +117,23 @@ class WaController extends AbstractController
         return $this->json([]);
     }
 
+    /**
+     * Actualizamos el token de wa desde backcore
+     */
+    #[Route('wa/tk/update/', methods: ['POST'])]
+    public function updateWaToken(Request $req): Response
+    {
+        if($req->getMethod() == 'POST') {
+
+            $field = $req->request->get('tkmy');
+            if($field != '') {
+                $pathTk = $this->getParameter('waTk');
+                file_put_contents($pathTk, 'aldo_'.$field);
+                return $this->json(['code' => 200]);
+            }
+        }
+
+        return $this->json(['code' => 100]);
+    }
+
 }
