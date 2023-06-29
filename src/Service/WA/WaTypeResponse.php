@@ -18,8 +18,9 @@ class WaTypeResponse {
     private String $pathToSols;
     private String $fileToCot;
     private String $token;
+    // 'fotos'    => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor.",
     private array  $msgResp = [
-        'fotos'    => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor.",
+        'fotos'    => "por favor.",
         'detalles' => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.\n\n📷 _Puedes enviar *más fotos* si lo deseas._",
         'costo'    => "🤝🏻 Muy bien!!\n Tú mejor *COSTO* por favor. 😃",
         'graxCot'  => "😃👍 Mil Gracias!! Éxito en tu venta.\n",
