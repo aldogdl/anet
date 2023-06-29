@@ -112,7 +112,7 @@ class WaTypeResponse {
             }else{
 
                 $this->metaMsg->msgResponse = $this->msgResp['fotos'];
-                $result = $this->sendMsg($this->metaMsg->msgResponse);
+                $result = $this->sendMsg($this->metaMsg->msgResponse, false);
                 
                 if(count($result) > 0) {
 
@@ -402,14 +402,18 @@ class WaTypeResponse {
     /** 
      * Enviamos un mensaje de texto a Whatsapp
     */
-    private function sendMsg(String $msg) : array {
+    private function sendMsg(String $msg, bool $includeId = true) : array {
 
         if($this->token == '') {
             $this->token  = file_get_contents($this->pathToken);
             $this->waS->hidratarAcount($this->message, $this->token);
         }
 
-        return $this->waS->msgText('+'.$this->metaMsg->phone, $msg, $this->metaMsg->id);
+        if($includeId) {
+            return $this->waS->msgText('+'.$this->metaMsg->phone, $msg, $this->metaMsg->id);
+        }else{
+            return $this->waS->msgText('+'.$this->metaMsg->phone, $msg);
+        }
     }
 
 }
