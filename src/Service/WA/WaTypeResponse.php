@@ -82,6 +82,7 @@ class WaTypeResponse {
 
         $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
         $isCot = $this->checkIfHasCotsMaker($steps);
+
         if($isCot) {
             $this->saveMsgResult = false;
             return;
@@ -213,6 +214,8 @@ class WaTypeResponse {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
+
+                    $this->saveMsgResult = true;
                     $this->setCampoCotAs('detalles', 'ok', $steps->toArray());
                     unlink('detalles_sended_'.$this->metaMsg->waId);
                 }
@@ -229,6 +232,8 @@ class WaTypeResponse {
                     if(count($result) > 0) {
                         $this->metaMsg->msgError = $result;
                         $this->setErrorInFile($this->metaMsg->msgError);
+                    }else {
+                        $this->saveMsgResult = true;
                     }
 
                     return;
@@ -358,7 +363,7 @@ class WaTypeResponse {
         }
     }
 
-    /** 
+    /**
      * Cada ves que termina de cotizar una pieza creamos un archivo bacio, solo
      * para saber cual pieza ya fue atendida y no volverla a cotizar
     */
@@ -366,7 +371,7 @@ class WaTypeResponse {
     {
         $fn = $this->metaMsg->waId.'_'.$cot->idPza.'_'.$cot->idSol.'.cot';
         if(is_file($this->pathToCots.$fn)) {
-            $msg = "UPS!! 😱 \nEsta solicitud ya la cotizaste.\nSelecciona otra de tu lista, o espera a nuevas oportunidades de venta.\nGracias por tu atención.";
+            $msg = "UPS!! 😱 \nEsta solicitud ya la cotizaste.\nSelecciona otra de tu lista o espera a nuevas oportunidades de venta.\nGracias por tu atención.";
             $this->waS->msgText($this->metaMsg->phone, $msg);
             return true;
         }
