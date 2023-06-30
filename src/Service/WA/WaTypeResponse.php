@@ -381,7 +381,7 @@ class WaTypeResponse {
     {
         if($cot->idPza != '0') {
             $fn = $this->metaMsg->waId.'_'.$cot->idPza.'_'.$cot->idSol.'.cot';
-            file_put_contents($fn, '');
+            file_put_contents($this->pathToCots.$fn, '');
         }
     }
     
