@@ -58,8 +58,10 @@ class WaController extends AbstractController
                 if($metadata->type != 'status') {
 
                     $r = new WaTypeResponse(
-                        $metadata, $waS, $message, $pathTo, $this->getParameter('waTk'),
-                        $this->getParameter('nifiFld')
+                        $metadata, $waS, $message, $pathTo,
+                        $this->getParameter('waTk'),
+                        $this->getParameter('nifiFld'),
+                        $this->getParameter('waCots')
                     );
 
                     $metadata = $r->metaMsg;

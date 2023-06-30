@@ -15,6 +15,7 @@ class WaTypeResponse {
     private array $message;
     private String $pathToken;
     private String $pathToWa;
+    private String $pathToCots;
     private String $pathToSols;
     private String $fileToCot;
     private String $token;
@@ -38,7 +39,7 @@ class WaTypeResponse {
     /** */
     public function __construct(
         WaMessageDto $waEx, WaService $ws, array $msg, String $pTo, String $pToken,
-        String $pToSolicitudes
+        String $pToSolicitudes, String $pToCots
     )
     {
         $this->token      = '';
@@ -46,6 +47,7 @@ class WaTypeResponse {
         $this->pathToken  = $pToken;
         $this->pathToWa   = $pTo;
         $this->pathToSols = $pToSolicitudes;
+        $this->pathToCots = $pToCots;
         $this->message    = $msg;
         $this->waS        = $ws;
         $this->fileToCot  = $this->pathToWa.'/_cotizar-'.$this->metaMsg->waId.'.json';
@@ -71,6 +73,20 @@ class WaTypeResponse {
             return;
         }
 
+        // Exclusivo para pruebas y capacitaciones
+        if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd:c' ) !== false) {
+            $isInitCot  = true;
+            $isTest = true;
+            $this->saveMsgResult = false;
+        }
+
+        $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
+        $isCot = $this->checkIfHasCotsMaker($steps);
+        if($isCot) {
+            $this->saveMsgResult = false;
+            return;
+        }
+
         if($this->metaMsg->type == 'reply') {
 
             if( mb_strpos($this->metaMsg->body, '_notengo' ) !== false) {
@@ -81,7 +97,6 @@ class WaTypeResponse {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }
-                $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
                 $this->metaMsg = $steps->setDataResponse($this->metaMsg);
                 $this->saveMsgResult = true;
                 return;
@@ -91,13 +106,6 @@ class WaTypeResponse {
                 $isInitCot = true;
                 $this->saveMsgResult = true;
             }
-        }
-
-        // Exclusivo para pruebas y capacitaciones
-        if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd:c' ) !== false) {
-            $isInitCot  = true;
-            $isTest = true;
-            $this->saveMsgResult = false;
         }
 
         if($isInitCot) {
@@ -122,7 +130,7 @@ class WaTypeResponse {
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
 
-                   $this->buildStepsCots($isTest);
+                   $this->buildStepsCots($steps);
                 }
             }
 
@@ -138,8 +146,7 @@ class WaTypeResponse {
             return;
         }
         
-        $theCot = new CotizandoPzaDto(false);
-        $theCot->fromArray($cotResult['coti']);
+        $steps->fromArray($cotResult['coti']);
         $cotResult = [];
 
         if($this->metaMsg->type == 'image') {
@@ -156,7 +163,7 @@ class WaTypeResponse {
                 // pero si vuelve el cotizador a enviar otras fotos entonces
                 // le re-enviamos el mensjae de detalles, pero ya no guardamos
                 // el campo ok en fotos dentro del objeto cotizador
-                if($theCot->fotos > 0 && $theCot->detalles == 'wait') {
+                if($steps->fotos > 0 && $steps->detalles == 'wait') {
                     $saveMsg = true;
                     $sendMsg = true;
                     if(is_file('detalles_sended_'.$this->metaMsg->waId)) {
@@ -164,7 +171,7 @@ class WaTypeResponse {
                         // Como saber si han pasado mas de 2 segundos despues de
                         // la ultima foto recibida.
                         $current = time();
-                        $diff = ($current - $theCot->fotos);
+                        $diff = ($current - $steps->fotos);
                         $segs = date('s', $diff);
                         if($segs > 4) {
                             $sendMsg = true;
@@ -188,7 +195,7 @@ class WaTypeResponse {
                     // el mensaje del detalles.
                     file_put_contents('detalles_sended_'.$this->metaMsg->waId, '');
                     if($saveMsg) {
-                        $this->setCampoCotAs('fotos', time(), $theCot->toArray());
+                        $this->setCampoCotAs('fotos', time(), $steps->toArray());
                     }
                 }
             }
@@ -206,7 +213,7 @@ class WaTypeResponse {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
-                    $this->setCampoCotAs('detalles', 'ok', $theCot->toArray());
+                    $this->setCampoCotAs('detalles', 'ok', $steps->toArray());
                     unlink('detalles_sended_'.$this->metaMsg->waId);
                 }
 
@@ -233,7 +240,8 @@ class WaTypeResponse {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
-                    $this->setCampoCotAs('graxCot', 'ok', $theCot->toArray());
+                    $this->saveHasCotsMaker($steps);
+                    $this->setCampoCotAs('graxCot', 'ok', $steps->toArray());
                 }
             }
         }
@@ -341,16 +349,42 @@ class WaTypeResponse {
      * Construimos el archivo de pasos de cotización que sirve como referencia
      * para saber en que campo estamos escribiendo actualmente
      */
-    private function buildStepsCots(bool $isTest = false): void
+    private function buildStepsCots(CotizandoPzaDto $cots): void
     {
         if(!is_file($this->fileToCot)) {
-            $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
-            file_put_contents($this->fileToCot, json_encode($steps->toArray()));
+            file_put_contents($this->fileToCot, json_encode($cots->toArray()));
             file_put_contents('file_image_'.$this->metaMsg->waId, '');
-            $this->metaMsg = $steps->setDataResponse($this->metaMsg);
+            $this->metaMsg = $cots->setDataResponse($this->metaMsg);
         }
     }
 
+    /** 
+     * Cada ves que termina de cotizar una pieza creamos un archivo bacio, solo
+     * para saber cual pieza ya fue atendida y no volverla a cotizar
+    */
+    private function checkIfHasCotsMaker(CotizandoPzaDto $cot): bool
+    {
+        $fn = $this->metaMsg->waId.'_'.$cot->idPza.'_'.$cot->idSol.'.cot';
+        if(is_file($this->pathToCots.$fn)) {
+            $msg = "UPS!! 😱 \nEsta solicitud ya la cotizaste.\nSelecciona otra de tu lista, o espera a nuevas oportunidades de venta.\nGracias por tu atención.";
+            $this->waS->msgText($this->metaMsg->phone, $msg);
+            return true;
+        }
+        return false;
+    }
+
+    /** 
+     * Cada ves que termina de cotizar una pieza creamos un archivo bacio, solo
+     * para saber cual pieza ya fue atendida y no volverla a cotizar
+    */
+    private function saveHasCotsMaker(CotizandoPzaDto $cot): void
+    {
+        if($cot->idPza != '0') {
+            $fn = $this->metaMsg->waId.'_'.$cot->idPza.'_'.$cot->idSol.'.cot';
+            file_put_contents($fn, '');
+        }
+    }
+    
     /**
      * Guardamos en el archivo de pasos de cotizacion el campo y su valor
      * indicados por parametro, esto se hace para saber en que campo estamos
