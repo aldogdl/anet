@@ -76,11 +76,13 @@ class WaTypeResponse {
             if( mb_strpos($this->metaMsg->body, '_notengo' ) !== false) {
 
                 $this->metaMsg->msgResponse = $this->msgResp['noTengo'].$this->msgFix;
-                $result = $this->sendMsg($this->metaMsg->msgResponse);
+                $result = $this->sendMsg($this->metaMsg->msgResponse, false);
                 if(count($result) > 0) {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }
+                $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
+                $this->metaMsg = $steps->setDataResponse($this->metaMsg);
                 $this->saveMsgResult = true;
                 return;
             }

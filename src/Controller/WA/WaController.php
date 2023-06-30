@@ -41,9 +41,6 @@ class WaController extends AbstractController
                 $isMsgOk = true;
                 $message = json_decode($has, true);
                 $metadata= new WaMessageDto($message);
-                if($metadata->body == 'failed') {
-                    file_put_contents('failed.json', $has);
-                }
 
                 $pathTo = $this->getParameter('waMessag');
                 if(!is_dir($pathTo)) {
