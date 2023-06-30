@@ -151,13 +151,15 @@ class WaTypeResponse {
         $cotResult = [];
 
         if($this->metaMsg->type == 'image') {
-
+            
+            $this->metaMsg->campoResponsed = 'fotos';
             $sendMsg = false;
             $saveMsg = true;
             if(is_file('file_image_'.$this->metaMsg->waId)) {
 
                 unlink('file_image_'.$this->metaMsg->waId);
                 $sendMsg = true;
+
             }else{
 
                 // Ya se recibieron fotos y se envio el mensaje de detalles
@@ -165,7 +167,6 @@ class WaTypeResponse {
                 // le re-enviamos el mensjae de detalles, pero ya no guardamos
                 // el campo ok en fotos dentro del objeto cotizador
                 if($steps->fotos > 0 && $steps->detalles == 'wait') {
-                    $saveMsg = true;
                     $sendMsg = true;
                     if(is_file('detalles_sended_'.$this->metaMsg->waId)) {
                         $sendMsg = false;
@@ -214,7 +215,6 @@ class WaTypeResponse {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
-
                     $this->saveMsgResult = true;
                     $this->setCampoCotAs('detalles', 'ok', $steps->toArray());
                     unlink('detalles_sended_'.$this->metaMsg->waId);
@@ -399,14 +399,14 @@ class WaTypeResponse {
     {
         if(count($old) == 0) {
             $content = $this->getContentFileCot();
+            if(count($content) == 0) {
+                return false;
+            }
         }else{
             $content = $old;
             $old = [];
         }
 
-        if(count($content) == 0) {
-            return false;
-        }
         if(!$content['isTest']) {
             $this->saveMsgResult = true;
         }
