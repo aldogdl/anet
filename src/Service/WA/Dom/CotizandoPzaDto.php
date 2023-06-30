@@ -9,7 +9,7 @@ class CotizandoPzaDto {
     public String $idHive    = '0';
     public String $indexConv = '0';
     public String $accion    = '0';
-    public String $fotos     = 'wait';
+    public int $fotos        = 0;
     public String $detalles  = 'wait';
     public String $costo     = 'wait';
     public String $grax      = 'wait';

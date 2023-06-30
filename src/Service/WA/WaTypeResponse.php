@@ -9,7 +9,7 @@ class WaTypeResponse {
 
     public bool $saveMsgResult;
     
-    private $msgFix = "\nEn 5 segundos recibirás otra *Oportunidad de VENTA*💰,\n¡No la dejes pasar!."; 
+    private $msgFix = "\nEn 5 segundos recibirás otra *Oportunidad de VENTA*💰\n¡No la dejes pasar!."; 
     private WaService $waS;
     public WaMessageDto $metaMsg;
     private array $message;
@@ -18,7 +18,7 @@ class WaTypeResponse {
     private String $pathToSols;
     private String $fileToCot;
     private String $token;
-    // prueba 1 de cotiza
+    
     private array  $msgResp = [
         'fotos'    => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor.",
         'detalles' => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.\n\n📷 _Puedes enviar *más fotos* si lo deseas._",
@@ -151,26 +151,44 @@ class WaTypeResponse {
                 unlink('file_image_'.$this->metaMsg->waId);
                 $sendMsg = true;
             }else{
+
                 // Ya se recibieron fotos y se envio el mensaje de detalles
                 // pero si vuelve el cotizador a enviar otras fotos entonces
-                // le re-enviacmos el mensjae de detalles, pero ya no guardamos
+                // le re-enviamos el mensjae de detalles, pero ya no guardamos
                 // el campo ok en fotos dentro del objeto cotizador
-                if($theCot->fotos == 'ok' && $theCot->detalles == 'wait') {
+                if($theCot->fotos > 0 && $theCot->detalles == 'wait') {
+                    $saveMsg = true;
                     $sendMsg = true;
-                    $saveMsg = false;
+                    if(is_file('detalles_sended_'.$this->metaMsg->waId)) {
+                        $sendMsg = false;
+                        // Como saber si han pasado mas de 2 segundos despues de
+                        // la ultima foto recibida.
+                        $current = time();
+                        $diff = ($current - $theCot->fotos);
+                        $segs = date('s', $diff);
+                        if($segs > 4) {
+                            $sendMsg = true;
+                        }
+                    }
                 }
             }
+
             $this->saveMsgResult = true;
 
             if($sendMsg) {
+
                 $this->metaMsg->msgResponse = $this->msgResp['detalles'];
                 $result = $this->sendMsg($this->metaMsg->msgResponse);
+
                 if(count($result) > 0) {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
+                    // Creamos esta marca como aviso para el sistema que ya se envio
+                    // el mensaje del detalles.
+                    file_put_contents('detalles_sended_'.$this->metaMsg->waId, '');
                     if($saveMsg) {
-                        $this->setCampoCotAs('fotos', 'ok');
+                        $this->setCampoCotAs('fotos', time(), $theCot->toArray());
                     }
                 }
             }
@@ -188,7 +206,8 @@ class WaTypeResponse {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
-                    $this->setCampoCotAs('detalles', 'ok');
+                    $this->setCampoCotAs('detalles', 'ok', $theCot->toArray());
+                    unlink('detalles_sended_'.$this->metaMsg->waId);
                 }
 
                 return;
@@ -214,7 +233,7 @@ class WaTypeResponse {
                     $this->metaMsg->msgError = $result;
                     $this->setErrorInFile($this->metaMsg->msgError);
                 }else{
-                    $this->setCampoCotAs('graxCot', 'ok');
+                    $this->setCampoCotAs('graxCot', 'ok', $theCot->toArray());
                 }
             }
         }
@@ -337,9 +356,15 @@ class WaTypeResponse {
      * indicados por parametro, esto se hace para saber en que campo estamos
      * actualmente queriendo escribir.
      */
-    private function setCampoCotAs(String $campo, String $value) : bool
+    private function setCampoCotAs(String $campo, String | int $value, array $old = []) : bool
     {
-        $content = $this->getContentFileCot();
+        if(count($old) == 0) {
+            $content = $this->getContentFileCot();
+        }else{
+            $content = $old;
+            $old = [];
+        }
+
         if(count($content) == 0) {
             return false;
         }
