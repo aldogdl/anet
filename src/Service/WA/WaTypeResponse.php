@@ -100,6 +100,7 @@ class WaTypeResponse {
                 }
                 $this->metaMsg = $steps->setDataResponse($this->metaMsg);
                 $this->saveMsgResult = true;
+                $this->saveHasCotsMaker($steps);
                 return;
             }
 
@@ -151,7 +152,7 @@ class WaTypeResponse {
         $cotResult = [];
 
         if($this->metaMsg->type == 'image') {
-            
+
             $this->metaMsg->campoResponsed = 'fotos';
             $sendMsg = false;
             $saveMsg = true;
