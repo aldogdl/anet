@@ -372,7 +372,7 @@ class WaTypeResponse {
     {
         $fn = $this->metaMsg->waId.'_'.$cot->idPza.'_'.$cot->idSol.'.cot';
         if(is_file($this->pathToCots.$fn)) {
-            $msg = "UPS!! 😱 \nEsta solicitud ya la cotizaste.\nSelecciona otra de tu lista o espera a nuevas oportunidades de venta.\nGracias por tu atención.";
+            $msg = "*UPS!!* 😱 \n _Esta solicitud ya la cotizaste._\n\nSelecciona otra de tu lista o espera a nuevas oportunidades de venta.\n*Gracias por tu atención*.";
             $this->sendMsg($msg, false);
             return true;
         }
