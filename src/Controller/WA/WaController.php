@@ -96,6 +96,25 @@ class WaController extends AbstractController
     }
 
     /**
+     * Colocamos una marca para saber que un cotizador tiene una
+     * conversaion libre con anet
+     */
+    #[Route('wa/put-cot-in-conv-free/', methods: ['POST'])]
+    public function putCotInConvFree(Request $req): Response
+    {
+        if($req->getMethod() == 'POST') {
+            
+            $content = $req->getContent();
+            $data = json_decode($content, true);
+            if($data['change'] == 'anetConvFree') {
+                file_put_contents('conv_free.'.$data['waid'].'.cnv', '');
+            }
+            return $this->json(['code' => 200]);
+        }
+        return $this->json(['code' => 500]);
+    }
+
+    /**
      * Recuperamos el archivo de orden de llegada de los mensajes
      */
     #[Route('wa/get-orden-file/', methods: ['GET'])]
