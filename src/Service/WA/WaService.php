@@ -63,14 +63,16 @@ class WaService
     }
 
     /** */
-    public function hidratarAcount(array $message, String $token): WaAcountEntity
+    public function hidratarAcount(array $message, String $token): void
     {   
         $tk = '';
         if(mb_strpos($token, 'aldo_') !== false) {
             $tk = str_replace('aldo_', '', $token);
         }
+
         $this->token = $tk;
         $phoneNumberId = '';
+        
         if(count($message) == 0) {
             $phoneNumberId = file_get_contents('pnid.pni');
         }else{
@@ -78,7 +80,6 @@ class WaService
             $phoneNumberId = $acount->phoneNumberId;
         }
         $this->urlMsg = $this->urlMsgBase.$phoneNumberId .'/messages';
-        return $acount;
     }
 
     /** */
