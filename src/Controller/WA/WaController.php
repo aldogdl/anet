@@ -132,14 +132,18 @@ class WaController extends AbstractController
 
         if($req->getMethod() == 'DELETE') {
 
-            unlink($data['file']);
+            try {
+                unlink($data['file']);
+            } catch (null) {}
+
             $metadata = new WaMessageDto([]);
             $waid = str_replace('conv_free.', '', $data['file']);
             $waid = str_replace('.cnv', '', $waid);
 
             $metadata->extractPhoneFromWaId($waid);
             $metadata->type = 'close_free';
-            $r = new WaTypeResponse(
+
+            new WaTypeResponse(
                 $metadata, $waS, [], '',
                 $this->getParameter('waTk'),
                 $this->getParameter('nifiFld'),

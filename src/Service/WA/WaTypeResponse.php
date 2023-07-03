@@ -64,14 +64,16 @@ class WaTypeResponse {
         $isTest = false;
         
         if($this->metaMsg->type == 'close_free') {
-
-            $this->metaMsg->msgResponse = $this->msgResp['close_free'];
+            
+            file_put_contents('siLlegoAClose.txt', $this->msgResp['close_free']);
+            $this->metaMsg->msgResponse = $this->msgResp[$this->metaMsg->type];
             $result = $this->sendMsg($this->metaMsg->msgResponse);
             if(count($result) > 0) {
                 $this->metaMsg->msgError = $result;
                 $this->setErrorInFile($this->metaMsg->msgError);
             }
             $this->saveMsgResult = false;
+            file_put_contents('siLlegoAClose_fin.txt', '');
             return;
         }
 
