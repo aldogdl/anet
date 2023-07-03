@@ -102,7 +102,9 @@ class WaController extends AbstractController
     #[Route('wa/put-cot-in-conv-free/', methods: ['POST'])]
     public function putCotInConvFree(Request $req): Response
     {
+        file_put_contents('llega1.text', '');
         if($req->getMethod() == 'POST') {
+            file_put_contents('siPost.text', '');
             
             $content = $req->getContent();
             file_put_contents('llega.text', $content);
@@ -111,8 +113,8 @@ class WaController extends AbstractController
 
             if($data['change'] == 'anetConvFree') {
                 file_put_contents($filename, '');
+                return $this->json(['code' => $filename]);
             }
-            return $this->json(['code' => $filename]);
         }
 
         return $this->json(['code' => 'error']);
