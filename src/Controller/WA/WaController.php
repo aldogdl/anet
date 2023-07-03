@@ -40,15 +40,32 @@ class WaController extends AbstractController
 
                 $isMsgOk = true;
                 $message = json_decode($has, true);
+                $pathTo = $this->getParameter('waMessag');
+                $filename = round(microtime(true) * 1000);
+                $path  = $pathTo.'wa_'.$filename.'.json';
+                
                 $metadata= new WaMessageDto($message);
 
-                $pathTo = $this->getParameter('waMessag');
+                $filename = 'conv_free.'.$metadata->waId.'.cnv';
+                if(is_file($filename)) {
+                    
+                    $metadata->campoResponsed = 'ctc_free';
+                    $wh->sendMy(
+                        [
+                            'evento' => 'wa_message',
+                            'source' => $filename,
+                            'pathTo' => $path,
+                            'payload'=> $metadata,
+                        ],
+                        $this->getParameter('getWaToken'),
+                        $this->getParameter('getAnToken')
+                    );
+                    return new Response('', 200);
+                }
+
                 if(!is_dir($pathTo)) {
                     mkdir($pathTo);
                 }
-
-                $filename = round(microtime(true) * 1000);
-                $path  = $pathTo.'wa_'.$filename.'.json';
 
                 // $pathPr= $pathTo.'pr_'.$filename.'.json';
                 // file_put_contents($pathPr, json_encode($metadata->toArray()));
@@ -104,8 +121,6 @@ class WaController extends AbstractController
     {
         if($req->getMethod() == 'POST') {
             $data = $req->toArray();
-            file_put_contents('llega.json', json_encode($data));
-            
             if($data['change'] == 'anetConvFree') {
                 $filename = 'conv_free.'.$data['waid'].'.cnv';
                 file_put_contents($filename, '');
