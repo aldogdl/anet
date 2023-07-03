@@ -67,7 +67,7 @@ class WaTypeResponse {
             
             file_put_contents('siLlegoAClose.txt', $this->msgResp['close_free']);
             $this->metaMsg->msgResponse = $this->msgResp[$this->metaMsg->type];
-            $result = $this->sendMsg($this->metaMsg->msgResponse);
+            $result = $this->sendMsg($this->metaMsg->msgResponse, false);
             if(count($result) > 0) {
                 $this->metaMsg->msgError = $result;
                 $this->setErrorInFile($this->metaMsg->msgError);

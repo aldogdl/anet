@@ -45,6 +45,11 @@ class WaMessageDto {
                     $this->from = $mapValue['contacts'][0]['profile']['name'];
                 }
             }
+
+            if(array_key_exists('metadata', $mapValue)) {
+                $idPhone = $mapValue['metadata']['phone_number_id'];
+                file_put_contents('pnid.pni', $idPhone);
+            }
         }
     }
 
@@ -82,7 +87,6 @@ class WaMessageDto {
     /** */
     private function extractMessage(array $mapValue) : void
     {
-        
         $this->id = $mapValue['messages'][0]['id'];
         $this->timeStamp = $mapValue['messages'][0]['timestamp'];
         $this->extractPhoneFromWaId($mapValue['messages'][0]['from']);

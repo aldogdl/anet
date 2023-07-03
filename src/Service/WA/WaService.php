@@ -70,8 +70,14 @@ class WaService
             $tk = str_replace('aldo_', '', $token);
         }
         $this->token = $tk;
-        $acount = new WaAcountEntity($message);
-        $this->urlMsg = $this->urlMsgBase.$acount->phoneNumberId .'/messages';
+        $phoneNumberId = '';
+        if(count($message) == 0) {
+            $phoneNumberId = file_get_contents('pnid.pni');
+        }else{
+            $acount = new WaAcountEntity($message);
+            $phoneNumberId = $acount->phoneNumberId;
+        }
+        $this->urlMsg = $this->urlMsgBase.$phoneNumberId .'/messages';
         return $acount;
     }
 
