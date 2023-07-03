@@ -104,12 +104,11 @@ class WaController extends AbstractController
     {
         if($req->getMethod() == 'POST') {
             
-            $content = $req->getContent();
-            $data = json_decode($content, true);
-            file_put_contents('llega.josn', json_encode($content));
-            $filename = 'conv_free.'.$data['waid'].'.cnv';
-
+            $data = $req->toArray();
+            file_put_contents('llega.json', json_encode($data));
+            
             if($data['change'] == 'anetConvFree') {
+                $filename = 'conv_free.'.$data['waid'].'.cnv';
                 file_put_contents($filename, '');
                 return $this->json(['code' => $filename]);
             }
