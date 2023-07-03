@@ -103,7 +103,6 @@ class WaController extends AbstractController
     public function putCotInConvFree(Request $req): Response
     {
         if($req->getMethod() == 'POST') {
-            
             $data = $req->toArray();
             file_put_contents('llega.json', json_encode($data));
             
