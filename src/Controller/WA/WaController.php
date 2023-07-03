@@ -102,13 +102,11 @@ class WaController extends AbstractController
     #[Route('wa/put-cot-in-conv-free/', methods: ['POST'])]
     public function putCotInConvFree(Request $req): Response
     {
-        file_put_contents('llega1.text', '');
         if($req->getMethod() == 'POST') {
-            file_put_contents('siPost.text', '');
             
             $content = $req->getContent();
-            file_put_contents('llega.text', $content);
             $data = json_decode($content, true);
+            file_put_contents('llega.josn', json_encode($content));
             $filename = 'conv_free.'.$data['waid'].'.cnv';
 
             if($data['change'] == 'anetConvFree') {
