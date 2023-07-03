@@ -48,7 +48,7 @@ class WaController extends AbstractController
 
                 $filename = 'conv_free.'.$metadata->waId.'.cnv';
                 if(is_file($filename)) {
-                    
+
                     $metadata->campoResponsed = 'ctc_free';
                     $wh->sendMy(
                         [
@@ -116,16 +116,23 @@ class WaController extends AbstractController
      * Colocamos una marca para saber que un cotizador tiene una
      * conversaion libre con anet
      */
-    #[Route('wa/put-cot-in-conv-free/', methods: ['POST'])]
+    #[Route('wa/put-cot-in-conv-free/', methods: ['POST', 'DELETE'])]
     public function putCotInConvFree(Request $req): Response
     {
+        $data = $req->toArray();
+        if($data['change'] != 'anetConvFree') {
+            return $this->json(['code' => 'error']);
+        }
+
         if($req->getMethod() == 'POST') {
-            $data = $req->toArray();
-            if($data['change'] == 'anetConvFree') {
-                $filename = 'conv_free.'.$data['waid'].'.cnv';
-                file_put_contents($filename, '');
-                return $this->json(['code' => $filename]);
-            }
+            $filename = 'conv_free.'.$data['waid'].'.cnv';
+            file_put_contents($filename, '');
+            return $this->json(['code' => $filename]);
+        }
+
+        if($req->getMethod() == 'DELETE') {
+            unlink($data['file']);
+            return $this->json(['code' => $data['file']]);
         }
 
         return $this->json(['code' => 'error']);
