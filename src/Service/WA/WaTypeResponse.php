@@ -29,7 +29,7 @@ class WaTypeResponse {
         'errCosto' => "⚠️ Para el *costo*\n Envía SÓLO NÚMERO por favor. ",
         'noFinCot' => "✋🏼 No terminaste de *COTIZAR* la pieza siguiente:",
         'login'    => "✋🏼 Buen Día!! el Sistema Autoparnet, ya *Inició tu sesion de hoy*, Gracias!! 😃",
-        'close_free' => "✋🏼 La conversación con el asesor se ha cerrado!!.\n Continuamos con la sesión de COTIZACIONES abierta. 😃",
+        'close_free' => "✋🏼 La conversación con el asesor se ha cerrado!!.\n\nPero continuamos con la sesión abierta para COTIZACIONES. 😃",
     ];
     private array  $msgRespPendientes = [
         'fotos'    => "⚠️ No haz enviado.\n Las *FOTOS* de esta pieza.",
