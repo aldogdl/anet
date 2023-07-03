@@ -86,7 +86,11 @@ class WaController extends AbstractController
                         $isMsgOk = $r->saveMsgResult;
                         if($metadata->type != 'image') {
                             if($isMsgOk) {
-                                file_put_contents($path, $has);
+                                if($r->isTest) {
+                                    $isMsgOk = false;
+                                }else{
+                                    file_put_contents($path, $has);
+                                }
                             }
                         }
                     }

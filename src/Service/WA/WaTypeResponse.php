@@ -12,6 +12,7 @@ class WaTypeResponse {
     private $msgFix = "\nEn 5 segundos recibirás otra *Oportunidad de VENTA*💰\n¡No la dejes pasar!."; 
     private WaService $waS;
     public WaMessageDto $metaMsg;
+    public bool $isTest = false;
     private array $message;
     private String $pathToken;
     private String $pathToWa;
@@ -19,7 +20,7 @@ class WaTypeResponse {
     private String $pathToSols;
     private String $fileToCot;
     private String $token;
-    
+
     private array  $msgResp = [
         'fotos'    => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor.",
         'detalles' => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.\n\n📷 _Puedes enviar *más fotos* si lo deseas._",
@@ -60,12 +61,9 @@ class WaTypeResponse {
     /** */
     private function execute()
     {
-        $isInitCot  = false;
-        $isTest = false;
-        
+        $isInitCot  = false;        
         if($this->metaMsg->type == 'close_free') {
             
-            file_put_contents('siLlegoAClose.txt', $this->msgResp['close_free']);
             $this->metaMsg->msgResponse = $this->msgResp[$this->metaMsg->type];
             $result = $this->sendMsg($this->metaMsg->msgResponse, false);
             if(count($result) > 0) {
@@ -73,7 +71,6 @@ class WaTypeResponse {
                 $this->setErrorInFile($this->metaMsg->msgError);
             }
             $this->saveMsgResult = false;
-            file_put_contents('siLlegoAClose_fin.txt', '');
             return;
         }
 
@@ -402,7 +399,9 @@ class WaTypeResponse {
     {
         if($cot->idPza != '0') {
             $fn = $this->metaMsg->waId.'_'.$cot->idPza.'_'.$cot->idSol.'.cot';
-            file_put_contents($this->pathToCots.$fn, '');
+            if(!$this->isTest) {
+                file_put_contents($this->pathToCots.$fn, '');
+            }
         }
     }
     
