@@ -45,8 +45,9 @@ class WaMessageDto {
                     $this->from = $mapValue['contacts'][0]['profile']['name'];
                 }
             }
-
+            file_put_contents('segui_1_pnid.pni', '');
             if(array_key_exists('metadata', $mapValue)) {
+                file_put_contents('segui_2_pnid.pni', '');
                 $idPhone = $mapValue['metadata']['phone_number_id'];
                 file_put_contents('pnid.pni', $idPhone);
             }

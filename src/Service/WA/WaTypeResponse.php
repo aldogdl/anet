@@ -348,7 +348,7 @@ class WaTypeResponse {
     {
         $content = $this->getContentFileCot();
         if(count($content) == 0) {
-            return false;
+            return ['hasCampo' => false];
         }
 
         $result = [
