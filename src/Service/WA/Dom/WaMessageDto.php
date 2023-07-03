@@ -26,22 +26,34 @@ class WaMessageDto {
     /** */
     public function __construct(array $message)
     {
-        $mapValue = $message['entry'][0]['changes'][0]['value'];
+        if(count($message) != 0) {
 
-        if(array_key_exists('statuses', $mapValue)) {
-            $this->extractStatus($mapValue);
-            $this->from = $this->body;
-            return;
-        }
-        
-        if(array_key_exists('messages', $mapValue)) {
-            $this->extractMessage($mapValue);
-        }
-
-        if(array_key_exists('contacts', $mapValue)) {
-            if(array_key_exists('profile', $mapValue['contacts'][0])) {
-                $this->from = $mapValue['contacts'][0]['profile']['name'];
+            $mapValue = $message['entry'][0]['changes'][0]['value'];
+    
+            if(array_key_exists('statuses', $mapValue)) {
+                $this->extractStatus($mapValue);
+                $this->from = $this->body;
+                return;
             }
+            
+            if(array_key_exists('messages', $mapValue)) {
+                $this->extractMessage($mapValue);
+            }
+    
+            if(array_key_exists('contacts', $mapValue)) {
+                if(array_key_exists('profile', $mapValue['contacts'][0])) {
+                    $this->from = $mapValue['contacts'][0]['profile']['name'];
+                }
+            }
+        }
+    }
+
+    /** */
+    public function extractPhoneFromWaId(String $data) : void
+    {
+        $this->waId = $data;
+        if(mb_strpos($this->waId, '521') !== false) {
+            $this->phone = str_replace('521', '52', $this->waId);
         }
     }
 
@@ -153,15 +165,6 @@ class WaMessageDto {
             $isLogin = true;
         }
         return $isLogin;
-    }
-
-    /** */
-    private function extractPhoneFromWaId(String $data) : void
-    {
-        $this->waId = $data;
-        if(mb_strpos($this->waId, '521') !== false) {
-            $this->phone = str_replace('521', '52', $this->waId);
-        }
     }
 
     /** */

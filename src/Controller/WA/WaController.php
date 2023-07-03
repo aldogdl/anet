@@ -117,7 +117,7 @@ class WaController extends AbstractController
      * conversaion libre con anet
      */
     #[Route('wa/put-cot-in-conv-free/', methods: ['POST', 'DELETE'])]
-    public function putCotInConvFree(Request $req): Response
+    public function putCotInConvFree(Request $req, WaService $waS): Response
     {
         $data = $req->toArray();
         if($data['change'] != 'anetConvFree') {
@@ -131,7 +131,20 @@ class WaController extends AbstractController
         }
 
         if($req->getMethod() == 'DELETE') {
+
             unlink($data['file']);
+            $metadata = new WaMessageDto([]);
+            $waid = str_replace('conv_free.', '', $data['file']);
+            $waid = str_replace('.cnv', '', $waid);
+
+            $metadata->extractPhoneFromWaId($waid);
+            $metadata->type = 'close_free';
+            $r = new WaTypeResponse(
+                $metadata, $waS, [], '',
+                $this->getParameter('waTk'),
+                $this->getParameter('nifiFld'),
+                $this->getParameter('waCots')
+            );
             return $this->json(['code' => $data['file']]);
         }
 
