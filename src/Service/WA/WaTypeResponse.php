@@ -162,7 +162,7 @@ class WaTypeResponse {
             $this->saveMsgResult = false;
             return;
         }
-        
+
         $steps->fromArray($cotResult['coti']);
         $cotResult = [];
 
