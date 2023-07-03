@@ -88,11 +88,11 @@ class WaTypeResponse {
         // Exclusivo para pruebas y capacitaciones
         if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd:c' ) !== false) {
             $isInitCot  = true;
-            $isTest = true;
+            $this->isTest = true;
             $this->saveMsgResult = false;
         }
 
-        $steps = new CotizandoPzaDto($isTest, $this->metaMsg->body);
+        $steps = new CotizandoPzaDto($this->isTest, $this->metaMsg->body);
         $isCot = $this->checkIfHasCotsMaker($steps);
 
         if($isCot) {
