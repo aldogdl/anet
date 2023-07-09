@@ -140,7 +140,7 @@ class WaController extends AbstractController
             try {
                 unlink($data['file']);
             } catch (null) {
-                $code = 'file';
+                return $this->json(['code' => 'file']);
             }
 
             try {
