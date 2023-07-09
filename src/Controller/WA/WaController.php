@@ -136,35 +136,26 @@ class WaController extends AbstractController
 
         if($req->getMethod() == 'DELETE') {
 
-            $code = 'unknow';
-            try {
-                unlink($data['file']);
-            } catch (null) {
-                $code = 'file';
-                return $this->json(['code' => $code]);
+            if(!is_file($data['file'])) {
+                return $this->json(['code' => 'file']);
             }
 
-            try {
-                file_put_contents('llega.txt', $code);
-                $metadata = new WaMessageDto([]);
-                $waid = str_replace('conv_free.', '', $data['file']);
-                $waid = str_replace('.cnv', '', $waid);
+            unlink($data['file']);
+            $metadata = new WaMessageDto([]);
+            $waid = str_replace('conv_free.', '', $data['file']);
+            $waid = str_replace('.cnv', '', $waid);
 
-                $metadata->extractPhoneFromWaId($waid);
-                $metadata->type = 'close_free';
+            $metadata->extractPhoneFromWaId($waid);
+            $metadata->type = 'close_free';
 
-                new WaTypeResponse(
-                    $metadata, $waS, [], '',
-                    $this->getParameter('waTk'),
-                    $this->getParameter('nifiFld'),
-                    $this->getParameter('waCots')
-                );
-                $code = $data['file'];
-            } catch (null) {
-                $code = 'waNot';
-            }
+            new WaTypeResponse(
+                $metadata, $waS, [], '',
+                $this->getParameter('waTk'),
+                $this->getParameter('nifiFld'),
+                $this->getParameter('waCots')
+            );
 
-            return $this->json(['code' => $code]);
+            return $this->json(['code' => $data['file']]);
         }
 
         return $this->json(['code' => 'error']);
