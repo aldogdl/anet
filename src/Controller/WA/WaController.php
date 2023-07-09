@@ -97,7 +97,7 @@ class WaController extends AbstractController
                     }
                 }
 
-                if($isMsgOk || $$allowPass) {
+                if($isMsgOk || $allowPass) {
                     $wh->sendMy(
                         [
                             'evento' => 'wa_message',

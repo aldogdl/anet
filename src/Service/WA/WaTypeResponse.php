@@ -63,7 +63,9 @@ class WaTypeResponse {
     /** */
     private function execute()
     {
-        $isInitCot  = false;        
+        $isInitCot  = false; 
+        $this->allowPass = false;
+
         if($this->metaMsg->type == 'close_free') {
             
             $this->metaMsg->msgResponse = $this->msgResp[$this->metaMsg->type];
@@ -100,7 +102,7 @@ class WaTypeResponse {
             $this->isTest = false;
             $this->allowPass = true;
             $this->saveMsgResult = false;
-            $this->metaMsg->msgResponse = $this->msgResp['msgCmds'].$this->msgFix;            
+            $this->metaMsg->msgResponse = $this->msgResp['msgCmds'];            
             $result = $this->sendMsg($this->metaMsg->msgResponse, false);
             if(count($result) > 0) {
                 $this->metaMsg->msgError = $result;
