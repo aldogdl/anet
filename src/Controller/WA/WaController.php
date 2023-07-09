@@ -136,14 +136,15 @@ class WaController extends AbstractController
 
         if($req->getMethod() == 'DELETE') {
 
-            $code = 'unKnow';
+            $code = 'file';
             try {
                 unlink($data['file']);
             } catch (null) {
-                return $this->json(['code' => 'file']);
+                return $this->json(['code' => $code]);
             }
 
             try {
+                file_put_contents('llega.txt', $code);
                 $metadata = new WaMessageDto([]);
                 $waid = str_replace('conv_free.', '', $data['file']);
                 $waid = str_replace('.cnv', '', $waid);
