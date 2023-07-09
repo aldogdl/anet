@@ -98,7 +98,7 @@ class WaTypeResponse {
             $this->isTest = false;
             $this->saveMsgResult = false;
             $this->metaMsg->msgResponse = "🤖 Atendiendo tu solicitud.\nEspera un momento por favor. 🤏";
-            $result = $this->sendMsg($this->metaMsg->msgResponse);
+            $result = $this->sendMsg($this->metaMsg->msgResponse, false);
             if(count($result) > 0) {
                 $this->metaMsg->msgError = $result;
                 $this->setErrorInFile($this->metaMsg->msgError);
