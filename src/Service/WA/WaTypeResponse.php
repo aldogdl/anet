@@ -86,10 +86,24 @@ class WaTypeResponse {
         }
 
         // Exclusivo para pruebas y capacitaciones
-        if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd:c' ) !== false) {
+        if(mb_strpos(mb_strtolower($this->metaMsg->body), 'cmd.c' ) !== false) {
             $isInitCot  = true;
             $this->isTest = true;
             $this->saveMsgResult = false;
+        }
+
+        // Exclusivo para pruebas y capacitaciones
+        if(mb_strpos(mb_strtolower($this->metaMsg->body), 'get.' ) !== false) {
+            $isInitCot  = false;
+            $this->isTest = false;
+            $this->saveMsgResult = false;
+            $this->metaMsg->msgResponse = "🤖 Atendiendo tu solicitud.\nEspera un momento por favor. 🤏";
+            $result = $this->sendMsg($this->metaMsg->msgResponse);
+            if(count($result) > 0) {
+                $this->metaMsg->msgError = $result;
+                $this->setErrorInFile($this->metaMsg->msgError);
+            }
+            return;
         }
 
         $steps = new CotizandoPzaDto($this->isTest, $this->metaMsg->body);
@@ -156,6 +170,7 @@ class WaTypeResponse {
         if(!$cotResult['hasCampo']) {
             // Si el contacto no cuenta con un archivo de cotizacion en curso
             // es que quiso comunicarse con nosotros. TODO(POR HACER)...
+            
             $this->saveMsgResult = false;
             return;
         }
