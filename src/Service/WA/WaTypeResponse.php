@@ -97,7 +97,10 @@ class WaTypeResponse {
         }
 
         // Exclusivo para pruebas y capacitaciones
-        if(mb_strpos(mb_strtolower($this->metaMsg->body), 'get.' ) !== false) {
+        if(
+            mb_strpos(mb_strtolower($this->metaMsg->body), 'get.' ) !== false ||
+            mb_strpos(mb_strtolower($this->metaMsg->body), 'get ' ) !== false
+        ) {
             $isInitCot  = false;
             $this->isTest = false;
             $this->allowPass = true;
