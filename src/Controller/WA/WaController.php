@@ -136,10 +136,11 @@ class WaController extends AbstractController
 
         if($req->getMethod() == 'DELETE') {
 
-            $code = 'file';
+            $code = 'unknow';
             try {
                 unlink($data['file']);
             } catch (null) {
+                $code = 'file';
                 return $this->json(['code' => $code]);
             }
 
