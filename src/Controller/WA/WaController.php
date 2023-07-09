@@ -71,7 +71,7 @@ class WaController extends AbstractController
                 // file_put_contents($pathPr, json_encode($metadata->toArray()));
 
                 $metadata->pathToBackup = $path;
-
+                $allowPass = false;
                 if($metadata->type != 'status') {
 
                     $r = new WaTypeResponse(
@@ -82,6 +82,7 @@ class WaController extends AbstractController
                     );
 
                     $metadata = $r->metaMsg;
+                    $allowPass = $r->allowPass;
                     if($metadata->type != 'login') {
                         $isMsgOk = $r->saveMsgResult;
                         if($metadata->type != 'image') {
@@ -96,7 +97,7 @@ class WaController extends AbstractController
                     }
                 }
 
-                if($isMsgOk) {
+                if($isMsgOk || $$allowPass) {
                     $wh->sendMy(
                         [
                             'evento' => 'wa_message',

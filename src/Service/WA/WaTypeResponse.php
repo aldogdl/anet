@@ -13,6 +13,7 @@ class WaTypeResponse {
     private WaService $waS;
     public WaMessageDto $metaMsg;
     public bool $isTest = false;
+    public bool $allowPass = false;
     private array $message;
     private String $pathToken;
     private String $pathToWa;
@@ -29,6 +30,7 @@ class WaTypeResponse {
         'noTengo'  => "😃👍 Enterados!!.\n",
         'errCosto' => "⚠️ Para el *costo*\n Envía SÓLO NÚMERO por favor. ",
         'noFinCot' => "✋🏼 No terminaste de *COTIZAR* la pieza siguiente:",
+        'msgCmds'  => "🤖 ATENDIENDO SOLICITUD.\nEspera un momento por favor. 🤏",
         'login'    => "✋🏼 Buen Día!! el Sistema Autoparnet, ya *Inició tu sesion de hoy*, Gracias!! 😃",
         'close_free' => "✋🏼 La conversación con el asesor se ha cerrado!!.\n\nPero continuamos con la sesión abierta para COTIZACIONES. 😃",
     ];
@@ -96,8 +98,9 @@ class WaTypeResponse {
         if(mb_strpos(mb_strtolower($this->metaMsg->body), 'get.' ) !== false) {
             $isInitCot  = false;
             $this->isTest = false;
+            $this->allowPass = true;
             $this->saveMsgResult = false;
-            $this->metaMsg->msgResponse = "🤖 Atendiendo tu solicitud.\nEspera un momento por favor. 🤏";
+            $this->metaMsg->msgResponse = $this->msgResp['msgCmds'].$this->msgFix;            
             $result = $this->sendMsg($this->metaMsg->msgResponse, false);
             if(count($result) > 0) {
                 $this->metaMsg->msgError = $result;
@@ -168,9 +171,9 @@ class WaTypeResponse {
         // Si el mensaje no es por medio de un boton, revisamos su entrada
         $cotResult = $this->checkinMessage();
         if(!$cotResult['hasCampo']) {
-            // Si el contacto no cuenta con un archivo de cotizacion en curso
-            // es que quiso comunicarse con nosotros. TODO(POR HACER)...
-            
+            $isInitCot  = false;
+            $this->isTest = false;
+            $this->allowPass = true;
             $this->saveMsgResult = false;
             return;
         }
