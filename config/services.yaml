@@ -6,7 +6,6 @@ parameters:
     scm        : '%phtml%/scm/'
     imgOrdTmp  : '%phtml%/to_orden_tmp/'
     imgOrdRsp  : '%phtml%/to_orden_rsp/'
-    imgWaAssets: '%phtml%/wa_assets/'
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
     nifiFld    : '%phtml%/nifi/'
@@ -18,10 +17,12 @@ parameters:
     filNoTgo   : '%phtml%/filnotgo.json'
     waMessag   : '%phtml%/wa/'
     waCots     : '%phtml%/wa_cots/'
+    dtaCtc     : '%phtml%/ctcs/'
     waTk       : '%phtml%/tkwa.txt'
     waSort     : '%phtml%/wa/_orden_put.json'
     getWaToken : '%env(resolve:WA_TOKEN)%'
     getAnToken : '%env(resolve:ANET_TOKEN)%'
+    getShopCTk : '%env(resolve:SHOP_TOKEN)%'
 
 services:
     # default configuration for services in *this* file

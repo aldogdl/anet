@@ -19,7 +19,6 @@ public_html/portadas/
 public_html/mrks_logos/
 public_html/to_orden_tmp/
 public_html/to_orden_rsp/
-public_html/wa_assets/
 public_html/error_log
 public_html/error.log
 public_html/request.log
@@ -37,6 +36,9 @@ public_html/filtros/
 public_html/wa/
 public_html/tkwa.txt
 public_html/wa_cots/
+public_html/ctcs/
+public_html/cotz_cata_data/
+public_html/ctc_logo/
 var/
 vendor/
 ###< symfony/framework-bundle ###
