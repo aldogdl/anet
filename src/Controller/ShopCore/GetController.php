@@ -34,7 +34,7 @@ class GetController extends AbstractController
         $data = json_decode(file_get_contents($pathTo), true);
       }
     }
-    return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
+    return $this->json($data);
   }
 
   #[Route('sc/get-all-marcas/', methods:['get'])]

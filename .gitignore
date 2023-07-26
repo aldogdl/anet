@@ -37,10 +37,10 @@ public_html/wa/
 public_html/tkwa.txt
 public_html/wa_cots/
 public_html/ctcs/
-public_html/inv/
+public_html/inv/*
+public_html/pnid.pni
 public_html/cotz_cata_data/
 public_html/ctc_logo/
-public_html/pnid.pni
 var/
 vendor/
 ###< symfony/framework-bundle ###
