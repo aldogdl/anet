@@ -22,6 +22,7 @@ class GetController extends AbstractController
       $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
       if(is_file($pathTo)) {
         $data = file_get_contents($pathTo);
+        $data = json_encode($data);
       }
     }
 
