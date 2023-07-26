@@ -22,10 +22,11 @@ class GetController extends AbstractController
     if($lock->isValid($token)) {
       $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
       if(is_file($pathTo)) {
-        $data = json_decode(file_get_contents($pathTo), true);
+        $data = file_get_contents($pathTo);
       }
     }
-    return $this->json($data);
+
+    return new Response($data);
   }
 
 }
