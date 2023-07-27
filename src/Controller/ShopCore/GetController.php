@@ -19,7 +19,7 @@ class GetController extends AbstractController
     SecurityBasic $lock, String $token, String $slug
   ): Response
   {
-    $data = [];
+    $data = '';
     if($lock->isValid($token)) {
       $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
       if(is_file($pathTo)) {
@@ -38,9 +38,9 @@ class GetController extends AbstractController
     SecurityBasic $lock, String $token, String $waId
   ): Response
   {
-    $data = [];
+    $data = '';
     if($lock->isValid($token)) {
-      $pathTo = $this->getParameter('invCtc') . $waId . '.json';
+      $pathTo = $this->getParameter('invCtc') . $waId . '_up.json';
       if(is_file($pathTo)) {
         $data = file_get_contents($pathTo);
         // $data = json_decode($data, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
