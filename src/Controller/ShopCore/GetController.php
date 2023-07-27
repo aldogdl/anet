@@ -32,9 +32,9 @@ class GetController extends AbstractController
   }
 
   /** 
-   * Recuperamos los datos del cotizador desde el archivo json
+   * Recuperamos el inventario del cotizador desde el archivo json
   */
-  #[Route('security-basic/get-data-ctc/{token}/{slug}/', methods:['get'])]
+  #[Route('security-basic/get-inv-ctc/{token}/{waId}/', methods:['get'])]
   public function getInvContact(
     SecurityBasic $lock, String $token, String $waId
   ): Response
