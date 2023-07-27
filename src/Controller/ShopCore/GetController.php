@@ -28,7 +28,7 @@ class GetController extends AbstractController
       }
     }
 
-    return new Response(json_encode($data));
+    return new Response($data);
     // return $this->json($data);
   }
 
