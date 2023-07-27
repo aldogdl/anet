@@ -24,12 +24,10 @@ class GetController extends AbstractController
       $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
       if(is_file($pathTo)) {
         $data = file_get_contents($pathTo);
-        // $data = json_decode($data, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
       }
     }
 
     return new Response($data);
-    // return $this->json($data);
   }
 
   /** 
@@ -45,11 +43,12 @@ class GetController extends AbstractController
       $pathTo = $this->getParameter('invCtc') . $waId . '.json';
       if(is_file($pathTo)) {
         $data = file_get_contents($pathTo);
-        $data = json_decode($data, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
+        // $data = json_decode($data, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
       }
     }
-
-    return $this->json($data);
+    
+    return new Response($data);
+    // return $this->json($data);
   }
 
 }
