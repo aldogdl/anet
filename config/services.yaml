@@ -18,6 +18,7 @@ parameters:
     waMessag   : '%phtml%/wa/'
     waCots     : '%phtml%/wa_cots/'
     dtaCtc     : '%phtml%/ctcs/'
+    invCtc     : '%phtml%/inv/'
     waTk       : '%phtml%/tkwa.txt'
     waSort     : '%phtml%/wa/_orden_put.json'
     getWaToken : '%env(resolve:WA_TOKEN)%'
