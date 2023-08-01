@@ -42,7 +42,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 	 */
 	public function getAllNameAsArray(): array
 	{
-		$dql = 'SELECT mrk.{id, nombre} FROM ' . AO1Marcas::class . ' mrk '.
+		$dql = 'SELECT partial mrk.{id, nombre} FROM ' . AO1Marcas::class . ' mrk '.
 		'ORDER BY mrk.nombre ASC';
 
 		return $this->_em->createQuery($dql)->getScalarResult();
