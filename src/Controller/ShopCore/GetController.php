@@ -71,9 +71,7 @@ class GetController extends AbstractController
   #[Route('security-basic/get-modelos-by-marca/{idMarca}/', methods:['get'])]
   public function getModelosByMarca(SecurityBasic $lock, AO2ModelosRepository $modsEm, $idMarca): Response
   {
-    $dql = $modsEm->getAllModelosByIdMarca($idMarca);
-    return $this->json([
-      'abort'=>false, 'msg' => 'ok', 'body' => $dql->getScalarResult()
-    ]);
+    $data = $modsEm->getAllModelsNameByIdMarca($idMarca);
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
 }
