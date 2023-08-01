@@ -71,6 +71,7 @@ class AO2ModelosRepository extends ServiceEntityRepository
 	public function getAllModelsNameByIdMarca(int $idMarca): array
 	{
 		$dql = 'SELECT partial md.{id, nombre}, partial mrk.{id} FROM ' . AO2Modelos::class . ' md '.
+		'JOIN md.marca mrk '.
 		'WHERE md.marca = :idMarca '.
 		'ORDER BY md.nombre ASC';
 
