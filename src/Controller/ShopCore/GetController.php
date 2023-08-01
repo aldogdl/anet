@@ -68,10 +68,16 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('security-basic/get-modelos-by-marca/{idMarca}/', methods:['get'])]
-  public function getModelosByMarca(SecurityBasic $lock, AO2ModelosRepository $modsEm, $idMarca): Response
+  #[Route('security-basic/get-modelos-by-marca/{token}{idMarca}/', methods:['get'])]
+  public function getModelosByMarca(
+    SecurityBasic $lock, AO2ModelosRepository $modsEm, String $token, int $idMarca
+  ): Response
   {
-    $data = $modsEm->getAllModelsNameByIdMarca($idMarca);
+    $data = [];
+    if($lock->isValid($token)) {
+      $data = $modsEm->getAllModelsNameByIdMarca($idMarca);
+    }
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
+  
 }
