@@ -55,7 +55,7 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('security-basic/get-all-marcas/{token}', methods:['get'])]
+  #[Route('security-basic/get-all-marcas/{token}/', methods:['get'])]
   public function getAllMarcas(
     SecurityBasic $lock, AO1MarcasRepository $marcasEm, String $token
   ): Response
@@ -70,7 +70,7 @@ class GetController extends AbstractController
   /** */
   #[Route('security-basic/get-modelos-by-marca/{token}/{idMarca}/', methods:['get'])]
   public function getModelosByMarca(
-    SecurityBasic $lock, AO2ModelosRepository $modsEm, String $token, int $idMarca
+    SecurityBasic $lock, AO2ModelosRepository $modsEm, String $token, String $idMarca
   ): Response
   {
     $data = [];
