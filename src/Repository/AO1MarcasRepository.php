@@ -40,6 +40,18 @@ class AO1MarcasRepository extends ServiceEntityRepository
 	 * @throws ORMException
 	 * @throws OptimisticLockException
 	 */
+	public function getAllNameAsArray(): array
+	{
+		$dql = 'SELECT mrk.{id, nombre} FROM ' . AO1Marcas::class . ' mrk '.
+		'ORDER BY mrk.nombre ASC';
+
+		return $this->_em->createQuery($dql)->getScalarResult();
+	}
+
+	/**
+	 * @throws ORMException
+	 * @throws OptimisticLockException
+	 */
 	public function add(AO1Marcas $entity, bool $flush = true): void
 	{
 		$this->_em->persist($entity);
