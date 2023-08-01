@@ -2,12 +2,17 @@
 
 namespace App\Controller\ShopCore;
 
+use App\Repository\AO1MarcasRepository;
+use App\Repository\AO2ModelosRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\SecurityBasic;
 
+/**
+ * Todos los get sin Token para la app de ShopCore
+ */
 class GetController extends AbstractController
 {
 
@@ -43,12 +48,27 @@ class GetController extends AbstractController
       $pathTo = $this->getParameter('invCtc') . $waId . '_up.json';
       if(is_file($pathTo)) {
         $data = file_get_contents($pathTo);
-        // $data = json_decode($data, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
       }
     }
-    
+
     return new Response($data);
-    // return $this->json($data);
   }
 
+  /** */
+  #[Route('security-basic/get-all-marcas/', methods:['get'])]
+  public function getAllMarcas(SecurityBasic $lock, AO1MarcasRepository $marcasEm): Response
+  {
+    return $this->json([
+      'abort'=>false, 'msg' => 'ok', 'body' => $marcasEm->getAllAsArray()
+    ]);
+  }
+
+  #[Route('security-basic/get-modelos-by-marca/{idMarca}/', methods:['get'])]
+  public function getModelosByMarca(SecurityBasic $lock, AO2ModelosRepository $modsEm, $idMarca): Response
+  {
+    $dql = $modsEm->getAllModelosByIdMarca($idMarca);
+    return $this->json([
+      'abort'=>false, 'msg' => 'ok', 'body' => $dql->getScalarResult()
+    ]);
+  }
 }

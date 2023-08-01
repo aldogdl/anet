@@ -22,7 +22,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 
 	public function __construct(ManagerRegistry $registry)
 	{
-			parent::__construct($registry, AO1Marcas::class);
+		parent::__construct($registry, AO1Marcas::class);
 	}
 
 	/**
@@ -32,7 +32,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 	public function getAllAsArray(): array
 	{
 		return $this->_em->createQuery(
-				'SELECT mk FROM ' . AO1Marcas::class . ' mk '
+			'SELECT mk FROM ' . AO1Marcas::class . ' mk '
 		)->getScalarResult();
 	}
 
@@ -44,7 +44,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 	{
 		$this->_em->persist($entity);
 		if ($flush) {
-				$this->_em->flush();
+			$this->_em->flush();
 		}
 	}
 
@@ -56,7 +56,7 @@ class AO1MarcasRepository extends ServiceEntityRepository
 	{
 		$this->_em->remove($entity);
 		if ($flush) {
-				$this->_em->flush();
+			$this->_em->flush();
 		}
 	}
 
