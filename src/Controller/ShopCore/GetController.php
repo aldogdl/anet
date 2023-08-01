@@ -55,14 +55,19 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('security-basic/get-all-marcas/', methods:['get'])]
-  public function getAllMarcas(SecurityBasic $lock, AO1MarcasRepository $marcasEm): Response
+  #[Route('security-basic/get-all-marcas/{token}', methods:['get'])]
+  public function getAllMarcas(
+    SecurityBasic $lock, AO1MarcasRepository $marcasEm, String $token
+  ): Response
   {
-    return $this->json([
-      'abort'=>false, 'msg' => 'ok', 'body' => $marcasEm->getAllNameAsArray()
-    ]);
+    $data = [];
+    if($lock->isValid($token)) {
+      $data = $marcasEm->getAllNameAsArray();
+    }
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
 
+  /** */
   #[Route('security-basic/get-modelos-by-marca/{idMarca}/', methods:['get'])]
   public function getModelosByMarca(SecurityBasic $lock, AO2ModelosRepository $modsEm, $idMarca): Response
   {
