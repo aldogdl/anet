@@ -64,7 +64,20 @@ class AO2ModelosRepository extends ServiceEntityRepository
 		return $this->_em->createQuery($dql)->setParameter('idMarca', $idMarca);
 	}
 	
+	/**
+	 * @throws ORMException
+	 * @throws OptimisticLockException
+	 */
+	public function getAllModelsNameByIdMarca(int $idMarca): array
+	{
+		$dql = 'SELECT partial md.{id, nombre}, partial mrk.{id} FROM ' . AO2Modelos::class . ' md '.
+		'WHERE md.marca = :idMarca '.
+		'ORDER BY md.nombre ASC';
 
+		return $this->_em->createQuery($dql)
+			->setParameter('idMarca', $idMarca)->getScalarResult();
+	}
+	
 	/**
 	 * @throws ORMException
 	 * @throws OptimisticLockException
