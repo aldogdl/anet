@@ -2,7 +2,10 @@
 
 namespace App\Controller\ShopCore;
 
+use App\Service\ShopCore\ShopCoreSystemFileService;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -27,6 +30,32 @@ class PostController extends AbstractController
       throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
     }
     return $content;
+  }
+
+  #[Route('api/shop-core/is-token-caducado/', methods:['get'])]
+	public function isTokenCaducado(): Response
+	{
+	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => ['nop' => 'nop']]);
+	}
+
+  /** */
+  #[Route('api/shop-core/upload-img/', methods:['post'])]
+  public function uploadImg(Request $req, ShopCoreSystemFileService $sysFile): Response
+  {
+    $data = $this->toArray($req, 'data');
+    $file = $req->files->get($data['campo']);
+    
+    $result = $sysFile->upImgOfOrdenToFolderTmp($data['filename'], $file);
+    if(strpos($result, 'rename') !== false) {
+      $partes = explode('::', $result);
+      $data['filename'] = $partes[1];
+      $result = 'ok';
+    }
+
+    return $this->json([
+      'abort' => ($result != 'ok') ? true : false,
+      'msg' => '', 'body' => $result
+    ]);
   }
 
 }
