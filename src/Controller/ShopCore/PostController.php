@@ -42,20 +42,20 @@ class PostController extends AbstractController
   #[Route('api/shop-core/upload-img/', methods:['post'])]
   public function uploadImg(Request $req, ShopCoreSystemFileService $sysFile): Response
   {
-    $data = $this->toArray($req, 'data');
-    $file = $req->files->get($data['campo']);
     
-    $result = $sysFile->upImgOfOrdenToFolderTmp($data['filename'], $file);
-    if(strpos($result, 'rename') !== false) {
-      $partes = explode('::', $result);
-      $data['filename'] = $partes[1];
-      $result = 'ok';
+    $response = ['abort' =>  true];
+    $data = $this->toArray($req, 'data');
+    if(array_key_exists('id', $data)) {
+
+      $file = $req->files->get($data['campo']);
+      $file->move();
+      $result = $sysFile->upImgToFolderTmp($data, $file);
+      if($result == 'ok') {
+        $response['abort'] = false;
+      }
     }
 
-    return $this->json([
-      'abort' => ($result != 'ok') ? true : false,
-      'msg' => '', 'body' => $result
-    ]);
+    return $this->json($response);
   }
 
 }

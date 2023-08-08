@@ -6,6 +6,7 @@ parameters:
     scm        : '%phtml%/scm/'
     imgOrdTmp  : '%phtml%/to_orden_tmp/'
     imgOrdRsp  : '%phtml%/to_orden_rsp/'
+    imgPublik  : '%phtml%/img_publik/'
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
     nifiFld    : '%phtml%/nifi/'

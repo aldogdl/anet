@@ -51,6 +51,36 @@ class ShopCoreSystemFileService
 	}
 
 	/** */
+	public function upImgToFolderTmp(array $data, $img): String
+	{
+		$isRename = false;
+		if($data['action'] == 'publik') {
+			$path = $this->params->get('imgPublik');
+		}else{
+			$path = $this->params->get('imgOrdTmp');
+		}
+		$path = $path . '/' . $data['slug'];
+		$data['pathServer'] = $path;
+		file_put_contents('subiendo.json', json_encode($data));
+
+		if(!$this->filesystem->exists($path)) {
+			$this->filesystem->mkdir($path);
+		}
+
+		try {
+			$img->move($path, $data['filename']);
+		} catch (FileException $e) {
+			return $e->getMessage();
+		}
+		
+		$pathTo = Path::canonicalize($path.'/'.$data['filename']);
+		if($this->filesystem->exists($pathTo)) {
+			return 'ok';
+		}
+		return 'not';
+	}
+
+	/** */
 	public function upImgOfOrdenToFolderTmp(string $nombreArchivo, $img): String
 	{
 		$isRename = false;
