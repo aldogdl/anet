@@ -48,7 +48,6 @@ class PostController extends AbstractController
     if(array_key_exists('id', $data)) {
 
       $file = $req->files->get('img_' . $data['id']);
-      $file->move();
       $result = $sysFile->upImgToFolderTmp($data, $file);
       if($result == 'ok') {
         $response['abort'] = false;
