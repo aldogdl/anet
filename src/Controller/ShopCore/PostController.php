@@ -47,7 +47,7 @@ class PostController extends AbstractController
     $data = $this->toArray($req, 'data');
     if(array_key_exists('id', $data)) {
 
-      $file = $req->files->get($data['campo']);
+      $file = $req->files->get('img_' . $data['id']);
       $file->move();
       $result = $sysFile->upImgToFolderTmp($data, $file);
       if($result == 'ok') {
