@@ -24,8 +24,9 @@ class PostController extends AbstractController
     try {
       $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
     } catch (\JsonException $e) {
-      throw new JsonException('No se puede decodificar el body.', $e->getCode(), $e);
+      throw new JsonException(sprintf('No se puede decodificar el body. %d %s', [$e->getCode(), $e]));
     }
+
     if (!\is_array($content)) {
       throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
     }
