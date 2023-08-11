@@ -57,7 +57,7 @@ class PostController extends AbstractController
     return $this->json($response);
   }
 
-  #[Route('api/shop-core/send-product/', methods:['get'])]
+  #[Route('api/shop-core/send-product/', methods:['post'])]
 	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile): Response
 	{
     $data = $this->toArray($req, 'data');
