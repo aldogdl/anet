@@ -53,16 +53,13 @@ class ShopCoreSystemFileService
 	/** */
 	public function upImgToFolderTmp(array $data, $img): String
 	{
-		$isRename = false;
 		if($data['action'] == 'publik') {
 			$path = $this->params->get('imgPublik');
 		}else{
 			$path = $this->params->get('imgOrdTmp');
 		}
-		$path = $path . '/' . $data['slug'];
-		$data['pathServer'] = $path;
-		file_put_contents('subiendo.json', json_encode($data));
 
+		$path = Path::canonicalize($path.'/'.$data['slug']);
 		if(!$this->filesystem->exists($path)) {
 			$this->filesystem->mkdir($path);
 		}
@@ -80,44 +77,71 @@ class ShopCoreSystemFileService
 		return 'not';
 	}
 
-	/** */
-	public function upImgOfOrdenToFolderTmp(string $nombreArchivo, $img): String
+	/** Guardamos el json resultante del alta de productos desde shopCore */
+	public function setNewProduct(array $product): array
 	{
-		$isRename = false;
-		$path = $this->params->get('imgOrdTmp');
-		if(!$this->filesystem->exists($path)) {
-			$this->filesystem->mkdir($path);
-		}
-		$pathTo = Path::canonicalize($path.'/'.$nombreArchivo);
-		// Necesitamos ver si es la imagen compartida y revisar los nombres
-		// para ver si ya existen.
-		if(strpos($nombreArchivo, 'share-') !== false) {
-			if($this->filesystem->exists($pathTo)) {
-				$newNombre = $this->determinarNuevoNombre($nombreArchivo);
-				if($nombreArchivo != $newNombre) {
-					$isRename = true;
-					$nombreArchivo = $newNombre;
-				}
-			}
-		}
+		$result = ['abort' => false, 'body' => 'ok'];
+		$filename = $product['own']['waId'] . '-' . $product['id'] . '-' . $product['uuid'] . '.json';
 
+		$path = $this->params->get('nifiFld');
+		$path = Path::canonicalize($path.'/'.$filename);
 		try {
-			$img->move($path, $nombreArchivo);
+			$this->filesystem->dumpFile($path, $product);
 		} catch (FileException $e) {
-			return $e->getMessage();
+			$result['abort'] = true;
+			$result['body'] = $e->getMessage();
 		}
 
-		if($this->filesystem->exists($pathTo)) {
-			if($isRename) {
-				return 'rename::' . $nombreArchivo;
+		$fotos = [];
+		$rota = count($product['piezas']);
+		for ($i=0; $i < $rota; $i++) {
+
+			$vueltas = count($product['piezas'][$i]['fotos']);
+			for ($f=0; $f < $vueltas; $f++) { 
+				$fotos[] = $product['piezas'][$i]['fotos'][$f];
 			}
-			return 'ok';
 		}
-		return 'not';
+
+		if(count($fotos) > 0) {
+			$fotosFaltan = $this->checkIntegridadDeFotos(
+				$product['action'], $product['own']['slug'], $fotos
+			);
+			if(count($fotos) > 0) {
+				$result['faltan_fotos'] = $fotosFaltan;
+			}
+		}
+
+		return $result;
+	}
+
+	///
+	public function checkIntegridadDeFotos(String $action, String $slug, array $fotos): array
+	{
+		if($action == 'publik') {
+			$path = $this->params->get('imgPublik');
+		}else{
+			$path = $this->params->get('imgOrdTmp');
+		}
+
+		$path = Path::canonicalize($path.'/'.$slug);
+		if(!$this->filesystem->exists($path)) {
+			return $fotos;
+		}
+
+		$innexistentes = [];
+		$rota = count($fotos);
+		for ($i=0; $i < $rota; $i++) { 			
+			$pathTo = Path::canonicalize($path.'/'.$fotos[$i]);
+			if(!$this->filesystem->exists($pathTo)) {
+				$innexistentes[] = $fotos[$i];
+			}
+		}
+
+		return $innexistentes;
 	}
 
 	/** */
-	public function removeImgOfOrdenToFolderTmp(string $imgFileName): bool
+	public function removeImgToFolderTmp(string $imgFileName): bool
 	{
 		$path = $this->params->get('imgOrdTmp');
 		$pathTo = Path::canonicalize($path.'/'.$imgFileName);

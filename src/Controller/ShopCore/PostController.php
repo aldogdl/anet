@@ -42,7 +42,7 @@ class PostController extends AbstractController
   #[Route('api/shop-core/upload-img/', methods:['post'])]
   public function uploadImg(Request $req, ShopCoreSystemFileService $sysFile): Response
   {
-    
+
     $response = ['abort' =>  true];
     $data = $this->toArray($req, 'data');
     if(array_key_exists('id', $data)) {
@@ -56,5 +56,13 @@ class PostController extends AbstractController
 
     return $this->json($response);
   }
+
+  #[Route('api/shop-core/send-product/', methods:['get'])]
+	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile): Response
+	{
+    $data = $this->toArray($req, 'data');
+    $result = $sysFile->setNewProduct($data);
+	  return $this->json($result);
+	}
 
 }
