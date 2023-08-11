@@ -86,7 +86,7 @@ class ShopCoreSystemFileService
 		$path = $this->params->get('nifiFld');
 		$path = Path::canonicalize($path.'/'.$filename);
 		try {
-			$this->filesystem->dumpFile($path, $product);
+			$this->filesystem->dumpFile($path, json_encode($product));
 		} catch (FileException $e) {
 			$result['abort'] = true;
 			$result['body'] = $e->getMessage();
