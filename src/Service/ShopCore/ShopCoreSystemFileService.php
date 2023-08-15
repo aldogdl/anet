@@ -118,7 +118,7 @@ class ShopCoreSystemFileService
 	public function markProductAs(array $product): array
 	{
 		$result = ['abort' => false, 'body' => 'ok'];
-		$prefix = ($product['head']['waId'] == 'publik') ? 'vendida' : 'complete';
+		$prefix = ($product['payload']['src'] == 'publik') ? 'vendida' : 'complete';
 		$filename = $prefix .'-'. $product['head']['slug'] . '-' . $product['head']['fecha'] . '.json';
 		
 		$path = $this->params->get('nifiFld');
