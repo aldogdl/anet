@@ -2,6 +2,7 @@
 
 namespace App\Controller\ShopCore;
 
+use App\Service\SecurityBasic;
 use App\Service\ShopCore\ShopCoreSystemFileService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -64,6 +65,20 @@ class PostController extends AbstractController
     $data = $this->toArray($req, 'data');
     $result = $sysFile->setNewProduct($data);
 	  return $this->json($result);
+	}
+
+  #[Route('security-basic/mark-product-as/{token}/', methods:['post'])]
+	public function markProductAs(
+    Request $req, SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token
+  ): Response
+	{
+    $data = [];
+    if($lock->isValid($token)) {
+      
+      $payload = $this->toArray($req, 'data');
+      $data = $sysFile->markProductAs($payload);
+    }
+	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
 	}
 
 }

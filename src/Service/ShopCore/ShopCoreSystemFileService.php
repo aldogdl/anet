@@ -114,6 +114,24 @@ class ShopCoreSystemFileService
 		return $result;
 	}
 
+	/** Guardamos el json resultante del alta de productos desde shopCore */
+	public function markProductAs(array $product): array
+	{
+		$result = ['abort' => false, 'body' => 'ok'];
+		$prefix = ($product['head']['waId'] == 'publik') ? 'vendida' : 'complete';
+		$filename = $prefix .'-'. $product['head']['slug'] . '-' . $product['head']['fecha'] . '.json';
+		
+		$path = $this->params->get('nifiFld');
+		$path = Path::canonicalize($path.'/'.$filename);
+		try {
+			$this->filesystem->dumpFile($path, json_encode($product));
+		} catch (FileException $e) {
+			$result['abort'] = true;
+			$result['body'] = $e->getMessage();
+		}
+		return $result;
+	}
+
 	///
 	public function checkIntegridadDeFotos(String $action, String $slug, array $fotos): array
 	{
