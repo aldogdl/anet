@@ -162,7 +162,7 @@ class ShopCoreSystemFileService
 	public function removeImgToFolderTmp(string $imgFileName): bool
 	{
 		$path = $this->params->get('imgOrdTmp');
-		$pathTo = Path::canonicalize($path.'/'.$imgFileName);
+		$pathTo = Path::canonicalize($path . '/' . $imgFileName);
 		if($this->filesystem->exists($pathTo)) {
 			$this->filesystem->remove($pathTo);
 		}
@@ -172,4 +172,16 @@ class ShopCoreSystemFileService
 		return false;
 	}
 
+	/** */
+	public function fileCmdExist(String $filename) : bool
+	{
+		$path = $this->params->get('waCmds');
+		$pathTo = Path::canonicalize($path . '/' . $filename);
+		file_put_contents('buscando_2.txt', $pathTo);
+		if($this->filesystem->exists($pathTo)) {
+			$this->filesystem->remove($pathTo);
+			return true;
+		}
+		return false;
+	}
 }

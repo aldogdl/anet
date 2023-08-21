@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\SecurityBasic;
+use App\Service\ShopCore\ShopCoreSystemFileService;
 
 /**
  * Todos los get sin Token para la app de ShopCore
@@ -91,18 +92,12 @@ class GetController extends AbstractController
 
   /** */
   #[Route('api/shop-core/file-cmd-exist/{filename}/', methods:['get'])]
-  public function fileCmdExist(String $filename): Response
+  public function fileCmdExist(ShopCoreSystemFileService $fSys, String $filename): Response
   {
     $filename = base64_decode($filename);
-    $pathToken = $this->getParameter('waCmds');
-    $keyRes = 'none';
-
-    $path = $pathToken.$filename;
-    file_put_contents('buscando.txt', $path);
-    if(is_file($path)) {
-      unlink($path);
-      $keyRes = 'isOkFilename';
-    }
+    $has = $fSys->fileCmdExist($filename);
+    $keyRes = ($has) ? 'isOkFilename' : 'none';
+    
     return $this->json(['abort'=>false, 'msg' => 'ok', $keyRes => '']);
   }
 
