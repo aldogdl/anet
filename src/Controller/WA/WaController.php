@@ -41,7 +41,7 @@ class WaController extends AbstractController
                 $isMsgOk = true;
                 $message = json_decode($has, true);
 
-                $pathTo = $this->getParameter('waMessag');
+                $pathTo = $this->getParameter('waCmds');
                 $metadata= new WaMessageDto($message);
 
                 $filename = round(microtime(true) * 1000);
@@ -174,20 +174,6 @@ class WaController extends AbstractController
     {
         $res = $waS->getFileOrden($this->getParameter('waSort'));
         return $this->json($res);
-    }
-
-    /**
-     * Marcamos el mensaje como leido y lo eliminamos de la carpeta
-     */
-    #[Route('wa/mark-readed/{filename}', methods: ['GET'])]
-    public function recoveryWa(Request $req, WaService $wa, String $filename): Response
-    {
-        if($req->getMethod() == 'GET') {
-            $path = $this->getParameter('waMessag').'wa_'.$filename.'.json';
-            $res = $wa->isReaded($path);
-        }
-
-        return $this->json([]);
     }
 
     /**

@@ -16,7 +16,7 @@ parameters:
     filtros    : '%phtml%/filtros/'
     filtrosF   : '%filtros%/filtros.json'
     filNoTgo   : '%phtml%/filnotgo.json'
-    waMessag   : '%phtml%/wa/'
+    waCmds     : '%phtml%/wacmds/'
     waCots     : '%phtml%/wa_cots/'
     dtaCtc     : '%phtml%/ctcs/'
     invCtc     : '%phtml%/inv/'
