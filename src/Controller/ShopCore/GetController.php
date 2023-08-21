@@ -98,7 +98,7 @@ class GetController extends AbstractController
     $keyRes = 'none';
 
     $path = $pathToken.$filename;
-    file_get_contents('buscando.txt', $path);
+    file_put_contents('buscando.txt', $path);
     if(is_file($path)) {
       unlink($path);
       $keyRes = 'isOkFilename';
