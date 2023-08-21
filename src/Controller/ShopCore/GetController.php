@@ -79,6 +79,14 @@ class GetController extends AbstractController
     }
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
-
   
+  /** */
+  #[Route('/api/shop-core/get-tkwa/{waid}/', methods:['get'])]
+  public function getTkWa(String $waid): Response
+  {
+    $pathToken = $this->getParameter('waTk');
+    $token  = file_get_contents($pathToken);
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'tkwa' => $token]);
+  }
+
 }
