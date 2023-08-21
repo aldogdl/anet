@@ -20,7 +20,7 @@ class CmdsFromWa {
         // El usuario solicita los datos de la pieza
         if(mb_strpos($this->cmd, 'gpz') !== false) {
             $filename = str_replace('|', '-', $this->cmd);
-            file_put_contents($this->path.'/'.$filename.'.gpz', '');
+            file_put_contents($this->path.'/'.trim($filename).'.gpz', '');
         }
     }
 

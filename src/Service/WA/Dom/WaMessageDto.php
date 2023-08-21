@@ -67,7 +67,7 @@ class WaMessageDto {
     {
         $partes = explode(':', $this->body);
         if(count($partes) > 1) {
-            return $partes[1];
+            return trim($partes[1]);
         }
         return '';
     }
