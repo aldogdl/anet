@@ -89,4 +89,20 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'tkwa' => $token]);
   }
 
+  /** */
+  #[Route('api/shop-core/file-cmd-exist/{filename}/', methods:['get'])]
+  public function fileCmdExist(String $filename): Response
+  {
+    $filename = base64_decode($filename);
+    $pathToken = $this->getParameter('waCmds');
+    $keyRes = 'none';
+
+    $path = $pathToken.$filename;
+    if(is_file($path)) {
+      unlink($path);
+      $keyRes = 'isOkFilename';
+    }
+    return $this->json(['abort'=>false, 'msg' => 'ok', $keyRes => '']);
+  }
+
 }
