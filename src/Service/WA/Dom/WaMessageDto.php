@@ -63,6 +63,16 @@ class WaMessageDto {
     }
 
     /** */
+    public function extractCmdFromBody() : String
+    {
+        $partes = explode(':', $this->body);
+        if(count($partes) > 1) {
+            return $partes[1];
+        }
+        return '';
+    }
+
+    /** */
     private function extractStatus(array $mapValue) : void
     {
         $this->type = 'status';

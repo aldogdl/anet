@@ -2,6 +2,7 @@
 
 namespace App\Controller\WA;
 
+use App\Service\CommandFromWa\CmdsFromWa;
 use App\Service\WA\WaTypeResponse;
 use App\Service\WA\Dom\WaMessageDto;
 use App\Service\WA\WaService;
@@ -43,13 +44,16 @@ class WaController extends AbstractController
 
                 $pathTo = $this->getParameter('waCmds');
                 $metadata= new WaMessageDto($message);
+                if( mb_strpos($metadata->body, '[cmd]') !== false ) {
+
+                    $cmd = $metadata->extractCmdFromBody();
+                    $cmd = new CmdsFromWa($cmd, $pathTo);
+                    return new Response('', 200);
+                }
 
                 $filename = round(microtime(true) * 1000);
                 $path  = $pathTo.'wa_'.$filename.'.json';
-                file_put_contents($path, json_encode($metadata->toArray()));
 
-                return new Response('', 200);
-                
                 $filename = 'conv_free.'.$metadata->waId.'.cnv';
                 if(is_file($filename)) {
 
