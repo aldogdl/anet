@@ -46,7 +46,7 @@ class WaController extends AbstractController
 
                 $filename = round(microtime(true) * 1000);
                 $path  = $pathTo.'wa_'.$filename.'.json';
-                file_put_contents($path, $metadata->toArray());
+                file_put_contents($path, json_encode($metadata->toArray()));
 
                 return new Response('', 200);
                 
