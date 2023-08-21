@@ -176,8 +176,7 @@ class ShopCoreSystemFileService
 	public function fileCmdExist(String $filename) : bool
 	{
 		$path = $this->params->get('waCmds');
-		$pathA = Path::canonicalize($path . '/' . $filename);
-		file_put_contents($pathA.'_buscando_2.txt', $pathA);
+		$pathA = Path::canonicalize($path . '/' . trim($filename));
 		if($this->filesystem->exists($pathA)) {
 			$this->filesystem->remove($pathA);
 			return true;
