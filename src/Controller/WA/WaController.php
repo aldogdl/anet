@@ -40,12 +40,16 @@ class WaController extends AbstractController
 
                 $isMsgOk = true;
                 $message = json_decode($has, true);
+
                 $pathTo = $this->getParameter('waMessag');
-                $filename = round(microtime(true) * 1000);
-                $path  = $pathTo.'wa_'.$filename.'.json';
-                
                 $metadata= new WaMessageDto($message);
 
+                $filename = round(microtime(true) * 1000);
+                $path  = $pathTo.'wa_'.$filename.'.json';
+                file_put_contents($path, $metadata->toArray());
+
+                return new Response('', 200);
+                
                 $filename = 'conv_free.'.$metadata->waId.'.cnv';
                 if(is_file($filename)) {
 
