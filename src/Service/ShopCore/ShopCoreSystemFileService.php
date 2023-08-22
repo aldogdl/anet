@@ -51,15 +51,15 @@ class ShopCoreSystemFileService
 	}
 
 	/** */
-	public function upImgToFolderTmp(array $data, $img): String
+	public function upImgToFolder(array $data, $img): String
 	{
 		if($data['action'] == 'publik') {
-			$path = $this->params->get('imgPublik');
+			$path = $this->params->get('prodPubs');
 		}else{
-			$path = $this->params->get('imgOrdTmp');
+			$path = $this->params->get('prodSols');
 		}
 
-		$path = Path::canonicalize($path.'/'.$data['slug']);
+		$path = Path::canonicalize($path.'/'.$data['slug'].'/images');
 		if(!$this->filesystem->exists($path)) {
 			$this->filesystem->mkdir($path);
 		}
@@ -77,6 +77,37 @@ class ShopCoreSystemFileService
 		return 'not';
 	}
 
+	///
+	public function checkIntegridadDeFotos(String $action, String $slug, array $fotos): array
+	{
+		$path = '';
+		if($action == 'publik') {
+			$path = $this->params->get('prodPubs');
+		}
+		if($action == 'cotiza') {
+			$path = $this->params->get('prodSols');
+		}
+		if($path == '') {
+			return [];
+		}
+
+		$path = Path::canonicalize($path.'/'.$slug.'/images');
+		if(!$this->filesystem->exists($path)) {
+			return $fotos;
+		}
+
+		$innexistentes = [];
+		$rota = count($fotos);
+		for ($i=0; $i < $rota; $i++) { 			
+			$pathTo = Path::canonicalize($path.'/'.$fotos[$i]);
+			if(!$this->filesystem->exists($pathTo)) {
+				$innexistentes[] = $fotos[$i];
+			}
+		}
+
+		return $innexistentes;
+	}
+
 	/** Guardamos el json resultante del alta de productos desde shopCore */
 	public function setNewProduct(array $product): array
 	{
@@ -87,18 +118,36 @@ class ShopCoreSystemFileService
 		$path = Path::canonicalize($path.'/'.$filename);
 		try {
 			$this->filesystem->dumpFile($path, json_encode($product));
+			// TODO enviar a nifi el aviso de nuevo producto...
 		} catch (FileException $e) {
 			$result['abort'] = true;
 			$result['body'] = $e->getMessage();
 		}
 
 		$fotos = [];
-		$rota = count($product['piezas']);
-		for ($i=0; $i < $rota; $i++) {
+		$path = '';
+		
+		if($product['action'] == 'publik') {
+			$path = $this->params->get('prodPubs');
+		}
+		if($product['action'] == 'cotiza') {
+			$path = $this->params->get('prodSols');
+		}
+		
+		if($path != '') {
 
-			$vueltas = count($product['piezas'][$i]['fotos']);
-			for ($f=0; $f < $vueltas; $f++) { 
-				$fotos[] = $product['piezas'][$i]['fotos'][$f];
+			$rota = count($product['piezas']);
+			for ($i=0; $i < $rota; $i++) {
+
+				$filename = $path.'/'.$product['piezas'][$i]['uuid'].'.json';
+				try {
+					$this->filesystem->dumpFile($filename, json_encode($product[$i]));
+				} catch (FileException $e) {}
+
+				$vueltas = count($product['piezas'][$i]['fotos']);
+				for ($f=0; $f < $vueltas; $f++) { 
+					$fotos[] = $product['piezas'][$i]['fotos'][$f];
+				}
 			}
 		}
 
@@ -106,7 +155,7 @@ class ShopCoreSystemFileService
 			$fotosFaltan = $this->checkIntegridadDeFotos(
 				$product['action'], $product['own']['slug'], $fotos
 			);
-			if(count($fotos) > 0) {
+			if(count($fotosFaltan) > 0) {
 				$result['faltan_fotos'] = $fotosFaltan;
 			}
 		}
@@ -130,32 +179,6 @@ class ShopCoreSystemFileService
 			$result['body'] = $e->getMessage();
 		}
 		return $result;
-	}
-
-	///
-	public function checkIntegridadDeFotos(String $action, String $slug, array $fotos): array
-	{
-		if($action == 'publik') {
-			$path = $this->params->get('imgPublik');
-		}else{
-			$path = $this->params->get('imgOrdTmp');
-		}
-
-		$path = Path::canonicalize($path.'/'.$slug);
-		if(!$this->filesystem->exists($path)) {
-			return $fotos;
-		}
-
-		$innexistentes = [];
-		$rota = count($fotos);
-		for ($i=0; $i < $rota; $i++) { 			
-			$pathTo = Path::canonicalize($path.'/'.$fotos[$i]);
-			if(!$this->filesystem->exists($pathTo)) {
-				$innexistentes[] = $fotos[$i];
-			}
-		}
-
-		return $innexistentes;
 	}
 
 	/** */
