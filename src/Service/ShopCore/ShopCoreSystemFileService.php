@@ -133,24 +133,35 @@ class ShopCoreSystemFileService
 		if($product['action'] == 'cotiza') {
 			$path = $this->params->get('prodSols');
 		}
-		
+
 		if($path != '') {
 
+			$slug = $product['own']['slug'];
+			// Primero recogemos todas las fotos de las piezas para revisar que esten
+			// ya almacenadas en el servidor. 
 			$rota = count($product['piezas']);
 			for ($i=0; $i < $rota; $i++) {
-
-				$filename = $path.'/'.$product['piezas'][$i]['uuid'].'.json';
-				try {
-					$this->filesystem->dumpFile($filename, json_encode($product[$i]));
-				} catch (FileException $e) {}
-
 				$vueltas = count($product['piezas'][$i]['fotos']);
 				for ($f=0; $f < $vueltas; $f++) { 
 					$fotos[] = $product['piezas'][$i]['fotos'][$f];
 				}
 			}
+
+			// Ahora revisamos si hay piezas para publicar y no para solicitar.
+			if(array_key_exists('pzaPublik', $product)) {
+
+				$rota = count($product['pzaPublik']);
+				for ($i=0; $i < $rota; $i++) {
+					$filename = $path.'/'.$slug.'/'.$product['pzaPublik'][$i]['uuid'].'.json';
+					try {
+						$this->filesystem->dumpFile($filename, json_encode($product['pzaPublik'][$i]));
+						// TODO enviar a nifi el aviso de nuevo producto...
+					} catch (FileException $e) {}
+				}
+			}
 		}
 
+		// Revisamos la existencia de las fotos resultantes
 		if(count($fotos) > 0) {
 			$fotosFaltan = $this->checkIntegridadDeFotos(
 				$product['action'], $product['own']['slug'], $fotos
