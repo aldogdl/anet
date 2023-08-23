@@ -70,11 +70,11 @@ class NiFiController extends AbstractController
     }
 
     /** */
-    #[Route('broker/assets/{filename}/{path}/{cacheable}/', methods: ['GET'])]
-    public function getImageWa(String $filename, String $path, String $cacheable): Response
+    #[Route('broker/assets/{slug}/{filename}/{path}/{cacheable}/', methods: ['GET'])]
+    public function getImageWa(String $slug, String $filename, String $path, String $cacheable): Response
     {
         $path = $this->getParameter($path);
-        $full = $path.$filename;
+        $full = $path.$slug.'/images/'.$filename;
         $header = [];
         if($cacheable == 'y') {
             $header = ['Cache-Control' => 'max-age=7200'];
