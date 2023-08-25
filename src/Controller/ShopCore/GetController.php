@@ -67,9 +67,10 @@ class GetController extends AbstractController
     if($lock->isValid($token)) {
 
       $pathTo = $this->getParameter('prodSols');
-      $pathFile = $pathTo . '/' . $slug . '/' . $uuid . '.json';
+      $deco = urldecode($uuid);
+      $pathFile = $pathTo . '/' . $slug . '/' . $deco . '.json';
+      file_put_contents('buscando.txt', $pathFile);
       if(is_file($pathFile)) {
-
         $data = json_decode(file_get_contents($pathFile), true);
       }
     }
