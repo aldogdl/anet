@@ -55,7 +55,9 @@ class GetController extends AbstractController
     return new Response($data);
   }
 
-  /** */
+  /**
+   * Recuperamos las respuesta de una pieza por medio del UUID
+  */
   #[Route('security-basic/get-respuestas/{token}/{uuid}/{slug}/', methods:['get'])]
   public function getRespuestas(
     SecurityBasic $lock, String $token, String $uuid, String $slug, 
