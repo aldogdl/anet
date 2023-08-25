@@ -69,7 +69,6 @@ class GetController extends AbstractController
       $pathTo = $this->getParameter('prodSols');
       $deco = urldecode($uuid);
       $pathFile = $pathTo . '/' . $slug . '/' . $deco . '.json';
-      file_put_contents('buscando.txt', $pathFile);
       if(is_file($pathFile)) {
         $data = json_decode(file_get_contents($pathFile), true);
       }
