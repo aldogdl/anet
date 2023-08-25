@@ -56,15 +56,22 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('security-basic/get-all-marcas/{token}/', methods:['get'])]
-  public function getAllMarcas(
-    SecurityBasic $lock, AO1MarcasRepository $marcasEm, String $token
+  #[Route('security-basic/get-respuestas/{token}/{uuid}/{slug}/', methods:['get'])]
+  public function getRespuestas(
+    SecurityBasic $lock, String $token, String $uuid, String $slug, 
   ): Response
   {
     $data = [];
     if($lock->isValid($token)) {
-      $data = $marcasEm->getAllNameAsArray();
+
+      $pathTo = $this->getParameter('prodSols');
+      $pathFile = $pathTo . '/' . $slug . '/' . $uuid . '.json';
+      if(is_file($pathFile)) {
+
+        $data = json_decode(file_get_contents($pathFile), true);
+      }
     }
+
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
 
