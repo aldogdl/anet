@@ -19,7 +19,10 @@ public_html/portadas/
 public_html/mrks_logos/
 public_html/to_orden_tmp/
 public_html/to_orden_rsp/
+public_html/prod_pubs/
+public_html/prod_sols/
 public_html/img_publik/
+public_html/.tkwa.txt
 public_html/error_log
 public_html/error.log
 public_html/request.log
