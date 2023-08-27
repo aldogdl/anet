@@ -37,6 +37,31 @@ class GetController extends AbstractController
   }
 
   /** 
+   * Actualizamos el token de FB
+  */
+  #[Route('security-basic/set-tkfb/{token}/{slug}/', methods:['get'])]
+  public function setTokenFB(
+    SecurityBasic $lock, String $token, String $slug
+  ): Response
+  {
+    $data = '';
+    if($lock->isValid($token)) {
+      $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
+      if(is_file($pathTo)) {
+        $data = file_get_contents($pathTo);
+        $json = json_decode($data, true);
+        if(array_key_exists('tokMess', $json)) {
+
+          $json['tokMess'] = $token;
+          file_put_contents($pathTo, json_encode($json));
+        }
+      }
+    }
+
+    return $this->json(['abort' => false, 'msg' => 'ok']);
+  }
+
+  /** 
    * Recuperamos el inventario del cotizador desde el archivo json
   */
   #[Route('security-basic/get-inv-ctc/{token}/{waId}/', methods:['get'])]
