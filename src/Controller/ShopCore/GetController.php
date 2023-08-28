@@ -100,6 +100,15 @@ class GetController extends AbstractController
   }
 
   /** */
+  #[Route('security-basic/get-all-marcas/{token}/', methods:['get'])]
+  public function getAllMarcas(AO1MarcasRepository $marcasEm): Response
+  {
+    return $this->json([
+      'abort'=>false, 'msg' => 'ok', 'body' => $marcasEm->getAllAsArray()
+    ]);
+  }
+
+  /** */
   #[Route('security-basic/get-modelos-by-marca/{token}/{idMarca}/', methods:['get'])]
   public function getModelosByMarca(
     SecurityBasic $lock, AO2ModelosRepository $modsEm, String $token, String $idMarca
