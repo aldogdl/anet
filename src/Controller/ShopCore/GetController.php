@@ -39,9 +39,9 @@ class GetController extends AbstractController
   /** 
    * Actualizamos el token de FB
   */
-  #[Route('security-basic/set-tkfb/{token}/{tokPush}/{slug}/', methods:['get'])]
+  #[Route('security-basic/set-tkfb/{token}/{tokPush}/{slug}/{field}/', methods:['get'])]
   public function setTokenFB(
-    SecurityBasic $lock, String $token, String $tokPush, String $slug
+    SecurityBasic $lock, String $token, String $tokPush, String $slug, String $field
   ): Response
   {
     $data = '';
@@ -50,11 +50,8 @@ class GetController extends AbstractController
       if(is_file($pathTo)) {
         $data = file_get_contents($pathTo);
         $json = json_decode($data, true);
-        if(array_key_exists('tokMess', $json)) {
-
-          $json['tokMess'] = $tokPush;
-          file_put_contents($pathTo, json_encode($json));
-        }
+        $json[$field] = $tokPush;
+        file_put_contents($pathTo, json_encode($json));
       }
     }
 
