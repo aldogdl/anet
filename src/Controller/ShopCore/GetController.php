@@ -101,10 +101,14 @@ class GetController extends AbstractController
 
   /** */
   #[Route('security-basic/get-all-marcas/{token}/', methods:['get'])]
-  public function getAllMarcas(AO1MarcasRepository $marcasEm): Response
+  public function getAllMarcas(SecurityBasic $lock, AO1MarcasRepository $marcasEm, String $token): Response
   {
+    $data = [];
+    if($lock->isValid($token)) {
+      $data = $marcasEm->getAllNameAsArray();
+    }
     return $this->json([
-      'abort'=>false, 'msg' => 'ok', 'body' => $marcasEm->getAllNameAsArray()
+      'abort'=>false, 'msg' => 'ok', 'body' => $data
     ]);
   }
 
