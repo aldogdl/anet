@@ -104,7 +104,7 @@ class GetController extends AbstractController
   public function getAllMarcas(AO1MarcasRepository $marcasEm): Response
   {
     return $this->json([
-      'abort'=>false, 'msg' => 'ok', 'body' => $marcasEm->getAllAsArray()
+      'abort'=>false, 'msg' => 'ok', 'body' => $marcasEm->getAllNameAsArray()
     ]);
   }
 
