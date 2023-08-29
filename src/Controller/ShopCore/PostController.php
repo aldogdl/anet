@@ -2,13 +2,15 @@
 
 namespace App\Controller\ShopCore;
 
-use App\Service\SecurityBasic;
-use App\Service\ShopCore\ShopCoreSystemFileService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use App\Service\WebHook;
+use App\Service\SecurityBasic;
+use App\Service\ShopCore\ShopCoreSystemFileService;
 
 
 class PostController extends AbstractController
@@ -60,10 +62,18 @@ class PostController extends AbstractController
   }
 
   #[Route('api/shop-core/send-product/', methods:['post'])]
-	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile): Response
+	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh): Response
 	{
     $data = $this->toArray($req, 'data');
     $result = $sysFile->setNewProduct($data);
+
+    $pathNifi = $this->getParameter('nifiFld');
+    $anetToken = $this->getParameter('getAnToken');
+    file_put_contents('file_nifi.json', json_encode($result['forNifi']));
+    $wh->sendMy($result['forNifi'], $pathNifi, $anetToken);
+
+    $result['forNifi'] = '';
+
 	  return $this->json($result);
 	}
 

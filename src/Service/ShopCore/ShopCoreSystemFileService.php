@@ -111,14 +111,21 @@ class ShopCoreSystemFileService
 	/** Guardamos el json resultante del alta de productos desde shopCore */
 	public function setNewProduct(array $product): array
 	{
+		$payload = [
+			'evento'  => '',
+			'source'  => '',
+			'payload' => ''
+		];
+
 		$result = ['abort' => false, 'body' => 'ok'];
 		$filename = $product['own']['waId'] . '-' . $product['id'] . '-' . $product['uuid'] . '.json';
 
 		$path = $this->params->get('nifiFld');
 		$path = Path::canonicalize($path.'/'.$filename);
+		$product['filename'] = $filename;
+
 		try {
 			$this->filesystem->dumpFile($path, json_encode($product));
-			// TODO enviar a nifi el aviso de nuevo producto...
 		} catch (FileException $e) {
 			$result['abort'] = true;
 			$result['body'] = $e->getMessage();
@@ -127,11 +134,14 @@ class ShopCoreSystemFileService
 		$fotos = [];
 		$path = '';
 		
+		$payload['source'] = $filename.'.json';
 		if($product['action'] == 'publik') {
 			$path = $this->params->get('prodPubs');
+			$payload['evento'] = 'creada_publicacion';
 		}
 		if($product['action'] == 'cotiza') {
 			$path = $this->params->get('prodSols');
+			$payload['evento'] = 'creada_solicitud';
 		}
 
 		if($path != '') {
@@ -149,7 +159,7 @@ class ShopCoreSystemFileService
 
 			// Ahora revisamos si hay piezas para publicar y no para solicitar.
 			if(array_key_exists('pzaPublik', $product)) {
-
+			
 				$rota = count($product['pzaPublik']);
 				for ($i=0; $i < $rota; $i++) {
 					$filename = $path.'/'.$slug.'/'.$product['pzaPublik'][$i]['uuid'].'.json';
@@ -171,6 +181,8 @@ class ShopCoreSystemFileService
 			}
 		}
 
+		$payload['payload'] = $product;
+		$result['forNifi']  = $payload;
 		return $result;
 	}
 
