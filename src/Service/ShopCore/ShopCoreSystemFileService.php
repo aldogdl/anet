@@ -134,7 +134,7 @@ class ShopCoreSystemFileService
 		$fotos = [];
 		$path = '';
 		
-		$payload['source'] = $filename.'.json';
+		$payload['source'] = $filename;
 		if($product['action'] == 'publik') {
 			$path = $this->params->get('prodPubs');
 			$payload['evento'] = 'creada_publicacion';
