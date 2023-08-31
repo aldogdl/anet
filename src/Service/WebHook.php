@@ -14,8 +14,8 @@ class WebHook
     public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
     {
         $this->client = $client;
-        $this->anetToken = $container('getAnToken');
         $this->sendMyFail = $container('sendMyFail');
+        $this->anetToken  = $container('getAnToken');
     }
 
     /** */
@@ -45,9 +45,8 @@ class WebHook
                 if(!is_dir($this->sendMyFail)) {
                     mkdir($this->sendMyFail);
                 }
-                file_put_contents($this->sendMyFail.'/'.$filename.'.json', json_encode($proto));
+                file_put_contents($this->sendMyFail.$filename.'.json', json_encode($proto));
                 return false;
-                
             }
         }
 
