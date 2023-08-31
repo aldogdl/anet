@@ -14,8 +14,8 @@ class WebHook
     public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
     {
         $this->client = $client;
-        $this->sendMyFail = $container('sendMyFail');
-        $this->anetToken  = $container('getAnToken');
+        $this->sendMyFail = $container->get('sendMyFail');
+        $this->anetToken  = $container->get('getAnToken');
     }
 
     /** */
