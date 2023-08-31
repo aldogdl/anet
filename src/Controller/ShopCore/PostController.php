@@ -61,20 +61,19 @@ class PostController extends AbstractController
     return $this->json($response);
   }
 
-  /** */
+  /** 
+   * Guardamos el producto enviado desde ShopCore
+  */
   #[Route('api/shop-core/send-product/', methods:['post'])]
 	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh): Response
 	{
+
     $data = $this->toArray($req, 'data');
-    $result = $sysFile->setNewProduct($data);
+    $filePath = $sysFile->setNewProduct($data);
+    $result = $sysFile->checkExistAllFotos($data);
+    $result = $sysFile->isForPublikProduct($data);
 
-    $pathNifi = $this->getParameter('nifiFld');
-    $anetToken = $this->getParameter('getAnToken');
-    file_put_contents('file_nifi.json', json_encode($result['forNifi']));
-    $wh->sendMy($result['forNifi'], $pathNifi, $anetToken);
-
-    $result['forNifi'] = '';
-
+    $wh->sendMy('api/shop-core/send-product/', $filePath, $data);
 	  return $this->json($result);
 	}
 

@@ -11,6 +11,7 @@ parameters:
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
     nifiFld    : '%phtml%/nifi/'
+    sendMyFail : '%phtml%/sendmy_fails/'
     ordAsigns  : '%phtml%/ordenes_asigns/'
     centinela  : '%phtml%/centinela.json'
     harbiConnx : '%phtml%/harbi_connx.json'

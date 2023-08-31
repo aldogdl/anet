@@ -47,36 +47,6 @@ class PostController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => []]);
   }
 
-  /**
-   * Hacemos una prueba hacia el broker --front-door-- desde back-core
-   */
-  #[Route('cotiza/make-test/{token}/', methods:['post'])]
-  public function testToSistemNifi(Request $req, WebHook $wh, String $token): Response
-  {
-
-    $elToken = $this->getParameter('getAnToken');
-    if($elToken == $token) {
-
-      $data = $this->toArray($req, 'data');
-      if(array_key_exists('evento', $data)) {
-        $data['status'] = 'recibido';
-        // Enviamos el evento de nueva orden
-        $wh->sendMy(
-          $data, $this->getParameter('nifiFld'), $elToken
-        );      
-        return $this->json($data);
-      }
-    }
-
-    return $this->json([
-      'id'    => (string) round(microtime(true) * 1000),
-      'evento'=> 'test-fail',
-      'from'  => 'SR',
-      'to'    => 'Back-core',
-      'status'=> 'error',
-    ]);
-  }
-
   #[Route('api/cotiza/set-orden/', methods:['post'])]
   public function setOrden(Request $req, OrdenesRepository $ordEm, AutosRegRepository $autoEm): Response
   {

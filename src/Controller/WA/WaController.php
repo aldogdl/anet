@@ -58,17 +58,7 @@ class WaController extends AbstractController
                 if(is_file($filename)) {
 
                     $metadata->campoResponsed = 'ctc_free';
-                    $wh->sendMy(
-                        [
-                            'evento' => 'wa_message',
-                            'source' => $filename,
-                            'creado' => $filename,
-                            'pathTo' => $path,
-                            'payload'=> $metadata,
-                        ],
-                        $this->getParameter('getWaToken'),
-                        $this->getParameter('getAnToken')
-                    );
+                    $wh->sendMy('wa/wh/', $path, $metadata->toArray());
                     return new Response('', 200);
                 }
 
@@ -107,17 +97,7 @@ class WaController extends AbstractController
                 }
 
                 if($isMsgOk || $allowPass) {
-                    $wh->sendMy(
-                        [
-                            'evento' => 'wa_message',
-                            'source' => $filename,
-                            'creado' => $filename,
-                            'pathTo' => $path,
-                            'payload'=> $metadata,
-                        ],
-                        $this->getParameter('getWaToken'),
-                        $this->getParameter('getAnToken')
-                    );
+                    $wh->sendMy('wa/wh/', $path, $metadata->toArray());
                 }
 
                 return new Response('', 200);

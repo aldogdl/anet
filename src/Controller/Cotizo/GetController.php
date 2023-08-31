@@ -54,7 +54,10 @@ class GetController extends AbstractController
 		$orden = $dql->getArrayResult();
 
 		// guardamos Un registro para saber quien abrio la app
-		$this->sendNotifictEvent((int) $idUser, (int) $idOrden, 'atendida_solicitud', $wh);
+		$this->sendNotifictEvent(
+			(int) $idUser, (int) $idOrden, 'atendida_solicitud', $wh,
+			'cotizo/get-orden-and-pieza/{idOrden}/{idUser}'
+		);
 		// $openApp->setNewApertura($idUser);
 		return $this->json([
 			'abort' => false, 'msg' => 'ok', 'body' => ($orden) ? $orden[0] : []
@@ -75,7 +78,11 @@ class GetController extends AbstractController
 		}
 
 		// guardamos Un registro para saber quien abrio la app
-		$this->sendNotifictEvent((int) $idUser, 0, 'appertura_cotizo', $wh, $callFrom);
+		$this->sendNotifictEvent(
+			(int) $idUser, 0, 'appertura_cotizo', $wh,
+			'cotizo/get-ordenes-and-piezas/{callFrom}/{page}/{idUser}/{limit}/',
+			$callFrom
+		);
 		// $openApp->setNewApertura($idUser);
 		return $this->json(['abort' => false, 'msg' => $paginator['data'], 'body' => $ordens]);
 	}
@@ -144,7 +151,9 @@ class GetController extends AbstractController
 		// 	$avo,
 		// );
 		$this->sendNotifictEvent(
-			(int) $cotizador, (int) $solicitud, $accion, $wh, $accFrom, (int) $pieza, (int) $avo
+			(int) $cotizador, (int) $solicitud,
+			$accion, $wh, 'cotizo/{filename}/',
+			$accFrom, (int) $pieza, (int) $avo
 		);
 		return $this->json(['abort' => false, 'body' => 'que haces aqui']);
 	}
@@ -213,9 +222,9 @@ class GetController extends AbstractController
 		// 	$pieza,
 		// 	$avo,
 		// );
-		$this->sendNotifictEvent(
-			(int) $cotizador, (int) $solicitud, $accion, $wh, $accFrom, (int) $pieza, (int) $avo
-		);
+		// $this->sendNotifictEvent(
+		// 	(int) $cotizador, (int) $solicitud, $accion, $wh, $accFrom, (int) $pieza, (int) $avo
+		// );
 		return $this->json(['abort' => false, 'body' => 'que haces aqui']);
 	}
 
@@ -232,7 +241,7 @@ class GetController extends AbstractController
 
 	///
 	private function sendNotifictEvent(
-		int $idUser, int $idSol, string $event, WebHook $wh, string $accFrom = '',
+		int $idUser, int $idSol, string $event, WebHook $wh, String $callFrom, string $accFrom = '',
 		int $idPza = 0, int $idAvo = 0
 	)
 	{
@@ -246,6 +255,6 @@ class GetController extends AbstractController
           "avo"       => $idAvo,
 		  "source"   => "",
         ];
-        $wh->sendMy($payload, $this->getParameter('nifiFld'), $this->getParameter('getAnToken'));
+        $wh->sendMy($callFrom, 'por-borrar', $payload);
 	}
 }

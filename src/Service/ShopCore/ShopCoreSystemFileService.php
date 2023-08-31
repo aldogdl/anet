@@ -77,25 +77,95 @@ class ShopCoreSystemFileService
 		return 'not';
 	}
 
-	///
-	public function checkIntegridadDeFotos(String $action, String $slug, array $fotos): array
+	/** Guardamos el json resultante del alta de productos desde shopCore */
+	public function setNewProduct(array $product): String
 	{
+		$result = '';
+		$filename = $product['own']['waId'] . '-' . $product['id'] . '-' . $product['uuid'] . '.json';
+
+		$path = $this->params->get('nifiFld');
+		$path = Path::canonicalize($path.'/'.$filename);
+		try {
+			$this->filesystem->dumpFile($path, json_encode($product));
+		} catch (FileException $e) {
+			$result['abort'] = true;
+			$result['body'] = $e->getMessage();
+		}
+
+		return $path;
+	}
+
+	/** 
+	 * Despues de Guardar el json resultante del alta de productos desde shopCore
+	 * revisamos si estan todas sus fotos cargadas en su respectivo folder
+	 * @return El array de fotos faltantes
+	*/
+	public function checkExistAllFotos(array $product): array
+	{	
+		$fotos  = [];
 		$path = '';
-		if($action == 'publik') {
+		if($product['action'] == 'publik') {
 			$path = $this->params->get('prodPubs');
 		}
-		if($action == 'cotiza') {
+		if($product['action'] == 'cotiza') {
 			$path = $this->params->get('prodSols');
 		}
-		if($path == '') {
-			return [];
+
+		if($path != '') {
+
+			// Primero recogemos todas las fotos de las piezas para revisar que esten
+			// ya almacenadas en el servidor. 
+			$rota = count($product['piezas']);
+			for ($i=0; $i < $rota; $i++) {
+				$vueltas = count($product['piezas'][$i]['fotos']);
+				for ($f=0; $f < $vueltas; $f++) { 
+					$fotos[] = $product['piezas'][$i]['fotos'][$f];
+				}
+			}
+			
+			// Revisamos la existencia de las fotos resultantes
+			if(count($fotos) > 0) {
+				$slug =  $product['own']['slug'];
+				$path = Path::canonicalize($path.'/'.$slug.'/images');
+				if(!$this->filesystem->exists($path)) {
+					return $fotos;
+				}
+				$fotos = $this->checkIntegridadDeFotos($path, $slug, $fotos);
+			}
 		}
 
-		$path = Path::canonicalize($path.'/'.$slug.'/images');
-		if(!$this->filesystem->exists($path)) {
-			return $fotos;
+		return $fotos;
+	}
+
+	/** 
+	 * Despues de Guardar el json resultante del alta de productos desde shopCore
+	 * revisamos si estan todas sus fotos cargadas en su respectivo folder
+	*/
+	public function isForPublikProduct(array $product): bool
+	{	
+		$slug = $product['own']['slug'];
+		// Ahora revisamos si hay piezas para publicar y no para solicitar.
+		if(array_key_exists('pzaPublik', $product)) {
+			
+			$path = $this->params->get('prodPubs');
+			$rota = count($product['pzaPublik']);
+			for ($i=0; $i < $rota; $i++) {
+				$filename = $path.'/'.$slug.'/'.$product['pzaPublik'][$i]['uuid'].'.json';
+				try {
+					$this->filesystem->dumpFile($filename, json_encode($product['pzaPublik'][$i]));
+					// TODO enviar a nifi el aviso de nuevo producto...
+				} catch (FileException $e) {}
+			}
+
+			return true;
 		}
 
+		return false;
+	}
+
+	///
+	private function checkIntegridadDeFotos(String $path, String $slug, array $fotos): array
+	{
 		$innexistentes = [];
 		$rota = count($fotos);
 		for ($i=0; $i < $rota; $i++) { 			
@@ -106,93 +176,6 @@ class ShopCoreSystemFileService
 		}
 
 		return $innexistentes;
-	}
-
-	/** Guardamos el json resultante del alta de productos desde shopCore */
-	public function setNewProduct(array $product): array
-	{
-		$payload = [
-			'evento'  => '',
-			'source'  => '',
-			'creado'  => '',
-			'payload' => ''
-		];
-
-		$result = ['abort' => false, 'body' => 'ok'];
-		$filename = $product['own']['waId'] . '-' . $product['id'] . '-' . $product['uuid'] . '.json';
-
-		$path = $this->params->get('nifiFld');
-		$path = Path::canonicalize($path.'/'.$filename);
-		$product['filename'] = $filename;
-
-		try {
-			$this->filesystem->dumpFile($path, json_encode($product));
-		} catch (FileException $e) {
-			$result['abort'] = true;
-			$result['body'] = $e->getMessage();
-		}
-
-		$path   = '';
-		$creado = '';
-		$fotos  = [];
-
-		$payload['source'] = $filename;
-		if($product['action'] == 'publik') {
-			$path = $this->params->get('prodPubs');
-			$payload['evento'] = 'creada_publicacion';
-		}
-		if($product['action'] == 'cotiza') {
-			$path = $this->params->get('prodSols');
-			$payload['evento'] = 'creada_solicitud';
-		}
-
-		if($path != '') {
-
-			if($creado == '') {
-				if(array_key_exists('', $product['createdAt'])){
-					$creado = $product['createdAt'];
-				}
-			}
-
-			$slug = $product['own']['slug'];
-			// Primero recogemos todas las fotos de las piezas para revisar que esten
-			// ya almacenadas en el servidor. 
-			$rota = count($product['piezas']);
-			for ($i=0; $i < $rota; $i++) {
-				$vueltas = count($product['piezas'][$i]['fotos']);
-				for ($f=0; $f < $vueltas; $f++) { 
-					$fotos[] = $product['piezas'][$i]['fotos'][$f];
-				}
-			}
-
-			// Ahora revisamos si hay piezas para publicar y no para solicitar.
-			if(array_key_exists('pzaPublik', $product)) {
-			
-				$rota = count($product['pzaPublik']);
-				for ($i=0; $i < $rota; $i++) {
-					$filename = $path.'/'.$slug.'/'.$product['pzaPublik'][$i]['uuid'].'.json';
-					try {
-						$this->filesystem->dumpFile($filename, json_encode($product['pzaPublik'][$i]));
-						// TODO enviar a nifi el aviso de nuevo producto...
-					} catch (FileException $e) {}
-				}
-			}
-		}
-
-		// Revisamos la existencia de las fotos resultantes
-		if(count($fotos) > 0) {
-			$fotosFaltan = $this->checkIntegridadDeFotos(
-				$product['action'], $product['own']['slug'], $fotos
-			);
-			if(count($fotosFaltan) > 0) {
-				$result['faltan_fotos'] = $fotosFaltan;
-			}
-		}
-
-		$payload['creado']  = $creado;
-		$payload['payload'] = $product;
-		$result['forNifi']  = $payload;
-		return $result;
 	}
 
 	/** Guardamos el json resultante del alta de productos desde shopCore */
@@ -238,4 +221,5 @@ class ShopCoreSystemFileService
 		}
 		return false;
 	}
+
 }
