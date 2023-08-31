@@ -81,7 +81,7 @@ class HomeController extends AbstractController
             if(array_key_exists('evento', $data)) {
                 $data['status'] = 'recibido';
                 // Enviamos el evento de nueva orden
-                $wh->sendMy($data['evento'], $data);
+                $wh->sendMy('backcore/make-test/{token}/', $data['evento'], $data);
                 return $this->json($data);
             }
         }
