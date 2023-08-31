@@ -62,6 +62,7 @@ class WaController extends AbstractController
                         [
                             'evento' => 'wa_message',
                             'source' => $filename,
+                            'creado' => $filename,
                             'pathTo' => $path,
                             'payload'=> $metadata,
                         ],
@@ -110,6 +111,7 @@ class WaController extends AbstractController
                         [
                             'evento' => 'wa_message',
                             'source' => $filename,
+                            'creado' => $filename,
                             'pathTo' => $path,
                             'payload'=> $metadata,
                         ],

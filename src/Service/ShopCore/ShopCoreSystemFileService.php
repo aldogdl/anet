@@ -114,6 +114,7 @@ class ShopCoreSystemFileService
 		$payload = [
 			'evento'  => '',
 			'source'  => '',
+			'creado'  => '',
 			'payload' => ''
 		];
 
@@ -131,9 +132,10 @@ class ShopCoreSystemFileService
 			$result['body'] = $e->getMessage();
 		}
 
-		$fotos = [];
-		$path = '';
-		
+		$path   = '';
+		$creado = '';
+		$fotos  = [];
+
 		$payload['source'] = $filename;
 		if($product['action'] == 'publik') {
 			$path = $this->params->get('prodPubs');
@@ -145,6 +147,12 @@ class ShopCoreSystemFileService
 		}
 
 		if($path != '') {
+
+			if($creado == '') {
+				if(array_key_exists('', $product['createdAt'])){
+					$creado = $product['createdAt'];
+				}
+			}
 
 			$slug = $product['own']['slug'];
 			// Primero recogemos todas las fotos de las piezas para revisar que esten
@@ -181,6 +189,7 @@ class ShopCoreSystemFileService
 			}
 		}
 
+		$payload['creado']  = $creado;
 		$payload['payload'] = $product;
 		$result['forNifi']  = $payload;
 		return $result;
