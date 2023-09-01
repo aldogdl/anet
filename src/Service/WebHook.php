@@ -84,6 +84,16 @@ class WebHook
             $proto['evento'] = $data['evento'];
         }
 
+        if(array_key_exists('action', $data)) {
+            
+            if($data['action'] == 'publik') {
+                $proto['evento'] = 'creada_publicacion';
+            }
+            if($data['action'] == 'cotiza') {
+                $proto['evento'] = 'creada_solicitud';
+            }
+        }
+
         return $proto;
     }
 

@@ -68,15 +68,30 @@ class PostController extends AbstractController
 	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh): Response
 	{
 
+    $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
     $filePath = $sysFile->setNewProduct($data);
-    $result = $sysFile->checkExistAllFotos($data);
-    $result = $sysFile->isForPublikProduct($data);
 
-    $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
+    if(mb_strpos($filePath, 'Error') === false) {
+
+      $ftoFalta = $sysFile->checkExistAllFotos($data);
+      $result = $sysFile->isForPublikProduct($data);
+
+      if($filePath != '') {
+        $result['abort'] = false;
+      }
+      if(count($ftoFalta) > 0) {
+        $result['faltan_fotos'] = $ftoFalta;
+      }
+      $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
+      return $this->json($result);
+    }
+
+    $result['msg']  = $filePath;
 	  return $this->json($result);
 	}
 
+  /** */
   #[Route('security-basic/mark-product-as/{token}/', methods:['post'])]
 	public function markProductAs(
     Request $req, SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token

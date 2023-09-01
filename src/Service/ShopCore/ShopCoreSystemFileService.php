@@ -80,7 +80,6 @@ class ShopCoreSystemFileService
 	/** Guardamos el json resultante del alta de productos desde shopCore */
 	public function setNewProduct(array $product): String
 	{
-		$result = '';
 		$filename = $product['own']['waId'] . '-' . $product['id'] . '-' . $product['uuid'] . '.json';
 
 		$path = $this->params->get('nifiFld');
@@ -88,8 +87,7 @@ class ShopCoreSystemFileService
 		try {
 			$this->filesystem->dumpFile($path, json_encode($product));
 		} catch (FileException $e) {
-			$result['abort'] = true;
-			$result['body'] = $e->getMessage();
+			$path = 'Error' . $e->getMessage();
 		}
 
 		return $path;
@@ -98,7 +96,7 @@ class ShopCoreSystemFileService
 	/** 
 	 * Despues de Guardar el json resultante del alta de productos desde shopCore
 	 * revisamos si estan todas sus fotos cargadas en su respectivo folder
-	 * @return El array de fotos faltantes
+	 * @return array de fotos faltantes
 	*/
 	public function checkExistAllFotos(array $product): array
 	{	
@@ -153,7 +151,6 @@ class ShopCoreSystemFileService
 				$filename = $path.'/'.$slug.'/'.$product['pzaPublik'][$i]['uuid'].'.json';
 				try {
 					$this->filesystem->dumpFile($filename, json_encode($product['pzaPublik'][$i]));
-					// TODO enviar a nifi el aviso de nuevo producto...
 				} catch (FileException $e) {}
 			}
 
