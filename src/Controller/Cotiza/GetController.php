@@ -209,7 +209,7 @@ class GetController extends AbstractController
 
         // Enviamos el evento de nueva orden
         $ordenEm->sendEventCreadaSolicitud(
-          $idOrden, $this->getParameter('nifiFld'), $wh, $this->getParameter('getAnToken')
+          'api\\cotiza\\enviar-orden', $idOrden, $this->getParameter('nifiFld'), $wh
         );
 
         $data['stt'] = [
@@ -234,7 +234,7 @@ class GetController extends AbstractController
   ): Response {
 
     $ordenEm->simiSendEventCreadaSolicitud(
-      $idSol, $this->getParameter('nifiFld'), $wh, $this->getParameter('getAnToken')
+      'cotiza-simula-sol', $idSol, $this->getParameter('nifiFld'), $wh
     );
     return $this->json(['ok' => 'Trabajo Realizado']);
   }

@@ -113,10 +113,9 @@ class OrdenesRepository extends ServiceEntityRepository
    * Hacemos el guardado de la orden en archivo para nifi
   */
   public function sendEventCreadaSolicitud(
-    int $idOrden, String $pathNifi, WebHook $wh, String $anetToken
+    String $callFrom, int $idOrden, String $pathNifi, WebHook $wh
   ): void
   {
-    
     $resWh = ['abort' => true, 'msg' => ''];
     $entity = $this->_em->find(Ordenes::class, $idOrden);
     if(!$entity){ $resWh['msg'] = 'No se encontró la orden '.$idOrden; }
@@ -137,12 +136,7 @@ class OrdenesRepository extends ServiceEntityRepository
       }
 
       if($resWh['msg'] == '') {
-        $payload = [
-          "evento"  => "creada_solicitud",
-          "source"  => $entity->getId().'.json',
-          "payload" => $file
-        ];
-        $wh->sendMy($payload, $pathNifi, $anetToken);
+        $wh->sendMy($callFrom, $filename, $file);
       }
     }
   }
@@ -151,7 +145,7 @@ class OrdenesRepository extends ServiceEntityRepository
    * Hacemos una simulación del guardado de la orden en archivo para nifi
   */
   public function simiSendEventCreadaSolicitud(
-    int $idOrden, String $pathNifi, WebHook $wh, String $anetToken
+    String $callFrom, int $idOrden, String $pathNifi, WebHook $wh
   ): void
   {
 
@@ -162,12 +156,7 @@ class OrdenesRepository extends ServiceEntityRepository
     if($resWh['msg'] == '') {
       
       $file = $entity->toArray();
-      $payload = [
-        "evento"  => "creada_solicitud",
-        "source"  => $idOrden.'.json',
-        "payload" => $file
-      ];
-      $wh->sendMy($payload, $pathNifi, $anetToken);
+      $wh->sendMy($callFrom, $idOrden.'.json', $file);
     }
   }
 

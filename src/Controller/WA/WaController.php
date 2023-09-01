@@ -58,7 +58,7 @@ class WaController extends AbstractController
                 if(is_file($filename)) {
 
                     $metadata->campoResponsed = 'ctc_free';
-                    $wh->sendMy('wa/wh/', $path, $metadata->toArray());
+                    $wh->sendMy('wa\\wh', $path, $metadata->toArray());
                     return new Response('', 200);
                 }
 
@@ -97,7 +97,7 @@ class WaController extends AbstractController
                 }
 
                 if($isMsgOk || $allowPass) {
-                    $wh->sendMy('wa/wh/', $path, $metadata->toArray());
+                    $wh->sendMy('wa\\wh', $path, $metadata->toArray());
                 }
 
                 return new Response('', 200);

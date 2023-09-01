@@ -73,7 +73,7 @@ class PostController extends AbstractController
     $result = $sysFile->checkExistAllFotos($data);
     $result = $sysFile->isForPublikProduct($data);
 
-    $wh->sendMy('api/shop-core/send-product/', $filePath, $data);
+    $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
 	  return $this->json($result);
 	}
 

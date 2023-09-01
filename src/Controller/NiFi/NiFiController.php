@@ -59,9 +59,7 @@ class NiFiController extends AbstractController
             if($toFile) {
                 $content = file_put_contents($filename, json_encode($toFile));
                 if($content > 0) {
-                    $wh->sendMy(
-                        $payload, $pathNifi, $this->getParameter('getAnToken')
-                    );
+                    $wh->sendMy('nifi\\orden', $filename, $toFile);
                 }
             }
             $msg = 'Guardada la Orden con el ID: '.$id;

@@ -26,6 +26,7 @@ class WebHook
         if($uri != '') {
 
             $proto = $this->buildProtocolo($uriCall, $pathFileServer, $event);
+
             $response = $this->client->request(
                 'POST', $uri, [
                     'query' => ['anet-key' => $this->anetToken],
@@ -108,6 +109,14 @@ class WebHook
         if(mb_strpos($uriCall, 'make-test') !== false) {
             $protocolo['evento'] = $pathFileServer;
             $protocolo['from']   = 'Autoparnet';
+        }
+        if(mb_strpos($uriCall, 'enviar-orden') !== false) {
+            $protocolo['evento'] = 'creada_solicitud';
+            $protocolo['from']   = 'old-System';
+        }
+        if(mb_strpos($uriCall, 'cotiza-simula-sol') !== false) {
+            $protocolo['evento'] = 'creada_solicitud';
+            $protocolo['from']   = 'old-System';
         }
 
         return $protocolo;
