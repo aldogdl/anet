@@ -70,21 +70,21 @@ class PostController extends AbstractController
 
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
+    
     $filePath = $sysFile->setNewProduct($data);
-
     if(mb_strpos($filePath, 'Error') === false) {
-
-      $ftoFalta = $sysFile->checkExistAllFotos($data);
-      $result = $sysFile->isForPublikProduct($data);
-
+      
       if($filePath != '') {
+        $ftoFalta = $sysFile->checkExistAllFotos($data);
         $result['abort'] = false;
+        if(count($ftoFalta) > 0) {
+          $result['faltan_fotos'] = $ftoFalta;
+        }
+
+        $sysFile->isForPublikProduct($data);
+        $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
+        return $this->json($result);
       }
-      if(count($ftoFalta) > 0) {
-        $result['faltan_fotos'] = $ftoFalta;
-      }
-      $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
-      return $this->json($result);
     }
 
     $result['msg']  = $filePath;
