@@ -9,7 +9,7 @@ class WrapHttp
 
     private $client;
 
-    public array $bodyToSend;
+    public array $bodyToSend = [];
 
     /** */
     public function __construct(HttpClientInterface $client)
@@ -23,12 +23,12 @@ class WrapHttp
         $error = 'No se recibió cuerpo de mensaje valido para enviar.';
         $code  = 501;
 
+        $this->wrapBody($conm->to, $conm->type, $conm->body);
+
         if(count($this->bodyToSend) != 0) {
 
-            $this->wrapBody($conm->to, $conm->type, $conm->body);
-
             $response = $this->client->request(
-                'POST', $conm->uriBase, [
+                'POST', $conm->uriBase.'/messages', [
                     'headers' => [
                         'Authorization' => 'Bearer '.$conm->token,
                         'Content-Type' => 'application/json',
