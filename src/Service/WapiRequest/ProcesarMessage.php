@@ -43,6 +43,11 @@ class ProcesarMessage {
         $result = [];
 
         $obj = new ExtractMessage($message);
+        if($obj->pathToAnalizar != '') {
+            $folder = $this->getFolderTo('waAnalizar');
+            $this->saveFile($folder.'/'.$obj->pathToAnalizar, $message);
+            return;
+        }
         if($obj->isStt) {
 
             return;

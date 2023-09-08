@@ -15,10 +15,7 @@ class ExtractMessage {
     public function __construct(array $message)
     {
         if(!$this->isSingle($message)) {
-
-            $filename = round(microtime(true) * 1000);
-            $this->pathToAnalizar = 'wa_analizar/'.$filename.'.json';
-            file_put_contents($this->pathToAnalizar, json_encode($message));
+            $this->pathToAnalizar = round(microtime(true) * 1000).'.json';
         }
     }
 
@@ -63,4 +60,5 @@ class ExtractMessage {
 
         return false;
     }
+
 }
