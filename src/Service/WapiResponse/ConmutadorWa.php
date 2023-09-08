@@ -20,7 +20,7 @@ class ConmutadorWa
 
         if($fileConm) {
 
-            $content = json_encode($fileConm, true);
+            $content = json_decode($fileConm, true);
 
             $this->token = $content[$content['modo']]['tk'];
             if(mb_strpos($this->token, 'aldo_') !== false) {
