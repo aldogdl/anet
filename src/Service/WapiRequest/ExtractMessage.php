@@ -48,7 +48,7 @@ class ExtractMessage {
 
                         if(array_key_exists('messages', $result)) {
                             if(count($result['messages']) == 1) {
-                                $result = $result['messages'];
+                                $result = $result['messages'][0];
                                 $result['phone_number_id'] = $phoneNumberId;
                                 $result['myTime'] = strtotime('now');
                                 $this->message = $result;
