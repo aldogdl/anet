@@ -2,24 +2,58 @@
 
 namespace App\Service\WapiResponse;
 
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-
 class ConmutadorWa
 {
 
-    private $uriBase = 'https://graph.facebook.com/v17.0/';
-    private $client;
+    public String $uriBase = 'https://graph.facebook.com/v17.0/';
+    public String $token;
+    public String $to;
+    public String $waid;
 
-    public array $bodyToSend;
+    public string $type;
+    public array $body;
 
     /** */
     public function __construct(array $message, String $path)
     {
         $fileConm = file_get_contents($path);
+
         if($fileConm) {
+
             $content = json_encode($fileConm, true);
-            
+
+            $this->token = $content[$content['modo']]['tk'];
+            if(mb_strpos($this->token, 'aldo_') !== false) {
+                $this->token = str_replace('aldo_', '', $this->token);
+            }
+
+            $this->waid = $message['from'];
+            if(mb_strpos($this->waid, '521') !== false) {
+                $this->to = str_replace('521', '52', $this->waid);
+            }
+
+            $this->uriBase = $this->uriBase . '/' . $content[$content['modo']]['id'];
         }
+    }
+
+    /** */
+    public function setBody(String $tipoBody, array $bodySend) {
+
+        $this->type = $tipoBody;
+        $this->body = $bodySend;
+    }
+
+    /** */
+    public function toArray() {
+
+        return [
+            'uriBase' => $this->uriBase,
+            'token'   => $this->token,
+            'to'      => $this->to,
+            'waid'    => $this->waid,
+            'type'    => $this->type,
+            'body'    => $this->body,
+        ];
     }
 
 }

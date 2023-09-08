@@ -7,7 +7,6 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class WrapHttp
 {
 
-    private $uriBase = 'https://graph.facebook.com/v17.0/';
     private $client;
 
     public array $bodyToSend;
@@ -19,29 +18,19 @@ class WrapHttp
     }
 
     /** */
-    public function wrapBody(String $to, String $type, array $body): void {
-
-        $this->bodyToSend = [
-            "to"   => $to,
-            "type" => $type,
-            $type  => $body,
-            "messaging_product" => "whatsapp",
-            "recipient_type"    => "individual",
-        ];
-    }
-
-    /** */
-    public function send(String $token): array
+    public function send(ConmutadorWa $conm): array
     {
         $error = 'No se recibió cuerpo de mensaje valido para enviar.';
         $code  = 501;
 
         if(count($this->bodyToSend) != 0) {
-            
+
+            $this->wrapBody($conm->to, $conm->type, $conm->body);
+
             $response = $this->client->request(
-                'POST', $this->uriBase, [
+                'POST', $conm->uriBase, [
                     'headers' => [
-                        'Authorization' => 'Bearer '.$token,
+                        'Authorization' => 'Bearer '.$conm->token,
                         'Content-Type' => 'application/json',
                     ],
                     'json' => $this->bodyToSend
@@ -62,4 +51,17 @@ class WrapHttp
             'message'    => $this->bodyToSend
         ];
     }
+
+    /** */
+    private function wrapBody(String $to, String $type, array $body): void {
+
+        $this->bodyToSend = [
+            "to"   => $to,
+            "type" => $type,
+            $type  => $body,
+            "messaging_product" => "whatsapp",
+            "recipient_type"    => "individual",
+        ];
+    }
+
 }

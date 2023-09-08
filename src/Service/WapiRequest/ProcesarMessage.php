@@ -13,6 +13,7 @@ use App\Service\WapiRequest\IsLoginMessage;
 use App\Service\WapiRequest\ExtractMessage;
 use App\Service\WapiRequest\IsInteractiveMessage;
 use App\Service\WapiRequest\IsCotizacionMessage;
+use App\Service\WapiResponse\ConmutadorWa;
 use App\Service\WapiResponse\LoginProcess;
 use App\Service\WapiResponse\WrapHttp;
 
@@ -64,7 +65,8 @@ class ProcesarMessage {
             return;
         }
 
-        $token = file_get_contents($this->params->get('waTk'));
+        $conm = new ConmutadorWa($this->message, $this->params->get('tkwaconm'));
+        file_put_contents('conmuta.json', json_encode($conm->toArray()));
         $obj = new IsCotizacionMessage($this->message);
         if($obj->inTransit) {
             return;
@@ -79,9 +81,11 @@ class ProcesarMessage {
             if($obj->hasErr == '') {
 
                 if(array_key_exists('from', $this->message)) {
-                    $this->wapiHttp->wrapBody($this->message['from'], 'text', $obj->toWhatsapp);
-                    $message['response'] = $obj->toWhatsapp;
-                    $result = $this->wapiHttp->send($token);
+
+                    $conm->setBody('text', $obj->toWhatsapp);
+
+                    $message['response'] = $conm->toArray();
+                    $result = $this->wapiHttp->send($conm);
                 }
             }
             return;
