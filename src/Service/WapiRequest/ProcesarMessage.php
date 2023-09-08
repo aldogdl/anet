@@ -77,8 +77,9 @@ class ProcesarMessage {
 
             $obj = new LoginProcess($this->message, $this->filesystem);
             if($obj->hasErr == '') {
-                if(array_key_exists('from', $message)) {
+                if(array_key_exists('from', $this->message)) {
                     $this->wapiHttp->wrapBody($message['from'], 'text', $obj->toWhatsapp);
+                    $message['response'] = $obj->toWhatsapp;
                     $result = $this->wapiHttp->send($token);
                 }
             }
