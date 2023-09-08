@@ -2,15 +2,16 @@
 
 namespace App\Controller\WA;
 
-use App\Service\CommandFromWa\CmdsFromWa;
-use App\Service\WA\WaTypeResponse;
-use App\Service\WA\Dom\WaMessageDto;
-use App\Service\WA\WaService;
-use App\Service\WaPi\ProcesarMessage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+
+use App\Service\CommandFromWa\CmdsFromWa;
+use App\Service\WA\WaTypeResponse;
+use App\Service\WA\Dom\WaMessageDto;
+use App\Service\WA\WaService;
+use App\Service\WapiRequest\ProcesarMessage;
 
 class WaController extends AbstractController
 {
