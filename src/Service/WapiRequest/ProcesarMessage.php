@@ -2,7 +2,6 @@
 
 namespace App\Service\WapiRequest;
 
-use App\Service\WA\IsLoginMessage;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Filesystem\Filesystem;
@@ -10,9 +9,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 use App\Service\WebHook;
-use App\Service\WaPi\ExtractMessage;
-use App\Service\WaPi\IsInteractiveMessage;
-use App\Service\WaPi\IsCotizacionMessage;
+use App\Service\WapiRequest\IsLoginMessage;
+use App\Service\WapiRequest\ExtractMessage;
+use App\Service\WapiRequest\IsInteractiveMessage;
+use App\Service\WapiRequest\IsCotizacionMessage;
 use App\Service\WapiResponse\LoginProcess;
 use App\Service\WapiResponse\WrapHttp;
 
