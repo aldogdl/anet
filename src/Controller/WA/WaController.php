@@ -37,74 +37,91 @@ class WaController extends AbstractController
         if($req->getMethod() == 'POST') {
             
             $has = $req->getContent();
-            if($has) {
+            if(strlen($has) < 50) {
+                return $this->json( [], 500 );
+            }
 
-                $isMsgOk = true;
-                $message = json_decode($has, true);
+            $isMsgOk = true;
+            $pathTo = $this->getParameter('waCmds');
+            
+            $message = json_decode($has, true);
+            $filename = round(microtime(true) * 1000);
+            file_put_contents('wa_tmp/'.$filename.'.json', $message);
+            return new Response('', 200);
 
-                $pathTo = $this->getParameter('waCmds');
-                $metadata= new WaMessageDto($message);
-                if( mb_strpos($metadata->body, '[cmd]') !== false ) {
 
-                    $cmd = $metadata->extractCmdFromBody();
-                    $cmd = new CmdsFromWa($cmd, $pathTo);
-                    return new Response('', 200);
-                }
 
-                $filename = round(microtime(true) * 1000);
-                $path  = $pathTo.'wa_'.$filename.'.json';
 
-                $filename = 'conv_free.'.$metadata->waId.'.cnv';
-                if(is_file($filename)) {
 
-                    $metadata->campoResponsed = 'ctc_free';
-                    $wh->sendMy('wa\\wh', $path, $metadata->toArray());
-                    return new Response('', 200);
-                }
 
-                if(!is_dir($pathTo)) {
-                    mkdir($pathTo);
-                }
 
-                // $pathPr= $pathTo.'pr_'.$filename.'.json';
-                // file_put_contents($pathPr, json_encode($metadata->toArray()));
 
-                $metadata->pathToBackup = $path;
-                $allowPass = false;
-                if($metadata->type != 'status') {
 
-                    $r = new WaTypeResponse(
-                        $metadata, $waS, $message, $pathTo,
-                        $this->getParameter('waTk'),
-                        $this->getParameter('nifiFld'),
-                        $this->getParameter('waCots')
-                    );
 
-                    $metadata = $r->metaMsg;
-                    $allowPass = $r->allowPass;
-                    if($metadata->type != 'login') {
-                        $isMsgOk = $r->saveMsgResult;
-                        if($metadata->type != 'image') {
-                            if($isMsgOk) {
-                                if($r->isTest) {
-                                    $isMsgOk = false;
-                                }else{
-                                    file_put_contents($path, $has);
-                                }
+
+
+
+
+            $metadata= new WaMessageDto($message);
+
+            if( mb_strpos($metadata->body, '[cmd]') !== false ) {
+
+                $cmd = $metadata->extractCmdFromBody();
+                $cmd = new CmdsFromWa($cmd, $pathTo);
+                return new Response('', 200);
+            }
+
+            $filename = round(microtime(true) * 1000);
+            $path  = $pathTo.'wa_'.$filename.'.json';
+
+            $filename = 'conv_free.'.$metadata->waId.'.cnv';
+            if(is_file($filename)) {
+
+                $metadata->campoResponsed = 'ctc_free';
+                $wh->sendMy('wa-wh', $path, $metadata->toArray());
+                return new Response('', 200);
+            }
+
+            if(!is_dir($pathTo)) {
+                mkdir($pathTo);
+            }
+
+            // $pathPr= $pathTo.'pr_'.$filename.'.json';
+            // file_put_contents($pathPr, json_encode($metadata->toArray()));
+
+            $metadata->pathToBackup = $path;
+            $allowPass = false;
+            if($metadata->type != 'status') {
+
+                $r = new WaTypeResponse(
+                    $metadata, $waS, $message, $pathTo,
+                    $this->getParameter('waTk'),
+                    $this->getParameter('nifiFld'),
+                    $this->getParameter('waCots')
+                );
+
+                $metadata = $r->metaMsg;
+                $allowPass = $r->allowPass;
+                if($metadata->type != 'login') {
+                    $isMsgOk = $r->saveMsgResult;
+                    if($metadata->type != 'image') {
+                        if($isMsgOk) {
+                            if($r->isTest) {
+                                $isMsgOk = false;
+                            }else{
+                                file_put_contents($path, $has);
                             }
                         }
                     }
                 }
-
-                if($isMsgOk || $allowPass) {
-                    $wh->sendMy('wa\\wh', $path, $metadata->toArray());
-                }
-
-                return new Response('', 200);
             }
-        }
 
-        return $this->json( [], 500 );
+            if($isMsgOk || $allowPass) {
+                $wh->sendMy('wa-wh', $path, $metadata->toArray());
+            }
+
+            return new Response('', 200);
+        }
     }
 
     /**

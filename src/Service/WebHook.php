@@ -113,7 +113,7 @@ class WebHook
         if(mb_strpos($uriCall, 'shop-core') !== false) {
             $protocolo = $this->setDataFromShopCore($protocolo, $data);
         }
-        if(mb_strpos($uriCall, 'wa/wh') !== false) {
+        if(mb_strpos($uriCall, 'wa-wh') !== false) {
             $protocolo = $this->setDataFromWhatsapp($protocolo, $data);
         }
         if(mb_strpos($uriCall, 'make-test') !== false) {
