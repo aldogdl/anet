@@ -10,8 +10,8 @@ class ConmutadorWa
     public String $to;
     public String $waid;
 
-    public string $type;
-    public array $body;
+    public string $type = '';
+    public array $body = [];
 
     /** */
     public function __construct(array $message, String $path)
