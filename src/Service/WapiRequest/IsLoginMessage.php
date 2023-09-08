@@ -20,9 +20,7 @@ class IsLoginMessage {
                 $body = $body['body'];
             }
         }
-
-        file_put_contents('segui3.json', json_encode($body));
-
+        
         $palClas = [];
         $partes = explode(' ', $body);
         
