@@ -4,7 +4,7 @@ namespace App\Service\WapiRequest;
 
 class IsLoginMessage {
 
-    public bool $isLogin;
+    public bool $isLogin = false;
 
     private array $token = [
         'Hola', 'AutoparNet', 'atenderte', 'piezas', 'necesitas'
