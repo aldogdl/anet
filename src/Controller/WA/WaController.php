@@ -46,7 +46,7 @@ class WaController extends AbstractController
             
             $message = json_decode($has, true);
             $filename = round(microtime(true) * 1000);
-            file_put_contents('wa_tmp/'.$filename.'.json', $message);
+            file_put_contents('wa_tmp/'.$filename.'.json', json_encode($message));
             return new Response('', 200);
 
 
