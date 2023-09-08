@@ -71,7 +71,7 @@ class ProcesarMessage {
         }
 
         $conm = new ConmutadorWa($this->message, $this->params->get('tkwaconm'));
-        file_put_contents('conmuta.json', json_encode($conm->toArray()));
+
         $obj = new IsCotizacionMessage($this->message);
         if($obj->inTransit) {
             return;
