@@ -7,7 +7,7 @@ class IsLoginMessage {
     public bool $isLogin = false;
 
     private array $token = [
-        'Hola', 'AutoparNet', 'atenderte', 'piezas', 'necesitas'
+        'Hola', 'AutoparNet', 'atenderte', 'piezas', 'necesitas?'
     ];
 
     /** */
@@ -23,8 +23,6 @@ class IsLoginMessage {
 
         $palClas = [];
         $partes = explode(' ', $body);
-        file_put_contents('segui10.json', json_encode($partes));
-        file_put_contents('segui11.json', json_encode($this->token));
         $rota = count($partes);
         for ($i=0; $i < $rota; $i++) { 
             if(in_array($partes[$i], $this->token)) {
