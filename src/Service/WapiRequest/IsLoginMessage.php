@@ -7,7 +7,7 @@ class IsLoginMessage {
     public bool $isLogin = false;
 
     private array $token = [
-        'Hola', 'AutoparNet', 'atenderte', 'piezas', 'necesitas?'
+        'Hola', 'AutoparNet,', 'atenderte.', 'piezas', 'necesitas?'
     ];
 
     /** */
