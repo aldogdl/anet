@@ -23,6 +23,7 @@ parameters:
     dtaCtc     : '%phtml%/ctcs/'
     invCtc     : '%phtml%/inv/'
     waTk       : '%phtml%/tkwa.txt'
+    waBackup   : '%phtml%/wa_backup'
     waSort     : '%phtml%/wa/_orden_put.json'
     getWaToken : '%env(resolve:WA_TOKEN)%'
     getAnToken : '%env(resolve:ANET_TOKEN)%'

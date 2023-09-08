@@ -22,7 +22,7 @@ class WaService
     {
         $this->client = $client;
     }
-   
+
     /** */
     public function getFileOrden(String $pathFile): array
     {

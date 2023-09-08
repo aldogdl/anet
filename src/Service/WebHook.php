@@ -116,6 +116,10 @@ class WebHook
         if(mb_strpos($uriCall, 'wa-wh') !== false) {
             $protocolo = $this->setDataFromWhatsapp($protocolo, $data);
         }
+        if(mb_strpos($uriCall, 'wa-wh-err') !== false) {
+            $protocolo['evento'] = 'error_whatsapp_api';
+            $protocolo['from'] = 'S.R. Autoparnet';
+        }
         if(mb_strpos($uriCall, 'make-test') !== false) {
             $protocolo['evento'] = $pathFileServer;
             $protocolo['from']   = 'Autoparnet';

@@ -6,7 +6,7 @@ use App\Service\CommandFromWa\CmdsFromWa;
 use App\Service\WA\WaTypeResponse;
 use App\Service\WA\Dom\WaMessageDto;
 use App\Service\WA\WaService;
-use App\Service\WebHook;
+use App\Service\WaPi\ProcesarMessage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +18,7 @@ class WaController extends AbstractController
      * Endpoint para la verificacion de conección
      */
     #[Route('wa/wh/', methods: ['GET', 'POST'])]
-    public function verifyWa(WebHook $wh, WaService $waS, Request $req): Response
+    public function verifyWa(ProcesarMessage $processMsg, Request $req): Response
     {
 
         if($req->getMethod() == 'GET') {
@@ -40,89 +40,154 @@ class WaController extends AbstractController
             if(strlen($has) < 50) {
                 return $this->json( [], 500 );
             }
-
-            $isMsgOk = true;
-            $pathTo = $this->getParameter('waCmds');
             
             $message = json_decode($has, true);
-            $filename = round(microtime(true) * 1000);
-            file_put_contents('wa_tmp/'.$filename.'.json', json_encode($message));
-            return new Response('', 200);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            $metadata= new WaMessageDto($message);
-
-            if( mb_strpos($metadata->body, '[cmd]') !== false ) {
-
-                $cmd = $metadata->extractCmdFromBody();
-                $cmd = new CmdsFromWa($cmd, $pathTo);
-                return new Response('', 200);
-            }
-
-            $filename = round(microtime(true) * 1000);
-            $path  = $pathTo.'wa_'.$filename.'.json';
-
-            $filename = 'conv_free.'.$metadata->waId.'.cnv';
-            if(is_file($filename)) {
-
-                $metadata->campoResponsed = 'ctc_free';
-                $wh->sendMy('wa-wh', $path, $metadata->toArray());
-                return new Response('', 200);
-            }
-
-            if(!is_dir($pathTo)) {
-                mkdir($pathTo);
-            }
-
-            // $pathPr= $pathTo.'pr_'.$filename.'.json';
-            // file_put_contents($pathPr, json_encode($metadata->toArray()));
-
-            $metadata->pathToBackup = $path;
-            $allowPass = false;
-            if($metadata->type != 'status') {
-
-                $r = new WaTypeResponse(
-                    $metadata, $waS, $message, $pathTo,
-                    $this->getParameter('waTk'),
-                    $this->getParameter('nifiFld'),
-                    $this->getParameter('waCots')
-                );
-
-                $metadata = $r->metaMsg;
-                $allowPass = $r->allowPass;
-                if($metadata->type != 'login') {
-                    $isMsgOk = $r->saveMsgResult;
-                    if($metadata->type != 'image') {
-                        if($isMsgOk) {
-                            if($r->isTest) {
-                                $isMsgOk = false;
-                            }else{
-                                file_put_contents($path, $has);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if($isMsgOk || $allowPass) {
-                $wh->sendMy('wa-wh', $path, $metadata->toArray());
-            }
-
+            $processMsg->execute($message);
             return new Response('', 200);
         }
     }
+
+    // /**
+    //  * Endpoint para la verificacion de conección
+    //  */
+    // #[Route('wa/wh/', methods: ['GET', 'POST'])]
+    // public function verifyWa(WebHook $wh, WaService $waS, Request $req): Response
+    // {
+
+    //     if($req->getMethod() == 'GET') {
+
+    //         $verify = $req->query->get('hub_verify_token');
+    //         if($verify == $this->getParameter('getWaToken')) {
+    
+    //             $mode = $req->query->get('hub_mode');
+    //             if($mode == 'subscribe') {
+    //                 $challenge = $req->query->get('hub_challenge');
+    //                 return new Response($challenge);
+    //             }
+    //         }
+    //     }
+
+    //     if($req->getMethod() == 'POST') {
+            
+    //         $has = $req->getContent();
+    //         if(strlen($has) < 50) {
+    //             return $this->json( [], 500 );
+    //         }
+
+    //         $isMsgOk = true;
+    //         $pathTo = $this->getParameter('waCmds');
+            
+    //         $message = json_decode($has, true);
+
+    //         new ProcesarMessage($message);
+    //         return new Response('', 200);
+
+    //         $obj = new ExtractMessage($message);
+    //         if($obj->isStt) {
+
+    //             return new Response('', 200);
+    //         }
+
+    //         $message = $obj->get();
+            
+    //         $obj = new IsMessageInteractive($message);
+    //         if($obj->isNtg) {
+
+    //             return new Response('', 200);
+    //         }
+
+    //         if($obj->isCot) {
+
+    //             return new Response('', 200);
+    //         }
+
+    //         $obj = new IsMessageOfCotizacion($message);
+    //         // si es no tengo, Eviar la siguiente solicitud
+
+    //         // si es cotizacio
+    //         $obj = new ExtractMessage($message);
+    //         $message = $obj->get();
+
+    //         $ext = new IsLoginMessage($message);
+
+    //         $filename = round(microtime(true) * 1000);
+    //         file_put_contents('wa_tmp/'.$filename.'.json', json_encode($message));
+    //         return new Response('', 200);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //         $metadata= new WaMessageDto($message);
+
+    //         if( mb_strpos($metadata->body, '[cmd]') !== false ) {
+
+    //             $cmd = $metadata->extractCmdFromBody();
+    //             $cmd = new CmdsFromWa($cmd, $pathTo);
+    //             return new Response('', 200);
+    //         }
+
+    //         $filename = round(microtime(true) * 1000);
+    //         $path  = $pathTo.'wa_'.$filename.'.json';
+
+    //         $filename = 'conv_free.'.$metadata->waId.'.cnv';
+    //         if(is_file($filename)) {
+
+    //             $metadata->campoResponsed = 'ctc_free';
+    //             $wh->sendMy('wa-wh', $path, $metadata->toArray());
+    //             return new Response('', 200);
+    //         }
+
+    //         if(!is_dir($pathTo)) {
+    //             mkdir($pathTo);
+    //         }
+
+    //         // $pathPr= $pathTo.'pr_'.$filename.'.json';
+    //         // file_put_contents($pathPr, json_encode($metadata->toArray()));
+
+    //         $metadata->pathToBackup = $path;
+    //         $allowPass = false;
+    //         if($metadata->type != 'status') {
+
+    //             $r = new WaTypeResponse(
+    //                 $metadata, $waS, $message, $pathTo,
+    //                 $this->getParameter('waTk'),
+    //                 $this->getParameter('nifiFld'),
+    //                 $this->getParameter('waCots')
+    //             );
+
+    //             $metadata = $r->metaMsg;
+    //             $allowPass = $r->allowPass;
+    //             if($metadata->type != 'login') {
+    //                 $isMsgOk = $r->saveMsgResult;
+    //                 if($metadata->type != 'image') {
+    //                     if($isMsgOk) {
+    //                         if($r->isTest) {
+    //                             $isMsgOk = false;
+    //                         }else{
+    //                             file_put_contents($path, $has);
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         if($isMsgOk || $allowPass) {
+    //             $wh->sendMy('wa-wh', $path, $metadata->toArray());
+    //         }
+
+    //         return new Response('', 200);
+    //     }
+    // }
 
     /**
      * Colocamos una marca para saber que un cotizador tiene una
