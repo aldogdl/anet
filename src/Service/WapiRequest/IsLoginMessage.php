@@ -24,9 +24,11 @@ class IsLoginMessage {
         $palClas = [];
         $partes = explode(' ', $body);
         $rota = count($partes);
-        for ($i=0; $i < $rota; $i++) { 
-            if(in_array($partes[$i], $this->token)) {
-                $palClas[] = $partes[$i];
+        for ($i=0; $i < $rota; $i++) {
+
+            $search = trim($partes[$i]);
+            if(in_array($search, $this->token)) {
+                $palClas[] = $search;
             }
         }
         
