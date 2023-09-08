@@ -88,11 +88,11 @@ class ProcesarMessage {
 
         if(count($result) > 0) {
             // Si hay errores los enviamos a backCore para su analisis;
-            $data = [
+            $message = [
                 'error' => $result,
                 'data'  => $message
             ];
-            $this->whook->sendMy('wa-wh-err', $fileServer, $data);
+            $this->whook->sendMy('wa-wh-err', $fileServer, $message);
         }
 
         $this->saveFile($fileServer, $message);

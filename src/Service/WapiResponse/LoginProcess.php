@@ -20,8 +20,12 @@ class LoginProcess
     ///
     private function getTimeKdk(String $timestamp): String {
 
-        $date = new \DateTime(strtotime($timestamp));
-        return $date->format('h:i:s a');
+        try {
+            $date = new \DateTime(strtotime($timestamp));
+            return $date->format('h:i:s a');
+        } catch (\Throwable $th) {
+            $this->hasErr = $th->getMessage();
+        }
     }
 
 }
