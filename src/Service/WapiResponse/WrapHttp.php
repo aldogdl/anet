@@ -33,7 +33,7 @@ class WrapHttp
     /** */
     public function send(String $token): array
     {
-        $error = 'No se recibio un cuerpo de mensaje valido para enviar.';
+        $error = 'No se recibió cuerpo de mensaje valido para enviar.';
         $code  = 501;
 
         if(count($this->bodyToSend) != 0) {

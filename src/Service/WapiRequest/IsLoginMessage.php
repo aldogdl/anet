@@ -32,7 +32,6 @@ class IsLoginMessage {
             }
         }
         
-        file_put_contents('segui12.json', json_encode($palClas));
         if(count($this->token) == count($palClas)) {
             $this->isLogin = true;
         }

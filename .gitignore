@@ -24,6 +24,8 @@ public_html/prod_sols/
 public_html/sendmy_fails/
 public_html/img_publik/
 public_html/.tkwa.txt
+public_html/tkwaconm.txt
+public_html/tkwa.txt
 public_html/error_log
 public_html/error.log
 public_html/request.log
@@ -39,7 +41,6 @@ public_html/nifi/
 public_html/nifi/fails/
 public_html/filtros/
 public_html/wa/
-public_html/tkwa.txt
 public_html/wa_cots/
 public_html/wa_backup/
 public_html/ctcs/

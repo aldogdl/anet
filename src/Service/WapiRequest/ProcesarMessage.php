@@ -71,19 +71,14 @@ class ProcesarMessage {
         }
 
         $obj = new IsLoginMessage($this->message);
-        
-        file_put_contents('segui2.json', ($obj->isLogin) ? '1' : '0');
-
         if($obj->isLogin) {
 
-            file_put_contents('segui4.json', '');
             $this->whook->sendMy('wa-wh', $fileServer, $this->message);
             
             $obj = new LoginProcess($this->message, $this->filesystem);
             if($obj->hasErr == '') {
-                file_put_contents('segui5.json', '');
+
                 if(array_key_exists('from', $this->message)) {
-                    file_put_contents('segui6.json', '');
                     $this->wapiHttp->wrapBody($this->message['from'], 'text', $obj->toWhatsapp);
                     $message['response'] = $obj->toWhatsapp;
                     $result = $this->wapiHttp->send($token);
