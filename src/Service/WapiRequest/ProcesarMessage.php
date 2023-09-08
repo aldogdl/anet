@@ -71,6 +71,9 @@ class ProcesarMessage {
         }
 
         $obj = new IsLoginMessage($this->message);
+        file_put_contents('segui.json', json_encode($this->message));
+        file_put_contents('segui2.json', $obj->isLogin);
+
         if($obj->isLogin) {
 
             $this->whook->sendMy('wa-wh', $fileServer, $this->message);

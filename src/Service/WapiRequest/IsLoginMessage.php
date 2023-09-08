@@ -21,17 +21,19 @@ class IsLoginMessage {
             }
         }
 
+        file_put_contents('segui3.json', json_encode($body));
+
         $palClas = [];
         $partes = explode(' ', $body);
         
         $rota = count($partes);
         for ($i=0; $i < $rota; $i++) { 
-            if(in_array($partes, $this->token)) {
+            if(in_array($partes[$i], $this->token)) {
                 $palClas[] = $partes[$i];
             }
         }
 
-        if(count($partes) == count($palClas)) {
+        if(count($this->token) == count($palClas)) {
             $this->isLogin = true;
         }
     }
