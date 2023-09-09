@@ -50,7 +50,6 @@ class ProcesarMessage {
         }
 
         if($obj->isStt) {
-            $this->message['subEvento'] = 'stt';
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
         }

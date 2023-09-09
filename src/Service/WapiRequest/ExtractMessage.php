@@ -39,15 +39,37 @@ class ExtractMessage {
                     if(count($result['changes']) == 1) {
 
                         $result = $result['changes'][0]['value'];
+
                         if(array_key_exists('metadata', $result)) {
                             $phoneNumberId = $result['metadata']['phone_number_id'];
+                        }
+
+                        if(array_key_exists('statuses', $result)) {
+                            $result = $result['statuses'][0];
+                            $status = [
+                                'id' => $result['id'],
+                                'status' => $result['status'],
+                                'timestamp' => $result['timestamp'],
+                                'from' => $result['recipient_id'],
+                                'category' => $result['pricing']['category'],
+                                'phone_number_id' => $phoneNumberId,
+                                'myTime' => ''.strtotime('now'),
+                                'subEvento' => 'stt',
+                            ];
+                            if(array_key_exists('expiration_timestamp', $result['conversation'])) {
+                                $status['subEvento'] = 'ini-session';
+                                $status['session'] = $result['conversation']['expiration_timestamp'];
+                            }
+                            $this->message = $status;
+                            $status = [];
+                            return true;
                         }
 
                         if(array_key_exists('messages', $result)) {
                             if(count($result['messages']) == 1) {
                                 $result = $result['messages'][0];
                                 $result['phone_number_id'] = $phoneNumberId;
-                                $result['myTime'] = strtotime('now');
+                                $result['myTime'] = ''.strtotime('now');
                                 $this->message = $result;
                                 $result = [];
                                 return true;
