@@ -48,6 +48,7 @@ class ProcesarMessage {
             $this->saveFile($folder.'/'.$obj->pathToAnalizar, $message);
             return;
         }
+        $this->message = $obj->get();
 
         if($obj->isStt) {
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
@@ -57,8 +58,6 @@ class ProcesarMessage {
         $filename = round(microtime(true) * 1000) .'.json';
         $pathBackup = $this->getFolderTo('waBackup');
         $fileServer = $pathBackup.'/'.$filename;
-        
-        $this->message = $obj->get();
         
         $obj = new IsInteractiveMessage($this->message);
         if($obj->isNtg) {
