@@ -71,11 +71,20 @@ class NiFiController extends AbstractController
     #[Route('broker/assets/{slug}/{filename}/{path}/{cacheable}/', methods: ['GET'])]
     public function getImageWa(String $slug, String $filename, String $path, String $cacheable): Response
     {
+
         $path = $this->getParameter($path);
         $full = $path.$slug.'/images/'.$filename;
-        $header = [];
+        $ext = explode('.', $filename);
+        $types = [
+            'jpeg' => 'image/jpeg',
+            'jpg' => 'image/jpeg',
+            'png' => 'image/png' 
+        ];
+        $header = [
+            'Content-Type' => $types[$ext]
+        ];
         if($cacheable == 'y') {
-            $header = ['Cache-Control' => 'max-age=7200'];
+            $header['Cache-Control'] = 'max-age=432000';
         }
         if(file_exists($full)) {
             return new BinaryFileResponse($full, 200, $header);
