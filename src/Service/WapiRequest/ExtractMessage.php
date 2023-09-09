@@ -45,6 +45,8 @@ class ExtractMessage {
                         }
 
                         if(array_key_exists('statuses', $result)) {
+                            
+                            $this->isStt = true;
                             $result = $result['statuses'][0];
                             $status = [
                                 'id' => $result['id'],

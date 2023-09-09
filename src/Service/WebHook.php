@@ -68,8 +68,15 @@ class WebHook
     private function setDataFromWhatsapp(array $proto, array $data): array
     {
         // antes era: evento: wa_message
-        $proto['evento'] = 'whatsapp_api';
-        $proto['from'] = 'NoConfig';
+        $event = 'whatsapp_api';
+        if(array_key_exists('subEvento', $data)) {
+            if($data['subEvento'] == 'stt') {
+                $event = 'statuses';
+            }
+        }
+
+        $proto['evento'] = $event;
+        $proto['from'] = $data['from'];
         return $proto;
     }
 
