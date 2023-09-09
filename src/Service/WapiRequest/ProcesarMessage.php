@@ -48,8 +48,10 @@ class ProcesarMessage {
             $this->saveFile($folder.'/'.$obj->pathToAnalizar, $message);
             return;
         }
-        if($obj->isStt) {
 
+        if($obj->isStt) {
+            $this->message['subEvento'] = 'stt';
+            $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
         }
 
@@ -61,12 +63,12 @@ class ProcesarMessage {
         
         $obj = new IsInteractiveMessage($this->message);
         if($obj->isNtg) {
-
+            $this->message['subEvento'] = 'ntg';
             return;
         }
 
         if($obj->isCot) {
-
+            $this->message['subEvento'] = 'initCoti';
             return;
         }
 
@@ -74,21 +76,21 @@ class ProcesarMessage {
 
         $obj = new IsCotizacionMessage($this->message);
         if($obj->inTransit) {
+            $this->message['subEvento'] = 'xxx';
             return;
         }
 
         $obj = new IsLoginMessage($this->message);
         if($obj->isLogin) {
 
+            $this->message['subEvento'] = 'iniLogin';
             $this->whook->sendMy('wa-wh', $fileServer, $this->message);
             
             $obj = new LoginProcess($this->message, $this->filesystem);
             if($obj->hasErr == '') {
 
                 if(array_key_exists('from', $this->message)) {
-
                     $conm->setBody('text', $obj->toWhatsapp);
-
                     $message['response'] = $conm->toArray();
                     $result = $this->wapiHttp->send($conm);
                 }
