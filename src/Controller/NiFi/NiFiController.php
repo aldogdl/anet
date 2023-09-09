@@ -80,7 +80,7 @@ class NiFiController extends AbstractController
             'jpg' => 'image/jpeg',
             'png' => 'image/png' 
         ];
-        
+
         if(count($ext) > 1) {
             $header = [
                 'Content-Type' => $types[$ext[1]]
@@ -88,6 +88,7 @@ class NiFiController extends AbstractController
             if($cacheable == 'y') {
                 $header['Cache-Control'] = 'max-age=432000';
             }
+            file_put_contents('cabecera.json', json_encode($header));
             if(file_exists($full)) {
                 return new BinaryFileResponse($full, 200, $header);
             }
