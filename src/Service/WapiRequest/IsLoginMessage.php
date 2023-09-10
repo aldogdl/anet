@@ -20,7 +20,7 @@ class IsLoginMessage {
                 $body = $body['body'];
             }
         }
-
+        file_put_contents('sabeeee.json', json_encode($body));
         $palClas = [];
         $partes = explode(' ', $body);
         $rota = count($partes);
