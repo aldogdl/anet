@@ -88,7 +88,15 @@ class NiFiController extends AbstractController
             if($cacheable == 'y') {
                 $header['Cache-Control'] = 'max-age=432000';
             }
-            file_put_contents('cabecera.json', json_encode($header));
+            $hoy = new \DateTime('now');
+            $content = [
+                'fullPath'     => $full,
+                'Content-Type' => $types[$ext[1]],
+                'fecha'   => $hoy->format('d-m-Y h:j:s')
+            ];
+            $filename = round(microtime(true) * 1000) .'.json';
+            file_put_contents('wa_get_imgs/'.$filename, json_encode($content));
+
             if(file_exists($full)) {
                 return new BinaryFileResponse($full, 200, $header);
             }
