@@ -92,7 +92,7 @@ class NiFiController extends AbstractController
             $content = [
                 'fullPath'     => $full,
                 'Content-Type' => $types[$ext[1]],
-                'fecha'   => $hoy->format('d-m-Y h:j:s')
+                'fecha'   => $hoy->format('d-m-Y h:i:s a')
             ];
             $filename = round(microtime(true) * 1000) .'.json';
             file_put_contents('wa_get_imgs/'.$filename, json_encode($content));
