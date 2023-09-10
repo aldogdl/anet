@@ -48,20 +48,29 @@ class ExtractMessage {
                             
                             $this->isStt = true;
                             $result = $result['statuses'][0];
+                            $cat = 'Sin Especificar';
+                            if(array_key_exists('pricing', $result)) {
+                                $cat = $result['pricing']['category'];
+                            }
+
                             $status = [
                                 'id' => $result['id'],
                                 'status' => $result['status'],
                                 'timestamp' => $result['timestamp'],
                                 'from' => $result['recipient_id'],
-                                'category' => $result['pricing']['category'],
+                                'category' => $cat,
                                 'phone_number_id' => $phoneNumberId,
                                 'myTime' => ''.strtotime('now'),
                                 'subEvento' => 'stt',
                             ];
-                            if(array_key_exists('expiration_timestamp', $result['conversation'])) {
-                                $status['subEvento'] = 'ini-session';
-                                $status['session'] = $result['conversation']['expiration_timestamp'];
+
+                            if(array_key_exists('conversation', $result)) {
+                                if(array_key_exists('expiration_timestamp', $result['conversation'])) {
+                                    $status['subEvento'] = 'ini-session';
+                                    $status['session'] = $result['conversation']['expiration_timestamp'];
+                                }
                             }
+                            
                             $this->message = $status;
                             $status = [];
                             return true;
