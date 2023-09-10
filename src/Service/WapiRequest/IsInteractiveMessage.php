@@ -14,17 +14,27 @@ class IsInteractiveMessage {
     */
     public function __construct(array $message)
     {
+        // Buscamos el key interactive
         if( array_key_exists('type', $message) ) {
+            
             $body = $message[$message['type']];
-            if( array_key_exists('id', $body) ) {
-                if( mb_strpos($body['id'], 'ntg_') !== false) {
-                    $this->isNtg = true;
-                    return true;
-                }
+            
+            // Buscamos el key interactive button_reply
+            if( array_key_exists('type', $body) ) {
+                
+                $body = $body[$body['type']];
 
-                if( mb_strpos($body['id'], 'cot_') !== false) {
-                    $this->isCot = true;
-                    return true;
+                if( array_key_exists('id', $body) ) {
+                    
+                    if( mb_strpos($body['id'], 'ntg_') !== false) {
+                        $this->isNtg = true;
+                        return true;
+                    }
+    
+                    if( mb_strpos($body['id'], 'cot_') !== false) {
+                        $this->isCot = true;
+                        return true;
+                    }
                 }
             }
         }
@@ -35,6 +45,6 @@ class IsInteractiveMessage {
     ///
     public function initCotizacion()
     {
-        
+
     }
 }
