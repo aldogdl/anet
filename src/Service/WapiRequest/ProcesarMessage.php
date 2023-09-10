@@ -54,17 +54,18 @@ class ProcesarMessage {
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
         }
-
-        $filename = round(microtime(true) * 1000) .'.json';
-        $pathBackup = $this->getFolderTo('waBackup');
-        $fileServer = $pathBackup.'/'.$filename;
         
+        file_put_contents('sabeeeiii.json', json_encode($this->message));
         $obj = new IsInteractiveMessage($this->message);
         if($obj->isNtg) {
             $this->message['subEvento'] = 'ntg';
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
         }
+        
+        $filename = round(microtime(true) * 1000) .'.json';
+        $pathBackup = $this->getFolderTo('waBackup');
+        $fileServer = $pathBackup.'/'.$filename;
 
         if($obj->isCot) {
             $this->message['subEvento'] = 'initCoti';
