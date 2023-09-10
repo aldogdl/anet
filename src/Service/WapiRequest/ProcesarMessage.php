@@ -62,11 +62,13 @@ class ProcesarMessage {
         $obj = new IsInteractiveMessage($this->message);
         if($obj->isNtg) {
             $this->message['subEvento'] = 'ntg';
+            $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
         }
 
         if($obj->isCot) {
             $this->message['subEvento'] = 'initCoti';
+            $obj->initCotizacion();
             return;
         }
 
