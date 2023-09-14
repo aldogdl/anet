@@ -84,7 +84,6 @@ class ProcesarMessage {
         $obj = new IsLoginMessage($this->message);
         if($obj->isLogin) {
 
-            
             $obj = new LoginProcess($this->message, $this->filesystem);
             if($obj->hasErr == '') {
                 if(array_key_exists('from', $this->message)) {
@@ -94,7 +93,10 @@ class ProcesarMessage {
                     $result = $this->wapiHttp->send($conm);
                     
                     $this->message['subEvento'] = 'iniLogin';
-                    $this->message['response']  = $message['response'];
+                    $this->message['response']  = [
+                        'type' => $message['response']['type'],
+                        'body' => $message['response']['body']
+                    ];
                     $this->whook->sendMy('wa-wh', $fileServer, $this->message);
                 }
             }
