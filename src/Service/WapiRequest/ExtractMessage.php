@@ -66,8 +66,7 @@ class ExtractMessage {
 
                             if(array_key_exists('conversation', $result)) {
                                 if(array_key_exists('expiration_timestamp', $result['conversation'])) {
-                                    $status['subEvento'] = 'ini-session';
-                                    $status['session'] = $result['conversation']['expiration_timestamp'];
+                                    $status['expiration_timestamp'] = $result['conversation']['expiration_timestamp'];
                                 }
                             }
                             

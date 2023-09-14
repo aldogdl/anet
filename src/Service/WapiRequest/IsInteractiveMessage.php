@@ -25,7 +25,7 @@ class IsInteractiveMessage {
                 $body = $body[$body['type']];
 
                 if( array_key_exists('id', $body) ) {
-                    
+
                     if( mb_strpos($body['id'], 'ntg_') !== false) {
                         $this->isNtg = true;
                         return true;
@@ -45,6 +45,6 @@ class IsInteractiveMessage {
     ///
     public function initCotizacion()
     {
-
+        
     }
 }
