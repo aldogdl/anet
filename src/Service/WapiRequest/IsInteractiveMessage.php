@@ -42,9 +42,4 @@ class IsInteractiveMessage {
         $this->message = $message;
     }
 
-    ///
-    public function initCotizacion()
-    {
-        
-    }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Service\WapiRequest;
 
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -14,6 +13,7 @@ use App\Service\WapiRequest\ExtractMessage;
 use App\Service\WapiRequest\IsInteractiveMessage;
 use App\Service\WapiRequest\IsCotizacionMessage;
 use App\Service\WapiResponse\ConmutadorWa;
+use App\Service\WapiResponse\FotosProcess;
 use App\Service\WapiResponse\LoginProcess;
 use App\Service\WapiResponse\WrapHttp;
 
@@ -56,31 +56,50 @@ class ProcesarMessage {
             return;
         }
         
-        $obj = new IsInteractiveMessage($this->message);
-        if($obj->isNtg) {
+        $filename = round(microtime(true) * 1000) .'.json';
+        $pathBackup = $this->getFolderTo('waBackup');
+        $fileServer = $pathBackup.'/'.$filename;
+                
+        $conm = new ConmutadorWa($this->message, $this->params->get('tkwaconm'));
+
+        $isInteractive = new IsInteractiveMessage($this->message);
+        $cotTransit = new IsCotizacionMessage($this->message, $this->params->get('waCots'));
+        if($cotTransit->inTransit) {
+
+            $fileCot = $cotTransit->getCotizacionInTransit();
+            switch ($$fileCot['current']) {
+                case 'fotos':
+                    $obj = new FotosProcess($cotTransit->pathFull);
+                    $isValid = $obj->isValid($this->message);
+                    break;
+                
+                default:
+                    # code...
+                    break;
+            }
+            return;
+        }
+
+        if($isInteractive->isCot) {
+
+            $cotTransit->setStepCotizacionInTransit(0);
+
+            $obj = new FotosProcess($cotTransit->pathFull);
+            
+            $conm->setBody('text', $obj->getMessage());
+            $result = $this->wapiHttp->send($conm);
+            
+            $this->message = $obj->buildResponse($this->message, $conm->toArray());
+            $this->whook->sendMy('wa-wh', 'notSave', $this->message);
+            return;
+        }
+
+        if($isInteractive->isNtg) {
             $this->message['subEvento'] = 'ntg';
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
         }
-        
-        $filename = round(microtime(true) * 1000) .'.json';
-        $pathBackup = $this->getFolderTo('waBackup');
-        $fileServer = $pathBackup.'/'.$filename;
-
-        if($obj->isCot) {
-            $this->message['subEvento'] = 'cot';
-            $obj->initCotizacion();
-            return;
-        }
-
-        $conm = new ConmutadorWa($this->message, $this->params->get('tkwaconm'));
-
-        $obj = new IsCotizacionMessage($this->message);
-        if($obj->inTransit) {
-            $this->message['subEvento'] = 'xxx';
-            return;
-        }
-
+                
         $obj = new IsLoginMessage($this->message);
         if($obj->isLogin) {
 
