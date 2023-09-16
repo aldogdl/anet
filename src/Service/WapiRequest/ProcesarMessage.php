@@ -132,34 +132,23 @@ class ProcesarMessage {
 
                 case 'costo':
 
-                    $obj = new DetallesProcess($cotTransit->pathFull);
+                    $obj = new CostoProcess($cotTransit->pathFull);
                     if( $isInteractive->isCot || $isInteractive->isNtg ) {
                         $conm->setBody('text', $obj->getMessageError('replyBtn', $fileCot));
                         $result = $this->wapiHttp->send($conm, true);
                         return;
                     }
 
-                    $validar = true;
-                    if($isInteractive->asNew) {
-                        $validar = false;
-                    }
-                    if($isInteractive->normal) {
-                        $validar = false;
-                    }
-
-                    if($validar) {
-                        $isValid = $obj->isValid($this->message, $fileCot);
-                        if($isValid != '') {
-                            $conm->setBody('text', $obj->getMessageError($isValid, $fileCot));
-                            $result = $this->wapiHttp->send($conm, true);
-                            return;
-                        }
+                    $isValid = $obj->isValid($this->message, $fileCot);
+                    if($isValid != '') {
+                        $conm->setBody('text', $obj->getMessageError($isValid, $fileCot));
+                        $result = $this->wapiHttp->send($conm, true);
+                        return;
                     }
 
-                    // Cambiamos a costo
-                    $fileCot = $cotTransit->updateStepCotizacionInTransit(2, $fileCot);
-                    $obj = new CostoProcess($cotTransit->pathFull);
-                    $conm->setBody('text', $obj->getMessage($fileCot));
+                    // Cambiamos a Gracias
+                    $cotTransit->finishCotizacionInTransit();
+                    $conm->setBody('text', $obj->getMessageGrax($fileCot));
                     $result = $this->wapiHttp->send($conm, true);
 
                     $this->message = $obj->buildResponse($this->message, $conm->toArray());

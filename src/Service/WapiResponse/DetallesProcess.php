@@ -85,17 +85,22 @@ class DetallesProcess
             'replyBtn' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "📝 Se esperaban Detalles de la Pieza\n\n🚗 Cotización en Curso..."
+                "body" => "📝 Se esperaban los *Detalles* de la Pieza.\n\n🚗 Cotización en Curso..."
             ],
             'notDeta' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "⚠️ Los detalles no son validos, se más específico por favor."
+                "body" => "⚠️ Los Detalles no son válidos, se más específico por favor."
             ],
             'invalid' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "⚠️ Escribe una combinación de letras y números para los detalles, por favor."
+                "body" => "⚠️ Escribe una combinación de letras y números para los Detalles, por favor."
+            ],
+            'unknow' => [
+                "context" => $inTransit["wamid"],
+                "preview_url" => false,
+                "body" => "😱 Error desconocido, enviar el valor nuevamente por favor."
             ]
         ];
 

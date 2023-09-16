@@ -2,6 +2,8 @@
 
 namespace App\Service\WapiResponse;
 
+use App\Service\WapiRequest\ValidatorsMsgs;
+
 class CostoProcess
 {
     public String $pathToCot = '';
@@ -24,16 +26,39 @@ class CostoProcess
     }
 
     ///
+    public function getMessageGrax(array $inTransit): array {
+
+        return [
+            "context" => $inTransit["wamid"],
+            "preview_url" => false,
+            "body" => "👏 Listo!! Mil Gracias...\n\nCotización en Valoración.\n\n🤝🏻 Éxito en tus Ventas!!."
+        ];
+        
+    }
+
+    ///
     public function isValid(array $message, array $fileCot): String {
 
         if(array_key_exists('type', $message)) {
-            if(array_key_exists('mime_type', $message[ $message['type'] ])) {
+
+            if(array_key_exists('body', $message[ $message['type'] ])) {
+                
+                $deta = $message[ $message['type'] ]['body'];
+                if(strlen($deta) < 3) {
+                    return 'notCosto';
+                }
+
+                $isNum = new ValidatorsMsgs();
+                if(!$isNum->isValidNumero($deta)) {
+                    return 'notDigit';
+                }
+
                 $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
-                return true;
+                return '';
             }
         }
 
-        return 'notDeta';
+        return 'unknow';
     }
     
     ///
@@ -43,12 +68,22 @@ class CostoProcess
             'replyBtn' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "📝 Se esperaban Detalles de la Pieza\n\n🚗 Cotización en Curso..."
+                "body" => "📝 Se esperaba el *Costo* de la Pieza.\n\n🚗 Cotización en Curso..."
             ],
-            'notDeta' => [
+            'notCosto' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "⚠️ Los detalles no son validos, se más específico por favor."
+                "body" => "⚠️ El Costo no es válido, se más específico por favor."
+            ],
+            'notDigit' => [
+                "context" => $inTransit["wamid"],
+                "preview_url" => false,
+                "body" => "⚠️ El Costo no es válido, Escribe sólo números por favor."
+            ],
+            'unknow' => [
+                "context" => $inTransit["wamid"],
+                "preview_url" => false,
+                "body" => "😱 Error desconocido, enviar el valor nuevamente por favor."
             ]
         ];
         
@@ -63,7 +98,7 @@ class CostoProcess
             'body' => $response['body']
         ];
         $message['subEvento'] = 'cot';
-        $message['step'] = 'detalles';
+        $message['step'] = 'costo';
         $message['fileToCot'] = $this->pathToCot;
         return $message;
     }

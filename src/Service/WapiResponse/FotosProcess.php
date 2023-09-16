@@ -40,7 +40,7 @@ class FotosProcess
             'replyBtn' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "📷 Se esperaban Fotografías\n\n🚗 Cotización en Curso..."
+                "body" => "📷 Se esperaban *Fotografías*.\n\n🚗 Cotización en Curso..."
             ],
             'notFotos' => [
                 "context" => $inTransit["wamid"],

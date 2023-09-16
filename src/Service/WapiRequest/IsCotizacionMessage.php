@@ -67,6 +67,14 @@ class IsCotizacionMessage {
     }
 
     /**
+     * Eliminamos el archivo de contizacion en transito
+     */
+    public function finishCotizacionInTransit() {
+
+        unlink($this->pathFull);
+    }
+
+    /**
      * Recuperamos el archivo de contizacion en transito
      */
     public function getCotizacionInTransit(): array {
