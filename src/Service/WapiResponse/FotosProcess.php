@@ -25,13 +25,18 @@ class FotosProcess
     public function getMessageError(String $tipo, array $inTransit): array {
 
         $msgs = [
-            'notFotos' => [
-                "context" => "wamid.HBgNNTIxMzMyMjA2MDM1MhUCABEYEkM5OEZCMzBGQjg4NDI3OTREOAA=",
+            'replyBtn' => [
+                "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "😃👍 Se esperaban Fotografías\nCotización en Curso..."
+                "body" => "📷 Se esperaban Fotografías\n\n🚗 Cotización en Curso..."
+            ],
+            'notFotos' => [
+                "context" => $inTransit["wamid"],
+                "preview_url" => false,
+                "body" => "📷 Se esperaban Fotografías\n\n🚗 Cotización en Curso..."
             ]
         ];
-
+        
         return $msgs[$tipo];
     }
 

@@ -20,7 +20,7 @@ class IsCotizacionMessage {
     */
     public function __construct(array $message, String $pathCotz)
     {
-        $this->message = $message;
+        $this->message  = $message;
         $this->pathCotz = $pathCotz;
         $this->pathFull = $this->pathCotz.$this->message['from'].'.json';
         $this->hasCotizacionInTransit();
@@ -41,11 +41,14 @@ class IsCotizacionMessage {
      */
     public function setStepCotizacionInTransit(int $step = 0) {
 
+        $wamid = '';
+        if(array_key_exists('context', $this->message)) {
+            $wamid = $this->message['context']['id'];
+        }
         file_put_contents($this->pathFull, json_encode([
             'current' => $this->sortCot[$step],
-            'values' => [
-                $this->sortCot[$step] => []
-            ]
+            'wamid'   => $wamid,
+            'values'  => [ $this->sortCot[$step] => [] ]
         ]));
     }
 
