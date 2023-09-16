@@ -66,6 +66,7 @@ class ProcesarMessage {
             $fileCot = $cotTransit->getCotizacionInTransit();
 
             switch ($fileCot['current']) {
+
                 case 'fotos':
 
                     $obj = new FotosProcess($cotTransit->pathFull);
@@ -109,15 +110,50 @@ class ProcesarMessage {
                     if($isInteractive->normal) {
                         $validar = false;
                     }
+
                     if($validar) {
                         $isValid = $obj->isValid($this->message, $fileCot);
-                        if(!$isValid) {
-                            $conm->setBody('interactive', $obj->getMessageError('notFotosReply', $fileCot));
+                        if($isValid != '') {
+                            $conm->setBody('text', $obj->getMessageError($isValid, $fileCot));
                             $result = $this->wapiHttp->send($conm, true);
                             return;
                         }
-                    }else{
-                        $fileCot['values'][ $fileCot['current'] ][] = $this->message[ $this->message['type'] ];
+                    }
+
+                    // Cambiamos a costo
+                    $fileCot = $cotTransit->updateStepCotizacionInTransit(2, $fileCot);
+                    $obj = new CostoProcess($cotTransit->pathFull);
+                    $conm->setBody('text', $obj->getMessage($fileCot));
+                    $result = $this->wapiHttp->send($conm, true);
+
+                    $this->message = $obj->buildResponse($this->message, $conm->toArray());
+                    $this->whook->sendMy('wa-wh', 'notSave', $this->message);
+                    break;
+
+                case 'costo':
+
+                    $obj = new DetallesProcess($cotTransit->pathFull);
+                    if( $isInteractive->isCot || $isInteractive->isNtg ) {
+                        $conm->setBody('text', $obj->getMessageError('replyBtn', $fileCot));
+                        $result = $this->wapiHttp->send($conm, true);
+                        return;
+                    }
+
+                    $validar = true;
+                    if($isInteractive->asNew) {
+                        $validar = false;
+                    }
+                    if($isInteractive->normal) {
+                        $validar = false;
+                    }
+
+                    if($validar) {
+                        $isValid = $obj->isValid($this->message, $fileCot);
+                        if($isValid != '') {
+                            $conm->setBody('text', $obj->getMessageError($isValid, $fileCot));
+                            $result = $this->wapiHttp->send($conm, true);
+                            return;
+                        }
                     }
 
                     // Cambiamos a costo

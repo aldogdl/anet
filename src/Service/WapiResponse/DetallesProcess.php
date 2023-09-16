@@ -2,6 +2,8 @@
 
 namespace App\Service\WapiResponse;
 
+use App\Service\WapiRequest\ValidatorsMsgs;
+
 class DetallesProcess
 {
     public String $pathToCot = '';
@@ -19,7 +21,7 @@ class DetallesProcess
             "context" => $inTransit["wamid"],
             "type" => "button",
             "body" => [
-                "text" => "👌🏼 Ok!!, Ahora escribe:\n Los *DETALLES* de la Pieza o...\nUtiliza unos de los botones frecuentes."
+                "text" => "👌🏼 Ok!!, Ahora escribe:\n\nLos *DETALLES* de la Pieza o...\n\nUtiliza unos de los botones frecuentes. 👇🏻"
             ],
             "footer" => [
                 "text" => '📷 _Puedes enviar *más fotos* si lo deseas._'
@@ -30,7 +32,7 @@ class DetallesProcess
                         "type" => "reply",
                         "reply" => [
                             "id" => "asNew",
-                            "title" => "ESTA COMO NUEVA"
+                            "title" => "ESTá COMO NUEVA"
                         ]
                     ],
                     [
@@ -50,15 +52,32 @@ class DetallesProcess
     public function isValid(array $message, array $fileCot): String {
 
         if(array_key_exists('type', $message)) {
+
             if(array_key_exists('mime_type', $message[ $message['type'] ])) {
+                $fileCot['values']['fotos'][] = $message[ $message['type'] ];
+                return 'image';
+            }
+
+            if(array_key_exists('body', $message[ $message['type'] ])) {
+                
+                $deta = $message[ $message['type'] ]['body'];
+                if(strlen($deta) < 3) {
+                    return 'notDeta';
+                }
+
+                $isNum = new ValidatorsMsgs();
+                if($isNum->isValidNumero($deta)) {
+                    return 'invalid';
+                }
+
                 $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
-                return true;
+                return '';
             }
         }
 
-        return 'notDeta';
+        return 'unknow';
     }
-    
+
     ///
     public function getMessageError(String $tipo, array $inTransit): array {
 
@@ -72,9 +91,14 @@ class DetallesProcess
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
                 "body" => "⚠️ Los detalles no son validos, se más específico por favor."
+            ],
+            'invalid' => [
+                "context" => $inTransit["wamid"],
+                "preview_url" => false,
+                "body" => "⚠️ Escribe una combinación de letras y números para los detalles, por favor."
             ]
         ];
-        
+
         return $msgs[$tipo];
     }
 

@@ -17,31 +17,8 @@ class CostoProcess
 
         return [
             "context" => $inTransit["wamid"],
-            "type" => "button",
-            "body" => [
-                "text" => "👌🏼 Ok!!, Ahora escribe:\n Los *DETALLES* de la Pieza o...\nUtiliza unos de los botones frecuentes."
-            ],
-            "footer" => [
-                "text" => '📷 _Puedes enviar *más fotos* si lo deseas._'
-            ],
-            "action" => [
-                "buttons" => [
-                    [
-                        "type" => "reply",
-                        "reply" => [
-                            "id" => "asNew",
-                            "title" => "ESTA COMO NUEVA"
-                        ]
-                    ],
-                    [
-                        "type" => "reply",
-                        "reply" => [
-                            "id" => "normal",
-                            "title" => "ESTADO NORMAL DE USO"
-                        ]
-                    ]
-                ]
-            ]
+            "preview_url" => false,
+            "body" => "😃👌🏼 Perfecto Gracias, ahora...\n\nTu *MEJOR* COSTO de proveedor 🤝🏻.\n\n🔖 Escribe con sólo números por favor."
         ];
         
     }
