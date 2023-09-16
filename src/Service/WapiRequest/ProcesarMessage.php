@@ -65,10 +65,10 @@ class ProcesarMessage {
             switch ($fileCot['current']) {
                 case 'fotos':
                     $obj = new FotosProcess($cotTransit->pathFull);
+                    $conm->setBody('text', $obj->getMessageError('notFotos', $fileCot));
+                    $result = $this->wapiHttp->send($conm);
+                    return;
                     if( $isInteractive->isCot || $isInteractive->isNtg ) {
-                        $conm->setBody('text', $obj->getMessageError('notFotos', $fileCot));
-                        $result = $this->wapiHttp->send($conm);
-                        return;
                     }
                     $isValid = $obj->isValid($this->message, $fileCot);
                     break;
