@@ -49,28 +49,28 @@ class ProcesarMessage {
             $this->saveFile($folder.'/'.$obj->pathToAnalizar, $message);
             return;
         }
+        
         $this->message = $obj->get();
-
         if($obj->isStt) {
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
         }
         
-        $filename = round(microtime(true) * 1000) .'.json';
-        $pathBackup = $this->getFolderTo('waBackup');
-        $fileServer = $pathBackup.'/'.$filename;
-                
         $conm = new ConmutadorWa($this->message, $this->params->get('tkwaconm'));
-
         $isInteractive = new IsInteractiveMessage($this->message);
         $cotTransit = new IsCotizacionMessage($this->message, $this->params->get('waCots'));
         if($cotTransit->inTransit) {
 
             $fileCot = $cotTransit->getCotizacionInTransit();
-            switch ($$fileCot['current']) {
+            switch ($fileCot['current']) {
                 case 'fotos':
                     $obj = new FotosProcess($cotTransit->pathFull);
-                    $isValid = $obj->isValid($this->message);
+                    if( $isInteractive->isCot || $isInteractive->isNtg ) {
+                        $conm->setBody('text', $obj->getMessageError('notFotos', $fileCot));
+                        $result = $this->wapiHttp->send($conm);
+                        return;
+                    }
+                    $isValid = $obj->isValid($this->message, $fileCot);
                     break;
                 
                 default:
@@ -88,7 +88,7 @@ class ProcesarMessage {
             
             $conm->setBody('text', $obj->getMessage());
             $result = $this->wapiHttp->send($conm);
-            
+
             $this->message = $obj->buildResponse($this->message, $conm->toArray());
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
@@ -99,7 +99,11 @@ class ProcesarMessage {
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
             return;
         }
-                
+
+        $filename = round(microtime(true) * 1000) .'.json';
+        $pathBackup = $this->getFolderTo('waBackup');
+        $fileServer = $pathBackup.'/'.$filename;
+
         $obj = new IsLoginMessage($this->message);
         if($obj->isLogin) {
 

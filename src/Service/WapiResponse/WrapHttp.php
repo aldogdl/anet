@@ -18,12 +18,12 @@ class WrapHttp
     }
 
     /** */
-    public function send(ConmutadorWa $conm): array
+    public function send(ConmutadorWa $conm, bool $isReply = false): array
     {
         $error = 'No se recibió cuerpo de mensaje valido para enviar.';
         $code  = 501;
 
-        $this->wrapBody($conm->to, $conm->type, $conm->body);
+        $this->wrapBody($conm->to, $conm->type, $conm->body, $isReply);
 
         if(count($this->bodyToSend) != 0) {
 
@@ -53,7 +53,15 @@ class WrapHttp
     }
 
     /** */
-    private function wrapBody(String $to, String $type, array $body): void {
+    private function wrapBody(String $to, String $type, array $body, bool $isReply): void {
+
+        $context = '';
+        if($isReply) {
+            if(array_key_exists('context', $body)) {
+                $context = $body['context'];
+                unset($body['context']);
+            }
+        }
 
         $this->bodyToSend = [
             "to"   => $to,
@@ -62,6 +70,10 @@ class WrapHttp
             "messaging_product" => "whatsapp",
             "recipient_type"    => "individual",
         ];
+ 
+        if($context != '') {
+            $this->bodyToSend['context'] = ['message_id' => $context];
+        }
     }
 
 }

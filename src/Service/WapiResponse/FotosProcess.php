@@ -22,6 +22,20 @@ class FotosProcess
     }
 
     ///
+    public function getMessageError(String $tipo, array $inTransit): array {
+
+        $msgs = [
+            'notFotos' => [
+                "context" => "wamid.HBgNNTIxMzMyMjA2MDM1MhUCABEYEkM5OEZCMzBGQjg4NDI3OTREOAA=",
+                "preview_url" => false,
+                "body" => "😃👍 Se esperaban Fotografías\nCotización en Curso..."
+            ]
+        ];
+
+        return $msgs[$tipo];
+    }
+
+    ///
     public function isValid(array $message): bool {
 
         return true;
