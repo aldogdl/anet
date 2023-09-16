@@ -72,18 +72,20 @@ class ProcesarMessage {
                         return;
                     }
                     $isValid = $obj->isValid($this->message, $fileCot);
-                    if($isValid) {
-
-                        // Cambiamos a detalles
-                        $fileCot = $cotTransit->updateStepCotizacionInTransit(1, $fileCot);
-                        $obj = new DetallesProcess($cotTransit->pathFull);
-                        $conm->setBody('text', $obj->getMessage());
-                        $result = $this->wapiHttp->send($conm);
-
-                        $this->message = $obj->buildResponse($this->message, $conm->toArray());
-                        $this->whook->sendMy('wa-wh', 'notSave', $this->message);
+                    if(!$isValid) {
+                        $conm->setBody('text', $obj->getMessageError('notFotos', $fileCot));
+                        $result = $this->wapiHttp->send($conm, true);
                         return;
                     }
+                    // Cambiamos a detalles
+                    $fileCot = $cotTransit->updateStepCotizacionInTransit(1, $fileCot);
+                    $obj = new DetallesProcess($cotTransit->pathFull);
+                    $conm->setBody('text', $obj->getMessage());
+                    $result = $this->wapiHttp->send($conm);
+
+                    $this->message = $obj->buildResponse($this->message, $conm->toArray());
+                    $this->whook->sendMy('wa-wh', 'notSave', $this->message);
+                    return;
                     break;
                 
                 default:
