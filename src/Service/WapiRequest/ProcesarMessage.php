@@ -73,10 +73,13 @@ class ProcesarMessage {
                     }
                     $isValid = $obj->isValid($this->message, $fileCot);
                     if(!$isValid) {
-                        $conm->setBody('text', $obj->getMessageError('notFotos', $fileCot));
-                        $result = $this->wapiHttp->send($conm, true);
-                        return;
+                        if(!$isInteractive->noFto) {
+                            $conm->setBody('interactive', $obj->getMessageError('notFotosReply', $fileCot));
+                            $result = $this->wapiHttp->send($conm, true);
+                            return;
+                        }
                     }
+                    
                     // Cambiamos a detalles
                     $fileCot = $cotTransit->updateStepCotizacionInTransit(1, $fileCot);
                     $obj = new DetallesProcess($cotTransit->pathFull);

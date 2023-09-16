@@ -20,7 +20,7 @@ class FotosProcess
             "body" => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor."
         ];
     }
-    
+
     ///
     public function isValid(array $message, array $fileCot): bool {
 
@@ -46,6 +46,27 @@ class FotosProcess
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
                 "body" => "📷 Se esperaban Fotografías\n\n🚗 Cotización en Curso..."
+            ],
+            'notFotosReply' => [
+                "context" => $inTransit["wamid"],
+                "type" => "button",
+                "body" => [
+                    "text" => "⚠️ Las Fotos son Importantes pero..."
+                ],
+                "footer" => [
+                    "text" => 'Si deseas continuar sin fotos, presiona el siguiente botón'
+                ],
+                "action" => [
+                    "buttons" => [
+                        [
+                            "type" => "reply",
+                            "reply" => [
+                                "id" => "conti_sin_fotos",
+                                "title" => "CONTINUAR SIN FOTOS"
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ];
         

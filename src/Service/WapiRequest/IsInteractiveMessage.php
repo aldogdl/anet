@@ -6,6 +6,7 @@ class IsInteractiveMessage {
 
     public bool $isNtg = false;
     public bool $isCot = false;
+    public bool $noFto = false;
 
     private array $message;
 
@@ -33,6 +34,11 @@ class IsInteractiveMessage {
     
                     if( mb_strpos($body['id'], 'cot_') !== false) {
                         $this->isCot = true;
+                        return true;
+                    }
+
+                    if( mb_strpos($body['id'], 'conti_sin_fotos') !== false) {
+                        $this->noFto = true;
                         return true;
                     }
                 }
