@@ -7,6 +7,8 @@ class IsInteractiveMessage {
     public bool $isNtg = false;
     public bool $isCot = false;
     public bool $noFto = false;
+    public bool $asNew = false;
+    public bool $normal = false;
 
     private array $message;
 
@@ -39,6 +41,15 @@ class IsInteractiveMessage {
 
                     if( mb_strpos($body['id'], 'conti_sin_fotos') !== false) {
                         $this->noFto = true;
+                        return true;
+                    }
+                    
+                    if( mb_strpos($body['id'], 'asNew') !== false) {
+                        $this->asNew = true;
+                        return true;
+                    }
+                    if( mb_strpos($body['id'], 'normal') !== false) {
+                        $this->normal = true;
                         return true;
                     }
                 }

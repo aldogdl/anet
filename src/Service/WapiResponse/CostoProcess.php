@@ -2,7 +2,7 @@
 
 namespace App\Service\WapiResponse;
 
-class DetallesProcess
+class CostoProcess
 {
     public String $pathToCot = '';
 
