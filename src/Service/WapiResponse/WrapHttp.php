@@ -37,6 +37,11 @@ class WrapHttp
                 ]
             );
 
+            file_put_contents('prueba.json', json_encode([
+                'response' => $response->getContent(),
+                'request' => $this->bodyToSend
+            ]));
+            
             if($response->getStatusCode() == 200) {
                 return [];
             }
