@@ -2,7 +2,7 @@
 
 namespace App\Service\WapiResponse;
 
-class FotosProcess
+class DetallesProcess
 {
     public String $pathToCot = '';
 
@@ -17,10 +17,10 @@ class FotosProcess
 
         return [
             "preview_url" => false,
-            "body" => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor."
+            "body" => "👌🏼 Ok!!, Ahora...\n Los *DETALLES* de la Pieza.\n\n📷 _Puedes enviar *más fotos* si lo deseas._"
         ];
     }
-    
+
     ///
     public function isValid(array $message, array $fileCot): bool {
 
@@ -32,7 +32,7 @@ class FotosProcess
         }
         return false;
     }
-
+    
     ///
     public function getMessageError(String $tipo, array $inTransit): array {
 
@@ -60,7 +60,7 @@ class FotosProcess
             'body' => $response['body']
         ];
         $message['subEvento'] = 'cot';
-        $message['step'] = 'fotos';
+        $message['step'] = 'detalles';
         $message['fileToCot'] = $this->pathToCot;
         return $message;
     }

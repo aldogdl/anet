@@ -41,15 +41,29 @@ class IsCotizacionMessage {
      */
     public function setStepCotizacionInTransit(int $step = 0) {
 
+        // Guardamos la referencia al mensaje de cotizacion respondido
+        // por medio de boton cotizar, solo esa ocación
         $wamid = '';
         if(array_key_exists('context', $this->message)) {
             $wamid = $this->message['context']['id'];
         }
+
         file_put_contents($this->pathFull, json_encode([
             'current' => $this->sortCot[$step],
             'wamid'   => $wamid,
             'values'  => [ $this->sortCot[$step] => [] ]
         ]));
+    }
+
+    /**
+     * Actualizamos el archivo de contizacion en transito
+     */
+    public function updateStepCotizacionInTransit(int $step, array $fileCot): array {
+
+        $fileCot['current'] = $this->sortCot[$step];
+        $fileCot['values'][$this->sortCot[$step]] = [];
+        file_put_contents($this->pathFull, json_encode($fileCot));
+        return $fileCot;
     }
 
     /**
