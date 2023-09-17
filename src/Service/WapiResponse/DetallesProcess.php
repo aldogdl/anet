@@ -32,7 +32,7 @@ class DetallesProcess
                         "type" => "reply",
                         "reply" => [
                             "id" => "asNew",
-                            "title" => "ESTá COMO NUEVA"
+                            "title" => "ESTÁ COMO NUEVA"
                         ]
                     ],
                     [
@@ -100,7 +100,7 @@ class DetallesProcess
             'unknow' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "😱 Error desconocido, enviar el valor nuevamente por favor."
+                "body" => "😱 Error desconocido al leer los *DETALLES*, envialos nuevamente por favor."
             ]
         ];
 

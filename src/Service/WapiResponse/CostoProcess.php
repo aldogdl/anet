@@ -83,7 +83,7 @@ class CostoProcess
             'unknow' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "😱 Error desconocido, enviar el valor nuevamente por favor."
+                "body" => "😱 Error desconocido al leer el *COSTO*, envialo nuevamente por favor."
             ]
         ];
         
@@ -91,14 +91,14 @@ class CostoProcess
     }
 
     ///
-    public function buildResponse(array $message, array $response): array {
+    public function buildResponse(array $message, array $response, bool $isGrax = false): array {
 
         $message['response']  = [
             'type' => $response['type'],
             'body' => $response['body']
         ];
         $message['subEvento'] = 'cot';
-        $message['step'] = 'costo';
+        $message['step'] = ($isGrax) ? 'gracias' : 'costo';
         $message['fileToCot'] = $this->pathToCot;
         return $message;
     }

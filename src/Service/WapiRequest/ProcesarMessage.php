@@ -151,7 +151,7 @@ class ProcesarMessage {
                     $conm->setBody('text', $obj->getMessageGrax($fileCot));
                     $result = $this->wapiHttp->send($conm, true);
 
-                    $this->message = $obj->buildResponse($this->message, $conm->toArray());
+                    $this->message = $obj->buildResponse($this->message, $conm->toArray(), true);
                     $this->whook->sendMy('wa-wh', 'notSave', $this->message);
                     break;
                 
