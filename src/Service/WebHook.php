@@ -36,13 +36,7 @@ class WebHook
                     'json' => $proto
                 ]
             );
-            file_put_contents('prueba2.json', json_encode([
-                'request' => [
-                    'statusCode' => $response->getStatusCode(),
-                    'motive' => $response->getContent(),
-                    'fail' => $this->sendMyFail
-                ]
-            ]));
+
             $statusCode = $response->getStatusCode();
             if($statusCode != 200) {
 
