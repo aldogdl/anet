@@ -53,13 +53,13 @@ class DetallesProcess
 
         if(array_key_exists('type', $message)) {
 
-            // Revisamos primero si lo que nos estan enviando son fotos
             $val = new ValidatorsMsgs();
-            $isImg = $val->isValidImage($message, []);
 
+            // Revisamos primero si lo que nos estan enviando son fotos
+            $isImg = $val->isValidImage($message, []);
             if($isImg == '') {
                 // Es una imagen, la guardamos en el archivo
-                $fileCot['values']['fotos'][] = $message[ $message['type'] ];
+                $fileCot = $val->result;
                 return 'image';
             }
 
