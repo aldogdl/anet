@@ -31,7 +31,7 @@ class CostoProcess
         return [
             "context" => $inTransit["wamid"],
             "preview_url" => false,
-            "body" => "👏 Listo!! Mil Gracias...\n\nCotización en Valoración.\n\n🤝🏻 Éxito en tus Ventas!!."
+            "body" => "👏 Listo!! Mil Gracias...\n\n*Cotización en Valoración*.\n\n🤝🏻 Éxito en tus Ventas!!."
         ];
         
     }

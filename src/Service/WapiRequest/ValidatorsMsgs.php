@@ -5,6 +5,32 @@ namespace App\Service\WapiRequest;
 class ValidatorsMsgs {
 
     public $result;
+    public $valids = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+    /**
+     * Se usa para saber si es valida la imagen valida, y si el argumento $fileCot
+     * no es vacio, entonces lo hidratamos con el resultado.
+     */
+    public function isValidImage(array $message, array $fileCot): String {
+
+        $this->result = $fileCot;
+        if(array_key_exists('type', $message)) {
+
+            if(array_key_exists('mime_type', $message[ $message['type'] ])) {
+
+                $tipo = $message[ $message['type'] ]['mime_type'];
+                if(in_array($tipo, $this->valids)) {
+                    if(count($fileCot) > 0) {
+                        $this->result['values'][ $this->result['current'] ][] = $message[ $message['type'] ];
+                    }
+                    return '';
+                }
+                return 'invalid';
+            }
+        }
+
+        return 'notFotosReply';
+    }
 
     /**
      * Solo es necesario revisar el costo para saber si estan enviando un numero

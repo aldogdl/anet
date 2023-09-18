@@ -49,13 +49,30 @@ class DetallesProcess
     }
 
     ///
-    public function isValid(array $message, array $fileCot): String {
+    public function isValid(array $message, array $fileCot, bool $validar): String {
 
         if(array_key_exists('type', $message)) {
 
-            if(array_key_exists('mime_type', $message[ $message['type'] ])) {
+            // Revisamos primero si lo que nos estan enviando son fotos
+            $val = new ValidatorsMsgs();
+            $isImg = $val->isValidImage($message, []);
+
+            if($isImg == '') {
+                // Es una imagen, la guardamos en el archivo
                 $fileCot['values']['fotos'][] = $message[ $message['type'] ];
                 return 'image';
+            }
+
+            // Si no hay que validar es por que presionaron un boton, pero hay que
+            // revisar si hay fotos.
+            if(!$validar) {
+
+                if(array_key_exists('fotos', $fileCot['values'])) {
+                    if(count($fileCot['values']['fotos']) > 0) {
+                        return '';
+                    }
+                }
+                return 'notFotosReply';
             }
 
             if(array_key_exists('body', $message[ $message['type'] ])) {

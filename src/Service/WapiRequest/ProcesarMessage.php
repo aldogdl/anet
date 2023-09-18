@@ -75,10 +75,11 @@ class ProcesarMessage {
                         $result = $this->wapiHttp->send($conm, true);
                         return;
                     }
+
                     $isValid = $obj->isValid($this->message, $fileCot);
-                    if(!$isValid) {
+                    if($isValid != '') {
                         if(!$isInteractive->noFto) {
-                            $conm->setBody('interactive', $obj->getMessageError('notFotosReply', $fileCot));
+                            $conm->setBody('interactive', $obj->getMessageError($isValid, $fileCot));
                             $result = $this->wapiHttp->send($conm, true);
                             return;
                         }
@@ -111,13 +112,21 @@ class ProcesarMessage {
                         $validar = false;
                     }
 
-                    if($validar) {
-                        $isValid = $obj->isValid($this->message, $fileCot);
-                        if($isValid != '') {
-                            $conm->setBody('text', $obj->getMessageError($isValid, $fileCot));
-                            $result = $this->wapiHttp->send($conm, true);
+                    $isValid = $obj->isValid($this->message, $fileCot, $validar);
+                    if($isValid != '') {
+
+                        if($isValid == 'image') {
+                            $this->message = $obj->buildResponse($this->message, $conm->toArray());
+                            $this->whook->sendMy('wa-wh', 'notSave', $this->message);
                             return;
                         }
+                        
+                        if($isValid == 'notFotosReply') {
+                            $obj = new FotosProcess($cotTransit->pathFull);
+                        }
+                        $conm->setBody('text', $obj->getMessageError($isValid, $fileCot));
+                        $result = $this->wapiHttp->send($conm, true);
+                        return;
                     }
 
                     // Cambiamos a costo

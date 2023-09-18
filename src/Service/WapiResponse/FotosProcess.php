@@ -2,6 +2,8 @@
 
 namespace App\Service\WapiResponse;
 
+use App\Service\WapiRequest\ValidatorsMsgs;
+
 class FotosProcess
 {
     public String $pathToCot = '';
@@ -22,15 +24,15 @@ class FotosProcess
     }
 
     ///
-    public function isValid(array $message, array $fileCot): bool {
+    public function isValid(array $message, array $fileCot): String {
 
-        if(array_key_exists('type', $message)) {
-            if(array_key_exists('mime_type', $message[ $message['type'] ])) {
-                $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
-                return true;
-            }
+        $v = new ValidatorsMsgs();
+        $valid = $v->isValidImage($message, $fileCot);
+        if($valid == '') {
+            $fileCot = $v->result;
         }
-        return false;
+
+        return $valid;
     }
 
     ///
@@ -42,10 +44,10 @@ class FotosProcess
                 "preview_url" => false,
                 "body" => "📷 Se esperaban *Fotografías*.\n\n🚗 Cotización en Curso..."
             ],
-            'notFotos' => [
+            'invalid' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
-                "body" => "📷 Se esperaban Fotografías\n\n🚗 Cotización en Curso..."
+                "body" => "⚠️ Lo sentimos por el momento solo fotos de tipo jpg|png|webp..."
             ],
             'notFotosReply' => [
                 "context" => $inTransit["wamid"],
