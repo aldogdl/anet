@@ -172,11 +172,10 @@ class ProcesarMessage {
         }
 
         if($isInteractive->isCot) {
-
-            $cotTransit->setStepCotizacionInTransit(0);
-
-            $obj = new FotosProcess($cotTransit->pathFull);
             
+            $cotTransit->setStepCotizacionInTransit(0);
+            $obj = new FotosProcess($cotTransit->pathFull);
+
             $conm->setBody('text', $obj->getMessage());
             $result = $this->wapiHttp->send($conm);
 

@@ -27,9 +27,6 @@ class WrapHttp
 
         if(count($this->bodyToSend) != 0) {
 
-            file_put_contents('prueba.json', json_encode([
-                'request' => $this->bodyToSend
-            ]));
             $response = $this->client->request(
                 'POST', $conm->uriBase.'/messages', [
                     'headers' => [
@@ -39,7 +36,6 @@ class WrapHttp
                     'json' => $this->bodyToSend
                 ]
             );
-
 
             if($response->getStatusCode() == 200) {
                 return [];
