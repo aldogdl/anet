@@ -127,10 +127,12 @@ class DetallesProcess
     ///
     public function buildResponse(array $message, array $response): array {
 
-        $message['response']  = [
-            'type' => $response['type'],
-            'body' => $response['body']
-        ];
+        if(count($response) > 0) {
+            $message['response']  = [
+                'type' => $response['type'],
+                'body' => $response['body']
+            ];
+        }
         $message['subEvento'] = 'cot';
         $message['step'] = 'detalles';
         $message['fileToCot'] = $this->pathToCot;

@@ -116,11 +116,11 @@ class ProcesarMessage {
                     if($isValid != '') {
 
                         if($isValid == 'image') {
-                            $this->message = $obj->buildResponse($this->message, $conm->toArray());
+                            $this->message = $obj->buildResponse($this->message, []);
                             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
                             return;
                         }
-                        
+
                         if($isValid == 'notFotosReply') {
                             $obj = new FotosProcess($cotTransit->pathFull);
                         }
