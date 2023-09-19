@@ -55,6 +55,7 @@ class ReqFotosProcess {
         if($isNotFoto) {
           $this->fileCot['values']['fotos'][] = 'SIN FOTOS';
           file_put_contents($this->cotTransit->pathFull, json_encode($this->fileCot));
+          file_put_contents($this->cotTransit->pathFull.'.det', '');
         }else{
           // Resulto invalido y no ha presionado el btn de SIN FOTOS
           $tipo = ($isValid == 'notFotosReply') ? 'interactive' : 'text';
@@ -73,14 +74,15 @@ class ReqFotosProcess {
     $this->fileCot = $this->cotTransit->updateStepCotizacionInTransit(1, $this->fileCot);
     
     $det = new DetallesProcess($this->cotTransit->pathFull);
+
     if($det->isMsgInique()) {
       $this->conm->setBody('interactive', $det->getMessage($this->fileCot["wamid"]));
       // Enviamos el mensaje a whatsapp
       $this->wapiHttp->send($this->conm, true);
-      
-      $this->message = $det->buildResponse($this->message, $this->conm->toArray());
-      // Enviamos el mensaje a backCore
-      $this->whook->sendMy('wa-wh', 'notSave', $this->message);
     }
+
+    $this->message = $det->buildResponse($this->message, $this->conm->toArray());
+    // Enviamos el mensaje a backCore
+    $this->whook->sendMy('wa-wh', 'notSave', $this->message);
   }
 }
