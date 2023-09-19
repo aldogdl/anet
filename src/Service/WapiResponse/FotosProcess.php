@@ -19,7 +19,7 @@ class FotosProcess
 
         return [
             "preview_url" => false,
-            "body" => "😃👍 Gracias!!..\n Envia *FOTOGRAFÍAS* por favor."
+            "body" => "😃👍 Gracias!!..\n Envía de 1 a 8 *FOTOS* por favor."
         ];
     }
 
@@ -36,16 +36,16 @@ class FotosProcess
     }
 
     ///
-    public function getMessageError(String $tipo, array $inTransit): array {
+    public function getMessageError(String $tipo, string $wamid): array {
 
         $msgs = [
             'invalid' => [
-                "context" => $inTransit["wamid"],
+                "context" => $wamid,
                 "preview_url" => false,
-                "body" => "⚠️ Lo sentimos por el momento solo fotos de tipo jpg|png|webp..."
+                "body" => "⚠️ Lo sentimos por el momento solo fotos de tipo JPG | PNG | WEBP"
             ],
             'notFotosReply' => [
-                "context" => $inTransit["wamid"],
+                "context" => $wamid,
                 "type" => "button",
                 "body" => [
                     "text" => "⚠️ Las Fotos son Importantes pero..."
