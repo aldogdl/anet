@@ -48,10 +48,10 @@ class FotosProcess
                 "context" => $wamid,
                 "type" => "button",
                 "body" => [
-                    "text" => "⚠️ Las Fotos son Importantes pero..."
+                    "text" => "⚠️ Te recomendamos mandar de 1 a 8 Fotos. PERO..."
                 ],
                 "footer" => [
-                    "text" => 'Si deseas continuar sin fotos, presiona el siguiente botón'
+                    "text" => 'Si deseas CONTINUAR SIN FOTOS, presiona el siguiente botón'
                 ],
                 "action" => [
                     "buttons" => [
