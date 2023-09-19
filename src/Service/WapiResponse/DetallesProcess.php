@@ -49,7 +49,7 @@ class DetallesProcess
     }
 
     ///
-    public function isValid(array $message, array $fileCot, bool $validar): String {
+    public function isValid(array $message, array $fileCot, String $respBtn): String {
 
         if(array_key_exists('type', $message)) {
 
@@ -66,14 +66,14 @@ class DetallesProcess
 
             // Si no hay que validar es por que presionaron un boton, pero hay que
             // revisar si hay fotos.
-            if(!$validar) {
+            if($respBtn != '') {
 
                 if(array_key_exists('fotos', $fileCot['values'])) {
                     if(count($fileCot['values']['fotos']) > 0) {
                         return '';
                     }
                 }
-                $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
+                $fileCot['values'][ $fileCot['current'] ][] = $respBtn;
                 file_put_contents($this->pathToCot, json_encode($fileCot));
                 return 'notFotosReply';
             }

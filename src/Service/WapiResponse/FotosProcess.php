@@ -40,11 +40,6 @@ class FotosProcess
     public function getMessageError(String $tipo, array $inTransit): array {
 
         $msgs = [
-            'replyBtn' => [
-                "context" => $inTransit["wamid"],
-                "preview_url" => false,
-                "body" => "📷 Se esperaban *Fotografías*.\n\n🚗 Cotización en Curso..."
-            ],
             'invalid' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,

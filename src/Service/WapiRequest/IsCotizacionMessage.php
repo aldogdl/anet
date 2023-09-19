@@ -4,16 +4,12 @@ namespace App\Service\WapiRequest;
 
 class IsCotizacionMessage {
 
-    public bool $inTransit = false;
-
     private array $message;
     private String $pathCotz;
+    
+    public bool $inTransit = false;
     public String $pathFull;
-    public array $sortCot = [
-        'fotos',
-        'detalles',
-        'costo'
-    ];
+    public array $sortCot = ['fotos', 'detalles', 'costo'];
 
     /** 
      * Analizamos si el mensaje es parte de una cotizacion
@@ -82,5 +78,28 @@ class IsCotizacionMessage {
         return json_decode(file_get_contents($this->pathFull), true);
     }
 
+    /// Cuando hay una cotizacion en curso y el cotizador presiona el botón de cotizar
+    /// o de no tengo de otra solicitud 
+    public function getMsgErrorOtraCot(array $cotInTransit): array {
+
+        $espera = '';
+        switch ($cotInTransit['current']) {
+            case 'detalles':
+                $espera = '📝 Se esperaban los *Detalles';
+                break;
+            case 'costo':
+                $espera = '💰 Se esperaba el *Costo';
+                break;
+            default:
+                $espera = '📷 Se esperaban *Fotografías';
+                break;
+        }
+
+        return [
+            "context"     => $cotInTransit["wamid"],
+            "preview_url" => false,
+            "body"        => $espera."* de la Pieza.\n\n🚗 Cotización en Curso..."
+        ];
+    }
 
 }

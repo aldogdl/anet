@@ -65,11 +65,6 @@ class CostoProcess
     public function getMessageError(String $tipo, array $inTransit): array {
 
         $msgs = [
-            'replyBtn' => [
-                "context" => $inTransit["wamid"],
-                "preview_url" => false,
-                "body" => "📝 Se esperaba el *Costo* de la Pieza.\n\n🚗 Cotización en Curso..."
-            ],
             'notCosto' => [
                 "context" => $inTransit["wamid"],
                 "preview_url" => false,
