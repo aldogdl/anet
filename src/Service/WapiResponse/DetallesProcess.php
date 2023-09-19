@@ -14,7 +14,20 @@ class DetallesProcess
         $this->pathToCot = $pathToCot;
     }
 
-    ///
+    /**
+     * Si el archivo existe enviamos el mensaje de detalles, de lo contrario es
+     * que ya lo enviamos con anterioridad.
+     */
+    public function isMsgInique(): bool {
+
+        if(is_file($this->pathToCot.'.det')) {
+            unlink($this->pathToCot.'.det');
+            return true;
+        }
+        return false;
+    }
+
+    /** */
     public function getMessage(String $wamid): array {
 
         return [

@@ -70,15 +70,17 @@ class ReqFotosProcess {
   /** */
   private function changeToDetalles() {
 
-     $this->fileCot = $this->cotTransit->updateStepCotizacionInTransit(1, $this->fileCot);
-     
-     $det = new DetallesProcess($this->cotTransit->pathFull);
-     $this->conm->setBody('interactive', $det->getMessage($this->fileCot["wamid"]));
-     // Enviamos el mensaje a whatsapp
-     $this->wapiHttp->send($this->conm, true);
-     
-     $this->message = $det->buildResponse($this->message, $this->conm->toArray());
-     // Enviamos el mensaje a backCore
-     $this->whook->sendMy('wa-wh', 'notSave', $this->message);
+    $this->fileCot = $this->cotTransit->updateStepCotizacionInTransit(1, $this->fileCot);
+    
+    $det = new DetallesProcess($this->cotTransit->pathFull);
+    if($det->isMsgInique()) {
+      $this->conm->setBody('interactive', $det->getMessage($this->fileCot["wamid"]));
+      // Enviamos el mensaje a whatsapp
+      $this->wapiHttp->send($this->conm, true);
+      
+      $this->message = $det->buildResponse($this->message, $this->conm->toArray());
+      // Enviamos el mensaje a backCore
+      $this->whook->sendMy('wa-wh', 'notSave', $this->message);
+    }
   }
 }

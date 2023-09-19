@@ -28,8 +28,8 @@ class FotosProcess
 
         $v = new ValidatorsMsgs();
         $valid = $v->isValidImage($message, $fileCot);
-        file_put_contents('holita.txt', $valid);
         if($valid == '') {
+            file_put_contents($this->pathToCot.'.det', '');
             file_put_contents($this->pathToCot, json_encode($v->result));
         }
 
