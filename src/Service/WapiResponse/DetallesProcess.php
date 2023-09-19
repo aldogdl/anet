@@ -37,7 +37,7 @@ class DetallesProcess
                 "text" => "👌🏼 Ok!!, Ahora escribe:\n\nLos *DETALLES* de la Pieza o...\n\nUtiliza unos de los botones frecuentes. 👇🏻"
             ],
             "footer" => [
-                "text" => '📷 _Puedes enviar *más fotos* si lo deseas._'
+                "text" => '📷 _En este Paso aún puedes enviar FOTOS si lo deseas._'
             ],
             "action" => [
                 "buttons" => [
@@ -83,11 +83,13 @@ class DetallesProcess
 
                 $fileCot['values'][$fileCot['current']] = $respBtn;
                 file_put_contents($this->pathToCot, json_encode($fileCot));
+
                 if(array_key_exists('fotos', $fileCot['values'])) {
                     if(count($fileCot['values']['fotos']) > 0) {
                         return '';
                     }
                 }
+
                 return 'notFotosReply';
             }
 
