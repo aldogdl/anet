@@ -42,7 +42,7 @@ class FotosProcess
             'invalid' => [
                 "context" => $wamid,
                 "preview_url" => false,
-                "body" => "⚠️ Lo sentimos por el momento solo fotos de tipo JPG | PNG | WEBP"
+                "body" => "⚠️ Lo sentimos, por el momento solo recibimos *FOTOS* de tipo JPG | PNG | WEBP"
             ],
             'notFotosReply' => [
                 "context" => $wamid,
