@@ -29,7 +29,7 @@ class ReqCostoProcess {
   }
 
   /** */
-  public function exe(bool $isNotFoto) {
+  public function exe() {
 
     $this->fileCot = $this->cotTransit->getCotizacionInTransit();
 
@@ -43,7 +43,6 @@ class ReqCostoProcess {
 
     $this->cotTransit->finishCotizacionInTransit();
 
-    // Cambiamos a Gracias
     $this->conm->setBody('text', $obj->getMessageGrax($this->fileCot));
     $result = $this->wapiHttp->send($this->conm, true);
 

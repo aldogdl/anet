@@ -67,16 +67,11 @@ class ProcesarMessage {
         }
 
         if($isInteractive->isCot) {
-            
-            $obj->setStepCotizacionInTransit(0);
-            $obj = new FotosProcess($obj->pathFull);
-            
-            $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
-            $conm->setBody('text', $obj->getMessage());
-            $this->wapiHttp->send($conm);
-
-            $msg = $obj->buildResponse($msg, $conm->toArray());
-            $this->whook->sendMy('wa-wh', 'notSave', $msg);
+            $obj = new ReqFotosProcess(
+                $msg, new ConmutadorWa($msg, $this->params->get('tkwaconm')),
+                $obj, $this->wapiHttp, $this->whook
+            );
+            $obj->initializaCot();
             return;
         }
 
@@ -92,11 +87,12 @@ class ProcesarMessage {
     */
     private function processCotInTransit(array $msg, IsCotizacionMessage $cotTransit) {
 
-        $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
-        $isInteractive = new IsInteractiveMessage($msg);
+        $path = $this->params->get('tkwaconm');
         $fileCot = $cotTransit->getCotizacionInTransit();
-            
+        
+        $isInteractive = new IsInteractiveMessage($msg);
         if( $isInteractive->isCot || $isInteractive->isNtg ) {
+            $conm = new ConmutadorWa($msg, $path);
             $conm->setBody('text', $cotTransit->getMsgErrorOtraCot($fileCot));
             $this->wapiHttp->send($conm, true);
             return;
@@ -105,17 +101,31 @@ class ProcesarMessage {
         switch ($fileCot['current']) {
 
             case 'fotos':
-                $fto = new ReqFotosProcess($msg, $conm, $cotTransit, $this->wapiHttp, $this->whook);
+                $fto = new ReqFotosProcess(
+                    $msg, new ConmutadorWa($msg, $path),
+                    $cotTransit, $this->wapiHttp, $this->whook
+                );
                 $fto->exe($isInteractive->noFto);
                 break;
+
             case 'detalles':
-                $det = new ReqDetallesProcess($msg, $conm, $cotTransit, $this->wapiHttp, $this->whook);
+
+                $det = new ReqDetallesProcess(
+                    $msg, new ConmutadorWa($msg, $path),
+                    $cotTransit, $this->wapiHttp, $this->whook
+                );
                 $det->exe($isInteractive->asNew, $isInteractive->normal);
                 break;
+
             case 'costo':
-                $cto = new ReqCostoProcess($msg, $conm, $cotTransit, $this->wapiHttp, $this->whook);
-                $cto->exe($isInteractive->noFto);
+
+                $cto = new ReqCostoProcess(
+                    $msg, new ConmutadorWa($msg, $path),
+                    $cotTransit, $this->wapiHttp, $this->whook
+                );
+                $cto->exe();
                 break;
+
             default:
         }
     }

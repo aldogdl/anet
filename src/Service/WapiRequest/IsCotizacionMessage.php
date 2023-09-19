@@ -45,8 +45,8 @@ class IsCotizacionMessage {
         }
 
         file_put_contents($this->pathFull, json_encode([
-            'current' => $this->sortCot[$step],
             'wamid'   => $wamid,
+            'current' => $this->sortCot[$step],
             'values'  => [ $this->sortCot[$step] => [] ]
         ]));
     }

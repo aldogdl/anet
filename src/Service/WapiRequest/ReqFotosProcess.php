@@ -2,11 +2,11 @@
 
 namespace App\Service\WapiRequest;
 
+use App\Service\WebHook;
 use App\Service\WapiResponse\ConmutadorWa;
 use App\Service\WapiResponse\DetallesProcess;
 use App\Service\WapiResponse\FotosProcess;
 use App\Service\WapiResponse\WrapHttp;
-use App\Service\WebHook;
 
 class ReqFotosProcess {
 
@@ -19,14 +19,27 @@ class ReqFotosProcess {
   private array $fileCot;
 
   /** */
-  public function __construct(array $msg, ConmutadorWa $conmutador,
-  IsCotizacionMessage $transit, WrapHttp $whttp, WebHook $wh)
-  {
+  public function __construct(
+    array $msg, ConmutadorWa $conmutador,
+    IsCotizacionMessage $transit, WrapHttp $whttp, WebHook $wh
+  ) {
     $this->cotTransit = $transit;
     $this->message = $msg;
     $this->conm = $conmutador;
     $this->whook = $wh;
     $this->wapiHttp = $whttp;
+  }
+
+  /** Aqui se inicializa una cotizacion en transitos */
+  public function initializaCot() {
+
+    $this->cotTransit->setStepCotizacionInTransit(0);
+    $obj = new FotosProcess($this->cotTransit->pathFull);
+    $this->conm->setBody('text', $obj->getMessage());
+    $this->wapiHttp->send($this->conm);
+
+    $this->message = $obj->buildResponse($this->message, $this->conm->toArray());
+    $this->whook->sendMy('wa-wh', 'notSave', $this->message);
   }
 
   /** */
@@ -35,8 +48,8 @@ class ReqFotosProcess {
     $this->fileCot = $this->cotTransit->getCotizacionInTransit();
 
     $obj = new FotosProcess($this->cotTransit->pathFull);
-    
     $isValid = $obj->isValid($this->message, $this->fileCot);
+
     if($isValid != '') {
         if(!$isNotFoto) {
             $this->conm->setBody('interactive', $obj->getMessageError($isValid, $this->fileCot));
@@ -51,13 +64,15 @@ class ReqFotosProcess {
   /** */
   private function changeToDetalles() {
 
-     // Cambiamos a detalles
      $this->fileCot = $this->cotTransit->updateStepCotizacionInTransit(1, $this->fileCot);
-     $obj = new DetallesProcess($this->cotTransit->pathFull);
-     $this->conm->setBody('interactive', $obj->getMessage($this->fileCot));
-     $result = $this->wapiHttp->send($this->conm, true);
- 
-     $this->message = $obj->buildResponse($this->message, $this->conm->toArray());
+     
+     $det = new DetallesProcess($this->cotTransit->pathFull);
+     $this->conm->setBody('interactive', $det->getMessage($this->fileCot["wamid"]));
+     // Enviamos el mensaje a whatsapp
+     $this->wapiHttp->send($this->conm, true);
+     
+     $this->message = $det->buildResponse($this->message, $this->conm->toArray());
+     // Enviamos el mensaje a backCore
      $this->whook->sendMy('wa-wh', 'notSave', $this->message);
   }
 }

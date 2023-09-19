@@ -15,10 +15,10 @@ class DetallesProcess
     }
 
     ///
-    public function getMessage(array $inTransit): array {
+    public function getMessage(String $wamid): array {
 
         return [
-            "context" => $inTransit["wamid"],
+            "context" => $wamid,
             "type" => "button",
             "body" => [
                 "text" => "👌🏼 Ok!!, Ahora escribe:\n\nLos *DETALLES* de la Pieza o...\n\nUtiliza unos de los botones frecuentes. 👇🏻"
