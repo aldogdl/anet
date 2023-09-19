@@ -51,7 +51,7 @@ class FotosProcess
                     "text" => "⚠️ Te recomendamos mandar de 1 a 8 Fotos. PERO..."
                 ],
                 "footer" => [
-                    "text" => 'Si deseas CONTINUAR SIN FOTOS, presiona el siguiente botón'
+                    "text" => 'Si deseas CONTINUAR SIN FOTOS, presiona el siguiente botón 👇🏻'
                 ],
                 "action" => [
                     "buttons" => [
