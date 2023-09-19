@@ -100,26 +100,26 @@ class DetallesProcess
     }
 
     ///
-    public function getMessageError(String $tipo, array $inTransit): array {
+    public function getMessageError(String $tipo, String $wamid): array {
 
         $msgs = [
             'replyBtn' => [
-                "context" => $inTransit["wamid"],
+                "context" => $wamid,
                 "preview_url" => false,
                 "body" => "📝 Se esperaban los *Detalles* de la Pieza.\n\n🚗 Cotización en Curso..."
             ],
             'notDeta' => [
-                "context" => $inTransit["wamid"],
+                "context" => $wamid,
                 "preview_url" => false,
                 "body" => "⚠️ Los Detalles no son válidos, se más específico por favor."
             ],
             'invalid' => [
-                "context" => $inTransit["wamid"],
+                "context" => $wamid,
                 "preview_url" => false,
                 "body" => "⚠️ Escribe una combinación de letras y números para los Detalles, por favor."
             ],
             'unknow' => [
-                "context" => $inTransit["wamid"],
+                "context" => $wamid,
                 "preview_url" => false,
                 "body" => "😱 Error desconocido al leer los *DETALLES*, envialos nuevamente por favor."
             ]

@@ -48,9 +48,8 @@ class ReqFotosProcess {
     $this->fileCot = $this->cotTransit->getCotizacionInTransit();
 
     $obj = new FotosProcess($this->cotTransit->pathFull);
+    
     $isValid = $obj->isValid($this->message, $this->fileCot);
-    file_put_contents('hola.json', json_encode($this->message));
-
     if($isValid != '') {
 
         if($isNotFoto) {

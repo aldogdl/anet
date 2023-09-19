@@ -56,10 +56,10 @@ class ReqDetallesProcess {
 
         if($isValid == 'notFotosReply') {
             $obj = new FotosProcess($this->cotTransit->pathFull);
-            $this->conm->setBody('interactive', $obj->getMessageError($isValid, $this->fileCot));
+            $this->conm->setBody('interactive', $obj->getMessageError($isValid, $this->fileCot['wamid']));
             $this->whook->sendMy('wa-wh', 'notSave', $this->message);
         }else{
-            $this->conm->setBody('text', $obj->getMessageError($isValid, $this->fileCot));
+            $this->conm->setBody('text', $obj->getMessageError($isValid, $this->fileCot['wamid']));
         }
 
         $this->wapiHttp->send($this->conm, true);
