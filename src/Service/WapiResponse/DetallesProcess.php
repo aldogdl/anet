@@ -68,13 +68,13 @@ class DetallesProcess
             // revisar si hay fotos.
             if($respBtn != '') {
 
+                $fileCot['values'][$fileCot['current']] = $respBtn;
+                file_put_contents($this->pathToCot, json_encode($fileCot));
                 if(array_key_exists('fotos', $fileCot['values'])) {
                     if(count($fileCot['values']['fotos']) > 0) {
                         return '';
                     }
                 }
-                $fileCot['values'][ $fileCot['current'] ][] = $respBtn;
-                file_put_contents($this->pathToCot, json_encode($fileCot));
                 return 'notFotosReply';
             }
 
@@ -90,7 +90,7 @@ class DetallesProcess
                     return 'invalid';
                 }
 
-                $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
+                $fileCot['values'][$fileCot['current']] = $deta;
                 file_put_contents($this->pathToCot, json_encode($fileCot));
                 return '';
             }

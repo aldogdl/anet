@@ -51,10 +51,14 @@ class ReqFotosProcess {
     $isValid = $obj->isValid($this->message, $this->fileCot);
 
     if($isValid != '') {
-        if(!$isNotFoto) {
-            $this->conm->setBody('interactive', $obj->getMessageError($isValid, $this->fileCot));
-            $result = $this->wapiHttp->send($this->conm, true);
-            return;
+        if($isNotFoto) {
+          $this->fileCot['values']['fotos'][] = 'SIN FOTOS';
+          file_put_contents($this->cotTransit->pathFull, json_encode($this->fileCot));
+        }else{
+          // Resulto invalido y no ha presionado el btn de SIN FOTOS
+          $this->conm->setBody('interactive', $obj->getMessageError($isValid, $this->fileCot));
+          $result = $this->wapiHttp->send($this->conm, true);
+          return;
         }
     }
 

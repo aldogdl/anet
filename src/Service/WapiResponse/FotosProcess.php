@@ -29,8 +29,7 @@ class FotosProcess
         $v = new ValidatorsMsgs();
         $valid = $v->isValidImage($message, $fileCot);
         if($valid == '') {
-            $fileCot = $v->result;
-            file_put_contents($this->pathToCot, json_encode($fileCot));
+            file_put_contents($this->pathToCot, json_encode($v->result));
         }
 
         return $valid;

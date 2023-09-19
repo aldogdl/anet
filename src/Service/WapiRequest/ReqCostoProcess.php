@@ -40,13 +40,16 @@ class ReqCostoProcess {
         $result = $this->wapiHttp->send($this->conm, true);
         return;
     }
-
+    
+    // Borramos el archivo de cotización en transito
     $this->cotTransit->finishCotizacionInTransit();
-
+    
     $this->conm->setBody('text', $obj->getMessageGrax($this->fileCot));
-    $result = $this->wapiHttp->send($this->conm, true);
-
+    // Enviamos el mensaje a whatsapp
+    $this->wapiHttp->send($this->conm, true);
+    
     $msg = $obj->buildResponse($this->message, $this->conm->toArray(), true);
+    // Enviamos el mensaje a backCore
     $this->whook->sendMy('wa-wh', 'notSave', $msg);
   }
 

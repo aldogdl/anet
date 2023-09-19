@@ -61,7 +61,8 @@ class ReqDetallesProcess {
         }else{
             $this->conm->setBody('text', $obj->getMessageError($isValid, $this->fileCot));
         }
-        $result = $this->wapiHttp->send($this->conm, true);
+
+        $this->wapiHttp->send($this->conm, true);
         return;
     }
 
@@ -75,10 +76,13 @@ class ReqDetallesProcess {
 
     $this->fileCot = $this->cotTransit->updateStepCotizacionInTransit(2, $this->fileCot);
     $obj = new CostoProcess($this->cotTransit->pathFull);
+
     $this->conm->setBody('text', $obj->getMessage($this->fileCot));
-    $result = $this->wapiHttp->send($this->conm, true);
+    // Enviamos el mensaje a whatsapp
+    $this->wapiHttp->send($this->conm, true);
 
     $this->message = $obj->buildResponse($this->message, $this->conm->toArray());
+    // Enviamos el mensaje a backCore
     $this->whook->sendMy('wa-wh', 'notSave', $this->message);
     return;
   }
