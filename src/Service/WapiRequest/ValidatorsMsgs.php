@@ -20,9 +20,7 @@ class ValidatorsMsgs {
 
                 $tipo = $message[ $message['type'] ]['mime_type'];
                 if(in_array($tipo, $this->valids)) {
-                    if(count($fileCot) > 0) {
-                        $this->result['values'][ $this->result['current'] ][] = $message[ $message['type'] ];
-                    }
+                    $this->result['values']['fotos'][] = $message[ $message['type'] ];
                     return '';
                 }
                 return 'invalid';

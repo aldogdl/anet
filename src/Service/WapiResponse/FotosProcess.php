@@ -30,6 +30,7 @@ class FotosProcess
         $valid = $v->isValidImage($message, $fileCot);
         if($valid == '') {
             $fileCot = $v->result;
+            file_put_contents($this->pathToCot, json_encode($fileCot));
         }
 
         return $valid;

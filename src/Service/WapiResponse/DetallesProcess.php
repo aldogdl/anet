@@ -56,10 +56,11 @@ class DetallesProcess
             $val = new ValidatorsMsgs();
 
             // Revisamos primero si lo que nos estan enviando son fotos
-            $isImg = $val->isValidImage($message, []);
+            $isImg = $val->isValidImage($message, $fileCot);
             if($isImg == '') {
                 // Es una imagen, la guardamos en el archivo
                 $fileCot = $val->result;
+                file_put_contents($this->pathToCot, json_encode($fileCot));
                 return 'image';
             }
 
@@ -72,6 +73,8 @@ class DetallesProcess
                         return '';
                     }
                 }
+                $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
+                file_put_contents($this->pathToCot, json_encode($fileCot));
                 return 'notFotosReply';
             }
 
@@ -88,6 +91,7 @@ class DetallesProcess
                 }
 
                 $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
+                file_put_contents($this->pathToCot, json_encode($fileCot));
                 return '';
             }
         }
