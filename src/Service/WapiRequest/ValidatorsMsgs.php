@@ -20,7 +20,11 @@ class ValidatorsMsgs {
 
                 $tipo = $message[ $message['type'] ]['mime_type'];
                 if(in_array($tipo, $this->valids)) {
-                    $this->result['values']['fotos'][] = $message[ $message['type'] ];
+                    if(array_key_exists('fotos', $this->result['values'])) {
+                        $this->result['values']['fotos'][] = $message[ $message['type'] ];
+                    }else{
+                        $this->result['values'] = ['fotos' => $message[ $message['type'] ]];
+                    }
                     return '';
                 }
                 return 'invalid';

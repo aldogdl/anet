@@ -55,7 +55,6 @@ class ReqDetallesProcess {
           return;
       }
 
-      $this->conm->setBody('text', $obj->getMessageError($isValid, $this->fileCot['wamid']));
       if($isValid == 'notFotosReply') {
         // Presiono un boton en los detalles pero no hay fotos, por lo tanto,
         // enviamos al cotizador el mensaje de SIN FOTOS, pero al backCore el
@@ -63,6 +62,8 @@ class ReqDetallesProcess {
         $obj = new FotosProcess($this->cotTransit->pathFull);
         $this->conm->setBody('interactive', $obj->getMessageError($isValid, $this->fileCot['wamid']));
         $this->whook->sendMy('wa-wh', 'notSave', $this->message);
+      }else{
+        $this->conm->setBody('text', $obj->getMessageError($isValid, $this->fileCot['wamid']));
       }
 
       $this->wapiHttp->send($this->conm, true);

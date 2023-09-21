@@ -74,9 +74,9 @@ class DetallesProcess
 
             // Revisamos primero si lo que nos estan enviando son fotos
             $isImg = $val->isValidImage($message, $fileCot);
+            $fileCot = $val->result;
             if($isImg == '') {
                 // Es una imagen, la guardamos en el archivo DE RESPUESTAS
-                $fileCot = $val->result;
                 file_put_contents($this->pathToCot, json_encode($fileCot));
                 return 'image';
             }
