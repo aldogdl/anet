@@ -20,9 +20,10 @@ class ReqDetallesProcess {
   private array $fileCot;
 
   /** */
-  public function __construct(array $msg, ConmutadorWa $conmutador,
-  IsCotizacionMessage $transit, WrapHttp $whttp, WebHook $wh)
-  {
+  public function __construct(
+    array $msg, ConmutadorWa $conmutador,
+    IsCotizacionMessage $transit, WrapHttp $whttp, WebHook $wh
+  ) {
     $this->cotTransit = $transit;
     $this->message = $msg;
     $this->conm = $conmutador;
@@ -39,10 +40,10 @@ class ReqDetallesProcess {
 
     $isWithBtn = '';
     if($btnPressAsNew) {
-        $isWithBtn = 'asNew';
+      $isWithBtn = 'asNew';
     }
     if($btnPressNormal) {
-        $isWithBtn = 'normal';
+      $isWithBtn = 'normal';
     }
 
     $isValid = $obj->isValid($this->message, $this->fileCot, $isWithBtn);

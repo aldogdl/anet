@@ -61,7 +61,11 @@ class DetallesProcess
         
     }
 
-    ///
+    /**
+     * Debe guardar el valor valido en el archivo de cotizacion en transito
+     * y a su ves validar si no nos estan enviando mas fotos, o si es un
+     * evento por medio de texto o un boton frecuente
+     */
     public function isValid(array $message, array $fileCot, String $respBtn): String {
 
         if(array_key_exists('type', $message)) {
@@ -71,7 +75,7 @@ class DetallesProcess
             // Revisamos primero si lo que nos estan enviando son fotos
             $isImg = $val->isValidImage($message, $fileCot);
             if($isImg == '') {
-                // Es una imagen, la guardamos en el archivo
+                // Es una imagen, la guardamos en el archivo DE RESPUESTAS
                 $fileCot = $val->result;
                 file_put_contents($this->pathToCot, json_encode($fileCot));
                 return 'image';
