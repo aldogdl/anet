@@ -41,20 +41,24 @@ class CostoProcess
 
         if(array_key_exists('type', $message)) {
 
-            if(array_key_exists('body', $message[ $message['type'] ])) {
-                
-                $deta = $message[ $message['type'] ]['body'];
-                if(strlen($deta) < 3) {
-                    return 'notCosto';
-                }
+            $val = new ValidatorsMsgs();
+            if($val->isValidFormat($message) == '') {
 
-                $isNum = new ValidatorsMsgs();
-                if(!$isNum->isValidNumero($deta)) {
-                    return 'notDigit';
+                if(array_key_exists('body', $message[ $message['type'] ])) {
+                    
+                    $deta = $message[ $message['type'] ]['body'];
+                    if(strlen($deta) < 3) {
+                        return 'notCosto';
+                    }
+    
+                    $isNum = new ValidatorsMsgs();
+                    if(!$isNum->isValidNumero($deta)) {
+                        return 'notDigit';
+                    }
+    
+                    $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
+                    return '';
                 }
-
-                $fileCot['values'][ $fileCot['current'] ][] = $message[ $message['type'] ];
-                return '';
             }
         }
 

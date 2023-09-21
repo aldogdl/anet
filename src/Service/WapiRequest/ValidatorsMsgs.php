@@ -35,6 +35,22 @@ class ValidatorsMsgs {
     }
 
     /**
+     * Se usa para saber si el mensaje no es un audio o documento, por el
+     * momento el sistema solo acepta imagenes, interactivos y texto
+     */
+    public function isValidFormat(array $message): String {
+
+        if(array_key_exists('mime_type', $message[ $message['type'] ])) {
+
+            $tipo = $message[ $message['type'] ]['mime_type'];
+            if(!in_array($tipo, $this->valids)) {
+                return 'invalid';
+            }
+        }
+        return '';        
+    }
+
+    /**
      * Solo es necesario revisar el costo para saber si estan enviando un numero
      * o letras para indicar este valor.
      */
