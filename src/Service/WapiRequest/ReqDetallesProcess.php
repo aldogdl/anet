@@ -45,8 +45,10 @@ class ReqDetallesProcess {
     if($btnPressNormal) {
       $isWithBtn = 'normal';
     }
-
+    file_put_contents('validando_deta.json', json_encode($this->fileCot));
     $isValid = $obj->isValid($this->message, $this->fileCot, $isWithBtn);
+    $this->fileCot = $obj->fileCot;
+    file_put_contents('res_validando_deta.json', json_encode($this->fileCot));
     if($isValid != '') {
 
       if($isValid == 'image') {

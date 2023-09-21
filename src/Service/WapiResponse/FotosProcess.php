@@ -27,8 +27,11 @@ class FotosProcess
     public function isValid(array $message, array $fileCot): String {
 
         $v = new ValidatorsMsgs();
+        file_put_contents('validando_img.json', json_encode($fileCot));
         $valid = $v->isValidImage($message, $fileCot);
+        file_put_contents('res_validando_img.json', json_encode($v->result));
         if($valid == '') {
+            file_put_contents('entro_validando_img.txt', $valid);
             file_put_contents($this->pathToCot, json_encode($v->result));
             file_put_contents($this->pathToCot.'.det', '');
         }

@@ -6,6 +6,7 @@ use App\Service\WapiRequest\ValidatorsMsgs;
 
 class DetallesProcess
 {
+    public array $fileCot;
     public String $pathToCot = '';
 
     /** */
@@ -66,18 +67,20 @@ class DetallesProcess
      * y a su ves validar si no nos estan enviando mas fotos, o si es un
      * evento por medio de texto o un boton frecuente
      */
-    public function isValid(array $message, array $fileCot, String $respBtn): String {
+    public function isValid(array $message, array $fileCots, String $respBtn): String {
+
+        $this->fileCot = $fileCots;
 
         if(array_key_exists('type', $message)) {
 
             $val = new ValidatorsMsgs();
 
             // Revisamos primero si lo que nos estan enviando son fotos
-            $isImg = $val->isValidImage($message, $fileCot);
-            $fileCot = $val->result;
+            $isImg = $val->isValidImage($message, $this->fileCot);
+            $this->fileCot = $val->result;
             if($isImg == '') {
                 // Es una imagen, la guardamos en el archivo DE RESPUESTAS
-                file_put_contents($this->pathToCot, json_encode($fileCot));
+                file_put_contents($this->pathToCot, json_encode($this->fileCot));
                 return 'image';
             }
 
@@ -85,11 +88,11 @@ class DetallesProcess
             // revisar si hay fotos.
             if($respBtn != '') {
 
-                $fileCot['values'][$fileCot['current']] = $respBtn;
-                file_put_contents($this->pathToCot, json_encode($fileCot));
+                $this->fileCot['values'][$this->fileCot['current']] = $respBtn;
+                file_put_contents($this->pathToCot, json_encode($this->fileCot));
 
-                if(array_key_exists('fotos', $fileCot['values'])) {
-                    if(count($fileCot['values']['fotos']) > 0) {
+                if(array_key_exists('fotos', $this->fileCot['values'])) {
+                    if(count($this->fileCot['values']['fotos']) > 0) {
                         return '';
                     }
                 }
@@ -109,8 +112,8 @@ class DetallesProcess
                     return 'invalid';
                 }
 
-                $fileCot['values'][$fileCot['current']] = $deta;
-                file_put_contents($this->pathToCot, json_encode($fileCot));
+                $this->fileCot['values'][$this->fileCot['current']] = $deta;
+                file_put_contents($this->pathToCot, json_encode($this->fileCot));
                 return '';
             }
         }
