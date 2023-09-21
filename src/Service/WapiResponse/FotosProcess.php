@@ -6,6 +6,7 @@ use App\Service\WapiRequest\ValidatorsMsgs;
 
 class FotosProcess
 {
+    public array $fileCot;
     public String $pathToCot = '';
 
     /** */
@@ -24,15 +25,14 @@ class FotosProcess
     }
 
     ///
-    public function isValid(array $message, array $fileCot): String {
+    public function isValid(array $message, array $fileCoti): String {
 
         $v = new ValidatorsMsgs();
-        file_put_contents('validando_img.json', json_encode($fileCot));
-        $valid = $v->isValidImage($message, $fileCot);
-        file_put_contents('res_validando_img.json', json_encode($v->result));
+        $this->fileCot = $fileCoti;
+        $valid = $v->isValidImage($message, $this->fileCot);
+        $this->fileCot = $v->result;
         if($valid == '') {
-            file_put_contents('entro_validando_img.txt', $valid);
-            file_put_contents($this->pathToCot, json_encode($v->result));
+            file_put_contents($this->pathToCot, json_encode($this->fileCot));
             file_put_contents($this->pathToCot.'.det', '');
         }
 

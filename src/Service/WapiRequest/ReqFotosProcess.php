@@ -50,6 +50,8 @@ class ReqFotosProcess {
     $obj = new FotosProcess($this->cotTransit->pathFull);
     
     $isValid = $obj->isValid($this->message, $this->fileCot);
+    $this->fileCot = $obj->fileCot;
+    
     if($isValid != '') {
 
         if($isNotFoto) {
