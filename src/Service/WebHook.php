@@ -117,6 +117,10 @@ class WebHook
             'payload'   => $data
         ];
         
+        if(mb_strpos($uriCall, 'convFree') !== false) {
+            $protocolo['evento'] = 'convFree';
+            $protocolo['from']   = $data['from'];
+        }
         if(mb_strpos($uriCall, 'shop-core') !== false) {
             $protocolo = $this->setDataFromShopCore($protocolo, $data);
         }

@@ -8,6 +8,7 @@ class ExtractMessage {
 
     public String $pathToAnalizar = '';
     public bool $isStt = false;
+    public String $from = '';
 
     /** 
      * Extraemos la esencia real del mensaje recibido por Whatsapp.
@@ -63,7 +64,8 @@ class ExtractMessage {
                                 'myTime' => ''.strtotime('now'),
                                 'subEvento' => 'stt',
                             ];
-
+                            
+                            $this->from = $result['recipient_id'];
                             if(array_key_exists('conversation', $result)) {
                                 if(array_key_exists('expiration_timestamp', $result['conversation'])) {
                                     $status['expiration_timestamp'] = $result['conversation']['expiration_timestamp'];
@@ -78,6 +80,7 @@ class ExtractMessage {
                         if(array_key_exists('messages', $result)) {
                             if(count($result['messages']) == 1) {
                                 $result = $result['messages'][0];
+                                $this->from = $result['from'];
                                 $result['phone_number_id'] = $phoneNumberId;
                                 $result['myTime'] = ''.strtotime('now');
                                 $this->message = $result;

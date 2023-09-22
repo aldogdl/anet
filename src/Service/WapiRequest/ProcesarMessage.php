@@ -41,6 +41,13 @@ class ProcesarMessage {
     public function execute(array $message): void
     {
         $obj = new ExtractMessage($message);
+
+        $filename = 'conv_free.'.$obj->from.'.cnv';
+        if(is_file($filename)) {
+            $this->whook->sendMy('convFree', 'notSave', $obj->get());
+            return;
+        }
+
         if($obj->pathToAnalizar != '') {
             $folder = $this->getFolderTo('waAnalizar');
             $this->saveFile($folder.'/'.$obj->pathToAnalizar, $message);
