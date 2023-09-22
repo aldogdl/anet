@@ -121,7 +121,7 @@ class ProcesarMessage {
                     $msg, new ConmutadorWa($msg, $path),
                     $cotTransit, $this->wapiHttp, $this->whook
                 );
-                $det->exe($isInteractive->asNew, $isInteractive->normal);
+                $det->exe($isInteractive->good, $isInteractive->normal, $isInteractive->reparada);
                 break;
 
             case 'costo':

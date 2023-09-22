@@ -32,7 +32,9 @@ class ReqDetallesProcess {
   }
 
   /** */
-  public function exe(bool $btnPressAsNew = false, bool $btnPressNormal = false) {
+  public function exe(
+    bool $btnPressAsNew = false, bool $btnPressNormal = false, bool $btnPressRep = false
+  ) {
 
     $this->fileCot = $this->cotTransit->getCotizacionInTransit();
 
@@ -40,10 +42,13 @@ class ReqDetallesProcess {
 
     $isWithBtn = '';
     if($btnPressAsNew) {
-      $isWithBtn = 'asNew';
+      $isWithBtn = 'good';
     }
     if($btnPressNormal) {
       $isWithBtn = 'normal';
+    }
+    if($btnPressRep) {
+      $isWithBtn = 'reparada';
     }
 
     $isValid = $obj->isValid($this->message, $this->fileCot, $isWithBtn);

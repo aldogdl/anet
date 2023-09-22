@@ -7,8 +7,9 @@ class IsInteractiveMessage {
     public bool $isNtg = false;
     public bool $isCot = false;
     public bool $noFto = false;
-    public bool $asNew = false;
+    public bool $good = false;
     public bool $normal = false;
+    public bool $reparada = false;
 
     private array $message;
 
@@ -44,12 +45,16 @@ class IsInteractiveMessage {
                         return true;
                     }
                     
-                    if( mb_strpos($body['id'], 'asNew') !== false) {
-                        $this->asNew = true;
+                    if( mb_strpos($body['id'], 'good') !== false) {
+                        $this->good = true;
                         return true;
                     }
                     if( mb_strpos($body['id'], 'normal') !== false) {
                         $this->normal = true;
+                        return true;
+                    }
+                    if( mb_strpos($body['id'], 'reparada') !== false) {
+                        $this->reparada = true;
                         return true;
                     }
                 }

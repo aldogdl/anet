@@ -45,15 +45,22 @@ class DetallesProcess
                     [
                         "type" => "reply",
                         "reply" => [
-                            "id" => "asNew",
-                            "title" => "ESTÁ COMO NUEVA"
+                            "id" => "good",
+                            "title" => "EN BUENAS CONDICIONES"
                         ]
                     ],
                     [
                         "type" => "reply",
                         "reply" => [
                             "id" => "normal",
-                            "title" => "ESTADO NORMAL DE USO"
+                            "title" => "DETALLES NORMALES DE USO"
+                        ]
+                    ],
+                    [
+                        "type" => "reply",
+                        "reply" => [
+                            "id" => "reparada",
+                            "title" => "AUTOPARTE REPARADA"
                         ]
                     ]
                 ]
