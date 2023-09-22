@@ -33,7 +33,7 @@ class ReqDetallesProcess {
 
   /** */
   public function exe(
-    bool $btnPressAsNew = false, bool $btnPressNormal = false, bool $btnPressRep = false
+    bool $btnPressGood = false, bool $btnPressNormal = false, bool $btnPressRep = false
   ) {
 
     $this->fileCot = $this->cotTransit->getCotizacionInTransit();
@@ -41,7 +41,7 @@ class ReqDetallesProcess {
     $obj = new DetallesProcess($this->cotTransit->pathFull);
 
     $isWithBtn = '';
-    if($btnPressAsNew) {
+    if($btnPressGood) {
       $isWithBtn = 'good';
     }
     if($btnPressNormal) {
@@ -53,6 +53,7 @@ class ReqDetallesProcess {
 
     $isValid = $obj->isValid($this->message, $this->fileCot, $isWithBtn);
     $this->fileCot = $obj->fileCot;
+    
     if($isValid != '') {
 
       if($isValid == 'image') {

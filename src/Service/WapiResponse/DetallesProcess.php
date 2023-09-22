@@ -46,14 +46,14 @@ class DetallesProcess
                         "type" => "reply",
                         "reply" => [
                             "id" => "good",
-                            "title" => "EN BUENAS CONDICIONES"
+                            "title" => "BUENAS CONDICIONES"
                         ]
                     ],
                     [
                         "type" => "reply",
                         "reply" => [
                             "id" => "normal",
-                            "title" => "DETALLES NORMALES DE USO"
+                            "title" => "DETALLES DE USO"
                         ]
                     ],
                     [
