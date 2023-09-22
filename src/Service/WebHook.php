@@ -118,7 +118,7 @@ class WebHook
         ];
         
         if(mb_strpos($uriCall, 'convFree') !== false) {
-            $protocolo['evento'] = 'convFree';
+            $protocolo['evento'] = 'conv_free';
             $protocolo['from']   = $data['from'];
         }
         if(mb_strpos($uriCall, 'shop-core') !== false) {
