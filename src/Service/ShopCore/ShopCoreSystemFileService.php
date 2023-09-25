@@ -219,4 +219,30 @@ class ShopCoreSystemFileService
 		return false;
 	}
 
+	/** 
+	 * Archivo que administra los comandos enviados a nuestros repositorios
+	 * para manejar los comandos WA_API
+	*/
+	public function fileSesionManager(String $filename, String $mode) : bool
+	{
+
+		$path = $this->params->get('waCmds');
+		$pathA = Path::canonicalize($path . '/' . trim($filename) .'.json');
+		if($mode == 'create') {
+			file_put_contents($pathA, '');
+			return true;
+		}else if($mode == 'exist') {
+			if($this->filesystem->exists($pathA)) {
+				return true;
+			}
+		}else if($mode == 'delete') {
+			if($this->filesystem->exists($pathA)) {
+				$this->filesystem->remove($pathA);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 }

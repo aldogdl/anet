@@ -4,6 +4,7 @@ namespace App\Controller\ShopCore;
 
 use App\Repository\AO1MarcasRepository;
 use App\Repository\AO2ModelosRepository;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -143,6 +144,20 @@ class GetController extends AbstractController
     $keyRes = ($has) ? 'isOkFilename' : 'none';
     
     return $this->json(['abort'=>false, 'msg' => 'ok', $keyRes => '']);
+  }
+
+  /**
+   * Endpoint de inicio de ventana de atención para los cotizadores desde
+   * AnetShop version descktop
+  */
+  #[Route('shop-core/file-sesion-manager/{filename}/{mode}/', defaults:['mode' => 'create'], methods:['GET', 'DELETE'])]
+  public function fileCmdManager(Request $req, ShopCoreSystemFileService $fSys, String $filename, String $mode): Response
+  {
+    if($req->getMethod() == 'DELETE') {
+      $mode = 'delete';
+    }
+    $has = $fSys->fileSesionManager($filename, $mode);
+    return $this->json(['abort'=>false, 'msg' => $mode, 'body' => $has]);
   }
 
 }

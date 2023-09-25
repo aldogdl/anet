@@ -7,7 +7,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
-use App\Service\WA\WaTypeResponse;
 use App\Service\WA\Dom\WaMessageDto;
 use App\Service\WA\WaService;
 use App\Service\WapiRequest\ProcesarMessage;
@@ -79,12 +78,6 @@ class WaController extends AbstractController
             $metadata->extractPhoneFromWaId($waid);
             $metadata->type = 'close_free';
 
-            new WaTypeResponse(
-                $metadata, $waS, [], '',
-                $this->getParameter('waTk'),
-                $this->getParameter('nifiFld'),
-                $this->getParameter('waCots')
-            );
 
             return $this->json(['code' => $data['file']]);
         }
@@ -102,23 +95,5 @@ class WaController extends AbstractController
         return $this->json($res);
     }
 
-    /**
-     * Actualizamos el token de wa desde backcore
-     */
-    #[Route('wa/tk/update/', methods: ['POST'])]
-    public function updateWaToken(Request $req): Response
-    {
-        if($req->getMethod() == 'POST') {
-
-            $field = $req->request->get('tkmy');
-            if($field != '') {
-                $pathTk = $this->getParameter('waTk');
-                file_put_contents($pathTk, 'aldo_'.$field);
-                return $this->json(['code' => 200]);
-            }
-        }
-
-        return $this->json(['code' => 100]);
-    }
 
 }
