@@ -8,6 +8,7 @@ class ExtractMessage {
 
     public String $pathToAnalizar = '';
     public bool $isStt = false;
+    public bool $isCmd = false;
     public String $from = '';
 
     /** 
@@ -83,6 +84,7 @@ class ExtractMessage {
                                 $this->from = $result['from'];
                                 $result['phone_number_id'] = $phoneNumberId;
                                 $result['myTime'] = ''.strtotime('now');
+                                file_put_contents('cmd.json', json_encode($result));
                                 $this->message = $result;
                                 $result = [];
                                 return true;
