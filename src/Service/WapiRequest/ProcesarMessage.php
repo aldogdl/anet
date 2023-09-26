@@ -43,7 +43,7 @@ class ProcesarMessage {
         
         $cmd = new ProcessCMD($this->params->get('waCmds'));
         $hasCmdFile = $cmd->hasFileCmd($obj->from);
-        file_put_contents($hasCmdFile.'_'.$obj->isCmd.'.txt', '');
+        
         $filename = 'conv_free.'.$obj->from.'.cnv';
         if(is_file($filename)) {
             if($obj->isCmd && $hasCmdFile) {

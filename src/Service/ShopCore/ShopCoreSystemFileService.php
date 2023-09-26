@@ -227,6 +227,7 @@ class ShopCoreSystemFileService
 	{
 
 		$path = $this->params->get('waCmds');
+
 		$pathA = Path::canonicalize($path . '/' . trim($filename) .'.json');
 		if($mode == 'create') {
 			file_put_contents($pathA, '');
@@ -242,7 +243,9 @@ class ShopCoreSystemFileService
 			}
 		}else {
 			if($this->filesystem->exists($pathA)) {
-				return json_decode(file_get_contents($pathA));
+				$content = json_decode(file_get_contents($pathA));
+				unlink($pathA);
+				return $content;
 			}
 			return [];
 		}

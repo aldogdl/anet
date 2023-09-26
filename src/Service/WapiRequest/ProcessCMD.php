@@ -31,11 +31,10 @@ class ProcessCMD {
      * Revisamos si hay un archivo cmd del usuario
      * $prefix puede ser _ok para revisar si existe un archivo procesado
      */
-    public function hasFileCmd(String $waId, String $prefix = ''): bool
+    public function hasFileCmd(String $waId): bool
     {
         $this->waId = $waId;
-        $filename = trim($this->pathToCmd.'/'.$waId.$prefix);
-        file_put_contents($filename.'.jsonnnn', '');
+        $filename = trim($this->pathToCmd.'/'.$waId);
         return $this->filesystem->exists($filename.'.json');
     }
 
