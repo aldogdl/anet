@@ -135,17 +135,6 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'tkwa' => $token]);
   }
 
-  /** */
-  #[Route('api/shop-core/file-cmd-exist/{filename}/', methods:['get'])]
-  public function fileCmdExist(ShopCoreSystemFileService $fSys, String $filename): Response
-  {
-    $filename = base64_decode($filename);
-    $has = $fSys->fileCmdExist($filename);
-    $keyRes = ($has) ? 'isOkFilename' : 'none';
-    
-    return $this->json(['abort'=>false, 'msg' => 'ok', $keyRes => '']);
-  }
-
   /**
    * Endpoint de inicio de ventana de atención para los cotizadores desde
    * AnetShop version descktop
@@ -153,6 +142,7 @@ class GetController extends AbstractController
   #[Route('shop-core/file-sesion-manager/{filename}/{mode}/', defaults:['mode' => 'create'], methods:['GET', 'DELETE'])]
   public function fileCmdManager(Request $req, ShopCoreSystemFileService $fSys, String $filename, String $mode): Response
   {
+    
     if($req->getMethod() == 'DELETE') {
       $mode = 'delete';
     }

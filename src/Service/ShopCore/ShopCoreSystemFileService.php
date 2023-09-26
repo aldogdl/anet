@@ -223,7 +223,7 @@ class ShopCoreSystemFileService
 	 * Archivo que administra los comandos enviados a nuestros repositorios
 	 * para manejar los comandos WA_API
 	*/
-	public function fileSesionManager(String $filename, String $mode) : bool
+	public function fileSesionManager(String $filename, String $mode) : bool | array
 	{
 
 		$path = $this->params->get('waCmds');
@@ -240,6 +240,8 @@ class ShopCoreSystemFileService
 				$this->filesystem->remove($pathA);
 				return true;
 			}
+		}else {
+			return json_decode(file_get_contents($pathA));
 		}
 
 		return false;
