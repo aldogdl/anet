@@ -243,7 +243,7 @@ class ShopCoreSystemFileService
 			}
 		}else {
 			if($this->filesystem->exists($pathA)) {
-				$content = json_decode(file_get_contents($pathA));
+				$content = json_decode(file_get_contents($pathA), true);
 				unlink($pathA);
 				return $content;
 			}
