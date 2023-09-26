@@ -34,7 +34,8 @@ class ProcessCMD {
     public function hasFileCmd(String $waId, String $prefix = ''): bool
     {
         $this->waId = $waId;
-        return $this->filesystem->exists($this->pathToCmd.'/'.$waId.$prefix.'.json');
+        $filename = trim($this->pathToCmd.'/'.$waId.$prefix);
+        return $this->filesystem->exists($filename.'.json');
     }
 
     /**
