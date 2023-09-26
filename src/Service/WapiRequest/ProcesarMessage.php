@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use App\Service\WebHook;
 
 use App\Service\WapiResponse\ConmutadorWa;
-use App\Service\WapiResponse\FotosProcess;
 use App\Service\WapiResponse\LoginProcess;
 use App\Service\WapiResponse\WrapHttp;
 
@@ -41,9 +40,18 @@ class ProcesarMessage {
     public function execute(array $message): void
     {
         $obj = new ExtractMessage($message);
+        
+        $cmd = new ProcessCMD($this->params->get('waCmds'));
+        $hasCmd = $cmd->hasFileCmd($obj->from);
 
         $filename = 'conv_free.'.$obj->from.'.cnv';
         if(is_file($filename)) {
+            if($obj->isCmd && $hasCmd) {
+                // El mensaje es un comando, ademas sí se encontró el archivo cmd pero...
+                // Hay una conversacion libre en curso.
+                $cmd->denegarMotivo('conv_free');
+                return;
+            }
             $this->whook->sendMy('convFree', 'notSave', $obj->get());
             return;
         }
@@ -55,6 +63,12 @@ class ProcesarMessage {
         }
         
         if($obj->isStt) {
+            if($obj->isCmd && $hasCmd) {
+                // El mensaje es un Status, pero...
+                // Hay un cmd en espera de proceso.
+                $cmd->setProcessOk($obj->get());
+                return;
+            }
             $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
             return;
         }

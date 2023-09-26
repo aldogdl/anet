@@ -17,7 +17,7 @@ class WaController extends AbstractController
      * Endpoint para la verificacion de conección
      */
     #[Route('wa/wh/', methods: ['GET', 'POST'])]
-    public function verifyWa(ProcesarMessage $processMsg, Request $req): Response
+    public function verifyWa(Request $req, ProcesarMessage $processMsg): Response
     {
 
         if($req->getMethod() == 'GET') {

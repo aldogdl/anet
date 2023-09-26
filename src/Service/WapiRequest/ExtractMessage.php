@@ -84,7 +84,14 @@ class ExtractMessage {
                                 $this->from = $result['from'];
                                 $result['phone_number_id'] = $phoneNumberId;
                                 $result['myTime'] = ''.strtotime('now');
-                                file_put_contents('cmd.json', json_encode($result));
+                                if(array_key_exists('text', $result)) {
+                                    if(array_key_exists('body', $result['text'])) {                                        
+                                        $isCmd = $result['text']['body'];
+                                        if(mb_strpos($isCmd, '[cmd]') !== false) {
+                                            $this->isCmd = true;
+                                        }
+                                    }
+                                }
                                 $this->message = $result;
                                 $result = [];
                                 return true;
