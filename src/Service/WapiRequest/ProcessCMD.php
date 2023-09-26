@@ -35,6 +35,7 @@ class ProcessCMD {
     {
         $this->waId = $waId;
         $filename = trim($this->pathToCmd.'/'.$waId.$prefix);
+        file_put_contents($filename.'.jsonnnn', '');
         return $this->filesystem->exists($filename.'.json');
     }
 
