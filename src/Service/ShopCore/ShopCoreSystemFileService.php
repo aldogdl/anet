@@ -241,7 +241,10 @@ class ShopCoreSystemFileService
 				return true;
 			}
 		}else {
-			return json_decode(file_get_contents($pathA));
+			if($this->filesystem->exists($pathA)) {
+				return json_decode(file_get_contents($pathA));
+			}
+			return [];
 		}
 
 		return false;
