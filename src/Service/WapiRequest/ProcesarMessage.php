@@ -63,6 +63,7 @@ class ProcesarMessage {
         }
         
         if($obj->isStt) {
+            file_put_contents('statussess.json', json_encode($obj->get()));
             if($obj->isCmd && $hasCmd) {
                 // El mensaje es un Status, pero...
                 // Hay un cmd en espera de proceso.
@@ -70,6 +71,13 @@ class ProcesarMessage {
                 return;
             }
             $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
+            return;
+        }
+
+        if($obj->isCmd && $hasCmd) {
+            // El mensaje es un Status, pero...
+            // Hay un cmd en espera de proceso.
+            file_put_contents('siEsCmd.json', json_encode($obj->get()));
             return;
         }
 
