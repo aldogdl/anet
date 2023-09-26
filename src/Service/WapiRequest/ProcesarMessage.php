@@ -42,11 +42,11 @@ class ProcesarMessage {
         $obj = new ExtractMessage($message);
         
         $cmd = new ProcessCMD($this->params->get('waCmds'));
-        $hasCmd = $cmd->hasFileCmd($obj->from);
-
+        $hasCmdFile = $cmd->hasFileCmd($obj->from);
+        file_put_contents($hasCmdFile.'.txt', '');
         $filename = 'conv_free.'.$obj->from.'.cnv';
         if(is_file($filename)) {
-            if($obj->isCmd && $hasCmd) {
+            if($obj->isCmd && $hasCmdFile) {
                 // El mensaje es un comando, ademas sí se encontró el archivo cmd pero...
                 // Hay una conversacion libre en curso.
                 $cmd->denegarMotivo('conv_free');
@@ -62,11 +62,12 @@ class ProcesarMessage {
             return;
         }
 
-        if($obj->isCmd && $hasCmd) {
+        if($obj->isCmd && $hasCmdFile) {
+            file_put_contents('entro.txt', '');
             $cmd->setProcessOk($obj->get());
             return;
         }
-
+        file_put_contents('no_entro.txt', '');
         if($obj->isStt) {
             $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
             return;
