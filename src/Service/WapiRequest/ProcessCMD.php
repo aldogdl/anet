@@ -55,13 +55,11 @@ class ProcessCMD {
      * Los Status enviados por whatsapp contienen el tiempo de expiración
      * de la ventana de sesion, los esperamos y guardamos en el archivo.
      */
-    public function setProcessOk(array $stt): array
+    public function setProcessOk(array $msg): array
     {
-        $filename = $this->pathToCmd.'/'.$this->waId.'_ok.json';
-        $has = $this->filesystem->exists($filename);
-        if($has) {
-            file_get_contents('_'.time().'.json', json_encode($stt));
-        }
+        $path = $this->pathToCmd.'/'.$this->waId;
+        unlink($path.'.json');
+        file_put_contents($path.'_ok.json', json_encode($msg));
         return [];
     }
 

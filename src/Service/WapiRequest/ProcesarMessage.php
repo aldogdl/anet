@@ -61,23 +61,14 @@ class ProcesarMessage {
             $this->saveFile($folder.'/'.$obj->pathToAnalizar, $message);
             return;
         }
-        
-        if($obj->isStt) {
-            file_put_contents('statussess.json', json_encode($obj->get()));
-            if($obj->isCmd && $hasCmd) {
-                // El mensaje es un Status, pero...
-                // Hay un cmd en espera de proceso.
-                $cmd->setProcessOk($obj->get());
-                return;
-            }
-            $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
+
+        if($obj->isCmd && $hasCmd) {
+            $cmd->setProcessOk($obj->get());
             return;
         }
 
-        if($obj->isCmd && $hasCmd) {
-            // El mensaje es un Status, pero...
-            // Hay un cmd en espera de proceso.
-            file_put_contents('siEsCmd.json', json_encode($obj->get()));
+        if($obj->isStt) {
+            $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
             return;
         }
 
