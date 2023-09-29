@@ -69,7 +69,7 @@ class ProcesarMessage {
             $conm->setBody('text', [
                 "context"     => $msg['id'],
                 "preview_url" => false,
-                "body"        => "🤖👍🏼 Orden Recibida!\n,Ahora haz click en el Botón:\n\"*Revisar Mensaje Enviado e INICIAR SESIÓN*\""
+                "body"        => "🤖👍🏼 Orden Recibida!\n,Ahora haz click en el Botón:\n*Revisar Mensaje Enviado e INICIAR SESIÓN*, desde tu Computadora."
             ]);
             $this->wapiHttp->send($conm, true);
             return;
