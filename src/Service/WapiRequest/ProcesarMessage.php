@@ -65,7 +65,7 @@ class ProcesarMessage {
         if($obj->isCmd && $hasCmdFile) {
             $msg = $obj->get();
             $cmd->setProcessOk($msg);
-            $conm = new ConmutadorWa($obj->get(), $this->params->get('tkwaconm'));
+            $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
             $conm->setBody('text', [
                 "context"     => $msg['id'],
                 "preview_url" => false,
