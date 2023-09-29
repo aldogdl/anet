@@ -63,11 +63,18 @@ class ProcesarMessage {
         }
 
         if($obj->isCmd && $hasCmdFile) {
-            file_put_contents('entro.txt', '');
-            $cmd->setProcessOk($obj->get());
+            $msg = $obj->get();
+            $cmd->setProcessOk($msg);
+            $conm = new ConmutadorWa($obj->get(), $this->params->get('tkwaconm'));
+            $conm->setBody('text', [
+                "context"     => $msg['id'],
+                "preview_url" => false,
+                "body"        => "🤖👍🏼 Orden Recibida!\n,Ahora haz click en el Botón:\n\"*Revisar Mensaje Enviado e INICIAR SESIÓN*\""
+            ]);
+            $this->wapiHttp->send($conm, true);
             return;
         }
-        file_put_contents('no_entro.txt', '');
+
         if($obj->isStt) {
             $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
             return;
