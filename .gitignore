@@ -48,10 +48,10 @@ public_html/ctcs/
 public_html/inv/
 public_html/pnid.pni
 public_html/cotz_cata_data/
+public_html/shop/
 public_html/ctc_logo/
 var/
 vendor/
-shop.autoparnet.com/
 ###< symfony/framework-bundle ###
 
 ###> lexik/jwt-authentication-bundle ###
