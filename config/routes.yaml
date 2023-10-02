@@ -10,10 +10,10 @@ api_login_check:
     path: /secure-api-check
 
 shop:
-    path: /shop/{slug}/
+    path: /{slug}/shop/
     controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
     defaults:
-        path: 'https://www.autoparnet.com/'
+        path: 'https://www.autoparnet.com/shop/{slug}'
         # redirections are temporary by default (code 302) but you can make them permanent (code 301)
         permanent: true
         # add this to keep the original query string parameters when redirecting
@@ -25,4 +25,4 @@ shop:
         # add this to remove all original route attributes when redirecting
         # ignoreAttributes: true
         # or specify which attributes to ignore:
-        # ignoreAttributes: ['offset', 'limit']
+        ignoreAttributes: ['shop']
