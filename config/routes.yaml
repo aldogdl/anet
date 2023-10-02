@@ -13,7 +13,7 @@ shop:
     path: /shop/{slug}/
     controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
     defaults:
-        path: 'https://www.autoparnet.com/shop/{slug}/'
+        path: 'https://www.autoparnet.com/'
         # redirections are temporary by default (code 302) but you can make them permanent (code 301)
         permanent: true
         # add this to keep the original query string parameters when redirecting
