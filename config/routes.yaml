@@ -8,3 +8,21 @@ kernel:
 
 api_login_check:
     path: /secure-api-check
+
+shop:
+    path: /shop/
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
+    defaults:
+        path: 'https://www.autoparnet.com/shop/'
+        # redirections are temporary by default (code 302) but you can make them permanent (code 301)
+        permanent: true
+        # add this to keep the original query string parameters when redirecting
+        keepQueryParams: true
+        # add this to keep the HTTP method when redirecting. The redirect status changes
+        # * for temporary redirects, it uses the 307 status code instead of 302
+        # * for permanent redirects, it uses the 308 status code instead of 301
+        keepRequestMethod: true
+        # add this to remove all original route attributes when redirecting
+        # ignoreAttributes: true
+        # or specify which attributes to ignore:
+        # ignoreAttributes: ['offset', 'limit']
