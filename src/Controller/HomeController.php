@@ -45,7 +45,7 @@ class HomeController extends AbstractController
         if($slug == '') {
             return $this->json(['hola' => 'Bienvenido...']);
         }
-        return $this->redirect('https://www.autoparnet.com/shop/'.$slug, 301);
+        return $this->redirect('https://www.autoparnet.com/shop?emp='.$slug, 301);
     }
 
     #[Route('home-controller/get-data-connection/{pass}/', methods: ['get'])]
