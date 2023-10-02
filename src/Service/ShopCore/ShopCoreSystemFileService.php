@@ -193,6 +193,23 @@ class ShopCoreSystemFileService
 		return $result;
 	}
 
+	/** Guardamos el json de los comentarios o sugerencias desde shopCore */
+	public function saveComments(array $product): array
+	{
+		$result = ['abort' => false, 'body' => 'ok'];
+		$filename = $product['user']['slug'] . '-' . $product['user']['waId'] . '.json';
+		
+		$path = $this->params->get('comments');
+		$path = Path::canonicalize($path.'/'.$filename);
+		try {
+			$this->filesystem->dumpFile($path, json_encode($product));
+		} catch (FileException $e) {
+			$result['abort'] = true;
+			$result['body'] = $e->getMessage();
+		}
+		return $result;
+	}
+
 	/** */
 	public function removeImgToFolderTmp(string $imgFileName): bool
 	{

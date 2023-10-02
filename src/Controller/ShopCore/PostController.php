@@ -106,4 +106,21 @@ class PostController extends AbstractController
 	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
 	}
 
+  /** 
+   * Recibimos los comentarios y sugerencias sobre el uso de la app
+  */
+  #[Route('security-basic/send-comments/{token}/', methods:['post'])]
+	public function sendComments(
+    Request $req, SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token
+  ): Response
+	{
+    $data = [];
+    if($lock->isValid($token)) {
+      
+      $payload = $this->toArray($req, 'data');
+      $data = $sysFile->saveComments($payload);
+    }
+	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
+	}
+
 }
