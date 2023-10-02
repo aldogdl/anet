@@ -39,7 +39,7 @@ class HomeController extends AbstractController
         return $this->json(['hola' => 'Bienvenido...']);
     }
 
-    #[Route('/{slug}/', methods: ['get'])]
+    #[Route('/{slug}/shop/', methods: ['get'])]
     public function anulandoRoute(String $slug): RedirectResponse | Response
     {
         if($slug == '') {
