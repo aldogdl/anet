@@ -183,6 +183,9 @@ class ShopCoreSystemFileService
 		$filename = $prefix .'-'. $product['head']['slug'] . '-' . $product['head']['fecha'] . '.json';
 		
 		$path = $this->params->get('nifiFld');
+		if(!$this->filesystem->exists($path)) {
+			$this->filesystem->mkdir($path);
+		}
 		$path = Path::canonicalize($path.'/'.$filename);
 		try {
 			$this->filesystem->dumpFile($path, json_encode($product));
