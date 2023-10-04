@@ -6,7 +6,8 @@
 .env.*.local
 .env
 .gitignore
-.gitignore_shop
+.htaccess
+.htaccess_shop
 .well-known
 error_log
 .subversion/
