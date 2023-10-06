@@ -61,8 +61,12 @@ class ProcessCMD {
         $from = 'pc';
         $path = $this->pathToCmd.'/'.$this->waId;
         unlink($path.'.json');
-        if(array_key_exists('pwa', $msg)) {
-            $from = 'pwa';
+        if(array_key_exists('text', $msg)) {
+            if(array_key_exists('body', $msg['text'])) {
+                if(mb_strpos($msg['text']['body'], 'Móvil')) {
+                    $from = 'pwa';
+                }
+            }
         }
         file_put_contents($path.'_ok.json', json_encode($msg));
         return $from;
