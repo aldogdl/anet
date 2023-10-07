@@ -66,6 +66,7 @@ class ProcesarMessage {
 
             $msg = $obj->get();
             $from = $cmd->setProcessOk($msg);
+            file_put_contents('envio_'.$from.'_'.'.json', json_encode($msg));
             $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
 
             $txt = '*Revisar Mensaje Enviado e INICIAR SESIÓN*, desde tu Computadora.';
