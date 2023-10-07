@@ -34,8 +34,9 @@ class ProcessCMD {
     public function hasFileCmd(String $waId): bool
     {
         $this->waId = $waId;
-        $filename = trim($this->pathToCmd.$waId).'.json';
-        $exist = $this->filesystem->exists($filename);
+        $filename = trim($this->pathToCmd.$waId);
+        $filename = $filename.'.json';
+        $exist = ($this->filesystem->exists($filename)) ? true : false;
         file_put_contents('exit2_'.$exist.'_'.'.json', json_encode([
             'exit' => $exist, 'file' => $filename
         ]));
