@@ -78,6 +78,8 @@ class ProcesarMessage {
                 "body"        => "🤖👍🏼 Orden Recibida!\n,Ahora haz click en el Botón:\n" . $txt
             ]);
 
+            file_put_contents('envio_'.$obj->isCmd.'_'.$hasCmdFile.'.json', '');
+
             $this->wapiHttp->send($conm, true);
             return;
         }
