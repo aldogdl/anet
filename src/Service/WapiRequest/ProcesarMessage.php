@@ -66,14 +66,15 @@ class ProcesarMessage {
             $msg = $obj->get();
             $from = $cmd->setProcessOk($msg);
             $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
-            $msg = '*Revisar Mensaje Enviado e INICIAR SESIÓN*, desde tu Computadora.';
+            
+            $txt = '*Revisar Mensaje Enviado e INICIAR SESIÓN*, desde tu Computadora.';
             if($from == 'pwa') {
-                $msg = '*REVISAR Y CONECTAR*, desde tu Aplicación AnetShop.';
+                $txt = '*REVISAR Y CONECTAR*, desde tu Aplicación AnetShop.';
             }
             $conm->setBody('text', [
                 "context"     => $msg['id'],
                 "preview_url" => false,
-                "body"        => "🤖👍🏼 Orden Recibida!\n,Ahora haz click en el Botón:\n" . $msg
+                "body"        => "🤖👍🏼 Orden Recibida!\n,Ahora haz click en el Botón:\n" . $txt
             ]);
             $this->wapiHttp->send($conm, true);
             return;
