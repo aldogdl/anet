@@ -35,7 +35,6 @@ class ProcessCMD {
     {
         $this->waId = $waId;
         $filename = trim($this->pathToCmd.$waId);
-        file_put_contents('exit_ruta.txt', $filename.'.json');
         return $this->filesystem->exists($filename.'.json');
     }
 
@@ -60,7 +59,7 @@ class ProcessCMD {
     public function setProcessOk(array $msg): String
     {
         $from = 'pc';
-        $path = $this->pathToCmd.'/'.$this->waId;
+        $path = $this->pathToCmd.$this->waId;
         unlink($path.'.json');
         if(array_key_exists('text', $msg)) {
             if(array_key_exists('body', $msg['text'])) {
