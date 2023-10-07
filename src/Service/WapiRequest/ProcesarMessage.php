@@ -43,7 +43,7 @@ class ProcesarMessage {
         
         $cmd = new ProcessCMD($this->params->get('waCmds'));
         $hasCmdFile = $cmd->hasFileCmd($obj->from);
-
+        file_put_contents('exit_'.$hasCmdFile.'_'.'.json', '');
         $filename = 'conv_free.'.$obj->from.'.cnv';
         if(is_file($filename)) {
             if($obj->isCmd && $hasCmdFile) {
@@ -58,7 +58,7 @@ class ProcesarMessage {
 
         if($obj->pathToAnalizar != '') {
             $folder = $this->getFolderTo('waAnalizar');
-            $this->saveFile($folder.'/'.$obj->pathToAnalizar, $message);
+            $this->saveFile($folder.$obj->pathToAnalizar, $message);
             return;
         }
         

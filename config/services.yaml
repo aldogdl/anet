@@ -25,7 +25,7 @@ parameters:
     invCtc     : '%phtml%/inv/'
     tkwaconm   : '%phtml%/tkwaconm.json'
     waBackup   : '%phtml%/wa_backup'
-    waAnalizar : '%phtml%/wa_analizar'
+    waAnalizar : '%phtml%/wa_analizar/'
     waSort     : '%phtml%/wa/_orden_put.json'
     getWaToken : '%env(resolve:WA_TOKEN)%'
     getAnToken : '%env(resolve:ANET_TOKEN)%'
