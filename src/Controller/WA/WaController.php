@@ -41,6 +41,7 @@ class WaController extends AbstractController
             }
             
             $message = json_decode($has, true);
+            file_put_contents('message.json', json_encode($message));
             $processMsg->execute($message);
             return new Response('', 200);
         }
