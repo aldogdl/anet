@@ -35,8 +35,7 @@ class ProcessCMD {
     {
         $this->waId = $waId;
         $filename = trim($this->pathToCmd.'/'.$waId);
-        file_put_contents('buscando1_'.$waId.'.json', '');
-        file_put_contents('buscando2_'.$this->pathToCmd.'.json', '');
+        file_put_contents('exit_ruta.txt', $filename);
         return $this->filesystem->exists($filename.'.json');
     }
 
