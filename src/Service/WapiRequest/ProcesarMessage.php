@@ -44,10 +44,6 @@ class ProcesarMessage {
         $cmd = new ProcessCMD($this->params->get('waCmds'));
         $hasCmdFile = $cmd->hasFileCmd($obj->from);
 
-
-
-        file_put_contents('exit_'.$hasCmdFile.'.json', '');
-
         $filename = 'conv_free.'.$obj->from.'.cnv';
         if(is_file($filename)) {
             if($obj->isCmd && $hasCmdFile) {
@@ -66,19 +62,11 @@ class ProcesarMessage {
             return;
         }
         
-
-        file_put_contents('paso_analisis_'.$hasCmdFile.'.json', '');
-        file_put_contents('data_'.$obj->isCmd.'_'.$hasCmdFile.'.json', '');
-
-
         if($obj->isCmd && $hasCmdFile) {
 
             $msg = $obj->get();
             $from = $cmd->setProcessOk($msg);
             $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
-
-            file_put_contents('from_'.$from.'_'.$hasCmdFile.'.json', '');
-
 
             $txt = '*Revisar Mensaje Enviado e INICIAR SESIÓN*, desde tu Computadora.';
             if($from == 'pwa') {
@@ -89,8 +77,6 @@ class ProcesarMessage {
                 "preview_url" => false,
                 "body"        => "🤖👍🏼 Orden Recibida!\n,Ahora haz click en el Botón:\n" . $txt
             ]);
-
-            file_put_contents('envio_'.$obj->isCmd.'_'.$hasCmdFile.'.json', '');
 
             $this->wapiHttp->send($conm, true);
             return;

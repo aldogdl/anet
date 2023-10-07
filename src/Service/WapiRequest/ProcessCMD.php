@@ -34,8 +34,7 @@ class ProcessCMD {
     public function hasFileCmd(String $waId): bool
     {
         $this->waId = $waId;
-        $filename = trim($this->pathToCmd.'/'.$waId);
-        file_put_contents('exit_ruta.txt', $filename);
+        $filename = trim($this->pathToCmd.$waId);
         return $this->filesystem->exists($filename.'.json');
     }
 
