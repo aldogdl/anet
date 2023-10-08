@@ -34,20 +34,8 @@ class ProcessCMD {
     public function hasFileCmd(String $waId): bool
     {
         $this->waId = $waId;
-        file_put_contents('exit2_'.$waId.'_'.'.json', '');
-        $filename = trim($this->pathToCmd.$waId);
-        file_put_contents('exit3_'.$waId.'_'.'.txt', $filename);
-        $filename = $filename.'.json';
-        file_put_contents('exit4_'.$waId.'_'.'.txt', $filename);
-        $exist = file_get_contents($filename);
-        if($exist === false) {
-            return false;
-        }
-        file_put_contents('exit5_'.$exist.'_'.'.json', json_encode([
-            'exit' => $exist, 'file' => $filename
-        ]));
-
-        return true;
+        $filename = trim($this->pathToCmd.$waId).'.json';
+        return $this->filesystem->exists($filename);
     }
 
     /**
