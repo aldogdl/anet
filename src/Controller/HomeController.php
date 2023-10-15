@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\WebHook;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class HomeController extends AbstractController
 {
@@ -37,24 +36,6 @@ class HomeController extends AbstractController
     public function index(): Response
     {
         return $this->json(['hola' => 'Bienvenido...']);
-    }
-
-    #[Route('shop/{slug}/_ft/{uuid}', methods: ['get'])]
-    public function anulandoRouteFt(String $slug, String $uuid): RedirectResponse | Response
-    {
-        if($slug == '') {
-            return $this->json(['hola' => 'Bienvenido...']);
-        }
-        return $this->redirect('https://www.autoparnet.com/shop/?em='.$slug.'&ft='.$uuid, 301);
-    }
-
-    #[Route('shop/{slug}', methods: ['get'])]
-    public function anulandoRoute(String $slug): RedirectResponse | Response
-    {
-        if($slug == '') {
-            return $this->json(['hola' => 'Bienvenido...']);
-        }
-        return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug, 301);
     }
 
     #[Route('home-controller/get-data-connection/{pass}/', methods: ['get'])]

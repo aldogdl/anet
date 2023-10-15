@@ -4,19 +4,36 @@ namespace App\Controller\ShopCore;
 
 use App\Repository\AO1MarcasRepository;
 use App\Repository\AO2ModelosRepository;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\SecurityBasic;
-use App\Service\ShopCore\ShopCoreSystemFileService;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Todos los get sin Token para la app de ShopCore
  */
 class GetController extends AbstractController
 {
+
+  #[Route('shop/{slug}/_ft/{uuid}', methods: ['get'])]
+  public function anulandoRouteFt(String $slug, String $uuid): RedirectResponse | Response
+  {
+    if($slug == '') {
+        return $this->json(['hola' => 'Bienvenido...']);
+    }
+    return $this->redirect('https://www.autoparnet.com/shop/?em='.$slug.'&ft='.$uuid, 301);
+  }
+
+  #[Route('shop/{slug}', methods: ['get'])]
+  public function anulandoRoute(String $slug): RedirectResponse | Response
+  {
+    if($slug == '') {
+        return $this->json(['hola' => 'Bienvenido...']);
+    }
+    return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug, 301);
+  }
 
   /** 
    * Recuperamos los datos del cotizador desde el archivo json
