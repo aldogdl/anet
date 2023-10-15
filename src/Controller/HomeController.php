@@ -39,6 +39,15 @@ class HomeController extends AbstractController
         return $this->json(['hola' => 'Bienvenido...']);
     }
 
+    #[Route('shop/{slug}/_ft/{uuid}', methods: ['get'])]
+    public function anulandoRouteFt(String $slug, String $uuid): RedirectResponse | Response
+    {
+        if($slug == '') {
+            return $this->json(['hola' => 'Bienvenido...']);
+        }
+        return $this->redirect('https://www.autoparnet.com/shop/?em='.$slug.'&ft='.$uuid, 301);
+    }
+
     #[Route('shop/{slug}', methods: ['get'])]
     public function anulandoRoute(String $slug): RedirectResponse | Response
     {

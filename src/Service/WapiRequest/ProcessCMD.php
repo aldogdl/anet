@@ -51,7 +51,6 @@ class ProcessCMD {
         return [];
     }
 
-    
     /**
      * Los Status enviados por whatsapp contienen el tiempo de expiración
      * de la ventana de sesion, los esperamos y guardamos en el archivo.

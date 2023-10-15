@@ -135,19 +135,4 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'tkwa' => $token]);
   }
 
-  /**
-   * Endpoint de inicio de ventana de atención para los cotizadores desde
-   * AnetShop version descktop
-  */
-  #[Route('shop-core/file-sesion-manager/{filename}/{mode}/', defaults:['mode' => 'create'], methods:['GET', 'DELETE'])]
-  public function fileCmdManager(Request $req, ShopCoreSystemFileService $fSys, String $filename, String $mode): Response
-  {
-    
-    if($req->getMethod() == 'DELETE') {
-      $mode = 'delete';
-    }
-    $has = $fSys->fileSesionManager($filename, $mode);
-    return $this->json(['abort'=>false, 'msg' => $mode, 'body' => $has]);
-  }
-
 }

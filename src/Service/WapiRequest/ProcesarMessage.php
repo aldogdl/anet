@@ -62,6 +62,7 @@ class ProcesarMessage {
             return;
         }
         
+        // Este ya no se usa, pero lo dejo para muestrario de comandos futuros
         if($obj->isCmd && $hasCmdFile) {
 
             $msg = $obj->get();

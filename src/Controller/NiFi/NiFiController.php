@@ -78,7 +78,7 @@ class NiFiController extends AbstractController
         $types = [
             'jpeg' => 'image/jpeg',
             'jpg' => 'image/jpeg',
-            'png' => 'image/png' 
+            'png' => 'image/png'
         ];
 
         if(count($ext) > 1) {
