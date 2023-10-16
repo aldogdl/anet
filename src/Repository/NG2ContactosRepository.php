@@ -330,12 +330,14 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         }
       }
     }
+
     $prefix = 'anet';
     if($isAdmin) {
       $sufix = 'e';
     }else{
       $sufix = (in_array('ROLE_COTZ', $roles)) ? 'c' : 's';
     }
+    
     $curc = $prefix . $sufix .  $user->getEmpresa()->getId() . 'c' .$user->getId();
     $user->setCurc($curc);
     if($flush) {

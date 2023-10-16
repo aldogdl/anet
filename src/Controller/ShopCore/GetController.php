@@ -4,6 +4,7 @@ namespace App\Controller\ShopCore;
 
 use App\Repository\AO1MarcasRepository;
 use App\Repository\AO2ModelosRepository;
+use App\Repository\NG2ContactosRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -144,7 +145,23 @@ class GetController extends AbstractController
     }
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
-  
+
+  /** */
+  #[Route('security-basic/change-pass/{token}/{idCot}/', methods:['get'])]
+  public function changePassword(
+    SecurityBasic $lock, NG2ContactosRepository $userEm, String $token, String $idCot,
+    String $newPass
+  ): Response
+  {
+    $pass = '';
+    if($lock->isValid($token)) {
+
+      $userDql = $userEm->getContactoById($idCot);
+      $pass = $userEm->encodePassword($userDql->execute(), $newPass);
+    }
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'pass' => $pass]);
+  }
+
   /** */
   #[Route('/api/shop-core/get-tkwa/', methods:['get'])]
   public function getTkWa(): Response
