@@ -73,6 +73,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
   public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
   {
     if (!$user instanceof NG2Contactos) {
+      file_put_contents('error.txt', \get_class($user));
       throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
     }
 
@@ -337,7 +338,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     }else{
       $sufix = (in_array('ROLE_COTZ', $roles)) ? 'c' : 's';
     }
-    
+
     $curc = $prefix . $sufix .  $user->getEmpresa()->getId() . 'c' .$user->getId();
     $user->setCurc($curc);
     if($flush) {
