@@ -154,13 +154,13 @@ class GetController extends AbstractController
   ): Response
   {
     $pass = '';
-    file_put_contents('entro_cero.txt', '');
     // if($lock->isValid($token)) {
-      file_put_contents('entro.txt', '');
       $userDql = $userEm->getContactoById($idCot);
       $user = $userDql->execute();
-      file_put_contents('entro'.$user->getId().'.txt', '');
-      $pass = $userEm->encodePassword($user, $newPass);
+      if($user) {
+        file_put_contents('entro'.$user[0]->getId().'.txt', '');
+        $pass = $userEm->encodePassword($user[0], $newPass);
+      }
     // }
     return $this->json(['abort'=>false, 'msg' => 'ok', 'pass' => $pass]);
   }
