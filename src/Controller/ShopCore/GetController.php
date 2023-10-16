@@ -163,7 +163,7 @@ class GetController extends AbstractController
         $pass = [
           'id' => $user[0]->getId(),
           'username' => $user[0]->getCurc(),
-          'pass' => $pass(),
+          'pass' => $pass,
         ];
       }
     // }
