@@ -147,7 +147,7 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('security-basic/change-pass/{token}/{idCot}/', methods:['get'])]
+  #[Route('security-basic/change-pass/{token}/{idCot}/{newPass}/', methods:['get'])]
   public function changePassword(
     SecurityBasic $lock, NG2ContactosRepository $userEm, String $token, String $idCot,
     String $newPass
