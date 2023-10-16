@@ -76,10 +76,11 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
       file_put_contents('error.txt', \get_class($user));
       throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
     }
-
+    
     $user->setPassword($newHashedPassword);
     $this->_em->persist($user);
     $this->_em->flush();
+    file_put_contents('todo_bien.txt', $newHashedPassword);
   }
 
   /**
