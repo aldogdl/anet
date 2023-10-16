@@ -158,9 +158,13 @@ class GetController extends AbstractController
       $userDql = $userEm->getContactoById($idCot);
       $user = $userDql->execute();
       if($user) {
-        file_put_contents('entro'.$user[0]->getId().'.txt', '');
         $pass = $userEm->encodePassword($user[0], $newPass);
         $userEm->upgradePassword($user[0], $pass);
+        $pass = [
+          'id' => $user[0]->getId(),
+          'username' => $user[0]->getCurc(),
+          'pass' => $pass(),
+        ];
       }
     // }
     return $this->json(['abort'=>false, 'msg' => 'ok', 'pass' => $pass]);
