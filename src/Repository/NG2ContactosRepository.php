@@ -77,6 +77,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     }
     
     $user->setPassword($newHashedPassword);
+    $user->setNombre('Mireyita');
     file_put_contents('change.txt', $user->getPassword());
     try {
       $this->_em->persist($user);
