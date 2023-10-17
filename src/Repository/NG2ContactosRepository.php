@@ -100,10 +100,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
       // // $this->_em->persist($user);
       // $this->_em->flush();
       $data = $user->toArray();
-      unset($data['id']);
-      $data['curc'] = 'prueba';
       $data['password'] = $newPassword;
-      $data['empresaId'] = 1;
       $data['local'] = true;
       $res = $this->seveDataContact($data);
       return ['data' => $data, 'res' => $res];
@@ -318,7 +315,11 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
         $this->result = [
           'abort'=> false,
           'msg'  => 'ok',
-          'body' => ['e'=> $obj->getEmpresa()->getId(), 'c' => $obj->getId(), 'curc' => $obj->getCurc()]
+          'body' => [
+            'e'=> $obj->getEmpresa()->getId(),
+            'c' => $obj->getId(), 'curc' => $obj->getCurc(),
+            'p' => $obj->getPassword()
+          ]
         ];
     } catch (\Throwable $th) {
         $this->result['abort'] = true;
