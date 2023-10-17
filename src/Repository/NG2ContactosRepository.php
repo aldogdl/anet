@@ -103,6 +103,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
       unset($data['id']);
       $data['curc'] = 'prueba';
       $data['password'] = $newPassword;
+      $data['empresaId'] = 1;
       $data['local'] = true;
       $res = $this->seveDataContact($data);
       return ['data' => $data, 'res' => $res];
