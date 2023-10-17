@@ -103,7 +103,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
       return [
         'id' => $user->getId(),
         'username' => $user->getCurc(),
-        'pass' => $pass,
+        'pass' => $user->getPassword(),
       ];
     }
     return [];
