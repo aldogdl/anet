@@ -153,21 +153,11 @@ class GetController extends AbstractController
     String $newPass
   ): Response
   {
-    $pass = '';
+    $dta = [];
     if($lock->isValid($token)) {
-      $userDql = $userEm->getContactoById($idCot);
-      $user = $userDql->execute();
-      if($user) {
-        $pass = $userEm->encodePassword($user[0], $newPass);
-        $userEm->upgradePassword($user[0], $pass);
-        $pass = [
-          'id' => $user[0]->getId(),
-          'username' => $user[0]->getCurc(),
-          'pass' => $pass,
-        ];
-      }
+      $dta = $userEm->cambiarPassword($idCot, $newPass);
     }
-    return $this->json(['abort'=>false, 'msg' => 'ok', 'pass' => $pass]);
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'dta' => $dta]);
   }
 
   /** */
