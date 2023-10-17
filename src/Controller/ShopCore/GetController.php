@@ -154,7 +154,7 @@ class GetController extends AbstractController
   ): Response
   {
     $pass = '';
-    // if($lock->isValid($token)) {
+    if($lock->isValid($token)) {
       $userDql = $userEm->getContactoById($idCot);
       $user = $userDql->execute();
       if($user) {
@@ -166,7 +166,7 @@ class GetController extends AbstractController
           'pass' => $pass,
         ];
       }
-    // }
+    }
     return $this->json(['abort'=>false, 'msg' => 'ok', 'pass' => $pass]);
   }
 
