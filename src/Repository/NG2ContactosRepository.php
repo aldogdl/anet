@@ -96,7 +96,11 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
       $user->setPassword($pass);
       $user->setNombre('Mireya López');
       $this->_em->persist($user);
-      $this->_em->flush();
+      try {
+        $this->_em->flush();
+      } catch (\Throwable $th) {
+        file_put_contents('error_login.txt', $th->getMessage());
+      }
       return [
         'id' => $user->getId(),
         'username' => $user->getCurc(),
