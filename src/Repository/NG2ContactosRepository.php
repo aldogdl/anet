@@ -83,14 +83,12 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
 
   /**
    * Used to upgrade (rehash) the user's password automatically over time.
-   * $2y$13$3vdApQIgTWWoj5VPqyu0pef0.ZLXFDhWS3iK8m9eKTuN3LIfMZmry
    */
   public function cambiarPassword(int $idCot, string $newPassword): array
   {
     $user = $this->_em->find(NG2Contactos::class, $idCot);
     
     if($user) {
-
       $pass = $this->encodePassword($user, $newPassword);
       $this->upgradePassword($user, $pass);
       return ['pass' => $pass];

@@ -157,7 +157,7 @@ class GetController extends AbstractController
     if($lock->isValid($token)) {
       $dta = $userEm->cambiarPassword($idCot, $newPass);
     }
-    return $this->json(['abort'=>false, 'msg' => 'ok', 'dta' => $dta]);
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $dta]);
   }
 
   /** */
