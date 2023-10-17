@@ -76,16 +76,9 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
       throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
     }
     
-    $user->setPassword($newHashedPassword);
-    $user->setNombre('Mireyita');
-    file_put_contents('change.txt', $user->getPassword());
-    try {
-      $this->_em->persist($user);
-      $this->_em->flush();
-    } catch (\Throwable $th) {
-      file_put_contents('change_2.txt', $user->getPassword());
-    }
-    file_put_contents('change_3.txt', $user->getPassword());
+    $user = $user->setPassword($newHashedPassword);
+    $this->_em->persist($user);
+    $this->_em->flush();
   }
 
   /**
