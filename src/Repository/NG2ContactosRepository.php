@@ -92,7 +92,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     
     if($user) {
 
-      // $user = $user[0];
+      $user = $user[0];
       // $pass = $this->encodePassword($user, $newPassword);
       // $user->setPassword($pass);
       // $user->setNombre('Mireya López');
