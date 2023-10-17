@@ -87,26 +87,13 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
    */
   public function cambiarPassword(int $idCot, string $newPassword): array
   {
-    $userDql = $this->getContactoById($idCot);
-    $user = $userDql->execute();
+    $user = $this->_em->find(NG2Contactos::class, $idCot);
     
     if($user) {
 
-      $user = $user[0];
       $pass = $this->encodePassword($user, $newPassword);
-      $user->setPassword('1234567');
-      $user->setNombre($pass);
-
-      // // $this->_em->persist($user);
-      // $this->_em->flush();
-      $this->getEntityManager()->flush();
-      // $data = $user->toArray();
-      // $data['password'] = $newPassword;
-      // $data['local'] = true;
-      // $res = $this->seveDataContact($data);
-      $data = $user->toArray();
-      $data['pass'] = $user->getPassword();
-      return $data;
+      $this->upgradePassword($user, $pass);
+      return ['pass' => $pass];
     }
     return [];
   }
