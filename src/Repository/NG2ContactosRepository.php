@@ -91,10 +91,11 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     $user = $userDql->execute();
     
     if($user) {
-      file_put_contents('err_pass.txt', $user[0]->getPassword());
-      $pass = $this->encodePassword($user[0], $newPassword);
-      $this->upgradePassword($user[0], $pass);
-      $user = $user[0]->setPassword('1234567');
+      $user = $user[0];
+      $old = $user->getPassword();
+      file_put_contents('err_pass.txt', $old);
+      $pass = $this->encodePassword($user, $newPassword);
+      $user->setPassword('1234567');
       $user->setNombre($pass);
       $this->_em->persist($user);
       $this->_em->flush();
