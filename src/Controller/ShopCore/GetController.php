@@ -88,12 +88,11 @@ class GetController extends AbstractController
     SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token, String $waId, String $slug
   ): Response
   {
-    $data = '';
+    $data = [];
     if($lock->isValid($token)) {
       $data = $sysFile->getInv($waId, $slug);
     }
-
-    return new Response($data);
+    return $this->json($data);
   }
 
   /**

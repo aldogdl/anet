@@ -20,7 +20,7 @@ class ShopCoreSystemFileService
 	}
 	
 	/** */
-	public function getInv(String $waId, $slug): String
+	public function getInv(String $waId, $slug): array
 	{
 		$data = [];
 
@@ -36,7 +36,7 @@ class ShopCoreSystemFileService
 			$data = array_merge($data, $otros);
 		}
 
-		return json_encode($data);
+		return $data;
 	}
 
 	/**
