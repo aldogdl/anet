@@ -33,7 +33,7 @@ class ShopCoreSystemFileService
 		$filename = $this->params->get('invCtc') . $waId . '_up.json';
 		if($this->filesystem->exists($filename)) {
 			$otros = json_decode(file_get_contents($filename), true);
-			array_merge($data, $otros);
+			$data = array_merge($data, $otros);
 		}
 
 		return json_encode($data);
