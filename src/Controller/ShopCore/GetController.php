@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\SecurityBasic;
+use App\Service\ShopCore\ShopCoreSystemFileService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
@@ -82,17 +83,14 @@ class GetController extends AbstractController
   /** 
    * Recuperamos el inventario del cotizador desde el archivo json
   */
-  #[Route('security-basic/get-inv-ctc/{token}/{waId}/', methods:['get'])]
+  #[Route('security-basic/get-inv-ctc/{token}/{waId}/{slug}/', methods:['get'])]
   public function getInvContact(
-    SecurityBasic $lock, String $token, String $waId
+    SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token, String $waId, String $slug
   ): Response
   {
     $data = '';
     if($lock->isValid($token)) {
-      $pathTo = $this->getParameter('invCtc') . $waId . '_up.json';
-      if(is_file($pathTo)) {
-        $data = file_get_contents($pathTo);
-      }
+      $data = $sysFile->getInv($waId, $slug);
     }
 
     return new Response($data);

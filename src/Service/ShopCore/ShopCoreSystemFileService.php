@@ -19,6 +19,26 @@ class ShopCoreSystemFileService
 		$this->filesystem = new Filesystem();
 	}
 	
+	/** */
+	public function getInv(String $waId, $slug): String
+	{
+		$data = [];
+
+		$path = $this->params->get('prodPubs');
+		$filename = $path.'/'.$slug.'/inv_anet.json';
+		if($this->filesystem->exists($filename)) {
+			$data = json_decode(file_get_contents($filename), true);
+		}
+		
+		$filename = $this->params->get('invCtc') . $waId . '_up.json';
+		if($this->filesystem->exists($filename)) {
+			$otros = json_decode(file_get_contents($filename), true);
+			array_merge($data, $otros);
+		}
+
+		return json_encode($data);
+	}
+
 	/**
 	 * Buscamos un nuevo nombre para las imagenes compartidas que ya existen
 	 */
