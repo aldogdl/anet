@@ -136,8 +136,8 @@ class ShopCoreSystemFileService
 	}
 
 	/** 
-	 * Despues de Guardar el json resultante del alta de productos desde shopCore
-	 * revisamos si estan todas sus fotos cargadas en su respectivo folder
+	 * Guardamos en su respectivo folder las piezas que se estan publicando
+	 * desde shop-core
 	*/
 	public function isForPublikProduct(array $product): bool
 	{	
@@ -146,14 +146,20 @@ class ShopCoreSystemFileService
 		if(array_key_exists('pzaPublik', $product)) {
 			
 			$path = $this->params->get('prodPubs');
-			$rota = count($product['pzaPublik']);
-			for ($i=0; $i < $rota; $i++) {
-				$filename = $path.'/'.$slug.'/'.$product['pzaPublik'][$i]['uuid'].'.json';
-				try {
-					$this->filesystem->dumpFile($filename, json_encode($product['pzaPublik'][$i]));
-				} catch (FileException $e) {}
+			$filename = $path.'/'.$slug.'/inv_anet.json';
+			$piezas = [];
+			if($this->filesystem->exists($path)) {
+				$piezas = json_decode(file_get_contents($filename), true);
 			}
 
+			$rota = count($product['pzaPublik']);
+			for ($i=0; $i < $rota; $i++) {
+				array_unshift($piezas, $product['pzaPublik'][$i]);
+			}
+
+			try {
+				$this->filesystem->dumpFile($filename, json_encode($piezas));
+			} catch (FileException $e) {}
 			return true;
 		}
 
