@@ -168,7 +168,7 @@ class ShopCoreSystemFileService
 			$path = $this->params->get('prodPubs');
 			$filename = $path.'/'.$slug.'/inv_anet.json';
 			$piezas = [];
-			if($this->filesystem->exists($path)) {
+			if($this->filesystem->exists($filename)) {
 				$piezas = json_decode(file_get_contents($filename), true);
 			}
 
