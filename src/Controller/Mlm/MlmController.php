@@ -18,19 +18,13 @@ class MlmController extends AbstractController
      * Endpoint para la verificacion de conección
      */
     #[Route('mlm/wh/notifications/', methods: ['GET', 'POST'])]
-    public function verifyWa(Request $req, ProcesarMessage $processMsg): Response
+    public function verifyMlm(Request $req, ProcesarMessage $processMsg): Response
     {
 
         if($req->getMethod() == 'GET') {
-
-            $verify = $req->query->get('hub_verify_token');
-            if($verify == $this->getParameter('getWaToken')) {
-    
-                $mode = $req->query->get('hub_mode');
-                if($mode == 'subscribe') {
-                    $challenge = $req->query->get('hub_challenge');
-                    return new Response($challenge);
-                }
+            $verify = $req->query->get('code_challenge');
+            if($verify == $this->getParameter('getShopCTk')) {
+                return new Response('listo MLM');
             }
         }
 
