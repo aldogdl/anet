@@ -45,7 +45,7 @@ class MlmService
             ]
         ]);
 
-        $httpLogs = $response->getInfo('debug');
+        $httpLogs = $response->getContent(false);
         file_put_contents('mlm_res_err.json', json_encode([
             'cod' => $httpLogs,
         ]));
