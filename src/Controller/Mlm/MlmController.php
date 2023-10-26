@@ -51,11 +51,15 @@ class MlmController extends AbstractController
 
             $code = $req->query->get('code');
             if(strlen($code) > 10) {
-
                 $mlmServ->codeAuth = $code;
                 $res = $mlmServ->send();
-                file_put_contents('mlm_res_afuera.json', json_encode($res));
             }
+        }
+
+        if($met == 'POST') {
+            file_put_contents('mlm_POST_'.$met.'.json', json_encode([
+                'body' => $req->getContent()
+            ]));
         }
         return new Response();
     }
