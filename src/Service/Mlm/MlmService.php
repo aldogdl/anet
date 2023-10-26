@@ -56,7 +56,7 @@ class MlmService
                 'bod' => $response->getContent(),
             ]));
 
-        } catch (\Throwable $th) {
+        } catch (\Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface $th) {
 
             file_put_contents('mlm_res_err.json', json_encode([
                 'res' => $th->getMessage(),
