@@ -41,7 +41,7 @@ class MlmService
                 'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
                 'code' => $this->codeAuth,
                 'redirect_uri' => 'https://autoparnet.com/mlm/code/',
-                'code_verifier' => 'shop2536core!1975s-b',
+                'code_verifier' => '9d3468bd1f51f6c9546a23213eb649ac2a040ac29d196f96859926bf3c46fc6f',
             ]
         ]);
 
