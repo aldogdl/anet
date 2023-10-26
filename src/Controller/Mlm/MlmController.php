@@ -15,7 +15,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class MlmController extends AbstractController
 {
-    private $folder = '9d3468bd1f51f6c9546a23213eb649ac2a040ac29d196f96859926bf3c46fc6f';
+    private $folder = 'aldo';
+    private $folder2 = '9d3468bd1f51f6c9546a23213eb649ac2a040ac29d196f96859926bf3c46fc6f';
 
     /**
      * Endpoint para la verificacion de conección
