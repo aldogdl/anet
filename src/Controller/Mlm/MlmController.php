@@ -37,6 +37,17 @@ class MlmController extends AbstractController
                 return new Response($this->folder);
             }
         }
+
+        if($req->getMethod() == 'POST') {
+            file_put_contents('mlm.json', json_encode([
+                'querys' => $req->query->all(),
+                'ips' => $req->getClientIps(),
+                'inf' => $req->getPathInfo(),
+                'host' => $req->getHttpHost(),
+                'body' => $req->getContent()
+            ]));
+            return new Response();
+        }
     }
 
     /** */
