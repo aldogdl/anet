@@ -31,23 +31,19 @@ class MlmService
     /** */
     public function send(): array
     {
-        // application/x-www-form-urlencoded
-        $response = $this->client->request(
-            'POST', $this->urlMsgBase, [
-                'headers' => [
-                    'accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'grant_type' => 'authorization_code',
-                    'client_id'  => '3533349917060454',
-                    'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
-                    'code' => $this->codeAuth,
-                    'redirect_uri' => 'https://autoparnet.com/mlm/code/',
-                    'code_verifier' => 'shop2536core!1975s-b',
-                ]
+        $response = $this->client->request('POST', $this->urlMsgBase, [
+            'headers' => [
+                'accept' => 'application/json',
+            ],
+            'body' => [
+                'grant_type' => 'authorization_code',
+                'client_id'  => '3533349917060454',
+                'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
+                'code' => $this->codeAuth,
+                'redirect_uri' => 'https://autoparnet.com/mlm/code/',
+                'code_verifier' => 'shop2536core!1975s-b',
             ]
-        );
+        ]);
 
         if($response->getStatusCode() == 200) {
             
@@ -58,7 +54,7 @@ class MlmService
             ];
 
         }else{
-            
+
             file_put_contents('mlm_res_err.json', json_encode([
                 'cod' => $response->getStatusCode(),
                 'bod' => $response->getContent(),
