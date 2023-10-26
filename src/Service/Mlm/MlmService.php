@@ -32,23 +32,35 @@ class MlmService
     /** */
     public function send(): array
     {
-        $response = $this->client->request(
-            'POST', $this->urlMsgBase, [
-                'headers' => [
-                    'accept' => 'application/json',
-                    'Content-Type' => 'application/x-www-form-urlencoded',
-                ],
-                'body' => [
-                    'grant_type' => 'authorization_code',
-                    'client_id'  => '3533349917060454',
-                    'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
-                    'code' => $this->codeAuth,
-                    'redirect_uri' => 'https://autoparnet.com/mlm/code/',
-                    'code_verifier' => $this->codeSha,
-                ]
-            ]
-        );
+        $response = '';
 
+        try {
+            $response = $this->client->request(
+                'POST', $this->urlMsgBase, [
+                    'headers' => [
+                        'accept' => 'application/json',
+                        // 'Content-Type' => 'application/x-www-form-urlencoded',
+                    ],
+                    'body' => [
+                        'grant_type' => 'authorization_code',
+                        'client_id'  => '3533349917060454',
+                        'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
+                        'code' => $this->codeAuth,
+                        'redirect_uri' => 'https://autoparnet.com/mlm/code/',
+                        'code_verifier' => $this->codeSha,
+                    ]
+                ]
+            );
+            
+        } catch (\Throwable $th) {
+
+            file_put_contents('mlm_res.json', json_encode([
+                'res' => $th->getMessage(),
+                'cod' => $response->getStatusCode(),
+                'bod' => $response->getContent(),
+            ]));
+        }
+        
         return [
             'statuscode' => $response->getStatusCode(),
             'response'   => $response->getContent(),
