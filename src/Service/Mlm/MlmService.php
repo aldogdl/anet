@@ -39,19 +39,19 @@ class MlmService
                 'POST', $this->urlMsgBase, [
                     'headers' => [
                         'accept' => 'application/json',
-                        // 'Content-Type' => 'application/x-www-form-urlencoded',
+                        'Content-Type' => 'application/x-www-form-urlencoded',
                     ],
-                    'body' => [
+                    'body' => json_encode([
                         'grant_type' => 'authorization_code',
                         'client_id'  => '3533349917060454',
                         'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
                         'code' => $this->codeAuth,
                         'redirect_uri' => 'https://autoparnet.com/mlm/code/',
                         'code_verifier' => $this->codeSha,
-                    ]
+                    ])
                 ]
             );
-            
+
         } catch (\Throwable $th) {
 
             file_put_contents('mlm_res.json', json_encode([
