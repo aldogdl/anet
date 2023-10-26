@@ -46,6 +46,7 @@ class MlmController extends AbstractController
         if($met == 'GET') {
 
             $verify = $req->query->get('code_challenge');
+            
             if($verify == $this->folder) {
                 return new Response($this->folder);
             }
