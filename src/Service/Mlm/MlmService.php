@@ -32,13 +32,13 @@ class MlmService
     public function send(): array
     {
         $response = '';
-
+        // application/x-www-form-urlencoded
         try {
             $response = $this->client->request(
                 'POST', $this->urlMsgBase, [
                     'headers' => [
                         'accept' => 'application/json',
-                        'Content-Type' => 'application/x-www-form-urlencoded',
+                        'Content-Type' => 'application/json',
                     ],
                     'json' => [
                         'grant_type' => 'authorization_code',
