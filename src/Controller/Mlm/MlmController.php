@@ -53,17 +53,11 @@ class MlmController extends AbstractController
             if(strlen($code) > 10) {
 
                 $mlmServ->codeAuth = $code;
-                try {
-                    $res = $mlmServ->send();
-                } catch (\Throwable $th) {
-                    file_put_contents('mlm_res_fuera.json', json_encode([
-                        'code' => $mlmServ->codeAuth,
-                        'err' => $th->getMessage()
-                    ]));
-                }
-                return new Response($code);
+                $res = $mlmServ->send();
+                file_put_contents('mlm_res_afuera.json', json_encode($res));
             }
         }
+        return new Response();
     }
 
     /** */

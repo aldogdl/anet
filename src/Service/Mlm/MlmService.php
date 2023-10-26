@@ -31,45 +31,41 @@ class MlmService
     /** */
     public function send(): array
     {
-        $response = '';
         // application/x-www-form-urlencoded
-        try {
-            $response = $this->client->request(
-                'POST', $this->urlMsgBase, [
-                    'headers' => [
-                        'accept' => 'application/json',
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => [
-                        'grant_type' => 'authorization_code',
-                        'client_id'  => '3533349917060454',
-                        'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
-                        'code' => $this->codeAuth,
-                        'redirect_uri' => 'https://autoparnet.com/mlm/code/',
-                        'code_verifier' => 'shop2536core!1975s-b',
-                    ]
+        $response = $this->client->request(
+            'POST', $this->urlMsgBase, [
+                'headers' => [
+                    'accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'grant_type' => 'authorization_code',
+                    'client_id'  => '3533349917060454',
+                    'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
+                    'code' => $this->codeAuth,
+                    'redirect_uri' => 'https://autoparnet.com/mlm/code/',
+                    'code_verifier' => 'shop2536core!1975s-b',
                 ]
-            );
+            ]
+        );
 
-            file_put_contents('mlm_res_ok.json', json_encode([
-                'cod' => $response->getStatusCode(),
-                'bod' => $response->getContent(),
-            ]));
+        if($response->getStatusCode() == 200) {
+            
+            return [
+                'statuscode' => $response->getStatusCode(),
+                'response'   => $response->getContent(),
+                'message'    => 'Enviado'
+            ];
 
-        } catch (\Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface $th) {
-
+        }else{
+            
             file_put_contents('mlm_res_err.json', json_encode([
-                'res' => $th->getMessage(),
                 'cod' => $response->getStatusCode(),
                 'bod' => $response->getContent(),
             ]));
         }
-        
-        return [
-            'statuscode' => $response->getStatusCode(),
-            'response'   => $response->getContent(),
-            'message'    => 'Enviado'
-        ];
+
+        return [];
     }
 
 }
