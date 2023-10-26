@@ -42,11 +42,11 @@ class MlmController extends AbstractController
             'host' => $req->getHttpHost(),
             'body' => $req->getContent()
         ]));
-
+        return new Response();
         if($met == 'GET') {
 
             $verify = $req->query->get('code_challenge');
-            
+
             if($verify == $this->folder) {
                 return new Response($this->folder);
             }
