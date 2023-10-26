@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class MlmController extends AbstractController
 {
+    private $folder = '9d3468bd1f51f6c9546a23213eb649ac2a040ac29d196f96859926bf3c46fc6f';
+
     /**
      * Endpoint para la verificacion de conección
      */
@@ -26,27 +28,14 @@ class MlmController extends AbstractController
     /**
      * Endpoint para la verificacion de conección
      */
-    #[Route('mlm/wh/code/', methods: ['GET', 'POST'])]
-    public function verifyMlm(Request $req, ProcesarMessage $processMsg): Response
+    #[Route('mlm/code/', methods: ['GET', 'POST'])]
+    public function verifyMlm(Request $req): Response
     {
-
         if($req->getMethod() == 'GET') {
             $verify = $req->query->get('code_challenge');
-            if($verify == $this->getParameter('getShopCTk')) {
-                return new Response('listo MLM');
+            if($verify == $this->folder) {
+                return new Response($this->folder);
             }
-        }
-
-        if($req->getMethod() == 'POST') {
-            
-            $has = $req->getContent();
-            if(strlen($has) < 50) {
-                return $this->json( [], 500 );
-            }
-            
-            $message = json_decode($has, true);
-            $processMsg->execute($message);
-            return new Response('', 200);
         }
     }
 
@@ -54,7 +43,6 @@ class MlmController extends AbstractController
     #[Route('shop/mlm/', methods: ['get'])]
     public function anulandoRoute(): RedirectResponse | Response
     {
-  
     //   if($slug == '') {
     //       return $this->json(['hola' => 'Bienvenido...']);
     //   }
