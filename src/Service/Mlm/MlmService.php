@@ -47,19 +47,19 @@ class MlmService
                         'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
                         'code' => $this->codeAuth,
                         'redirect_uri' => 'https://autoparnet.com/mlm/code/',
-                        'code_verifier' => $this->codeSha,
+                        'code_verifier' => 'shop2536core!1975s-b',
                     ])
                 ]
             );
 
-            file_put_contents('mlm_res.json', json_encode([
+            file_put_contents('mlm_res_ok.json', json_encode([
                 'cod' => $response->getStatusCode(),
                 'bod' => $response->getContent(),
             ]));
-            
+
         } catch (\Throwable $th) {
 
-            file_put_contents('mlm_res.json', json_encode([
+            file_put_contents('mlm_res_err.json', json_encode([
                 'res' => $th->getMessage(),
                 'cod' => $response->getStatusCode(),
                 'bod' => $response->getContent(),
