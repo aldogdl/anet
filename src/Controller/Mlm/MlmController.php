@@ -40,12 +40,13 @@ class MlmController extends AbstractController
 
         file_put_contents('mlm.json', json_encode([
             'querys' => $req->query->all(),
+            'met'   => $req->getMethod(),
             'ips' => $req->getClientIps(),
             'inf' => $req->getPathInfo(),
             'host' => $req->getHttpHost(),
             'body' => $req->getContent()
         ]));
-        
+
         if($req->getMethod() == 'POST') {
             return new Response();
         }
