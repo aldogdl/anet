@@ -52,6 +52,11 @@ class MlmService
                 ]
             );
 
+            file_put_contents('mlm_res.json', json_encode([
+                'cod' => $response->getStatusCode(),
+                'bod' => $response->getContent(),
+            ]));
+            
         } catch (\Throwable $th) {
 
             file_put_contents('mlm_res.json', json_encode([
