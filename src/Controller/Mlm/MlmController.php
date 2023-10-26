@@ -20,7 +20,7 @@ class MlmController extends AbstractController
     /**
      * Endpoint para la verificacion de conección
      */
-    #[Route('mlm/wh/notifications/', methods: ['GET'])]
+    #[Route('mlm/wh/', methods: ['GET', 'POST'])]
     public function notisMlm(): Response
     {
         return new Response('listo MLM');
