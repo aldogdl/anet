@@ -15,8 +15,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class MlmController extends AbstractController
 {
-    private $folder = 'aldo';
-    private $folder2 = '9d3468bd1f51f6c9546a23213eb649ac2a040ac29d196f96859926bf3c46fc6f';
+    private $folder = 'c3e3f09d9ae8cd3c3fa4adc83c1953aa9dc0708a40c2482151bdf0bb9010a7fb';
 
     /**
      * Endpoint para la verificacion de conección
@@ -42,11 +41,10 @@ class MlmController extends AbstractController
             'host' => $req->getHttpHost(),
             'body' => $req->getContent()
         ]));
-        return new Response();
+
         if($met == 'GET') {
 
             $verify = $req->query->get('code_challenge');
-
             if($verify == $this->folder) {
                 return new Response($this->folder);
             }
