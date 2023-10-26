@@ -49,11 +49,11 @@ class MlmController extends AbstractController
                 return new Response($this->folder);
             }
 
-            $code = $req->query->get('code');
-            if(strlen($code) > 10) {
-                $mlmServ->codeAuth = $code;
-                $res = $mlmServ->send();
-            }
+            // $code = $req->query->get('code');
+            // if(strlen($code) > 10) {
+            //     $mlmServ->codeAuth = $code;
+            //     $res = $mlmServ->send();
+            // }
         }
 
         if($met == 'POST') {
