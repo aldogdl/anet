@@ -31,24 +31,25 @@ class MlmController extends AbstractController
     #[Route('mlm/code/', methods: ['GET', 'POST'])]
     public function verifyMlm(Request $req): Response
     {
-        if($req->getMethod() == 'GET') {
-            $verify = $req->query->get('code_challenge');
-            if($verify == $this->folder) {
-                return new Response($this->folder);
-            }
-        }
-
-        file_put_contents('mlm.json', json_encode([
+        $met = $req->getMethod();
+        file_put_contents('mlm_'.$met.'.json', json_encode([
             'querys' => $req->query->all(),
-            'met'   => $req->getMethod(),
+            'met'   => $met,
             'ips' => $req->getClientIps(),
             'inf' => $req->getPathInfo(),
             'host' => $req->getHttpHost(),
             'body' => $req->getContent()
         ]));
+        if($met == 'GET') {
+            $verify = $req->query->get('code_challenge');
+            if($verify == $this->folder) {
+                return new Response($this->folder);
+            }
 
-        if($req->getMethod() == 'POST') {
-            return new Response();
+            $code = $req->query->get('code');
+            if(strlen($code) > 10) {
+                return new Response($code);
+            }
         }
     }
 
