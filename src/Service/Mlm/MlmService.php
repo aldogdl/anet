@@ -20,18 +20,25 @@ class MlmService
     /** */
     public function send(): array
     {
+        // 'body' => [
+        //     'grant_type' => 'authorization_code',
+        //     'client_id'  => '3533349917060454',
+        //     'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
+        //     'code' => $this->codeAuth,
+        //     'redirect_uri' => 'https://autoparnet.com/mlm/code/',
+        //     'code_verifier' => 'shop2536core!1975s-b'
+        // ]
+
         $response = $this->client->request('POST', $this->urlMsgBase, [
             'headers' => [
                 'accept' => 'application/json',
                 'content-type' => 'application/x-www-form-urlencoded'
             ],
             'body' => [
-                'grant_type' => 'authorization_code',
+                'grant_type' => 'refresh_token',
                 'client_id'  => '3533349917060454',
                 'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
-                'code' => $this->codeAuth,
-                'redirect_uri' => 'https://autoparnet.com/mlm/code/',
-                'code_verifier' => 'shop2536core!1975s-b'
+                'refresh_token' => $this->codeAuth
             ]
         ]);
 
