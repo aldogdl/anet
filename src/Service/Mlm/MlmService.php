@@ -8,17 +8,6 @@ class MlmService
 {
     private $urlMsgBase = 'https://api.mercadolibre.com/oauth/token';
 
-    // curl -X POST \
-    // -H 'accept: application/json' \
-    // -H 'content-type: application/x-www-form-urlencoded' \
-    // 'https://api.mercadolibre.com/oauth/token' \
-    // -d 'grant_type=authorization_code' \
-    // -d 'client_id=$APP_ID' \
-    // -d 'client_secret=$SECRET_KEY' \
-    // -d 'code=$SERVER_GENERATED_AUTHORIZATION_CODE' \
-    // -d 'redirect_uri=$REDIRECT_URI' \
-    // -d 'code_verifier=$CODE_VERIFIER'
-
     public $codeAuth = '';
     private $client;
 
@@ -34,13 +23,15 @@ class MlmService
         $response = $this->client->request('POST', $this->urlMsgBase, [
             'headers' => [
                 'accept' => 'application/json',
+                'content-type' => 'application/x-www-form-urlencoded'
             ],
             'body' => [
                 'grant_type' => 'authorization_code',
                 'client_id'  => '3533349917060454',
                 'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
                 'code' => $this->codeAuth,
-                'redirect_uri' => 'https://autoparnet.com/mlm/code/'
+                'redirect_uri' => 'https://autoparnet.com/mlm/code/',
+                'code_verifier' => 'shop2536core!1975s-b'
             ]
         ]);
 
@@ -53,6 +44,7 @@ class MlmService
             'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
             'code' => $this->codeAuth,
             'redirect_uri' => 'https://autoparnet.com/mlm/code/',
+            'code_verifier' => 'shop2536core!1975s-b'
         ]));
 
         // if($response->getStatusCode() == 200) {
