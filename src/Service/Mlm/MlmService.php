@@ -25,7 +25,7 @@ class MlmService
                 'accept' => 'application/json',
                 'content-type' => 'application/x-www-form-urlencoded'
             ],
-            'body' => [
+            'json' => [
                 'grant_type' => 'authorization_code',
                 'client_id'  => '3533349917060454',
                 'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
