@@ -45,21 +45,26 @@ class MlmService
             ]
         ]);
 
-        if($response->getStatusCode() == 200) {
+        $httpLogs = $response->getInfo('debug');
+        file_put_contents('mlm_res_err.json', json_encode([
+            'cod' => $httpLogs,
+        ]));
+
+        // if($response->getStatusCode() == 200) {
             
-            return [
-                'statuscode' => $response->getStatusCode(),
-                'response'   => $response->getContent(),
-                'message'    => 'Enviado'
-            ];
+        //     return [
+        //         'statuscode' => $response->getStatusCode(),
+        //         'response'   => $response->getContent(),
+        //         'message'    => 'Enviado'
+        //     ];
 
-        }else{
+        // }else{
 
-            file_put_contents('mlm_res_err.json', json_encode([
-                'cod' => $response->getStatusCode(),
-                'bod' => $response->getContent(),
-            ]));
-        }
+        //     file_put_contents('mlm_res_err.json', json_encode([
+        //         'cod' => $response->getStatusCode(),
+        //         'bod' => $response->getContent(),
+        //     ]));
+        // }
 
         return [];
     }
