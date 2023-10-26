@@ -20,7 +20,6 @@ class MlmService
     // -d 'code_verifier=$CODE_VERIFIER'
 
     public $codeAuth = '';
-    public $codeSha = '';
     private $client;
 
     /** */
