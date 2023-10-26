@@ -2,6 +2,7 @@
 
 namespace App\Controller\Mlm;
 
+use App\Service\Mlm\MlmService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,7 +30,7 @@ class MlmController extends AbstractController
      * Endpoint para la verificacion de conección
      */
     #[Route('mlm/code/', methods: ['GET', 'POST'])]
-    public function verifyMlm(Request $req): Response
+    public function verifyMlm(Request $req, MlmService $mlmServ): Response
     {
         $met = $req->getMethod();
         file_put_contents('mlm_'.$met.'.json', json_encode([
@@ -40,7 +41,9 @@ class MlmController extends AbstractController
             'host' => $req->getHttpHost(),
             'body' => $req->getContent()
         ]));
+
         if($met == 'GET') {
+
             $verify = $req->query->get('code_challenge');
             if($verify == $this->folder) {
                 return new Response($this->folder);
@@ -48,6 +51,10 @@ class MlmController extends AbstractController
 
             $code = $req->query->get('code');
             if(strlen($code) > 10) {
+                $mlmServ->codeAuth = $code;
+                $mlmServ->codeSha = $this->folder;
+                $res = $mlmServ->send();
+                file_put_contents('mlm_res.json', json_encode($res));
                 return new Response($code);
             }
         }
