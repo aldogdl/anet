@@ -40,14 +40,14 @@ class MlmService
                         'accept' => 'application/json',
                         'Content-Type' => 'application/x-www-form-urlencoded',
                     ],
-                    'body' => json_encode([
+                    'json' => [
                         'grant_type' => 'authorization_code',
                         'client_id'  => '3533349917060454',
                         'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
                         'code' => $this->codeAuth,
                         'redirect_uri' => 'https://autoparnet.com/mlm/code/',
                         'code_verifier' => 'shop2536core!1975s-b',
-                    ])
+                    ]
                 ]
             );
 
