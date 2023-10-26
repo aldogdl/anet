@@ -45,9 +45,16 @@ class MlmService
             ]
         ]);
 
-        $httpLogs = $response->getContent(false);
+        
         file_put_contents('mlm_res_err.json', json_encode([
-            'cod' => $httpLogs,
+            'cod' => $response->getContent(false),
+            'hed' => $response->getHeaders(false),
+            'grant_type' => 'authorization_code',
+            'client_id'  => '3533349917060454',
+            'client_secret' => 'hKnESsYNOP3QTqzhqFbKZL2eH3k0mMTt',
+            'code' => $this->codeAuth,
+            'redirect_uri' => 'https://autoparnet.com/mlm/code/',
+            'code_verifier' => 'shop2536core!1975s-b',
         ]));
 
         // if($response->getStatusCode() == 200) {
