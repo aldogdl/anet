@@ -24,6 +24,20 @@ class MlmController extends AbstractController
     }
 
     /**
+     * Endpoint para la recuperar la conx
+     */
+    #[Route('mlm/get-codes/', methods: ['GET'])]
+    public function mlmGetCodes(Request $req): Response
+    {
+        if($req->getMethod() == 'GET') {
+            $theGet = $this->getParameter('anetMlm');
+            $data = json_decode(file_get_contents($theGet), true);
+            return $this->json($data);
+        }
+        return new Response(500);
+    }
+
+    /**
      * Endpoint para la verificacion de conección
      */
     #[Route('mlm/code/notifications/', methods: ['GET', 'POST'])]

@@ -27,6 +27,7 @@ parameters:
     waBackup   : '%phtml%/wa_backup'
     waAnalizar : '%phtml%/wa_analizar/'
     waSort     : '%phtml%/wa/_orden_put.json'
+    anetMlm    : '%phtml%/anet_mlm.json'
     getWaToken : '%env(resolve:WA_TOKEN)%'
     getAnToken : '%env(resolve:ANET_TOKEN)%'
     getShopCTk : '%env(resolve:SHOP_TOKEN)%'
