@@ -58,9 +58,10 @@ class MlmController extends AbstractController
     public function mlmGetCodeAuth(Request $req, String $slug): Response
     {
         if($req->getMethod() == 'GET') {
-            $data = json_decode(file_get_contents('mlm_'.$slug.'.json'), true);
+            $path = 'shop/mlm_'.$slug.'.json';
+            $data = json_decode(file_get_contents($path), true);
             if($data) {
-                unlink('mlm_'.$slug.'.json');
+                unlink($path);
             }
             return $this->json($data);
         }
