@@ -56,6 +56,9 @@ class MlmController extends AbstractController
     {
         if($req->getMethod() == 'GET') {
             $data = json_decode(file_get_contents('mlm_'.$slug.'.json'), true);
+            if(mb_strlen($data) > 0) {
+                unlink('mlm_'.$slug.'.json');
+            }
             return $this->json($data);
         }
         return new Response(400);
