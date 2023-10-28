@@ -31,7 +31,7 @@ class MlmController extends AbstractController
                 return $this->redirect('https://www.autoparnet.com/shop/mlm-bind?state='.$state, 301);
             }
         }
-        return new Response(200);
+        return new Response('Bienvenido a ANET->MLM', 200);
     }
 
     /**
