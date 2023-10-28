@@ -28,7 +28,7 @@ class MlmController extends AbstractController
                 file_put_contents('mlm_'.$slug.'.json', json_encode([
                     'code' => $code, 'action' => $action, 'slug' => $slug
                 ]));
-                $this->redirect('https://www.autoparnet.com/shop/mlm-bind?state='.$state, 301);
+                return $this->redirect('https://www.autoparnet.com/shop/mlm-bind?state='.$state, 301);
             }
         }
         return new Response(200);
@@ -45,21 +45,20 @@ class MlmController extends AbstractController
             $data = json_decode(file_get_contents($theGet), true);
             return $this->json($data);
         }
-        return new Response(500);
+        return new Response(400);
     }
 
     /**
      * 
      */
-    #[Route('mlm/get-code-auth/', methods: ['GET'])]
-    public function mlmGetCodeAuth(Request $req): Response
+    #[Route('mlm/get-code-auth/{slug}/', methods: ['GET'])]
+    public function mlmGetCodeAuth(Request $req, String $slug): Response
     {
         if($req->getMethod() == 'GET') {
-            $theGet = $this->getParameter('anetMlm');
-            $data = json_decode(file_get_contents($theGet), true);
+            $data = json_decode(file_get_contents('mlm_'.$slug.'.json'), true);
             return $this->json($data);
         }
-        return new Response(500);
+        return new Response(400);
     }
 
     /**
