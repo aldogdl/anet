@@ -2,13 +2,14 @@
 
 namespace App\Controller\ShopCore;
 
-use App\Repository\AO1MarcasRepository;
-use App\Repository\AO2ModelosRepository;
-use App\Repository\NG2ContactosRepository;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+use App\Repository\AO1MarcasRepository;
+use App\Repository\AO2ModelosRepository;
+use App\Repository\NG2ContactosRepository;
 use App\Service\SecurityBasic;
 use App\Service\ShopCore\ShopCoreSystemFileService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -42,20 +43,38 @@ class GetController extends AbstractController
   /** 
    * Recuperamos los datos del cotizador desde el archivo json
   */
-  #[Route('security-basic/get-data-ctc/{token}/{slug}/', methods:['get'])]
+  #[Route('security-basic/data-ctc/{token}/{slug}/', methods:['GET', 'POST'])]
   public function getDataContact(
-    SecurityBasic $lock, String $token, String $slug
+    Request $req, SecurityBasic $lock, String $token, String $slug
   ): Response
   {
-    $data = '';
+
     if($lock->isValid($token)) {
+
       $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
       if(is_file($pathTo)) {
-        $data = file_get_contents($pathTo);
+
+        if($req->getMethod() == 'GET') {
+          $data = file_get_contents($pathTo);
+          return new Response($data);
+        }
+
+        if($req->getMethod() == 'POST') {
+
+          $content = $req->request->get('data');
+          if($content) {
+            $content = json_decode($content, true);
+            if(array_key_exists('', $content)) {
+              file_put_contents($pathTo, json_encode($content));
+              return $this->json(['abort' => false, 'msg' => 'ok']);
+            }
+          }
+
+          return $this->json(['abort' => true, 'msg' => 'error']);
+        }
       }
     }
 
-    return new Response($data);
   }
 
   /** 
