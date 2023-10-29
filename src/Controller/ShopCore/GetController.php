@@ -64,17 +64,17 @@ class GetController extends AbstractController
           $content = $req->request->get('data');
           if($content) {
             $content = json_decode($content, true);
-            if(array_key_exists('', $content)) {
+            if(array_key_exists('curc', $content)) {
               file_put_contents($pathTo, json_encode($content));
               return $this->json(['abort' => false, 'msg' => 'ok']);
             }
           }
 
-          return $this->json(['abort' => true, 'msg' => 'error']);
         }
       }
     }
 
+    return $this->json(['abort' => true, 'msg' => 'error']);
   }
 
   /** 
