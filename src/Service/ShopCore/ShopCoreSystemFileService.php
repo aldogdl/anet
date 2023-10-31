@@ -89,7 +89,17 @@ class ShopCoreSystemFileService
 		} catch (FileException $e) {
 			return $e->getMessage();
 		}
-		
+
+		if(array_key_exists('fotosDeletes', $data)) {
+			$rota = count($data['fotosDeletes']);
+			for ($i=0; $i < $rota; $i++) { 
+				$pathTo = Path::canonicalize($path.'/'.$data['fotosDeletes'][$i]);
+				if($this->filesystem->exists($pathTo)) {
+					unlink($pathTo);
+				}
+			}
+		}
+
 		$pathTo = Path::canonicalize($path.'/'.$data['filename']);
 		if($this->filesystem->exists($pathTo)) {
 			return 'ok';
