@@ -108,10 +108,8 @@ class ShopCoreSystemFileService
 	}
 
 	/** Guardamos el json resultante del alta de productos desde shopCore */
-	public function setNewProduct(array $product): String
+	public function setNewProduct(array $product, String $filename): String
 	{
-		$filename = $product['meta']['modo'] . '_' . $product['meta']['waId'] . '_' . $product['meta']['slug'] . '_' . $product['id'] . '.json';
-
 		$path = $this->params->get('nifiFld');
 		$path = Path::canonicalize($path.'/'.$filename);
 		try {
@@ -224,7 +222,7 @@ class ShopCoreSystemFileService
 		$recents = $path.'/'.$slug. '/'. 'recents/';
 
 		$pathTo = Path::canonicalize($recents);
-		if($this->filesystem->exists($pathTo)) {
+		if(!$this->filesystem->exists($pathTo)) {
 			mkdir($pathTo);
 		}
 		file_put_contents($pathTo.'/'.$filenameRecent, '');
