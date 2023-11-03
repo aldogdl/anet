@@ -81,7 +81,9 @@ class PostController extends AbstractController
           $result['faltan_fotos'] = $ftoFalta;
         }
 
-        $sysFile->isForPublikProduct($data);
+        $sysFile->safeProductInToJsonFile($data);
+        $sysFile->updateFileRecentsProductcs($data['meta']['modo'], $data['meta']['slug'], $filePath);
+
         $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
         return $this->json($result);
       }

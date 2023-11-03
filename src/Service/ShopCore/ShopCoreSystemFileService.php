@@ -110,7 +110,7 @@ class ShopCoreSystemFileService
 	/** Guardamos el json resultante del alta de productos desde shopCore */
 	public function setNewProduct(array $product): String
 	{
-		$filename = $product['own']['waId'] . '-' . $product['id'] . '-' . $product['uuid'] . '.json';
+		$filename = $product['meta']['modo'] . '_' . $product['meta']['waId'] . '_' . $product['meta']['slug'] . '_' . $product['id'] . '.json';
 
 		$path = $this->params->get('nifiFld');
 		$path = Path::canonicalize($path.'/'.$filename);
@@ -132,10 +132,11 @@ class ShopCoreSystemFileService
 	{	
 		$fotos  = [];
 		$path = '';
-		if($product['action'] == 'publik') {
+
+		if($product['meta']['modo'] == 'publik') {
 			$path = $this->params->get('prodPubs');
 		}
-		if($product['action'] == 'cotiza') {
+		if($product['meta']['modo'] == 'cotiza') {
 			$path = $this->params->get('prodSols');
 		}
 
@@ -143,61 +144,28 @@ class ShopCoreSystemFileService
 
 			// Primero recogemos todas las fotos de las piezas para revisar que esten
 			// ya almacenadas en el servidor. 
-			$rota = count($product['piezas']);
+			$rota = count($product['fotos']);
 			for ($i=0; $i < $rota; $i++) {
-				$vueltas = count($product['piezas'][$i]['fotos']);
-				for ($f=0; $f < $vueltas; $f++) { 
-					$fotos[] = $product['piezas'][$i]['fotos'][$f];
-				}
+				$fotos[] = $product['fotos'][$i]['filename'];
 			}
 			
 			// Revisamos la existencia de las fotos resultantes
 			if(count($fotos) > 0) {
-				$slug =  $product['own']['slug'];
+				$slug =  $product['meta']['slug'];
 				$path = Path::canonicalize($path.'/'.$slug.'/images');
 				if(!$this->filesystem->exists($path)) {
+					// Si no existe el path principal es que no hay ninguna foto
 					return $fotos;
 				}
-				$fotos = $this->checkIntegridadDeFotos($path, $slug, $fotos);
+				$fotos = $this->checkIntegridadDeFotos($path, $fotos);
 			}
 		}
 
 		return $fotos;
 	}
 
-	/** 
-	 * Guardamos en su respectivo folder las piezas que se estan publicando
-	 * desde shop-core
-	*/
-	public function isForPublikProduct(array $product): bool
-	{	
-		$slug = $product['own']['slug'];
-		// Ahora revisamos si hay piezas para publicar y no para solicitar.
-		if(array_key_exists('pzaPublik', $product)) {
-			
-			$path = $this->params->get('prodPubs');
-			$filename = $path.'/'.$slug.'/inv_anet.json';
-			$piezas = [];
-			if($this->filesystem->exists($filename)) {
-				$piezas = json_decode(file_get_contents($filename), true);
-			}
-
-			$rota = count($product['pzaPublik']);
-			for ($i=0; $i < $rota; $i++) {
-				array_unshift($piezas, $product['pzaPublik'][$i]);
-			}
-
-			try {
-				$this->filesystem->dumpFile($filename, json_encode($piezas));
-			} catch (FileException $e) {}
-			return true;
-		}
-
-		return false;
-	}
-
 	///
-	private function checkIntegridadDeFotos(String $path, String $slug, array $fotos): array
+	private function checkIntegridadDeFotos(String $path, array $fotos): array
 	{
 		$innexistentes = [];
 		$rota = count($fotos);
@@ -209,6 +177,57 @@ class ShopCoreSystemFileService
 		}
 
 		return $innexistentes;
+	}
+
+	/** 
+	 * Guardamos en su respectivo folder las piezas que se estan publicando
+	 * desde shop-core
+	*/
+	public function safeProductInToJsonFile(array $product): bool
+	{	
+		$slug = $product['meta']['slug'];
+		// Revisamos si hay piezas para publicar y no para solicitar.
+		if(array_key_exists('ads', $product)) {
+			
+			$path = $this->params->get('prodPubs');
+			$filename = $path.'/'.$slug.'/inv_anet.json';
+			$piezas = [];
+			if($this->filesystem->exists($filename)) {
+				$piezas = json_decode(file_get_contents($filename), true);
+			}
+
+			array_unshift($piezas, $product['ads']);
+
+			try {
+				$this->filesystem->dumpFile($filename, json_encode($piezas));
+			} catch (FileException $e) {}
+
+			return true;
+		}
+
+		if(array_key_exists('sol', $product)) {
+			
+			$path = $this->params->get('prodSols');
+			$filename = $path.'/'.$slug.'/sols_anet.json';
+			// TODO
+			return true;
+		}
+
+		return false;
+	}
+
+	/** */
+	public function updateFileRecentsProductcs(String $modo, String $slug, String $filenameRecent)
+	{
+		$indice = [];
+		$path = ($modo == 'publik') ? $this->params->get('prodPubs') : $this->params->get('prodSols');
+		$recents = $path.'/'.$slug. '/'. 'recents/';
+
+		$pathTo = Path::canonicalize($recents);
+		if($this->filesystem->exists($pathTo)) {
+			mkdir($pathTo);
+		}
+		file_put_contents($pathTo.'/'.$filenameRecent, '');
 	}
 
 	/** Guardamos el json resultante del alta de productos desde shopCore */
