@@ -70,8 +70,10 @@ class PostController extends AbstractController
 
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
-    $filename = $data['meta']['modo'].'_'.$data['meta']['waId'].'_'.$data['meta']['slug'].'_'.$data['id'].'.json';
+
+    $filename = $data['meta']['modo'].'_'.$data['meta']['slug'].'_'.$data['id'].'.json';
     $filePath = $sysFile->setNewProduct($data, $filename);
+
     if(mb_strpos($filePath, 'Error') === false) {
       
       if($filePath != '') {
@@ -82,9 +84,12 @@ class PostController extends AbstractController
         }
 
         $sysFile->safeProductInToJsonFile($data);
-        $sysFile->updateFileRecentsProductcs($data['meta']['modo'], $data['meta']['slug'], $filename);
-
-        $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
+        $sysFile->updateFileRecentsProductcs($filename);
+        try {
+          $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
+        } catch (\Throwable $th) {
+          $result['sin_wh'] = $th->getMessage();
+        }
         return $this->json($result);
       }
     }

@@ -8,6 +8,7 @@ parameters:
     imgOrdRsp  : '%phtml%/to_orden_rsp/'
     prodPubs   : '%phtml%/prod_pubs/'
     prodSols   : '%phtml%/prod_sols/'
+    recents    : '%phtml%/prod_recents/'
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
     nifiFld    : '%phtml%/nifi/'

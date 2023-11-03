@@ -215,13 +215,10 @@ class ShopCoreSystemFileService
 	}
 
 	/** */
-	public function updateFileRecentsProductcs(String $modo, String $slug, String $filenameRecent)
+	public function updateFileRecentsProductcs(String $filenameRecent)
 	{
-		$indice = [];
-		$path = ($modo == 'publik') ? $this->params->get('prodPubs') : $this->params->get('prodSols');
-		$recents = $path.'/'.$slug. '/'. 'recents/';
-
-		$pathTo = Path::canonicalize($recents);
+		$path = $this->params->get('recents');
+		$pathTo = Path::canonicalize($path);
 		if(!$this->filesystem->exists($pathTo)) {
 			mkdir($pathTo);
 		}
