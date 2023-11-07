@@ -70,15 +70,15 @@ class PostController extends AbstractController
 
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
+    
     $modo = 'add';
     if(array_key_exists('meta', $data)) {
       if(array_key_exists('modo', $data['meta'])) {
         $modo = $data['meta']['modo'];
       }
     }
-    
+
     if($modo == 'publik_mlm') {
-      file_put_contents('x_si_entro.txt', '');
       $result['abort'] = $sysFile->safeProductInToJsonFile($data);
       return $this->json($result);
     }

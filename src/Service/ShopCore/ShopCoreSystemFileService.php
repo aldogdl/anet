@@ -214,24 +214,24 @@ class ShopCoreSystemFileService
 		}
 
 		if($modo == 'publik_mlm') {
-			
+
 			// Eliminamos el producto de la lista, ya que se publico en mercado libre
 			$path = $this->params->get('prodPubs');
 			$filename = $path.'/'.$slug.'/inv_anet.json';
 			if($this->filesystem->exists($filename)) {
 
 				$piezas = json_decode(file_get_contents($filename), true);
-				$ind = array_search($product['uuid'], array_column($piezas, 'uuid'));
+				$columns = $piezas;
+				$ind = array_search($product['uuid'], array_column($columns, 'uuid'));
 				if($ind !== false) {
-					$fotos = $piezas[$ind]['fotos'];
 					unset($piezas[$ind]);
 					$pathFts = $path.'/'.$slug.'/images';
-					$rota = count($fotos);
+					$rota = count($columns[$ind]['fotos']);
 					for ($i=0; $i < $rota; $i++) { 
-						unlink($pathFts.'/'.$fotos[$i]);
+						unlink($pathFts.'/'.$columns[$ind]['fotos'][$i]);
 					}
 				}
-
+				unset($columns);
 				try {
 					$this->filesystem->dumpFile($filename, json_encode($piezas));
 				} catch (FileException $e) {}
