@@ -214,6 +214,7 @@ class ShopCoreSystemFileService
 		}
 
 		if($modo == 'publik_mlm') {
+			
 			// Eliminamos el producto de la lista, ya que se publico en mercado libre
 			$path = $this->params->get('prodPubs');
 			$filename = $path.'/'.$slug.'/inv_anet.json';

@@ -18,6 +18,7 @@ class MlmController extends AbstractController
     public function verifyMlm(Request $req): Response
     {
         $state = $req->query->get('state');
+        
         if(mb_strpos($state, ':') !== false) {
             
             $code = $req->query->get('code');
@@ -74,6 +75,7 @@ class MlmController extends AbstractController
     #[Route('mlm/code/notifications/', methods: ['GET', 'POST'])]
     public function notisMlm(Request $req): Response
     {
+        file_put_contents('mlm_simple_'.time().'.json', '');
         file_put_contents('mlm_wh_'.time().'.json', json_encode($req->getContent()));
         return new Response('listo MLM');
     }

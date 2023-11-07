@@ -72,6 +72,7 @@ class PostController extends AbstractController
     $data = $this->toArray($req, 'data');
 
     if($req->getMethod() == 'put') {
+      file_put_contents('x_si_entro.txt', '');
       $result['abort'] = $sysFile->safeProductInToJsonFile($data);
       return $this->json($result);
     }
