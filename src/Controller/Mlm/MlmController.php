@@ -72,8 +72,9 @@ class MlmController extends AbstractController
      * Endpoint para la verificacion de conección
      */
     #[Route('mlm/code/notifications/', methods: ['GET', 'POST'])]
-    public function notisMlm(): Response
+    public function notisMlm(Request $req): Response
     {
+        file_put_contents('mlm_wh_'.time().'.json', json_encode($req->getContent()));
         return new Response('listo MLM');
     }
 

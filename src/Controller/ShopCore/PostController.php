@@ -64,12 +64,17 @@ class PostController extends AbstractController
   /** 
    * Guardamos el producto enviado desde ShopCore
   */
-  #[Route('api/shop-core/send-product/', methods:['post'])]
+  #[Route('api/shop-core/send-product/', methods:['post', 'put'])]
 	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh): Response
 	{
 
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
+
+    if($req->getMethod() == 'put') {
+      $result['abort'] = $sysFile->safeProductInToJsonFile($data);
+      return $this->json($result);
+    }
 
     $filename = $data['meta']['modo'].'_'.$data['meta']['slug'].'_'.$data['id'].'.json';
     $filePath = $sysFile->setNewProduct($data, $filename);
@@ -77,6 +82,7 @@ class PostController extends AbstractController
     if(mb_strpos($filePath, 'Error') === false) {
       
       if($filePath != '') {
+
         $ftoFalta = $sysFile->checkExistAllFotos($data);
         $result['abort'] = false;
         if(count($ftoFalta) > 0) {

@@ -184,6 +184,8 @@ class ShopCoreSystemFileService
 	public function safeProductInToJsonFile(array $product): bool
 	{	
 		$slug = $product['meta']['slug'];
+		$modo = $product['meta']['modo'];
+		
 		// Revisamos si hay piezas para publicar y no para solicitar.
 		if(array_key_exists('ads', $product)) {
 			
@@ -208,6 +210,31 @@ class ShopCoreSystemFileService
 			$path = $this->params->get('prodSols');
 			$filename = $path.'/'.$slug.'/sols_anet.json';
 			// TODO
+			return true;
+		}
+
+		if($modo == 'publik_mlm') {
+			// Eliminamos el producto de la lista, ya que se publico en mercado libre
+			$path = $this->params->get('prodPubs');
+			$filename = $path.'/'.$slug.'/inv_anet.json';
+			if($this->filesystem->exists($filename)) {
+
+				$piezas = json_decode(file_get_contents($filename), true);
+				$ind = array_search($product['uuid'], array_column($piezas, 'uuid'));
+				if($ind !== false) {
+					$fotos = $piezas[$ind]['fotos'];
+					unset($piezas[$ind]);
+					$pathFts = $path.'/'.$slug.'/images';
+					$rota = count($fotos);
+					for ($i=0; $i < $rota; $i++) { 
+						unlink($pathFts.'/'.$fotos[$i]);
+					}
+				}
+
+				try {
+					$this->filesystem->dumpFile($filename, json_encode($piezas));
+				} catch (FileException $e) {}
+			}
 			return true;
 		}
 
