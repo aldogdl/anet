@@ -64,14 +64,20 @@ class PostController extends AbstractController
   /** 
    * Guardamos el producto enviado desde ShopCore
   */
-  #[Route('api/shop-core/send-product/', methods:['post', 'put'])]
+  #[Route('api/shop-core/send-product/', methods:['post'])]
 	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh): Response
 	{
 
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
-
-    if($req->getMethod() == 'put') {
+    $modo = 'add';
+    if(array_key_exists('meta', $data)) {
+      if(array_key_exists('modo', $data['meta'])) {
+        $modo = $data['meta']['modo'];
+      }
+    }
+    
+    if($modo == 'publik_mlm') {
       file_put_contents('x_si_entro.txt', '');
       $result['abort'] = $sysFile->safeProductInToJsonFile($data);
       return $this->json($result);
