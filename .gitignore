@@ -3,6 +3,7 @@
 .idea
 .env.local
 .env.local.php
+_.env.local.php
 .env.*.local
 .env
 .gitignore
