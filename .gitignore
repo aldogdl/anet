@@ -7,7 +7,6 @@ _.env.local.php
 .env.*.local
 .env
 .gitignore
-.htaccess
 .htaccess_shop
 .well-known
 error_log
@@ -15,6 +14,7 @@ error_log
 front_door/
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
+public_html/.htaccess
 public_html/bundles/
 public_html/datafix/
 public_html/cotiza/
