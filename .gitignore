@@ -7,14 +7,12 @@ _.env.local.php
 .env.*.local
 .env
 .gitignore
-.htaccess_shop
 .well-known
 error_log
 .subversion/
 front_door/
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
-public_html/.htaccess
 public_html/bundles/
 public_html/datafix/
 public_html/cotiza/
