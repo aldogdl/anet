@@ -42,8 +42,10 @@ class PostController extends AbstractController
 	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => ['nop' => 'nop']]);
 	}
 
-  /** */
-  #[Route('api/shop-core/upload-img/', methods:['post'])]
+  /**
+   * api/
+  */
+  #[Route('shop-core/upload-img/', methods:['post'])]
   public function uploadImg(Request $req, ShopCoreSystemFileService $sysFile): Response
   {
 
