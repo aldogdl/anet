@@ -1,4 +1,4 @@
-###> symfony/framework-bundle ###
+###>symfony/framework-bundle###
 .vscode/
 .idea
 .env.local
