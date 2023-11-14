@@ -35,7 +35,13 @@ class HomeController extends AbstractController
     #[Route('/', methods: ['get'])]
     public function index(): Response
     {
-        return $this->json(['hola' => 'Bienvenido...']);
+        return $this->json(['hola' => 'Bienvenido', 'en que podemos atenderte?']);
+    }
+
+    #[Route('log/', methods: ['get'])]
+    public function indexLog(): Response
+    {
+        return $this->json(['nivel' => 'AUTOPARNET', 'PRO']);
     }
 
     #[Route('home-controller/get-data-connection/{pass}/', methods: ['get'])]
