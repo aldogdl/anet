@@ -9,7 +9,7 @@ _.env.local.php
 .gitignore
 .well-known
 error_log
-.subversion/
+
 front_door/
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
@@ -34,6 +34,8 @@ public_html/filnotgo.json
 public_html/centinela.json
 public_html/anet_mlm.json
 public_html/harbi_connx.txt
+public_html/harbi_connx.json
+public_html/opcotizo.json
 public_html/htacces.zip
 public_html/prod_recents/
 public_html/mlm_*
@@ -56,6 +58,9 @@ public_html/shop/
 public_html/ctc_logo/
 public_html/anet_group.json
 public_html/desc_mlm.txt
+public_html/.well-known/assetlinks.json
+front_door/front_door.txt/front_door.txt
+
 var/
 vendor/
 ###< symfony/framework-bundle ###
@@ -89,6 +94,7 @@ config/jwt/*.pem
 .spamboxenable
 .ssh/
 .subaccounts/
+.subversion/
 access-logs
 etc/
 mail/
