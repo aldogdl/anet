@@ -1,6 +1,7 @@
 AddType application/wasm .wasm
 
 RewriteEngine On
+# Header set Access-Control-Allow-Origin "*"
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 RewriteCond %{HTTP:Authorization} ^(.*)
 RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
@@ -9,11 +10,8 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [QSA,L]
 
-#Header set Access-Control-Allow-Origin "*"
-
 RewriteCond %{HTTP_HOST} www.autoparnet.com$
 RewriteRule (.*) https://autoparnet.com/$1 [QSA,L,R=301]
-
 
 # php -- BEGIN cPanel-generated handler, do not edit
 # Configure el paquete “ea-php81” como el lenguaje de programación predeterminado “PHP”.

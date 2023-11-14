@@ -39,9 +39,6 @@ public_html/harbi_connx.txt
 public_html/htacces.zip
 public_html/prod_recents/
 public_html/mlm_*
-public_html/.htaccess
-public_html/.___htaccess
-public_html/.__htaccess
 public_html/scm/
 public_html/nifi/
 public_html/nifi/fails/
