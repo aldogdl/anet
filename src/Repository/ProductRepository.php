@@ -27,7 +27,8 @@ class ProductRepository extends ServiceEntityRepository
         $p = new Product();
         $p->fromMap($product);
         try {
-            $this->_em->flush($p);
+            $this->_em->persist($p);
+            $this->_em->flush();
             return $p->getId();
         } catch (\Throwable $th) {
             file_put_contents('si_llego_err.txt', $th->getMessage());
