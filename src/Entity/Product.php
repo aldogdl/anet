@@ -57,6 +57,26 @@ class Product
     #[ORM\Column]
     private ?bool $isVendida = null;
 
+    /** */
+    public function fromMap(array $prod) : static {
+
+        $this->setUuid($prod['uuid']);
+        $this->setSrc($prod['src']);
+        $this->setTitle($prod['title']);
+        $this->setToken($prod['token']);
+        $this->setPermalink($prod['permalink']);
+        $this->setThumbnail($prod['thumbnail']);
+        $this->setFotos($prod['fotos']);
+        $this->setDetalles($prod['detalles']);
+        $this->setPrice($prod['price']);
+        $this->setOriginalPrice($prod['originalPrice']);
+        $this->setSellerId($prod['sellerId']);
+        $this->setSellerSlug($prod['sellerSlug']);
+        $this->setAttrs($prod['attrs']);
+        $this->setIsVendida($prod['isVendida']);
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

@@ -2,6 +2,7 @@
 
 namespace App\Controller\ShopCore;
 
+use App\Repository\ProductRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -65,7 +66,9 @@ class PostController extends AbstractController
    * Guardamos el producto enviado desde ShopCore
   */
   #[Route('api/shop-core/send-product/', methods:['post'])]
-	public function sendProduct(Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh): Response
+	public function sendProduct(
+    Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh, ProductRepository $emProd
+  ): Response
 	{
 
     $result = ['abort' => true];
@@ -94,6 +97,12 @@ class PostController extends AbstractController
         $result['abort'] = false;
         if(count($ftoFalta) > 0) {
           $result['faltan_fotos'] = $ftoFalta;
+        }
+        
+        $id = 0;
+        if(array_key_exists('product', $data)) {
+          $id = $emProd->setProduct($data['product']);
+          $result['add_product'] = $id;
         }
 
         $sysFile->safeProductInToJsonFile($data);

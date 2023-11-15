@@ -21,4 +21,16 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+    /** */
+    public function setProduct(array $product): int
+    {
+        $p = new Product();
+        $p = $p->fromMap($product);
+        try {
+            $this->_em->flush($p);
+            return $p->getId();
+        } catch (\Throwable $th) {
+            return 0;
+        }
+    }
 }
