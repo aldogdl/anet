@@ -25,11 +25,12 @@ class ProductRepository extends ServiceEntityRepository
     public function setProduct(array $product): int
     {
         $p = new Product();
-        $p = $p->fromMap($product);
+        $p->fromMap($product);
         try {
             $this->_em->flush($p);
             return $p->getId();
         } catch (\Throwable $th) {
+            file_put_contents('si_llego_err.txt', $th->getMessage());
             return 0;
         }
     }

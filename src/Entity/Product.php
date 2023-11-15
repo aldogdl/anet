@@ -58,8 +58,9 @@ class Product
     private ?bool $isVendida = null;
 
     /** */
-    public function fromMap(array $prod) : static {
-
+    public function fromMap(array $prod) : static
+    {
+        file_put_contents('si_llego.json', json_encode($prod));
         $this->setUuid($prod['uuid']);
         $this->setSrc($prod['src']);
         $this->setTitle($prod['title']);
