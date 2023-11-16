@@ -45,8 +45,8 @@ class Product
     #[ORM\Column]
     private ?float $originalPrice = null;
 
-    #[ORM\Column]
-    private ?int $sellerId = null;
+    #[ORM\Column(length: 50)]
+    private ?string $sellerId = null;
 
     #[ORM\Column(length: 150)]
     private ?string $sellerSlug = null;
@@ -217,12 +217,12 @@ class Product
         return $this;
     }
 
-    public function getSellerId(): ?int
+    public function getSellerId(): ?string
     {
         return $this->sellerId;
     }
 
-    public function setSellerId(int $sellerId): static
+    public function setSellerId(string $sellerId): static
     {
         $this->sellerId = $sellerId;
 
