@@ -74,7 +74,7 @@ class ProductRepository extends ServiceEntityRepository
 
         $anio = '';
         if(array_key_exists('anios', $attr)) {
-            
+
             $partes = explode(' ', $criterio);
             $hoy = new \DateTime('now');
             $anioCurrent = $hoy->format('Y');
@@ -118,7 +118,7 @@ class ProductRepository extends ServiceEntityRepository
         }
         if(strlen($anio) > 2) {
             $dql = $dql . ' AND p.token LIKE :a';
-            $params['a'] = $anio;
+            $params['a'] = '%'.$anio.'%';
             $criterio = str_replace($anio, '', $criterio);
         }
 
