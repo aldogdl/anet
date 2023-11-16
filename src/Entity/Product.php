@@ -54,13 +54,25 @@ class Product
     #[ORM\Column(type: Types::JSON)]
     private array $attrs = [];
 
+    /**
+     * 0 > Enviada a MLM
+     * 1 > Esta activa
+     * 2 > Vendida por el dueño
+     * 3 > Vendida por Anet
+     * 4 > Cancelada | Eliminada
+     */
     #[ORM\Column]
-    private ?bool $isVendida = null;
+    private ?int $isVendida = 1;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     /** */
     public function fromMap(array $prod) : static
     {
-        file_put_contents('si_llego.json', json_encode($prod));
         $this->setUuid($prod['uuid']);
         $this->setSrc($prod['src']);
         $this->setTitle($prod['title']);
@@ -74,7 +86,9 @@ class Product
         $this->setSellerId($prod['sellerId']);
         $this->setSellerSlug($prod['sellerSlug']);
         $this->setAttrs($prod['attrs']);
-        $this->setIsVendida($prod['isVendida']);
+        $hoy = new \DateTimeImmutable('now');
+        $this->setCreatedAt($hoy);
+        $this->setUpdatedAt($hoy);
         return $this;
     }
 
@@ -247,6 +261,30 @@ class Product
     public function setIsVendida(bool $isVendida): static
     {
         $this->isVendida = $isVendida;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

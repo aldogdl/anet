@@ -82,8 +82,16 @@ class PostController extends AbstractController
     }
 
     if($modo == 'publik_mlm') {
-      $result['abort'] = $sysFile->safeProductInToJsonFile($data);
+      // TODO enviar notificacion a BackCore de que una publicacion fue
+      // enviada a MLM
       return $this->json($result);
+    }
+
+    $id = 0;
+    if(array_key_exists('product', $data)) {
+      $id = $emProd->setProduct($data['product']);
+      $result['add_product'] = $id;
+      $data['id'] = $id;
     }
 
     $filename = $data['meta']['modo'].'_'.$data['meta']['slug'].'_'.$data['id'].'.json';
@@ -99,14 +107,6 @@ class PostController extends AbstractController
           $result['faltan_fotos'] = $ftoFalta;
         }
         
-        $id = 0;
-        if(array_key_exists('product', $data)) {
-          $id = $emProd->setProduct($data['product']);
-          $result['add_product'] = $id;
-        }
-
-        $sysFile->safeProductInToJsonFile($data);
-        $sysFile->updateFileRecentsProductcs($filename);
         try {
           $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
         } catch (\Throwable $th) {

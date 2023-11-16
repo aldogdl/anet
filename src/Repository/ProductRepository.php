@@ -31,7 +31,6 @@ class ProductRepository extends ServiceEntityRepository
             $this->_em->flush();
             return $p->getId();
         } catch (\Throwable $th) {
-            file_put_contents('si_llego_err.txt', $th->getMessage());
             return 0;
         }
     }
