@@ -3,9 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Product;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Polyfill\Intl\Idn\Resources\unidata\Regex;
 
 /**
  * @extends ServiceEntityRepository<Product>
@@ -125,6 +126,22 @@ class ProductRepository extends ServiceEntityRepository
         $this->auto     = trim($q.' '.$anio);
         $this->pieza    = trim($criterio);
         return $this->_em->createQuery($dql)->setParameters($params);
+    }
+
+    ///
+    public function paginador(\Doctrine\ORM\Query $query, int $page = 1, $mode = 'array', int $limit = 50): array
+    {
+        if($mode == 'array') {
+            $query->setHydrationMode(Query::HYDRATE_ARRAY);
+        }else{
+            $query->setHydrationMode(Query::HYDRATE_SCALAR);
+        }
+
+        $query = $query->setFirstResult($limit * ($page - 1))->setMaxResults($limit);
+        $pag = new Paginator($query);
+        $totalItems = $pag->count();
+        $pagesCount = ceil($totalItems / $limit);
+        return ['total' => $totalItems, 'tpages'=> $pagesCount, 'body' => $pag];
     }
 
     /**

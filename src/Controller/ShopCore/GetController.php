@@ -47,19 +47,28 @@ class GetController extends AbstractController
   public function items(Request $req, String $idSeller, ProductRepository $emProd): Response
   {
     $criterio = $req->query->get('q');
+    $offset = $req->query->get('offset');
+    if(strlen($offset) == 0) {
+      $offset = 1;
+    }
 
     if(strlen($criterio) > 0) {
+
       $dql = $emProd->searchProducts( $idSeller, $criterio, [] );
       $products = $dql->getArrayResult();
       if(count($products) > 0) {
         $products = $emProd->reFiltro($products);
+        return $this->json(['abort' => false, 'msg' => trim($criterio), 'body' => $products]);
       }
+      
     }else{
+      
       $dql = $emProd->getAllProductsBySellerId( $idSeller );
-      $products = $dql->getArrayResult();
+      $products = $emProd->paginador($dql);
+      return $this->json($products);
     }
-
-    return $this->json(['abort' => true, 'msg' => trim($criterio), 'body' => $products]);
+    
+    return $this->json(['abort' => true, 'msg' => trim($criterio), 'body' => []]);
   }
 
   /** 
@@ -70,12 +79,17 @@ class GetController extends AbstractController
   {
     $attr = [];
     $criterio = $req->query->get('q');
+    $offset = $req->query->get('offset');
     if($req->getMethod() == 'POST') {
       $attr = json_decode($req->request->get('data'), true);
     }
 
     $dql = $emProd->searchConcidencias( $idSeller, $criterio, $attr );
-    $products = $dql->getArrayResult();
+    if(strlen($offset) > 0) {
+      $products = $emProd->paginador($dql);
+    }else{
+      $products = $dql->getArrayResult();
+    }
 
     if(count($products) > 0) {
       $products = $emProd->reFiltro($products);
