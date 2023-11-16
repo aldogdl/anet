@@ -138,10 +138,15 @@ class ProductRepository extends ServiceEntityRepository
         }
 
         $query = $query->setFirstResult($limit * ($page - 1))->setMaxResults($limit);
+        
         $pag = new Paginator($query);
         $totalItems = $pag->count();
         $pagesCount = ceil($totalItems / $limit);
-        return ['total' => $totalItems, 'tpages'=> $pagesCount, 'body' => $pag];
+        $results = [];
+        foreach ($pag as $pzas) {
+			$results[] = $pzas;
+		}
+        return ['total' => $totalItems, 'tpages'=> $pagesCount, 'body' => $results];
     }
 
     /**

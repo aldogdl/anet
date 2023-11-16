@@ -60,11 +60,11 @@ class GetController extends AbstractController
         $products = $emProd->reFiltro($products);
         return $this->json(['abort' => false, 'msg' => trim($criterio), 'body' => $products]);
       }
-      
+
     }else{
       
       $dql = $emProd->getAllProductsBySellerId( $idSeller );
-      $products = $emProd->paginador($dql);
+      $products = $emProd->paginador($dql, $offset);
       return $this->json($products);
     }
     
