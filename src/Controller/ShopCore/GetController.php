@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\AO1MarcasRepository;
 use App\Repository\AO2ModelosRepository;
 use App\Repository\NG2ContactosRepository;
+use App\Repository\ProductRepository;
 use App\Service\SecurityBasic;
 use App\Service\ShopCore\ShopCoreSystemFileService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -23,7 +24,6 @@ class GetController extends AbstractController
   #[Route('shop/{slug}/_ft/{uuid}', methods: ['get'])]
   public function anulandoRouteFt(String $slug, String $uuid): RedirectResponse | Response
   {
-
     if($slug == '') {
         return $this->json(['hola' => 'Bienvenido...']);
     }
@@ -38,6 +38,50 @@ class GetController extends AbstractController
         return $this->json(['hola' => 'Bienvenido...']);
     }
     return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug, 301);
+  }
+
+  /** 
+   * Buscamos productos de otros cotizadores 
+  */
+  #[Route('/users/{idSeller}/items/', methods:['GET'])]
+  public function items(Request $req, String $idSeller, ProductRepository $emProd): Response
+  {
+    $criterio = $req->query->get('q');
+
+    if(strlen($criterio) > 0) {
+      $dql = $emProd->searchProducts( $idSeller, $criterio, [] );
+      $products = $dql->getArrayResult();
+      if(count($products) > 0) {
+        $products = $emProd->reFiltro($products);
+      }
+    }else{
+      $dql = $emProd->getAllProductsBySellerId( $idSeller );
+      $products = $dql->getArrayResult();
+    }
+
+    return $this->json(['abort' => true, 'msg' => trim($criterio), 'body' => $products]);
+  }
+
+  /** 
+   * Buscamos productos de otros cotizadores y/o coinsidencias
+  */
+  #[Route('/users/{idSeller}/items/search/', methods:['GET', 'POST'])]
+  public function searchItem(Request $req, String $idSeller, ProductRepository $emProd): Response
+  {
+    $attr = [];
+    $criterio = $req->query->get('q');
+    if($req->getMethod() == 'POST') {
+      $attr = json_decode($req->request->get('data'), true);
+    }
+
+    $dql = $emProd->searchConcidencias( $idSeller, $criterio, $attr );
+    $products = $dql->getArrayResult();
+
+    if(count($products) > 0) {
+      $products = $emProd->reFiltro($products);
+    }
+
+    return $this->json(['abort' => false, 'msg' => trim($criterio), 'body' => $products]);
   }
 
   /** 
