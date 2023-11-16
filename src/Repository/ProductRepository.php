@@ -74,6 +74,7 @@ class ProductRepository extends ServiceEntityRepository
 
         $anio = '';
         if(array_key_exists('anios', $attr)) {
+            
             $partes = explode(' ', $criterio);
             $hoy = new \DateTime('now');
             $anioCurrent = $hoy->format('Y');

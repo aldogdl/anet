@@ -81,7 +81,11 @@ class GetController extends AbstractController
       $products = $emProd->reFiltro($products);
     }
 
-    return $this->json(['abort' => false, 'msg' => trim($criterio), 'body' => $products]);
+    return $this->json([
+      'abort' => false,
+      'msg' => ['auto' => $emProd->auto, 'pieza' => $emProd->pieza],
+      'body' => $products
+    ]);
   }
 
   /** 
