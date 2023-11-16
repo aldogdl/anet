@@ -146,7 +146,20 @@ class ProductRepository extends ServiceEntityRepository
         foreach ($pag as $pzas) {
 			$results[] = $pzas;
 		}
-        return ['total' => $totalItems, 'tpages'=> $pagesCount, 'body' => $results];
+        return [
+            'paging' => [
+                'total' => $totalItems,
+                'pages' => $pagesCount,
+                'offset'=> $page,
+                'primary_results' => count($results),
+                'limit' => $limit
+            ],
+            'query'  => [
+                'auto' => $this->auto,
+                'pieza' => $this->pieza,
+            ],
+            'result' => $results
+        ];
     }
 
     /**
