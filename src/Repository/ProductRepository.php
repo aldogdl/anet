@@ -75,6 +75,18 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /** 
+     * Cuantificamos la cantidad de productos activos que tiene el cotizador 
+    */
+    public function getCount(string $idSeller): int
+    {
+        $dql = 'SELECT COUNT(p.id) FROM ' . Product::class . ' p '.
+        'WHERE p.sellerId = :idSeller AND p.isVendida = 1';
+        $result = $this->_em->createQuery($dql)
+            ->setParameter('idSeller', $idSeller)->getResult(Query::HYDRATE_SINGLE_SCALAR);
+        return 0;
+    }
+
+    /** 
      * Buscamos productos por criterio exeptuando los productos del $idSeller
      * Esto para mostrar productos de otros cotizadores.
     */

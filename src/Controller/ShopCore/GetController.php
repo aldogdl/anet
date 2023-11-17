@@ -46,10 +46,17 @@ class GetController extends AbstractController
   #[Route('/users/{idSeller}/items/', methods:['GET'])]
   public function items(Request $req, String $idSeller, ProductRepository $emProd): Response
   {
+
     $criterio = $req->query->get('q');
-    $offset = $req->query->get('offset');
+    $offset   = $req->query->get('offset');
+    $count    = $req->query->get('count');
     if(strlen($offset) == 0) {
       $offset = 1;
+    }
+
+    if(strlen($count) > 0) {
+      $dql = $emProd->getCount($idSeller);
+      return $this->json(['abort' => false, 'body' => $count]);
     }
 
     if(strlen($criterio) > 0) {
