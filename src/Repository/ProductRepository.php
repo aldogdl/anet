@@ -50,7 +50,7 @@ class ProductRepository extends ServiceEntityRepository
     {
         $dql = 'UPDATE ' . Product::class . ' p '.
         'SET p.isVendida = :stt, SET p.updatedAt = :update '.
-        'WHERE o.uuid = :uuid';
+        'WHERE p.uuid = :uuid';
         
         try {
             $this->_em->createQuery($dql)->setParameters([
