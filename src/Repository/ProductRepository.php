@@ -49,7 +49,7 @@ class ProductRepository extends ServiceEntityRepository
     public function setProductAsSendToMlm(String $uuid): String
     {
         $dql = 'UPDATE ' . Product::class . ' p '.
-        'SET p.isVendida = :stt, SET p.updatedAt = :update '.
+        'SET p.isVendida = :stt, p.updatedAt = :update '.
         'WHERE p.uuid = :uuid';
         
         try {
