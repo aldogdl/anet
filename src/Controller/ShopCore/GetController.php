@@ -55,7 +55,7 @@ class GetController extends AbstractController
     }
 
     if(strlen($count) > 0) {
-      $dql = $emProd->getCount($idSeller);
+      $count = $emProd->getCount($idSeller);
       return $this->json(['abort' => false, 'body' => $count]);
     }
 

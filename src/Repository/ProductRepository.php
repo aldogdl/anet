@@ -83,7 +83,7 @@ class ProductRepository extends ServiceEntityRepository
         'WHERE p.sellerId = :idSeller AND p.isVendida = 1';
         $result = $this->_em->createQuery($dql)
             ->setParameter('idSeller', $idSeller)->getResult(Query::HYDRATE_SINGLE_SCALAR);
-        return 0;
+        return $result;
     }
 
     /** 
