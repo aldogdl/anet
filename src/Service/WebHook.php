@@ -121,6 +121,10 @@ class WebHook
             $protocolo['evento'] = 'conv_free';
             $protocolo['from']   = $data['from'];
         }
+        if(mb_strpos($uriCall, 'send-product-mlm') !== false) {
+            $protocolo['evento'] = 'item_send_mlm';
+            $protocolo['from']   = $data['from'];
+        }
         if(mb_strpos($uriCall, 'shop-core') !== false) {
             $protocolo = $this->setDataFromShopCore($protocolo, $data);
         }

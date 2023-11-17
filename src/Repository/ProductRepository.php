@@ -43,6 +43,27 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /** 
+     * Este producto fue enviado a MLM desde anetShop
+    */
+    public function setProductAsSendToMlm(String $uuid): bool
+    {
+        $dql = 'UPDATE ' . Product::class . ' p '.
+        'SET p.isVendida = :stt '.
+        'WHERE o.uuid = :uuid';
+        
+        try {
+            $this->_em->createQuery($dql)->setParameters([
+              'uuid'=> $uuid,
+              'stt' => 0
+            ])->execute();
+            $this->_em->clear();
+            return true;
+        } catch (\Throwable $th) {
+            return false;
+        }
+    }
+
+    /** 
      * Buscamos productos por criterio exeptuando los productos del $idSeller
      * Esto para mostrar productos de otros cotizadores.
     */
