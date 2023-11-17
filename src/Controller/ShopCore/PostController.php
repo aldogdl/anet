@@ -124,22 +124,23 @@ class PostController extends AbstractController
    * Guardamos el producto enviado desde ShopCore
   */
   #[Route('api/shop-core/send-product-mlm/', methods:['post'])]
-	public function sendProductToMlm(
-    Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh, ProductRepository $emProd
-  ): Response
+	public function sendProductToMlm(Request $req, WebHook $wh, ProductRepository $emProd): Response
 	{
 
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
     
     $changed = $emProd->setProductAsSendToMlm($data['uuid']);
-    if($changed) {
+    if($changed == 'ok') {
       $result['abort'] = false;
       try {
         $wh->sendMy('api\\shop-core\\send-product-mlm', '', $data);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }
+    }else{
+      $result['msg'] = 'Error';
+      $result['body'] = $changed;
     }
     
 	  return $this->json($result);

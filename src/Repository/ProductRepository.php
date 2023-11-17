@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Product;
+use DateTimeImmutable;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -45,21 +46,20 @@ class ProductRepository extends ServiceEntityRepository
     /** 
      * Este producto fue enviado a MLM desde anetShop
     */
-    public function setProductAsSendToMlm(String $uuid): bool
+    public function setProductAsSendToMlm(String $uuid): String
     {
         $dql = 'UPDATE ' . Product::class . ' p '.
-        'SET p.isVendida = :stt '.
+        'SET p.isVendida = :stt, SET p.updatedAt = :update '.
         'WHERE o.uuid = :uuid';
         
         try {
             $this->_em->createQuery($dql)->setParameters([
-              'uuid'=> $uuid,
-              'stt' => 0
+              'uuid'=> $uuid, 'stt' => 0, 'update' => new DateTimeImmutable('now')
             ])->execute();
             $this->_em->clear();
-            return true;
+            return 'ok';
         } catch (\Throwable $th) {
-            return false;
+            return $th->getMessage();
         }
     }
 
