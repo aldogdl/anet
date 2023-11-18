@@ -2,7 +2,8 @@ AddType application/wasm .wasm
 
 RewriteEngine On
 <IfModule mod_headers.c>
-    Header set Access-Control-Allow-Origin "*"
+    #Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Origin Vary:Origin "*" "*"
     Header set Access-Control-Allow-Credentials true
 </IfModule>
 
