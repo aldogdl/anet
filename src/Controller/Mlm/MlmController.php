@@ -53,7 +53,9 @@ class MlmController extends AbstractController
     }
 
     /**
-     * 
+     * Al vincular mlm con anetShop se crea un json con los datos de dicha
+     * vinculacion por lo tanto se recuperan desde la app AnetShop y se
+     * eliminan inmediatamente.
      */
     #[Route('mlm/get-code-auth/{slug}/', methods: ['GET'])]
     public function mlmGetCodeAuth(Request $req, String $slug): Response

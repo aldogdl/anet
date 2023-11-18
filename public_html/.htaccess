@@ -1,8 +1,11 @@
 AddType application/wasm .wasm
 
 RewriteEngine On
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin ["(.*)"]
+    Header set Access-Control-Allow-Credentials true
+</IfModule>
 
-# Header set Access-Control-Allow-Origin "*"
 SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 RewriteCond %{HTTP:Authorization} ^(.*)
 RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
