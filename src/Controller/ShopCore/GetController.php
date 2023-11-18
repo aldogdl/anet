@@ -43,7 +43,7 @@ class GetController extends AbstractController
   /** 
    * Buscamos productos de otros cotizadores 
   */
-  #[Route('/users/{idSeller}/items/', methods:['GET'])]
+  #[Route('users/{idSeller}/items/', methods:['GET'])]
   public function items(Request $req, String $idSeller, ProductRepository $emProd): Response
   {
 
@@ -81,7 +81,7 @@ class GetController extends AbstractController
   /** 
    * Buscamos productos de otros cotizadores y/o coinsidencias
   */
-  #[Route('/users/{idSeller}/items/search/', methods:['GET', 'POST'])]
+  #[Route('users/{idSeller}/items/search/', methods:['GET', 'POST'])]
   public function searchItem(Request $req, String $idSeller, ProductRepository $emProd): Response
   {
     $attr = [];
