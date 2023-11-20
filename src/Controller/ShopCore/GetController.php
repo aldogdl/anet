@@ -25,7 +25,7 @@ class GetController extends AbstractController
   public function anulandoRouteFt(String $slug, String $uuid): RedirectResponse | Response
   {
     if($slug == '') {
-        return $this->json(['hola' => 'Bienvenido...']);
+      return $this->json(['hola' => 'Bienvenido...']);
     }
     return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug.'&ft='.$uuid, 301);
   }

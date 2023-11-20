@@ -121,16 +121,16 @@ class PostController extends AbstractController
 	}
 
   /** 
-   * Guardamos el producto enviado desde ShopCore
+   * Marcamos este producto como ?? desde AnetShop y enviamos aviso a BackCore
   */
-  #[Route('api/shop-core/send-product-mlm/', methods:['post'])]
-	public function sendProductToMlm(Request $req, WebHook $wh, ProductRepository $emProd): Response
+  #[Route('api/shop-core/update-stt-product/', methods:['post'])]
+	public function sendedProductToMlm(Request $req, WebHook $wh, ProductRepository $emProd): Response
 	{
 
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
     
-    $changed = $emProd->setProductAsSendToMlm($data['uuid']);
+    $changed = $emProd->updateStatusProduct($data['uuid'], $data['stt']);
     if($changed == 'ok') {
       $result['abort'] = false;
       try {

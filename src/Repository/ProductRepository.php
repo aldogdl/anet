@@ -44,9 +44,10 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /** 
-     * Este producto fue enviado a MLM desde anetShop
+     * Este producto fue enviado a MLM desde anetShop por lo tanto lo marcamos
+     * como suspendido (stt = 0)
     */
-    public function setProductAsSendToMlm(String $uuid): String
+    public function updateStatusProduct(String $uuid, int $stt): String
     {
         $dql = 'UPDATE ' . Product::class . ' p '.
         'SET p.isVendida = :stt, p.updatedAt = :update '.
@@ -54,7 +55,7 @@ class ProductRepository extends ServiceEntityRepository
         
         try {
             $this->_em->createQuery($dql)->setParameters([
-              'uuid'=> $uuid, 'stt' => 0, 'update' => new DateTimeImmutable('now')
+              'uuid'=> $uuid, 'stt' => $stt, 'update' => new DateTimeImmutable('now')
             ])->execute();
             $this->_em->clear();
             return 'ok';
