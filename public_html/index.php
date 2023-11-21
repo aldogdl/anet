@@ -1,6 +1,6 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     file_put_contents('cabecera.json', json_encode($_SERVER));
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: POST, GET, DELETE, PUT, PATCH, OPTIONS');
@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     die();
 }
 header('Access-Control-Allow-Origin: *');
-header('Content-Type: application/json');
 use App\Kernel;
 
 require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
