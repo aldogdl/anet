@@ -1,6 +1,7 @@
 <?php
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    file_put_contents('cabecera.json', json_encode($_SERVER));
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: POST, GET, DELETE, PUT, PATCH, OPTIONS');
     header('Access-Control-Allow-Headers: token, Content-Type');
