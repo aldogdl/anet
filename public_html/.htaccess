@@ -6,6 +6,13 @@ AddType application/wasm .wasm
   Header always set Access-Control-Allow-Headers: "Access-Control-Allow-Headers,Origin,Accept,X-Requested-With,Authorization,X-Auth-Token,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers"
 </IfModule>
 
+allow from 216.33.196.4
+allow from 216.33.196.25
+allow from 54.88.218.97
+allow from 18.215.140.160
+allow from 18.213.114.129
+allow from 18.206.34.84
+
 RewriteEngine On
 RewriteCond %{REQUEST_METHOD} OPTIONS
 RewriteRule ^(.*)$ $1 [R=200,L]
