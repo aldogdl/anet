@@ -14,7 +14,7 @@ class MlmController extends AbstractController
     /**
      * Endpoint para la verificacion de conección
      */
-    #[Route('mlm/code/', methods: ['GET'])]
+    #[Route('mlm/code/', methods: ['GET', 'POST'])]
     public function verifyMlm(Request $req): Response
     {
         $state = $req->query->get('state');
