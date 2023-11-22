@@ -130,7 +130,7 @@ class PostController extends AbstractController
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
     
-    $changed = $emProd->updateStatusProduct($data['uuid'], $data['stt']);
+    $changed = $emProd->updateStatusProduct($data);
     if($changed == 'ok') {
       $result['abort'] = false;
       try {
