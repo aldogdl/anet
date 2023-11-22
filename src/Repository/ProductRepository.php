@@ -52,7 +52,7 @@ class ProductRepository extends ServiceEntityRepository
         if(array_key_exists('id', $data)) {
             $obj = $this->_em->find(Product::class, $data['id']);
             if($obj) {
-                file_get_contents('lo_recibido_obj.json', json_encode($obj->getAttrs()));
+                file_put_contents('lo_recibido_obj.json', json_encode($obj->getAttrs()));
                 if(array_key_exists('price', $data)) {
                     $precio = $obj->getPrice();
                     $obj->setPrice($data['price']);

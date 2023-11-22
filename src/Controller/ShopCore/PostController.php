@@ -128,7 +128,7 @@ class PostController extends AbstractController
 	{
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
-    file_get_contents('lo_recibido.json', json_encode($data));
+    file_put_contents('lo_recibido.json', json_encode($data));
     $changed = $emProd->updateStatusProduct($data);
     
     if($changed == 'ok') {
@@ -142,7 +142,7 @@ class PostController extends AbstractController
       $result['msg'] = 'Error';
       $result['body'] = $changed;
     }
-    file_get_contents('lo_recibido_resp.json', json_encode($result));
+    file_put_contents('lo_recibido_resp.json', json_encode($result));
     
 	  return $this->json($result);
 	}
