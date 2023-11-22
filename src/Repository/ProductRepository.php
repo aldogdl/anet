@@ -47,21 +47,22 @@ class ProductRepository extends ServiceEntityRepository
      * Este producto fue enviado a MLM desde anetShop por lo tanto lo marcamos
      * como suspendido (stt = 0)
     */
-    public function updateStatusProduct(String $uuid, int $stt): String
+    public function updateStatusProduct(array $data): String
     {
-        $dql = 'UPDATE ' . Product::class . ' p '.
-        'SET p.isVendida = :stt, p.updatedAt = :update '.
-        'WHERE p.uuid = :uuid';
-        
-        try {
-            $this->_em->createQuery($dql)->setParameters([
-              'uuid'=> $uuid, 'stt' => $stt, 'update' => new DateTimeImmutable('now')
-            ])->execute();
-            $this->_em->clear();
-            return 'ok';
-        } catch (\Throwable $th) {
-            return $th->getMessage();
+        if(array_key_exists('id', $data)) {
+            $obj = $this->_em->find(Product::class, $data['id']);
+            if($obj) {
+                $attrs = $obj->getAttrs();
+                $attrs['sku'] = $data['idMlm'];
+                $obj->isIsVendida($data['stt']);
+                $obj->setAttrs($attrs);
+                $obj->setUpdatedAt(new \DateTimeImmutable('now'));
+                $this->_em->persist($obj);
+                $this->_em->flush();
+                return 'ok';
+            }
         }
+        return 'No se Guardo el cambio';
     }
 
     /** 
