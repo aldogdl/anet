@@ -123,18 +123,18 @@ class PostController extends AbstractController
   /** 
    * Marcamos este producto como ?? desde AnetShop y enviamos aviso a BackCore
   */
-  #[Route('api/shop-core/update-stt-product/', methods:['post'])]
+  #[Route('api/anet-shop/update-stt-product/', methods:['post'])]
 	public function sendedProductToMlm(Request $req, WebHook $wh, ProductRepository $emProd): Response
 	{
-
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
-    
+    file_get_contents('lo_recibido.json', json_encode($data));
     $changed = $emProd->updateStatusProduct($data);
+    
     if($changed == 'ok') {
       $result['abort'] = false;
       try {
-        $wh->sendMy('api\\shop-core\\send-product-mlm', '', $data);
+        $wh->sendMy('api\\anet-shop\\send-product-mlm', '', $data);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }
@@ -142,6 +142,7 @@ class PostController extends AbstractController
       $result['msg'] = 'Error';
       $result['body'] = $changed;
     }
+    file_get_contents('lo_recibido_resp.json', json_encode($result));
     
 	  return $this->json($result);
 	}
