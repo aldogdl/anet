@@ -52,11 +52,17 @@ class ProductRepository extends ServiceEntityRepository
         if(array_key_exists('id', $data)) {
             $obj = $this->_em->find(Product::class, $data['id']);
             if($obj) {
+
+                $precio = $obj->getPrice();
+
                 $attrs = $obj->getAttrs();
                 $attrs['sku'] = $data['idMlm'];
                 $obj->isIsVendida($data['stt']);
                 $obj->setAttrs($attrs);
+                $obj->setPrice($data['price']);
+                $obj->setOriginalPrice($precio);
                 $obj->setUpdatedAt(new \DateTimeImmutable('now'));
+
                 $this->_em->persist($obj);
                 $this->_em->flush();
                 return 'ok';
@@ -72,7 +78,7 @@ class ProductRepository extends ServiceEntityRepository
     public function getAllProductsBySellerId(string $idSeller): \Doctrine\ORM\Query
     {
         $dql = 'SELECT p FROM ' . Product::class . ' p '.
-        'WHERE p.sellerId = :idSeller AND p.isVendida = 1';
+        'WHERE p.sellerId = :idSeller AND p.isVendida < 2';
         return $this->_em->createQuery($dql)->setParameter('idSeller', $idSeller);
     }
 
