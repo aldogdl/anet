@@ -64,7 +64,7 @@ class ProductRepository extends ServiceEntityRepository
                     $obj->setAttrs($attrs);
                 }
                 
-                $obj->isIsVendida($data['stt']);
+                $obj->setIsVendida($data['stt']);
                 $obj->setUpdatedAt(new \DateTimeImmutable('now'));
 
                 $this->_em->persist($obj);

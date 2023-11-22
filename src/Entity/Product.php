@@ -254,7 +254,7 @@ class Product
         return $this;
     }
 
-    public function isIsVendida(): ?bool
+    public function getIsVendida(): ?bool
     {
         return $this->isVendida;
     }
