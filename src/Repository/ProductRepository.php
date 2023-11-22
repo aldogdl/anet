@@ -53,14 +53,18 @@ class ProductRepository extends ServiceEntityRepository
             $obj = $this->_em->find(Product::class, $data['id']);
             if($obj) {
 
-                $precio = $obj->getPrice();
-
-                $attrs = $obj->getAttrs();
-                $attrs['sku'] = $data['idMlm'];
+                if(array_key_exists('price', $data)) {
+                    $precio = $obj->getPrice();
+                    $obj->setPrice($data['price']);
+                    $obj->setOriginalPrice($precio);
+                }
+                if(array_key_exists('idMlm', $data)) {
+                    $attrs = $obj->getAttrs();
+                    $attrs['sku'] = $data['idMlm'];
+                    $obj->setAttrs($attrs);
+                }
+                
                 $obj->isIsVendida($data['stt']);
-                $obj->setAttrs($attrs);
-                $obj->setPrice($data['price']);
-                $obj->setOriginalPrice($precio);
                 $obj->setUpdatedAt(new \DateTimeImmutable('now'));
 
                 $this->_em->persist($obj);

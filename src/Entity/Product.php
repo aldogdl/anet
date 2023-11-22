@@ -57,9 +57,10 @@ class Product
     /**
      * 0 > Enviada a MLM
      * 1 > Esta activa
-     * 2 > Vendida por el dueño
-     * 3 > Vendida por Anet
-     * 4 > Cancelada | Eliminada
+     * 2 > Enviada a MLM y ya Activa
+     * 3 > Vendida por el dueño
+     * 4 > Vendida por Anet
+     * 5 > Cancelada | Eliminada
      */
     #[ORM\Column]
     private ?int $isVendida = 1;
