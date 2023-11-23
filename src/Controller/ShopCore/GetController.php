@@ -12,6 +12,7 @@ use App\Repository\AO2ModelosRepository;
 use App\Repository\NG2ContactosRepository;
 use App\Repository\ProductRepository;
 use App\Service\SecurityBasic;
+use App\Service\ShopCore\DataSimpleMlm;
 use App\Service\ShopCore\ShopCoreSystemFileService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -151,42 +152,24 @@ class GetController extends AbstractController
   */
   #[Route('security-basic/mlm-data-tks-ctc/{token}/{slug}/', methods:['GET', 'POST'])]
   public function mlmTksOfContact(
-    Request $req, SecurityBasic $lock, String $token, String $slug
+    Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug
   ): Response
   {
 
     if($lock->isValid($token)) {
 
-      $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
-      if(is_file($pathTo)) {
+      if($req->getMethod() == 'GET') {
+        $res = $mlm->getTks($slug);
+        return $this->json($res);
+      }
 
-        $data = json_decode(file_get_contents($pathTo), true);
+      if($req->getMethod() == 'POST') {
 
-        if($req->getMethod() == 'GET') {
-          $res = '';
-          if($data) {
-            $res = json_encode([
-              'tokMlm' => $data['tokMlm'],
-              'mlmRef' => $data['mlmRef'],
-              'mlmKdk' => $data['mlmKdk'],
-              'refKdk' => $data['refKdk'],
-            ]);
-          }
-          return $this->json(['deco' => base64_encode($res)]);
-        }
-
-        if($req->getMethod() == 'POST') {
-
-          $content = $req->request->get('data');
-          if($content) {
-            $content = json_decode($content, true);
-            $data['tokMlm'] = $content['tokMlm'];
-            $data['mlmRef'] = $content['mlmRef'];
-            $data['mlmKdk'] = $content['mlmKdk'];
-            $data['refKdk'] = $content['refKdk'];
-            file_put_contents($pathTo, json_encode($data));
-            return $this->json(['abort' => false, 'msg' => 'ok']);
-          }
+        $content = $req->request->get('data');
+        if($content) {
+          $content = json_decode($content, true);
+          $mlm->setTks($slug, $content);
+          return $this->json(['abort' => false, 'msg' => 'ok']);
         }
       }
     }

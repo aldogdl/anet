@@ -2,12 +2,12 @@
 
 namespace App\Controller\Mlm;
 
+use App\Service\SecurityBasic;
+use App\Service\ShopCore\DataSimpleMlm;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class MlmController extends AbstractController
 {
@@ -39,15 +39,16 @@ class MlmController extends AbstractController
     }
 
     /**
-     * Endpoint para la recuperar la conx
+     * Endpoint para la recuperar la conx para mlm
      */
-    #[Route('mlm/get-codes/', methods: ['GET'])]
-    public function mlmGetCodes(Request $req): Response
+    #[Route('mlm/get-codes/{token}/{slug}/', methods: ['GET'])]
+    public function mlmGetCodes(Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug): Response
     {
         if($req->getMethod() == 'GET') {
-            $theGet = $this->getParameter('anetMlm');
-            $data = file_get_contents($theGet);
-            return $this->json(['deco' => base64_encode($data)]);
+            if($lock->isValid($token)) {
+                $data = $mlm->getCode($slug);
+                return $this->json($data);
+            }
         }
         return new Response(400);
     }
