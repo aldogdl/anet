@@ -46,8 +46,8 @@ class MlmController extends AbstractController
     {
         if($req->getMethod() == 'GET') {
             $theGet = $this->getParameter('anetMlm');
-            $data = json_decode(file_get_contents($theGet), true);
-            return $this->json($data);
+            $data = file_get_contents($theGet);
+            return $this->json(['deco' => base64_encode($data)]);
         }
         return new Response(400);
     }
@@ -62,11 +62,11 @@ class MlmController extends AbstractController
     {
         if($req->getMethod() == 'GET') {
             $path = 'mlm_'.$slug.'.json';
-            $data = json_decode(file_get_contents($path), true);
+            $data = file_get_contents($path);
             if($data) {
                 unlink($path);
             }
-            return $this->json($data);
+            return $this->json(['deco' => base64_encode($data)]);
         }
         return new Response(400);
     }

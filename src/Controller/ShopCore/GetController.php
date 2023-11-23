@@ -147,6 +147,54 @@ class GetController extends AbstractController
   }
 
   /** 
+   * Recuperamos y guardamos los datos de mlm del cotz.
+  */
+  #[Route('security-basic/mlm-data-tks-ctc/{token}/{slug}/', methods:['GET', 'POST'])]
+  public function mlmTksOfContact(
+    Request $req, SecurityBasic $lock, String $token, String $slug
+  ): Response
+  {
+
+    if($lock->isValid($token)) {
+
+      $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
+      if(is_file($pathTo)) {
+
+        $data = json_decode(file_get_contents($pathTo), true);
+
+        if($req->getMethod() == 'GET') {
+          $res = '';
+          if($data) {
+            $res = json_encode([
+              'tokMlm' => $data['tokMlm'],
+              'mlmRef' => $data['mlmRef'],
+              'mlmKdk' => $data['mlmKdk'],
+              'refKdk' => $data['refKdk'],
+            ]);
+          }
+          return $this->json(['deco' => base64_encode($res)]);
+        }
+
+        if($req->getMethod() == 'POST') {
+
+          $content = $req->request->get('data');
+          if($content) {
+            $content = json_decode($content, true);
+            $data['tokMlm'] = $content['tokMlm'];
+            $data['mlmRef'] = $content['mlmRef'];
+            $data['mlmKdk'] = $content['mlmKdk'];
+            $data['refKdk'] = $content['refKdk'];
+            file_put_contents($pathTo, json_encode($data));
+            return $this->json(['abort' => false, 'msg' => 'ok']);
+          }
+        }
+      }
+    }
+
+    return $this->json(['abort' => true, 'msg' => 'error']);
+  }
+
+  /** 
    * Actualizamos el token de FB
   */
   #[Route('security-basic/set-tkfb/{token}/{tokPush}/{slug}/{field}/', methods:['get'])]
