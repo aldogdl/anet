@@ -22,8 +22,9 @@ class DataSimpleMlm {
             $data = json_decode(file_get_contents($pathTo), true);
             $tks  = $this->getTks($slug, false);
             $newRes = array_merge($data, $tks);
+
         }
-        return ['deco' => base64_encode($newRes)];
+        return ['deco' => base64_encode(json_encode($newRes))];
     }
 	
     /** */
