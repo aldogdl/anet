@@ -97,7 +97,7 @@ class DataSimpleMlm {
 
         $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
         if(is_file($pathTo)) {
-            file_put_contents($pathTo, json_encode($newData));
+            file_put_contents($pathTo, json_encode(json_decode($newData, true)));
         }
     }
 
