@@ -119,6 +119,7 @@ class DataSimpleMlm {
             'mlmRef',
             'mlmKdk',
             'refKdk',
+            'pass'
         ];
         
         $ctcTk = [];
