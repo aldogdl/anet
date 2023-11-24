@@ -20,7 +20,7 @@ class DataSimpleMlm {
         $pathTo = $this->params->get('anetMlm');
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
-            $tks  = $this->getTks($slug, false);
+            $tks  = $this->getTksMlm($slug, false);
             $newRes = array_merge($data, $tks);
 
         }
@@ -28,7 +28,7 @@ class DataSimpleMlm {
     }
 	
     /** */
-    public function getTks(String $slug, bool $compress = true) : array {
+    public function getTksMlm(String $slug, bool $compress = true) : array {
 
         $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
         if(is_file($pathTo)) {
@@ -50,7 +50,7 @@ class DataSimpleMlm {
     }
 	
     /** */
-    public function setTks(String $slug, array $newDt) {
+    public function setTksMlm(String $slug, array $newDt) {
 
         $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
         if(is_file($pathTo)) {
@@ -64,5 +64,70 @@ class DataSimpleMlm {
                 file_put_contents($pathTo, json_encode($data));
             }
         }
+    }
+
+    /** */
+    public function setTksMsg(String $slug, array $newDt) {
+
+        $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
+        if(is_file($pathTo)) {
+            $data = json_decode(file_get_contents($pathTo), true);
+            if($data) {
+                $data['tokMess'] = $newDt['tokMess'];
+                file_put_contents($pathTo, json_encode($data));
+            }
+        }
+    }
+
+    /** */
+    public function getDataContact(String $slug): array
+    {
+        $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
+        if(is_file($pathTo)) {
+
+            $data = file_get_contents($pathTo);
+            if($data) {
+                return $this->encode(json_decode($data, true));
+            }
+        }
+        return [];
+    }
+    
+    /** */
+    public function setDataContact(String $slug, String $newData) {
+
+        $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
+        if(is_file($pathTo)) {
+
+            $newData = json_decode($newData, true);
+            if($newData) {
+                if(array_key_exists('curc', $newData)) {
+                    file_put_contents($pathTo, json_encode($newData));
+                }
+            }
+        }
+    }
+
+    /** */
+    public function encode(array $data): array {
+
+        $tks = [
+            'tokServ',
+            'tokMess',
+            'tokWeb',
+            'tokMlm',
+            'mlmRef',
+            'mlmKdk',
+            'refKdk',
+        ];
+        
+        $ctcTk = [];
+        $rota = count($tks);
+        for ($i=0; $i < $rota; $i++) { 
+            $ctcTk[$tks[$i]] = $data[$tks[$i]];
+            unset($data[$tks[$i]]);
+        }
+        $data['deco'] = base64_encode(json_encode($ctcTk));
+        return $data;
     }
 }

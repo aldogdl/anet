@@ -115,32 +115,24 @@ class GetController extends AbstractController
   */
   #[Route('security-basic/data-ctc/{token}/{slug}/', methods:['GET', 'POST'])]
   public function getDataContact(
-    Request $req, SecurityBasic $lock, String $token, String $slug
+    Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug
   ): Response
   {
 
     if($lock->isValid($token)) {
 
-      $pathTo = $this->getParameter('dtaCtc') . $slug . '.json';
-      if(is_file($pathTo)) {
+      if($req->getMethod() == 'GET') {
+        $data = $mlm->getDataContact($slug);
+        return $this->json($data);
+      }
 
-        if($req->getMethod() == 'GET') {
-          $data = file_get_contents($pathTo);
-          return new Response($data);
+      if($req->getMethod() == 'POST') {
+
+        $content = $req->request->get('data');
+        if($content) {
+          $mlm->getDataContact($slug, $content); 
         }
-
-        if($req->getMethod() == 'POST') {
-
-          $content = $req->request->get('data');
-          if($content) {
-            $content = json_decode($content, true);
-            if(array_key_exists('curc', $content)) {
-              file_put_contents($pathTo, json_encode($content));
-              return $this->json(['abort' => false, 'msg' => 'ok']);
-            }
-          }
-
-        }
+        return $this->json(['abort' => false, 'msg' => 'ok']);
       }
     }
 
@@ -159,7 +151,7 @@ class GetController extends AbstractController
     if($lock->isValid($token)) {
 
       if($req->getMethod() == 'GET') {
-        $res = $mlm->getTks($slug);
+        $res = $mlm->getTksMlm($slug);
         return $this->json($res);
       }
 
@@ -168,7 +160,7 @@ class GetController extends AbstractController
         $content = $req->request->get('data');
         if($content) {
           $content = json_decode($content, true);
-          $mlm->setTks($slug, $content);
+          $mlm->setTksMlm($slug, $content);
           return $this->json(['abort' => false, 'msg' => 'ok']);
         }
       }
