@@ -127,10 +127,9 @@ class GetController extends AbstractController
       }
 
       if($req->getMethod() == 'POST') {
-
         $content = $req->request->get('data');
         if($content) {
-          $mlm->getDataContact($slug, $content); 
+          $mlm->setDataContact($slug, $content); 
         }
         return $this->json(['abort' => false, 'msg' => 'ok']);
       }

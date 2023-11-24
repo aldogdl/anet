@@ -84,7 +84,6 @@ class DataSimpleMlm {
     {
         $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
         if(is_file($pathTo)) {
-
             $data = file_get_contents($pathTo);
             if($data) {
                 return $this->encode(json_decode($data, true));
@@ -98,30 +97,14 @@ class DataSimpleMlm {
 
         $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
         if(is_file($pathTo)) {
-
-            $newData = json_decode($newData, true);
-            if($newData) {
-                if(array_key_exists('curc', $newData)) {
-                    file_put_contents($pathTo, json_encode($newData));
-                }
-            }
+            file_put_contents($pathTo, json_encode($newData));
         }
     }
 
     /** */
-    public function encode(array $data): array {
-
-        $tks = [
-            'tokServ',
-            'tokMess',
-            'tokWeb',
-            'tokMlm',
-            'mlmRef',
-            'mlmKdk',
-            'refKdk',
-            'pass'
-        ];
-        
+    public function encode(array $data): array
+    {
+        $tks = ['tokServ','tokMess','tokWeb','tokMlm','mlmRef','mlmKdk','refKdk','pass'];
         $ctcTk = [];
         $rota = count($tks);
         for ($i=0; $i < $rota; $i++) { 
