@@ -62,31 +62,6 @@ class GetController extends AbstractController
   }
 
   /** 
-   * Buscamos productos de otros cotizadores y/o coinsidencias
-  */
-  #[Route('api/users/{idSeller}/items/search/', methods:['post', 'get'])]
-  public function searchItem(Request $req, String $idSeller, ProductRepository $emProd): Response
-  {
-    $attr = [];
-    if($req->getMethod() == 'POST') {
-      $attr = $this->toArray($req, 'data');
-      if($attr == null) {
-        return $this->json(['abort' => true, 'body' => []]);
-      }
-    }
-    
-    $offset = $req->query->get('offset');
-    $dql = $emProd->searchReferencias( $idSeller, $attr );
-    if(strlen($offset) > 0) {
-      $products = $emProd->paginador($dql);
-    }else{
-      $products = $dql->getArrayResult();
-    }
-
-    return $this->json(['abort' => false, 'body' => $products]);
-  }
-
-  /** 
    * Buscamos productos de otros cotizadores 
   */
   #[Route('users/{idSeller}/items/', methods:['GET'])]
@@ -122,6 +97,31 @@ class GetController extends AbstractController
     }
     
     return $this->json(['abort' => true, 'msg' => trim($criterio), 'body' => []]);
+  }
+
+  /** 
+   * Buscamos productos de otros cotizadores y/o coinsidencias
+  */
+  #[Route('api/users/{idSeller}/items/search/', methods:['post', 'get'])]
+  public function searchItem(Request $req, String $idSeller, ProductRepository $emProd): Response
+  {
+    $attr = [];
+    if($req->getMethod() == 'POST') {
+      $attr = $this->toArray($req, 'data');
+      if($attr == null) {
+        return $this->json(['abort' => true, 'body' => []]);
+      }
+    }
+    
+    $offset = $req->query->get('offset');
+    $dql = $emProd->searchReferencias( $idSeller, $attr );
+    if(strlen($offset) > 0) {
+      $products = $emProd->paginador($dql);
+    }else{
+      $products = $dql->getArrayResult();
+    }
+
+    return $this->json(['abort' => false, 'body' => $products]);
   }
 
   /** 
