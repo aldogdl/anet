@@ -86,28 +86,22 @@ class GetController extends AbstractController
   public function searchItem(Request $req, String $idSeller, ProductRepository $emProd): Response
   {
     $attr = [];
-    $criterio = $req->query->get('q');
     $offset = $req->query->get('offset');
     if($req->getMethod() == 'POST') {
       $attr = json_decode($req->request->get('data'), true);
+      if($attr == null) {
+        return $this->json(['abort' => true, 'body' => []]);
+      }
     }
 
-    $dql = $emProd->searchConcidencias( $idSeller, $criterio, $attr );
+    $dql = $emProd->searchReferencias( $idSeller, $attr );
     if(strlen($offset) > 0) {
       $products = $emProd->paginador($dql);
     }else{
       $products = $dql->getArrayResult();
     }
 
-    if(count($products) > 0) {
-      $products = $emProd->reFiltro($products);
-    }
-
-    return $this->json([
-      'abort' => false,
-      'msg' => ['auto' => $emProd->auto, 'pieza' => $emProd->pieza],
-      'body' => $products
-    ]);
+    return $this->json(['abort' => false, 'body' => $products]);
   }
 
   /** 
