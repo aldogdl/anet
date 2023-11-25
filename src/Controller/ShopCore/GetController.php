@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Exception\JsonException;
 
 use App\Repository\AO1MarcasRepository;
 use App\Repository\AO2ModelosRepository;
@@ -21,6 +22,25 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 class GetController extends AbstractController
 {
+
+  	/**
+	 * Obtenemos el request contenido decodificado como array
+	 *
+	 * @throws JsonException When the body cannot be decoded to an array
+	 */
+	public function toArray(Request $req, String $campo): array
+	{
+		$content = $req->request->get($campo);
+		try {
+			$content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
+		} catch (\JsonException $e) {
+			throw new JsonException('No se puede decodificar el body.', $e->getCode(), $e);
+		}
+		if (!\is_array($content)) {
+			throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
+		}
+		return $content;
+	}
 
   #[Route('shop/{slug}/_ft/{uuid}', methods: ['get'])]
   public function anulandoRouteFt(String $slug, String $uuid): RedirectResponse | Response
@@ -82,18 +102,18 @@ class GetController extends AbstractController
   /** 
    * Buscamos productos de otros cotizadores y/o coinsidencias
   */
-  #[Route('users/{idSeller}/items/search/', methods:['GET', 'POST'])]
+  #[Route('users/{idSeller}/items/search/', methods:['post', 'get'])]
   public function searchItem(Request $req, String $idSeller, ProductRepository $emProd): Response
   {
     $attr = [];
-    $offset = $req->query->get('offset');
     if($req->getMethod() == 'POST') {
-      $attr = json_decode($req->request->get('data'), true);
+      $attr = $this->toArray($req, 'data');
       if($attr == null) {
         return $this->json(['abort' => true, 'body' => []]);
       }
     }
-
+    
+    $offset = $req->query->get('offset');
     $dql = $emProd->searchReferencias( $idSeller, $attr );
     if(strlen($offset) > 0) {
       $products = $emProd->paginador($dql);
