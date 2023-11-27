@@ -2,44 +2,54 @@
 
 namespace App\Service\Crawlers;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\Filesystem\Path;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class ToRadec {
 
     private $client;
     private $folder;
-
+    private $fileIndex = 'index_craw.json';
+    
+    /** */
     public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
     {
         $this->client = $client;
         $this->folder = $container->get('recRadec');
+        if(!is_dir($this->folder)) {
+            mkdir($this->folder);
+        }
     }
 
     /** */
     public function load(String $uriCall): String
     {
-        if($uriCall != '') {
+        $elementAnet = '<tr class="source-anet"><td></td></tr>';
+        $elementRadec = '<tr class="source-radec"><td></td></tr>';
 
+        if($uriCall != '') {
+            
             $index = [];
             $name = base64_encode($uriCall);
             $indexFile = null;
-            if(is_file('index_craw.json')) {
-                $indexFile = file_get_contents('index_craw.json');
+            $path = Path::normalize($this->folder . $this->fileIndex);
+            if(is_file($path)) {
+                $indexFile = file_get_contents($path);
             }
             if($indexFile) {
                 $index = json_decode($indexFile);
             }
 
             if(in_array($name, $index)) {
-                
-                return file_get_contents($name.'.html');
 
+                $res = file_get_contents($name.'.html');
+                return $elementAnet . $res;
             }else{
 
                 $index[] = $name;    
-                file_put_contents('index_craw.json', json_encode($index));
+                file_put_contents($path, json_encode($index));
                 $response = $this->client->request(
                     'GET', 'https://www.radec.com.mx/catalogo', [
                         'query' => ['search' => $uriCall, 'op' => 'Buscar']
@@ -51,7 +61,7 @@ class ToRadec {
 
                     $body = $this->extraerBody($response->getContent());
                     file_put_contents($name.'.html', $body);
-                    return $body;
+                    return $elementRadec . $body;
                 }
             }
         }
@@ -71,7 +81,6 @@ class ToRadec {
                 $htmlRes .= $domElement->ownerDocument->saveHTML($domElement);
             }
         }
-        $elementAnet = '<tr class="catalog-list-product-anet"><td></td></tr>';
-        return $elementAnet . $htmlRes;
+        return $htmlRes;
     }
 }
