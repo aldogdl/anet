@@ -29,6 +29,8 @@ class ToRadec {
         $elementAnet = '<tr class="source-anet"><td></td></tr>';
         $elementRadec = '<tr class="source-radec"><td></td></tr>';
 
+        $elementClose = '</body></html>';
+
         if($uriCall != '') {
             
             $index = [];
@@ -45,7 +47,8 @@ class ToRadec {
             if(in_array($name, $index)) {
                 $pathHtml = Path::normalize($this->folder . $name.'.html');
                 $res = file_get_contents($pathHtml);
-                return $elementAnet . $res;
+                $elementOpen = '<!DOCTYPE html><html><head><title>Autoparnet</title></head><body>';
+                return $elementOpen . $res . $elementClose;
             }else{
 
                 $index[] = $name;    
@@ -62,7 +65,8 @@ class ToRadec {
                     $body = $this->extraerBody($response->getContent());
                     $pathHtml = Path::normalize($this->folder . $name.'.html');
                     file_put_contents($pathHtml, $body);
-                    return $elementRadec . $body;
+                    $elementOpen = '<!DOCTYPE html><html><head><title>Radec</title></head><body>';
+                    return $elementOpen . $body . $elementClose;
                 }
             }
         }
