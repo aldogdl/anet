@@ -43,8 +43,8 @@ class ToRadec {
             }
 
             if(in_array($name, $index)) {
-
-                $res = file_get_contents($name.'.html');
+                $pathHtml = Path::normalize($this->folder . $name.'.html');
+                $res = file_get_contents($pathHtml);
                 return $elementAnet . $res;
             }else{
 
@@ -60,7 +60,8 @@ class ToRadec {
                 if($statusCode == 200) {
 
                     $body = $this->extraerBody($response->getContent());
-                    file_put_contents($name.'.html', $body);
+                    $pathHtml = Path::normalize($this->folder . $name.'.html');
+                    file_put_contents($pathHtml, $body);
                     return $elementRadec . $body;
                 }
             }
