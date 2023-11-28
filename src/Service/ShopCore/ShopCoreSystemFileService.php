@@ -199,6 +199,27 @@ class ShopCoreSystemFileService
 	}
 
 	/** Guardamos el json de los comentarios o sugerencias desde shopCore */
+	public function saveLogError(array $error): array
+	{
+		$result = ['abort' => false, 'body' => 'ok'];
+		$filename = $error['filename'] . '.json';
+		
+		$path = $this->params->get('logErrs');
+		if(!is_dir($path)) {
+			mkdir($path);
+		}
+		$path = Path::canonicalize($path.'/'.$filename);
+		$error['path'] = $path;
+		try {
+			$this->filesystem->dumpFile($path, json_encode($error));
+		} catch (FileException $e) {
+			$result['abort'] = true;
+			$result['body'] = $e->getMessage();
+		}
+		return $result;
+	}
+
+	/** Guardamos el json de los comentarios o sugerencias desde shopCore */
 	public function saveComments(array $product): array
 	{
 		$result = ['abort' => false, 'body' => 'ok'];

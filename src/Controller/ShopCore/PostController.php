@@ -177,4 +177,21 @@ class PostController extends AbstractController
 	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
 	}
 
+  /** 
+   * Recibimos los errores que se generan en la app AnetShop
+  */
+  #[Route('security-basic/log/errs/', methods:['post'])]
+	public function setLogErrs(
+    Request $req, SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token
+  ): Response
+	{
+    $data = [];
+    if($lock->isValid($token)) {
+      
+      $payload = $this->toArray($req, 'data');
+      $data = $sysFile->saveLogError($payload);
+    }
+	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
+	}
+
 }

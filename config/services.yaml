@@ -10,6 +10,7 @@ parameters:
     prodSols   : '%phtml%/prod_sols/'
     recents    : '%phtml%/prod_recents/'
     recRadec   : '%phtml%/req_radec/'
+    logErrs    : '%phtml%/logs_errs/'
     imgOrd     : '%phtml%/to_orden/__idOrd__/__idPza__/'
     shareimgDev: '%phtml%/share_img_from_device/'
     nifiFld    : '%phtml%/nifi/'
