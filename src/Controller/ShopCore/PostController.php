@@ -185,13 +185,12 @@ class PostController extends AbstractController
     Request $req, SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token
   ): Response
 	{
-    $data = [];
+    $data = ['abort'=>true, 'msg' => 'err'];
     if($lock->isValid($token)) {
-      
       $payload = $this->toArray($req, 'data');
       $data = $sysFile->saveLogError($payload);
     }
-	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
+	  return $this->json($data);
 	}
 
 }
