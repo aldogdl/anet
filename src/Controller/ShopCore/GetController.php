@@ -51,15 +51,15 @@ class GetController extends AbstractController
     return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug.'&ft='.$uuid, 301);
   }
 
-  #[Route('shop/{slug}', name:"anetShop", methods: ['get'])]
-  public function anulandoRoute(String $slug): RedirectResponse | Response
-  {
-    if($slug == '') {
-      return $this->json(['hola' => 'Bienvenido...']);
-    }
-    return $this->json(['Bienvenido' => 'Cargando Página de $slug']);
-    // return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug, 301);
-  }
+  // #[Route('shop/{slug}', name:"anetShop", methods: ['get'])]
+  // public function anulandoRoute(String $slug): RedirectResponse | Response
+  // {
+  //   if($slug == '') {
+  //     return $this->json(['hola' => 'Bienvenido...']);
+  //   }
+  //   return new Response();
+  //   // return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug, 301);
+  // }
 
   /** 
    * Buscamos productos de otros cotizadores 
