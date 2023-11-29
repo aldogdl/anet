@@ -26,16 +26,11 @@ class MlmController extends AbstractController
                 $partes = explode(':', $state);
                 $action = $partes[0];
                 $slug = $partes[1];
-                file_put_contents('mlm_'.$slug.'.json', json_encode([
-                    'code' => $code, 'action' => $action, 'slug' => $slug
-                ]));
-                $nPath = $this->generateUrl('anetShop', ['slug' => 'iksan', 'action' => $state]);
-                return $this->redirect($nPath, 301);
-                // return $this->redirect(
-                //     'https://autoparnet.com/shop/?emp='.$slug.'&action=mlm:'.$state,
-                //     'https://autoparnet.com/shop/mlm/'.$slug.'&action=mlm:'.$state,
-                //     301
-                // );
+                // file_put_contents('mlm_'.$slug.'.json', json_encode([
+                //     'code' => $code, 'action' => $action, 'slug' => $slug
+                // ]));
+                return new Response(file_get_contents('shop/index.html'));
+                // return $this->redirect($nPath, 301);
             }
         }
         return new Response('Bienvenido a ANET->MLM', 200);

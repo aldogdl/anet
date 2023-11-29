@@ -58,7 +58,6 @@ class GetController extends AbstractController
       return $this->json(['hola' => 'Bienvenido...']);
     }
     return new Response(file_get_contents('shop/index.html'));
-    // return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug, 301);
   }
 
   /** 
