@@ -139669,7 +139669,7 @@ s($,"bKQ","nL",()=>{var q=null
 A.bbQ()
 A.bbQ()
 return new A.Ol(new A.aoj(),q,q,q,q,q,A.bGA(q),A.a3("Ol<mw>"))})
-s($,"bQV","brD",()=>{var q=null,p=A.a([$.brI(),$.brJ(),A.Zz(new A.b6s(),q,"/mlm/code/",q,B.jx)],t.yo)
+s($,"bQV","brD",()=>{var q=null,p=A.a([$.brI(),$.brJ(),A.Zz(new A.b6s(),q,"/mlm/code",q,B.jx)],t.yo)
 return A.bw7(!0,new A.b6t(),q,q,q,"/",q,q,q,!1,q,!0,q,!1,new A.a88(new A.aGB(p,A.bJp(),5)))})
 s($,"bR8","brI",()=>A.Zz(new A.b6N(),"welcome","/",null,B.jx))
 s($,"bR9","brJ",()=>A.Zz(new A.b6O(),null,"/:slug",new A.b6P(),A.a([A.Zz(new A.b6Q(),"fichaTecnica","_ft/:uuid",null,B.jx)],t.yo)))
