@@ -20,17 +20,16 @@ class MlmController extends AbstractController
         $state = $req->query->get('state');
 
         if(mb_strpos($state, ':') !== false) {
-            
+
             $code = $req->query->get('code');
             if(mb_strlen($code) > 10) {
                 $partes = explode(':', $state);
                 $action = $partes[0];
                 $slug = $partes[1];
-                // file_put_contents('mlm_'.$slug.'.json', json_encode([
-                //     'code' => $code, 'action' => $action, 'slug' => $slug
-                // ]));
+                file_put_contents('mlm_'.$slug.'.json', json_encode([
+                    'code' => $code, 'action' => $action, 'slug' => $slug
+                ]));
                 return new Response(file_get_contents('shop/index.html'));
-                // return $this->redirect($nPath, 301);
             }
         }
         return new Response('Bienvenido a ANET->MLM', 200);
