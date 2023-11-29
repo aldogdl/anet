@@ -51,11 +51,30 @@ class GetController extends AbstractController
     return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug.'&ft='.$uuid, 301);
   }
 
+  /**
+   * Entrada principal para shop slug
+   */
   #[Route('shop/{slug}', name:"anetShop", methods: ['get'])]
-  public function anulandoRoute(String $slug): RedirectResponse | Response
+  public function anulandoRoute(ShopCoreSystemFileService $sysFile, String $slug): RedirectResponse | Response
   {
     if($slug == '') {
       return $this->json(['hola' => 'Bienvenido...']);
+    }
+    if($sysFile->isLogedUser($slug)) {
+      return $this->redirect(
+        $this->generateUrl('anetShopLogged', ['emp' => $slug])
+      );
+    }
+    return new Response(file_get_contents('shop/index.html'));
+  }
+
+  /** */
+  #[Route('shop/', name:"anetShopLogged", methods: ['get'])]
+  public function slugLogged(Request $req, String $slug): RedirectResponse | Response
+  {
+    $slug = $req->query->get('emp');
+    if(strlen($slug) < 3) {
+      return $this->json(['hola' => 'Bienvenido a AnetShop']);
     }
     return new Response(file_get_contents('shop/index.html'));
   }
