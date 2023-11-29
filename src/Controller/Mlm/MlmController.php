@@ -18,7 +18,7 @@ class MlmController extends AbstractController
     public function verifyMlm(Request $req): Response
     {
         $state = $req->query->get('state');
-        
+
         if(mb_strpos($state, ':') !== false) {
             
             $code = $req->query->get('code');
@@ -29,10 +29,13 @@ class MlmController extends AbstractController
                 file_put_contents('mlm_'.$slug.'.json', json_encode([
                     'code' => $code, 'action' => $action, 'slug' => $slug
                 ]));
-                return $this->redirect(
-                    'https://autoparnet.com/shop/?emp='.$slug.'&action=mlm:'.$state,
-                    301
-                );
+                $nPath = $this->generateUrl('anetShop', ['slug' => 'iksan', 'action' => $state]);
+                return $this->redirect($nPath, 301);
+                // return $this->redirect(
+                //     'https://autoparnet.com/shop/?emp='.$slug.'&action=mlm:'.$state,
+                //     'https://autoparnet.com/shop/mlm/'.$slug.'&action=mlm:'.$state,
+                //     301
+                // );
             }
         }
         return new Response('Bienvenido a ANET->MLM', 200);
