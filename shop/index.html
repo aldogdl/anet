@@ -20,7 +20,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
 
   <script>
-    const serviceWorkerVersion = "778673922";
+    const serviceWorkerVersion = "2997215106";
   </script>
   <script src="flutter.js" defer=""></script>
   
@@ -114,7 +114,7 @@
 
               window.addEventListener("load", function () {
 
-                navigator.serviceWorker.register("./firebase-messaging-sw.js", {scope: './'}).then((reg) => {
+                navigator.serviceWorker.register("./shop/firebase-messaging-sw.js", {scope: './shop/'}).then((reg) => {
                   console.log(serviceWorkerVersion);
                   console.log('SW:' + reg.scope);
                 });

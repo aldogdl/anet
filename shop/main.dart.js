@@ -70965,10 +70965,9 @@ D(a){var s,r,q,p,o=this,n=null
 if(o.y!=null)if(!o.ay&&o.Q.length===0){s=A.l9().gqu()
 if(s.gb5(s))if(A.l9().gqu().K(0,"ft")){s=A.l9().gqu().h(0,"ft")
 s.toString
-o.as=J.Vu(s)}s=o.a.d
-if(s.length!==0){o.e.sbW(0,B.c.bh(s).toLowerCase())
+o.as=J.Vu(s)}}if(o.at===0&&o.a.d.length!==0){o.e.sbW(0,B.c.bh(o.a.d).toLowerCase())
 o.ax=3
-A.cs(new A.b3A(o),t.H)}}r=A.aV(a,n,t.w).w.a
+A.cs(new A.b3A(o),t.H)}r=A.aV(a,n,t.w).w.a
 s=r.a
 if(o.at!==s){o.at=s
 o.x=A.y4(s)}q=A.VL(n,n,n,n,n,n,A.aM5(),n,n,n)
