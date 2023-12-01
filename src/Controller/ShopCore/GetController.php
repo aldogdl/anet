@@ -171,13 +171,17 @@ class GetController extends AbstractController
       if($req->getMethod() == 'POST') {
 
         file_put_contents('xegi_2.json', '');
-        $asString = $req->request->get('data');
-        file_put_contents('xegi_2a.json', $asString);
-        if(is_string($asString)) {
-          $content = json_decode($asString, true);
-        }else{
-          $content = $asString;
-        }
+        // $asString = $req->request->get('data');
+        // file_put_contents('xegi_2a.json', $asString);
+        // if(is_string($asString)) {
+        //   $content = json_decode($asString, true);
+        // }else{
+        //   $content = $asString;
+        // }
+        // if($content) {
+
+        // }
+        $content = $this->toArray($req, 'data');
         file_put_contents('xegi_3.json', json_encode($content));
         
         if($content) {
