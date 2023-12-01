@@ -63,6 +63,23 @@ class DataSimpleMlm {
     }
 
     /** */
+    public function setThePass(String $slug, array $newDt) {
+
+        $pathTo = $this->params->get('dtaCtcLog');
+        if(!is_dir($pathTo)) {
+            mkdir($pathTo);
+        }
+        $pathTo = $pathTo . $slug . '.json';
+        if(is_file($pathTo)) {
+            $data = json_decode(file_get_contents($pathTo), true);
+        }
+        if($data) {
+            $data['pass'] = $newDt['pass'];
+            file_put_contents($pathTo, json_encode($data));
+        }
+    }
+
+    /** */
     public function setTksMsg(String $slug, array $newDt) {
 
         $pathTo = $this->params->get('dtaCtcLog');
