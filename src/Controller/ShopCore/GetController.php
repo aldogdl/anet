@@ -181,13 +181,12 @@ class GetController extends AbstractController
         // if($content) {
 
         // }
-        
+
         $content = json_decode($req->getContent(), true);
         // $content = $this->toArray($req, 'data');
         file_put_contents('xegi_3.json', json_encode($content));
         if($content) {
           
-          file_put_contents('xegi_3.json', '');
           if($action == 'mlm') {
             file_put_contents('xegi_4.json', '');
             $mlm->setTksMlm($slug, $content); 

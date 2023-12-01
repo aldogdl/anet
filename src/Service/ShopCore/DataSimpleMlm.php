@@ -65,10 +65,13 @@ class DataSimpleMlm {
         if(is_file($pathTo)) {
             file_put_contents('xegi_7.json', '');
             $data = json_decode(file_get_contents($pathTo), true);
-            $newDt = array_merge($newDt, $data);
-            file_put_contents('xegi_8.json', json_encode($newDt));
+            $data['tokMlm'] = $newDt['tokMlm'];
+            $data['mlmRef'] = $newDt['mlmRef'];
+            $data['mlmKdk'] = $newDt['mlmKdk'];
+            $data['refKdk'] = $newDt['refKdk'];
+            file_put_contents('xegi_8.json', json_encode($data));
+            file_put_contents($pathTo, json_encode($data));
         }
-        file_put_contents($pathTo, json_encode($newDt));
     }
     
     /** */
