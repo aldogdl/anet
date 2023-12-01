@@ -154,7 +154,7 @@ class GetController extends AbstractController
   /** 
    * Recuperamos los datos lock del cotizador desde el archivo json
   */
-  #[Route('security-basic/data-ctc/{token}/{slug}/{action}', methods:['GET', 'POST'])]
+  #[Route('security-basic/data-lock-ctc/{token}/{slug}/{action}', methods:['GET', 'POST'])]
   public function getDataLockContact(
     Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug, String $action
   ): Response
