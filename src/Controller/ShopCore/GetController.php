@@ -140,7 +140,7 @@ class GetController extends AbstractController
       }
 
       if($req->getMethod() == 'POST') {
-        $content = $req->request->get('data');
+        $content = json_decode($req->request->get('data'), true);
         if($content) {
           $mlm->setDataContact($slug, $content); 
         }
@@ -154,9 +154,9 @@ class GetController extends AbstractController
   /** 
    * Recuperamos los datos lock del cotizador desde el archivo json
   */
-  #[Route('security-basic/data-ctc/{token}/{slug}/', methods:['GET', 'POST'])]
+  #[Route('security-basic/data-ctc/{token}/{slug}/{action}', methods:['GET', 'POST'])]
   public function getDataLockContact(
-    Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug
+    Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug, String $action
   ): Response
   {
 
@@ -168,9 +168,20 @@ class GetController extends AbstractController
       }
 
       if($req->getMethod() == 'POST') {
-        $content = $req->request->get('data');
+
+        $content = json_decode($req->request->get('data'), true);
+
         if($content) {
-          $mlm->setDataContact($slug, $content); 
+
+          if($action == 'mlm') {
+            $mlm->setTksMlm($slug, $content); 
+          }else if($action == 'tkmsg') {
+            $mlm->setTksMsg($slug, $content);
+          }else if($action == 'tkweb') {
+            $mlm->setTksWeb($slug, $content);
+          }else if($action == 'pass') {
+            $mlm->setThePass($slug, $content);
+          }
         }
         return $this->json(['abort' => false, 'msg' => 'ok']);
       }

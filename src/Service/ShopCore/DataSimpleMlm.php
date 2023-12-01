@@ -63,7 +63,7 @@ class DataSimpleMlm {
     }
 
     /** */
-    public function setThePass(String $slug, array $newDt) {
+    public function setThePass(String $slug, array $newDt): void {
 
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
@@ -127,11 +127,11 @@ class DataSimpleMlm {
     }
     
     /** */
-    public function setDataContact(String $slug, String $newData) {
+    public function setDataContact(String $slug, array $newData) {
 
         $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
         if(is_file($pathTo)) {
-            file_put_contents($pathTo, json_encode(json_decode($newData, true)));
+            file_put_contents($pathTo, json_encode($newData));
         }
     }
 
