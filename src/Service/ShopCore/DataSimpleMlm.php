@@ -53,16 +53,20 @@ class DataSimpleMlm {
     /** */
     public function setTksMlm(String $slug, array $newDt) {
 
+        file_put_contents('xegi_5.json', '');
         $data = [];
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
         }
-
+        
         $pathTo = $pathTo .'/'. $slug . '.json';
+        file_put_contents('xegi_6.json', '');
         if(is_file($pathTo)) {
+            file_put_contents('xegi_7.json', '');
             $data = json_decode(file_get_contents($pathTo), true);
             $newDt = array_merge($newDt, $data);
+            file_put_contents('xegi_8.json', json_encode($newDt));
         }
         file_put_contents($pathTo, json_encode($newDt));
     }
