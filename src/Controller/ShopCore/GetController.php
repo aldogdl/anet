@@ -23,7 +23,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 class GetController extends AbstractController
 {
 
-  	/**
+  /**
 	 * Obtenemos el request contenido decodificado como array
 	 *
 	 * @throws JsonException When the body cannot be decoded to an array
@@ -54,28 +54,9 @@ class GetController extends AbstractController
   /**
    * Entrada principal para shop slug
    */
-  #[Route('shop/{slug}', name:"anetShop", methods: ['get'])]
-  public function anulandoRoute(ShopCoreSystemFileService $sysFile, String $slug): RedirectResponse | Response
+  #[Route('shop/{slug}', name:"anetShop", methods: ['get'], defaults:['slug' => ''])]
+  public function anulandoRoute(): RedirectResponse | Response
   {
-    if($slug == '') {
-      return $this->json(['hola' => 'Bienvenido...']);
-    }
-    if($sysFile->isLogedUser($slug)) {
-      return $this->redirect(
-        $this->generateUrl('anetShopLogged', ['emp' => $slug])
-      );
-    }
-    return new Response(file_get_contents('shop/index.html'));
-  }
-
-  /** */
-  #[Route('shop/', name:"anetShopLogged", methods: ['get'])]
-  public function slugLogged(Request $req, String $slug): RedirectResponse | Response
-  {
-    $slug = $req->query->get('emp');
-    if(strlen($slug) < 3) {
-      return $this->json(['hola' => 'Bienvenido a AnetShop']);
-    }
     return new Response(file_get_contents('shop/index.html'));
   }
 
@@ -147,6 +128,34 @@ class GetController extends AbstractController
   */
   #[Route('security-basic/data-ctc/{token}/{slug}/', methods:['GET', 'POST'])]
   public function getDataContact(
+    Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug
+  ): Response
+  {
+
+    if($lock->isValid($token)) {
+
+      if($req->getMethod() == 'GET') {
+        $data = $mlm->getDataContact($slug);
+        return $this->json($data);
+      }
+
+      if($req->getMethod() == 'POST') {
+        $content = $req->request->get('data');
+        if($content) {
+          $mlm->setDataContact($slug, $content); 
+        }
+        return $this->json(['abort' => false, 'msg' => 'ok']);
+      }
+    }
+
+    return $this->json(['abort' => true, 'msg' => 'error']);
+  }
+
+  /** 
+   * Recuperamos los datos lock del cotizador desde el archivo json
+  */
+  #[Route('security-basic/data-ctc/{token}/{slug}/', methods:['GET', 'POST'])]
+  public function getDataLockContact(
     Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug
   ): Response
   {

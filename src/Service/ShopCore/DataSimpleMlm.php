@@ -21,8 +21,9 @@ class DataSimpleMlm {
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
             $tks  = $this->getTksMlm($slug, false);
-            $newRes = array_merge($data, $tks);
-
+            if($tks) {
+                $newRes = array_merge($data, $tks);
+            }
         }
         return ['deco' => base64_encode(json_encode($newRes))];
     }
@@ -30,52 +31,68 @@ class DataSimpleMlm {
     /** */
     public function getTksMlm(String $slug, bool $compress = true) : array {
 
-        $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
+        $pathTo = $this->params->get('dtaCtcLog');
+        if(!is_dir($pathTo)) {
+            mkdir($pathTo);
+        }
+
+        $pathTo = $pathTo . $slug . '.json';
         if(is_file($pathTo)) {
 
             $res = '';
             $data = json_decode(file_get_contents($pathTo), true);
             if($data) {
-                $data = [
-                    'tokMlm' => $data['tokMlm'],
-                    'mlmRef' => $data['mlmRef'],
-                    'mlmKdk' => $data['mlmKdk'],
-                    'refKdk' => $data['refKdk'],
-                ];
                 if(!$compress) { return $data; }
                 $res = json_encode($data);
+                return ['deco' => base64_encode($res)];
             }
         }
-        return ['deco' => base64_encode($res)];
+        return [];
     }
 	
     /** */
     public function setTksMlm(String $slug, array $newDt) {
 
-        $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
-        if(is_file($pathTo)) {
-
-            $data = json_decode(file_get_contents($pathTo), true);
-            if($data) {
-                $data['tokMlm'] = $newDt['tokMlm'];
-                $data['mlmRef'] = $newDt['mlmRef'];
-                $data['mlmKdk'] = $newDt['mlmKdk'];
-                $data['refKdk'] = $newDt['refKdk'];
-                file_put_contents($pathTo, json_encode($data));
-            }
+        $pathTo = $this->params->get('dtaCtcLog');
+        if(!is_dir($pathTo)) {
+            mkdir($pathTo);
         }
+
+        $pathTo = $pathTo . $slug . '.json';
+        file_put_contents($pathTo, json_encode($newDt));
     }
 
     /** */
     public function setTksMsg(String $slug, array $newDt) {
 
-        $pathTo = $this->params->get('dtaCtc') . $slug . '.json';
+        $pathTo = $this->params->get('dtaCtcLog');
+        if(!is_dir($pathTo)) {
+            mkdir($pathTo);
+        }
+        $pathTo = $pathTo . $slug . '.json';
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
-            if($data) {
-                $data['tokMess'] = $newDt['tokMess'];
-                file_put_contents($pathTo, json_encode($data));
-            }
+        }
+        if($data) {
+            $data['tokMess'] = $newDt['tokMess'];
+            file_put_contents($pathTo, json_encode($data));
+        }
+    }
+
+    /** */
+    public function setTksWeb(String $slug, array $newDt) {
+
+        $pathTo = $this->params->get('dtaCtcLog');
+        if(!is_dir($pathTo)) {
+            mkdir($pathTo);
+        }
+        $pathTo = $pathTo . $slug . '.json';
+        if(is_file($pathTo)) {
+            $data = json_decode(file_get_contents($pathTo), true);
+        }
+        if($data) {
+            $data['tokWeb'] = $newDt['tokWeb'];
+            file_put_contents($pathTo, json_encode($data));
         }
     }
 
@@ -86,7 +103,7 @@ class DataSimpleMlm {
         if(is_file($pathTo)) {
             $data = file_get_contents($pathTo);
             if($data) {
-                return $this->encode(json_decode($data, true));
+                return json_decode($data, true);
             }
         }
         return [];
@@ -101,17 +118,4 @@ class DataSimpleMlm {
         }
     }
 
-    /** */
-    public function encode(array $data): array
-    {
-        $tks = ['tokServ','tokMess','tokWeb','tokMlm','mlmRef','mlmKdk','refKdk','pass'];
-        $ctcTk = [];
-        $rota = count($tks);
-        for ($i=0; $i < $rota; $i++) { 
-            $ctcTk[$tks[$i]] = $data[$tks[$i]];
-            unset($data[$tks[$i]]);
-        }
-        $data['deco'] = base64_encode(json_encode($ctcTk));
-        return $data;
-    }
 }

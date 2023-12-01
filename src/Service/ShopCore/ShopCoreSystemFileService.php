@@ -20,19 +20,6 @@ class ShopCoreSystemFileService
 	}
 	
 	/** */
-	public function isLogedUser(String $slug): bool
-	{
-		$filename = 'slug_intros.json';
-		if($this->filesystem->exists($filename)) {
-			$data = json_decode(file_get_contents($filename), true);
-			if(array_key_exists($slug, $data)) {
-				return $data[$slug];
-			}
-		}
-		return false;
-	}
-	
-	/** */
 	public function getInv(String $waId, $slug): array
 	{
 		$data = [];
