@@ -14,11 +14,15 @@ class DataSimpleMlm {
 	}
 	
     /** */
-    public function getCode(String $slug) : array {
-
+    public function getCode(String $slug) : array
+    {
         $pathTo = $this->params->get('anetMlm');
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
+            $alls = $this->getDataLoks($slug, false);
+            if($alls) {
+                $data = array_merge($data, $alls);
+            }
             return ['deco' => base64_encode(json_encode($data))];
         }
         return [];
