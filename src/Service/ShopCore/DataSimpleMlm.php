@@ -14,8 +14,8 @@ class DataSimpleMlm {
 	}
 	
     /** */
-    public function getCode(String $slug) : array
-    {
+    public function getCode(String $slug) : array {
+        
         $pathTo = $this->params->get('anetMlm');
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
@@ -51,8 +51,8 @@ class DataSimpleMlm {
     }
 	
     /** */
-    public function setTksMlm(String $slug, array $newDt)
-    {
+    public function setTksMlm(String $slug, array $newDt) {
+
         $data = [];
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
