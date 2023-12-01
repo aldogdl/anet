@@ -160,7 +160,6 @@ class GetController extends AbstractController
   ): Response
   {
 
-    file_put_contents('xegi_1.json', '');
     if($lock->isValid($token)) {
 
       if($req->getMethod() == 'GET') {
@@ -170,25 +169,10 @@ class GetController extends AbstractController
 
       if($req->getMethod() == 'POST') {
 
-        file_put_contents('xegi_2.json', '');
-        // $asString = $req->request->get('data');
-        // file_put_contents('xegi_2a.json', $asString);
-        // if(is_string($asString)) {
-        //   $content = json_decode($asString, true);
-        // }else{
-        //   $content = $asString;
-        // }
-        // if($content) {
-
-        // }
-
         $content = json_decode($req->getContent(), true);
-        // $content = $this->toArray($req, 'data');
-        file_put_contents('xegi_3.json', json_encode($content));
         if($content) {
           
           if($action == 'mlm') {
-            file_put_contents('xegi_4.json', '');
             $mlm->setTksMlm($slug, $content); 
           }else if($action == 'tkmsg') {
             $mlm->setTksMsg($slug, $content);
