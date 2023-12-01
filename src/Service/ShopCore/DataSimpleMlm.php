@@ -20,7 +20,7 @@ class DataSimpleMlm {
         $pathTo = $this->params->get('anetMlm');
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
-            $tks  = $this->getTksMlm($slug, false);
+            $tks  = $this->getDataLoks($slug, false);
             if($tks) {
                 $newRes = array_merge($data, $tks);
             }
@@ -29,7 +29,7 @@ class DataSimpleMlm {
     }
 	
     /** */
-    public function getTksMlm(String $slug, bool $compress = true) : array {
+    public function getDataLoks(String $slug, bool $compress = true) : array {
 
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
@@ -53,18 +53,24 @@ class DataSimpleMlm {
     /** */
     public function setTksMlm(String $slug, array $newDt) {
 
+        $data = [];
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
         }
 
         $pathTo = $pathTo . $slug . '.json';
+        if(is_file($pathTo)) {
+            $data = json_decode(file_get_contents($pathTo), true);
+            $newDt = array_merge($newDt, $data);
+        }
         file_put_contents($pathTo, json_encode($newDt));
     }
-
+    
     /** */
     public function setThePass(String $slug, array $newDt): void {
 
+        $data = [];
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
@@ -73,15 +79,14 @@ class DataSimpleMlm {
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
         }
-        if($data) {
-            $data['pass'] = $newDt['pass'];
-            file_put_contents($pathTo, json_encode($data));
-        }
+        $data['pass'] = $newDt['pass'];
+        file_put_contents($pathTo, json_encode($data));
     }
 
     /** */
     public function setTksMsg(String $slug, array $newDt) {
 
+        $data = [];
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
@@ -90,15 +95,14 @@ class DataSimpleMlm {
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
         }
-        if($data) {
-            $data['tokMess'] = $newDt['tokMess'];
-            file_put_contents($pathTo, json_encode($data));
-        }
+        $data['tokMess'] = $newDt['tokMess'];
+        file_put_contents($pathTo, json_encode($data));
     }
 
     /** */
     public function setTksWeb(String $slug, array $newDt) {
 
+        $data = [];
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
@@ -107,10 +111,8 @@ class DataSimpleMlm {
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
         }
-        if($data) {
-            $data['tokWeb'] = $newDt['tokWeb'];
-            file_put_contents($pathTo, json_encode($data));
-        }
+        $data['tokWeb'] = $newDt['tokWeb'];
+        file_put_contents($pathTo, json_encode($data));
     }
 
     /** */

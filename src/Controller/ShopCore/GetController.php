@@ -202,7 +202,7 @@ class GetController extends AbstractController
     if($lock->isValid($token)) {
 
       if($req->getMethod() == 'GET') {
-        $res = $mlm->getTksMlm($slug);
+        $res = $mlm->getDataLoks($slug);
         return $this->json($res);
       }
 
