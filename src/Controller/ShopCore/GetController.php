@@ -163,7 +163,7 @@ class GetController extends AbstractController
     if($lock->isValid($token)) {
 
       if($req->getMethod() == 'GET') {
-        $data = $mlm->getDataContact($slug);
+        $data = $mlm->getDataLoks($slug);
         return $this->json($data);
       }
 
@@ -184,36 +184,6 @@ class GetController extends AbstractController
           }
         }
         return $this->json(['abort' => false, 'msg' => 'ok']);
-      }
-    }
-
-    return $this->json(['abort' => true, 'msg' => 'error']);
-  }
-
-  /** 
-   * Recuperamos y guardamos los datos de mlm del cotz.
-  */
-  #[Route('security-basic/mlm-data-tks-ctc/{token}/{slug}/', methods:['GET', 'POST'])]
-  public function mlmTksOfContact(
-    Request $req, SecurityBasic $lock, DataSimpleMlm $mlm, String $token, String $slug
-  ): Response
-  {
-
-    if($lock->isValid($token)) {
-
-      if($req->getMethod() == 'GET') {
-        $res = $mlm->getDataLoks($slug);
-        return $this->json($res);
-      }
-
-      if($req->getMethod() == 'POST') {
-
-        $content = $req->request->get('data');
-        if($content) {
-          $content = json_decode($content, true);
-          $mlm->setTksMlm($slug, $content);
-          return $this->json(['abort' => false, 'msg' => 'ok']);
-        }
       }
     }
 

@@ -16,16 +16,12 @@ class DataSimpleMlm {
     /** */
     public function getCode(String $slug) : array {
 
-        $newRes = [];
         $pathTo = $this->params->get('anetMlm');
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
-            $tks  = $this->getDataLoks($slug, false);
-            if($tks) {
-                $newRes = array_merge($data, $tks);
-            }
+            return ['deco' => base64_encode(json_encode($data))];
         }
-        return ['deco' => base64_encode(json_encode($newRes))];
+        return [];
     }
 	
     /** */
@@ -36,7 +32,7 @@ class DataSimpleMlm {
             mkdir($pathTo);
         }
 
-        $pathTo = $pathTo . $slug . '.json';
+        $pathTo = $pathTo .'/'. $slug . '.json';
         if(is_file($pathTo)) {
 
             $res = '';
@@ -59,7 +55,7 @@ class DataSimpleMlm {
             mkdir($pathTo);
         }
 
-        $pathTo = $pathTo . $slug . '.json';
+        $pathTo = $pathTo .'/'. $slug . '.json';
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
             $newDt = array_merge($newDt, $data);
@@ -75,7 +71,7 @@ class DataSimpleMlm {
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
         }
-        $pathTo = $pathTo . $slug . '.json';
+        $pathTo = $pathTo .'/'. $slug . '.json';
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
         }
@@ -91,7 +87,7 @@ class DataSimpleMlm {
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
         }
-        $pathTo = $pathTo . $slug . '.json';
+        $pathTo = $pathTo .'/'. $slug . '.json';
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
         }
@@ -107,7 +103,7 @@ class DataSimpleMlm {
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
         }
-        $pathTo = $pathTo . $slug . '.json';
+        $pathTo = $pathTo .'/'. $slug . '.json';
         if(is_file($pathTo)) {
             $data = json_decode(file_get_contents($pathTo), true);
         }
