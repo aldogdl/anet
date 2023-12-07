@@ -100,28 +100,28 @@ class AnetShopSystemFileService
 		}
 
 		// Recoger las fotos actuales
-		$fotosCurrents = [];
+		$fotosInFolder = [];
 		$finder = new Finder();
 		$finder->files()->in($path)->name($id .'*');
 		if ($finder->hasResults()) {
 			foreach ($finder as $file) {
-				$fotosCurrents[] = $file->getFilename();
+				$fotosInFolder[] = $file->getFilename();
 			}
 		}
 		
-		if(count($fotosCurrents) == 0) {
-			return 'X No hay fotografías';
-		}
-
-		$rota = count($data['product']['fotos']);
 		$ftosForDelete = [];
-		for ($i=0; $i < $rota; $i++) { 
+		$inReg = count($data['product']['fotos']);
+		$rota = count($fotosInFolder);
+		if($rota > $inReg) {
 
-			$pathFile = Path::canonicalize($path.'/'.$data['product']['fotos'][$i]);
-			if($this->filesystem->exists($pathFile)) {
-				$has = array_search($data['product']['fotos'][$i], $fotosCurrents);
-				if($has === false) {
-					$ftosForDelete[] = $data['product']['fotos'][$i];
+			for ($i=0; $i < $rota; $i++) { 
+	
+				$pathFile = Path::canonicalize($path.'/'.$fotosInFolder[$i]);
+				if($this->filesystem->exists($pathFile)) {
+					$has = array_search($fotosInFolder[$i], $data['product']['fotos']);
+					if($has === false) {
+						$ftosForDelete[] = $fotosInFolder[$i];
+					}
 				}
 			}
 		}
