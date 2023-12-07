@@ -54,18 +54,10 @@ class AnetShopSystemFileService
 		}
 
 		$error = '';
-		if(array_key_exists('rename', $data)) {
-
-			$origen = $path.'/'.$data['filename'];
-			if($this->filesystem->exists($origen)) {
-				try {
-					$this->filesystem->rename($origen, $path.'/'.$data['rename'], true);
-				} catch (FileException $e) {
-					$error = 'X '.$e->getMessage();
-				}
-			}
+		if(array_key_exists('resort', $data)) {
+			$this->reSortImage($path, $data['resort']);
 		}
-
+		return 'X';
 		try {
 			$img->move($path, $data['filename']);
 		} catch (FileException $e) {
@@ -78,6 +70,39 @@ class AnetShopSystemFileService
 		}
 		$error = 'X No se guardo la Imagen';
 		return $error;
+	}
+
+	/** */
+	public function reSortImage(String $folder, array $paths):void
+	{
+		$prefixId = $paths[0];
+		$partes = explode('_', $prefixId);
+		if(count($partes) == 0) {
+			return;
+		}
+
+		$prefixId = $partes[0];
+		// Movemos todas las fotos a un folder temporal
+		$pathTmp = Path::canonicalize($folder.'/tmp');
+		if(!$this->filesystem->exists($pathTmp)) {
+			$this->filesystem->mkdir($pathTmp);
+		}
+
+		$finder = new Finder();
+		$finder->files()->in($folder)->name($prefixId .'*');
+		if ($finder->hasResults()) {
+			foreach ($finder as $file) {
+
+				$origen = $folder.'/'.$file->getFilename();
+				$target = $pathTmp.'/'.$file->getFilename();
+				if($this->filesystem->exists($origen)) {
+					try {
+						$this->filesystem->rename($origen, $target, true);
+					} catch (FileException $e) {}
+				}
+			}
+		}
+
 	}
 
 	/** 
