@@ -122,6 +122,18 @@ class GetController extends AbstractController
 
     return $this->json(['abort' => false, 'body' => $products]);
   }
+  
+  /** 
+   * Guardamos el producto enviado desde AnetShop
+  */
+  #[Route('api/anet-shop/clean-fotos-by/{slug}/{id}/{modo}', methods:['get'])]
+	public function cleanFotos(
+    AnetShopSystemFileService $sysFile, String $slug, String $id, String $modo
+  ): Response
+	{
+    $result = $sysFile->cleanForCancelImgToFolder($modo, $id, $slug);
+    return $this->json(['abort' => false, 'body' => $result]);
+  }
 
   /** 
    * Recuperamos los datos del cotizador desde el archivo json

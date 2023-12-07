@@ -76,7 +76,7 @@ class PostController extends AbstractController
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
     
-    $modo = 'add';
+    $modo = 'cotiza';
     if(array_key_exists('meta', $data)) {
       if(array_key_exists('modo', $data['meta'])) {
         $modo = $data['meta']['modo'];
@@ -93,32 +93,25 @@ class PostController extends AbstractController
     if(array_key_exists('product', $data)) {
       $id = $emProd->setProduct($data['product']);
       $result['add_product'] = $id;
-      $data['id'] = $id;
+      $data['product']['id'] = $id;
     }
 
-    $filename = $data['meta']['modo'].'_'.$data['meta']['slug'].'_'.$data['id'].'.json';
+    $filename = $data['meta']['modo'].'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
     $filePath = $sysFile->setNewProduct($data, $filename);
 
     if(mb_strpos($filePath, 'Error') === false) {
       
-      if($filePath != '') {
-
-        $ftoFalta = $sysFile->checkExistAllFotos($data);
-        $result['abort'] = false;
-        if(count($ftoFalta) > 0) {
-          $result['faltan_fotos'] = $ftoFalta;
-        }
-        
-        try {
-          $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
-        } catch (\Throwable $th) {
-          $result['sin_wh'] = $th->getMessage();
-        }
-        return $this->json($result);
+      $sysFile->cleanImgToFolder($data, $modo);
+            
+      try {
+        $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
+      } catch (\Throwable $th) {
+        $result['sin_wh'] = $th->getMessage();
       }
+      return $this->json($result);
     }
 
-    $result['msg']  = $filePath;
+    $result['msg']  = 'X Error al guardar producto';
 	  return $this->json($result);
 	}
 

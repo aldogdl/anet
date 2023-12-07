@@ -88,7 +88,9 @@ class Product
         $this->setSellerSlug($prod['sellerSlug']);
         $this->setAttrs($prod['attrs']);
         $hoy = new \DateTimeImmutable('now');
-        $this->setCreatedAt($hoy);
+        if($prod['id'] == -1) {
+            $this->setCreatedAt($hoy);
+        }
         $this->setUpdatedAt($hoy);
         return $this;
     }

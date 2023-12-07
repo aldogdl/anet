@@ -3,7 +3,7 @@
 namespace App\Controller\Mlm;
 
 use App\Service\SecurityBasic;
-use App\Service\ShopCore\DataSimpleMlm;
+use App\Service\AnetShop\DataSimpleMlm;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

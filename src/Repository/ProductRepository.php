@@ -28,11 +28,16 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /** 
-     * Cuando el cotizador da de alta una pieza en su AnetShop
+     * Cuando el cotizador da de alta o edita una pieza en su AnetShop
     */
     public function setProduct(array $product): int
     {
-        $p = new Product();
+        if($product['id'] != -1) {
+            $p = $this->_em->find(Product::class, $product['id']);
+        }else{
+            $p = new Product();
+        }
+        
         $p->fromMap($product);
         try {
             $this->_em->persist($p);
