@@ -92,14 +92,19 @@ class PostController extends AbstractController
     $id = 0;
     if(array_key_exists('product', $data)) {
       $id = $emProd->setProduct($data['product']);
-      $result['add_product'] = $id;
-      $data['product']['id'] = $id;
+      if($id == 0) {
+        $result['msg']  = 'X No se logró guardar el producto';
+        return $this->json($result);
+      }else{
+        $result['add_product'] = $id;
+        $data['product']['id'] = $id;
+      }
     }
 
     $filename = $data['meta']['modo'].'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
     $filePath = $sysFile->setNewProduct($data, $filename);
 
-    if(mb_strpos($filePath, 'Error') === false) {
+    if($filePath == '') {
       
       $sysFile->cleanImgToFolder($data, $modo);
             
@@ -108,6 +113,7 @@ class PostController extends AbstractController
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }
+      $result['abort'] = false;
       return $this->json($result);
     }
 

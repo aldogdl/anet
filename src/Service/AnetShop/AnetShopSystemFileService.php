@@ -164,7 +164,7 @@ class AnetShopSystemFileService
 		try {
 			$this->filesystem->dumpFile($path, json_encode($product));
 		} catch (FileException $e) {
-			$path = 'Error' . $e->getMessage();
+			$path = 'X ' . $e->getMessage();
 		}
 
 		return '';
