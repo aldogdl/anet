@@ -114,21 +114,21 @@ class AnetShopSystemFileService
 		}
 
 		$rota = count($data['product']['fotos']);
+		$ftosForDelete = [];
 		for ($i=0; $i < $rota; $i++) { 
 
 			$pathFile = Path::canonicalize($path.'/'.$data['product']['fotos'][$i]);
 			if($this->filesystem->exists($pathFile)) {
 				$has = array_search($data['product']['fotos'][$i], $fotosCurrents);
-				if($has !== false) {
-					unset($fotosCurrents[$has]);
+				if($has === false) {
+					$ftosForDelete[] = $data['product']['fotos'][$i];
 				}
 			}
 		}
 
-		$fotosCurrents = array_values($fotosCurrents);
-		$rota = count($fotosCurrents);
+		$rota = count($ftosForDelete);
 		for ($i=0; $i < $rota; $i++) { 
-			$pathFile = Path::canonicalize($path.'/'.$fotosCurrents[$i]);
+			$pathFile = Path::canonicalize($path.'/'.$ftosForDelete[$i]);
 			unlink($pathFile);
 		}
 
