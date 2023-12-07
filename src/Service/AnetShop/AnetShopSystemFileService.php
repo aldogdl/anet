@@ -90,15 +90,19 @@ class AnetShopSystemFileService
 
 		$finder = new Finder();
 		$finder->files()->in($folder)->name($prefixId .'*');
+		file_put_contents($prefixId.'.txt', '');
 		if ($finder->hasResults()) {
 			foreach ($finder as $file) {
 
-				$origen = $folder.'/'.$file->getFilename();
-				$target = $pathTmp.'/'.$file->getFilename();
-				if($this->filesystem->exists($origen)) {
-					try {
-						$this->filesystem->rename($origen, $target, true);
-					} catch (FileException $e) {}
+				$filename = $file->getFilename();
+				if(strpos($filename, $prefixId) !== false) {
+					$origen = $folder.'/'.$file->getFilename();
+					$target = $pathTmp.'/'.$file->getFilename();
+					if($this->filesystem->exists($origen)) {
+						try {
+							$this->filesystem->rename($origen, $target, true);
+						} catch (FileException $e) {}
+					}
 				}
 			}
 		}
