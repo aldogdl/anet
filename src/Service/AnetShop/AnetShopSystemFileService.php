@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\ShopCore;
+namespace App\Service\AnetShop;
 
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Path;
@@ -8,7 +8,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
-class ShopCoreSystemFileService
+class AnetShopSystemFileService
 {   
 	private $params;
 	private $filesystem;

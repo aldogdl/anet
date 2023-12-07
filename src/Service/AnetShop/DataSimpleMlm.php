@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\ShopCore;
+namespace App\Service\AnetShop;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 

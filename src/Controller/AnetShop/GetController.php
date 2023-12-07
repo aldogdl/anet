@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\ShopCore;
+namespace App\Controller\AnetShop;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,12 +13,12 @@ use App\Repository\AO2ModelosRepository;
 use App\Repository\NG2ContactosRepository;
 use App\Repository\ProductRepository;
 use App\Service\SecurityBasic;
-use App\Service\ShopCore\DataSimpleMlm;
-use App\Service\ShopCore\ShopCoreSystemFileService;
+use App\Service\AnetShop\DataSimpleMlm;
+use App\Service\AnetShop\AnetShopSystemFileService;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
- * Todos los get sin Token para la app de ShopCore
+ * Todos los get sin Token para la app de AnetShop
  */
 class GetController extends AbstractController
 {
@@ -194,7 +194,7 @@ class GetController extends AbstractController
   */
   #[Route('security-basic/get-inv-ctc/{token}/{waId}/{slug}/', methods:['get'])]
   public function getInvContact(
-    SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token, String $waId, String $slug
+    SecurityBasic $lock, AnetShopSystemFileService $sysFile, String $token, String $waId, String $slug
   ): Response
   {
     $data = [];
@@ -267,7 +267,7 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('/api/shop-core/get-tkwa/', methods:['get'])]
+  #[Route('/api/anet-shop/get-tkwa/', methods:['get'])]
   public function getTkWa(): Response
   {
     $pathToken = $this->getParameter('tkwaconm');

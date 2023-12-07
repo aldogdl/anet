@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\ShopCore;
+namespace App\Controller\AnetShop;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,7 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\WebHook;
 use App\Service\SecurityBasic;
 use App\Repository\ProductRepository;
-use App\Service\ShopCore\ShopCoreSystemFileService;
+use App\Service\AnetShop\AnetShopSystemFileService;
 
 
 class PostController extends AbstractController
@@ -37,15 +37,15 @@ class PostController extends AbstractController
     return $content;
   }
 
-  #[Route('api/shop-core/is-token-caducado/', methods:['get'])]
+  #[Route('api/anet-shop/is-token-caducado/', methods:['get'])]
 	public function isTokenCaducado(): Response
 	{
 	  return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => ['nop' => 'nop']]);
 	}
 
   /** */
-  #[Route('api/shop-core/upload-img/', methods:['post'])]
-  public function uploadImg(Request $req, ShopCoreSystemFileService $sysFile): Response
+  #[Route('api/anet-shop/upload-img/', methods:['post'])]
+  public function uploadImg(Request $req, AnetShopSystemFileService $sysFile): Response
   {
 
     $response = ['abort' =>  true];
@@ -65,11 +65,11 @@ class PostController extends AbstractController
   }
 
   /** 
-   * Guardamos el producto enviado desde ShopCore
+   * Guardamos el producto enviado desde AnetShop
   */
-  #[Route('api/shop-core/send-product/', methods:['post'])]
+  #[Route('api/anet-shop/send-product/', methods:['post'])]
 	public function sendProduct(
-    Request $req, ShopCoreSystemFileService $sysFile, WebHook $wh, ProductRepository $emProd
+    Request $req, AnetShopSystemFileService $sysFile, WebHook $wh, ProductRepository $emProd
   ): Response
 	{
 
@@ -150,7 +150,7 @@ class PostController extends AbstractController
   /** */
   #[Route('security-basic/mark-product-as/{token}/', methods:['post'])]
 	public function markProductAs(
-    Request $req, SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token
+    Request $req, SecurityBasic $lock, AnetShopSystemFileService $sysFile, String $token
   ): Response
 	{
     $data = [];
@@ -167,7 +167,7 @@ class PostController extends AbstractController
   */
   #[Route('security-basic/send-comments/{token}/', methods:['post'])]
 	public function sendComments(
-    Request $req, SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token
+    Request $req, SecurityBasic $lock, AnetShopSystemFileService $sysFile, String $token
   ): Response
 	{
     $data = [];
@@ -184,7 +184,7 @@ class PostController extends AbstractController
   */
   #[Route('security-basic/log/errs/', methods:['post'])]
 	public function setLogErrs(
-    Request $req, SecurityBasic $lock, ShopCoreSystemFileService $sysFile, String $token
+    Request $req, SecurityBasic $lock, AnetShopSystemFileService $sysFile, String $token
   ): Response
 	{
     $data = ['abort'=>true, 'msg' => 'err'];

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\ShopCore;
+namespace App\Controller\AnetShop;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\Crawlers\ToRadec;
 
 /**
- * Todos los get sin Token para la app de ShopCore
+ * Todos los get sin Token para la app de AnetShop
  */
 class GetCrawController extends AbstractController
 {
