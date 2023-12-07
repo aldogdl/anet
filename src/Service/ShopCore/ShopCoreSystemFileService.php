@@ -84,27 +84,27 @@ class ShopCoreSystemFileService
 			$this->filesystem->mkdir($path);
 		}
 
+		$error = '';
+		if(array_key_exists('rename', $data)) {
+			try {
+				$this->filesystem->rename($path.'/'.$data['filename'], $path.'/'.$data['rename']);
+			} catch (FileException $e) {
+				$error = 'X '.$e->getMessage();
+			}
+		}
+
 		try {
 			$img->move($path, $data['filename']);
 		} catch (FileException $e) {
-			return $e->getMessage();
-		}
-
-		if(array_key_exists('fotosDeletes', $data)) {
-			$rota = count($data['fotosDeletes']);
-			for ($i=0; $i < $rota; $i++) { 
-				$pathTo = Path::canonicalize($path.'/'.$data['fotosDeletes'][$i]);
-				if($this->filesystem->exists($pathTo)) {
-					unlink($pathTo);
-				}
-			}
+			return 'X '.$e->getMessage();
 		}
 
 		$pathTo = Path::canonicalize($path.'/'.$data['filename']);
 		if($this->filesystem->exists($pathTo)) {
 			return 'ok';
 		}
-		return 'not';
+		$error = 'X No se guardo la Imagen';
+		return $error;
 	}
 
 	/** Guardamos el json resultante del alta de productos desde shopCore */
