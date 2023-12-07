@@ -75,7 +75,7 @@ class AnetShopSystemFileService
 	/** */
 	public function reSortImage(String $folder, array $paths):void
 	{
-		$prefixId = $paths[0];
+		$prefixId = $paths[0][0];
 		$partes = explode('_', $prefixId);
 		if(count($partes) == 0) {
 			return;
