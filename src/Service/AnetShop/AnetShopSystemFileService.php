@@ -55,10 +55,14 @@ class AnetShopSystemFileService
 
 		$error = '';
 		if(array_key_exists('rename', $data)) {
-			try {
-				$this->filesystem->rename($path.'/'.$data['filename'], $path.'/'.$data['rename'], true);
-			} catch (FileException $e) {
-				$error = 'X '.$e->getMessage();
+
+			$origen = $path.'/'.$data['filename'];
+			if($this->filesystem->exists($origen)) {
+				try {
+					$this->filesystem->rename($origen, $path.'/'.$data['rename'], true);
+				} catch (FileException $e) {
+					$error = 'X '.$e->getMessage();
+				}
 			}
 		}
 
