@@ -56,6 +56,8 @@ class PostController extends AbstractController
       $result = $sysFile->upImgToFolder($data, $file);
       if($result == 'ok') {
         $response['abort'] = false;
+      }else{
+        $response['body'] = $result;
       }
     }
 
