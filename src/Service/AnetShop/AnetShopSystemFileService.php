@@ -81,12 +81,19 @@ class AnetShopSystemFileService
 	/** */
 	public function reSortImage(String $folder, array $paths):void
 	{
-		$prefixId = $paths[0]['origin'];
-		$partes = explode('_', $prefixId);
-		if(count($partes) == 0) {
+		$prefixId = '';
+		$origenes = [];
+		$rotaP = count($paths);
+		for ($i=0; $i < $rotaP; $i++) { 
+			if($i == 0) {
+				$partes = explode('_', $paths[$i]['origin']);
+				$prefixId = $partes[0];
+			}
+			$origenes[] = $paths[$i]['origin'];
+		}
+		if($prefixId == '') {
 			return;
 		}
-		$prefixId = $partes[0];
 
 		// Movemos todas las fotos a un folder temporal
 		$pathTmp = Path::canonicalize($folder.'/tmp');
@@ -97,29 +104,30 @@ class AnetShopSystemFileService
 		$finder = new Finder();
 		$finder->files()->in($folder)->name($prefixId .'*');
 		
-		if ($finder->hasResults()) {
+		if($finder->hasResults()) {
 			foreach ($finder as $file) {
+
 				$filename = $file->getFilename();
-				if(strpos($filename, $prefixId) !== false) {
-					$origen = $folder.'/'.$file->getFilename();
-					$target = $pathTmp.'/'.$file->getFilename();
-					if($this->filesystem->exists($origen)) {
-						try {
-							$this->filesystem->rename($origen, $target, true);
-						} catch (FileException $e) {}
+				if(in_array($filename, $origenes)) {
+					if(strpos($filename, $prefixId) !== false) {
+						$origen = $folder.'/'.$filename;
+						if($this->filesystem->exists($origen)) {
+							try {
+								$this->filesystem->rename($origen, $pathTmp.'/'.$filename, true);
+							} catch (FileException $e) {}
+						}
 					}
 				}
 			}
 		}
 		
 		// Regresar solo aquellas fotos que son reordenadas con su nombre correcto
-		$rota = count($paths);
-		for ($i=0; $i < $rota; $i++) { 
-			$origin = $pathTmp.'/'.$paths[$i]['origin'];
-			$target = $folder.'/'.$paths[$i]['target'];
+		for ($i=0; $i < $rotaP; $i++) { 
 			if($this->filesystem->exists($origen)) {
 				try {
-					$this->filesystem->rename($origen, $target, true);
+					$this->filesystem->rename(
+						$pathTmp.'/'.$paths[$i]['origin'], $folder.'/'.$paths[$i]['target'], true
+					);
 				} catch (FileException $e) {}
 			}
 		}
