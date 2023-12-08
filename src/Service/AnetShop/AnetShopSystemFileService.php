@@ -40,19 +40,25 @@ class AnetShopSystemFileService
 	}
 
 	/** */
-	public function upImgToFolder(array $data, $img): String
+	public function buildPathToImages(String $modo, String $slug): String
 	{
-		if($data['action'] == 'publik') {
+		if($modo == 'publik') {
 			$path = $this->params->get('prodPubs');
 		}else{
 			$path = $this->params->get('prodSols');
 		}
 
-		$path = Path::canonicalize($path.'/'.$data['slug'].'/images');
+		$path = Path::canonicalize($path.'/'.$slug.'/images');
 		if(!$this->filesystem->exists($path)) {
 			$this->filesystem->mkdir($path);
 		}
+		return $path;
+	}
 
+	/** */
+	public function upImgToFolder(array $data, $img): String
+	{
+		$path = $this->buildPathToImages($data['action'], $data['slug']);
 		$error = '';
 		if(array_key_exists('resort', $data)) {
 			$this->reSortImage($path, $data['resort']);

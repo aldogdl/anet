@@ -107,14 +107,16 @@ class PostController extends AbstractController
       unset($data['resort']);
     }
 
-    $filename = $data['meta']['modo'].'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
+    $filename = $modo.'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
     $filePath = $sysFile->setNewProduct($data, $filename);
 
     if($filePath == '') {
       
       if(count($resort) > 0) {
-        $sysFile->reSortImage('', $resort);
+        $path = $sysFile->buildPathToImages($modo, $data['meta']['slug']);
+        $sysFile->reSortImage($path, $resort);
       }
+
       $sysFile->cleanImgToFolder($data, $modo);
       try {
         $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
