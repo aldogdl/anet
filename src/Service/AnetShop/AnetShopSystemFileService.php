@@ -134,9 +134,9 @@ class AnetShopSystemFileService
 		}
 		
 		// Eliminar el folder termporal
-		// if($this->filesystem->exists($pathTmp)) {
-		// 	$this->delTree($pathTmp);
-		// }
+		if($this->filesystem->exists($pathTmp)) {
+			$this->delTree($pathTmp);
+		}
 		
 	}
 
