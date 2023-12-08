@@ -80,8 +80,8 @@ class AnetShopSystemFileService
 		if(count($partes) == 0) {
 			return;
 		}
-
 		$prefixId = $partes[0];
+
 		// Movemos todas las fotos a un folder temporal
 		$pathTmp = Path::canonicalize($folder.'/tmp');
 		if(!$this->filesystem->exists($pathTmp)) {
@@ -90,10 +90,9 @@ class AnetShopSystemFileService
 
 		$finder = new Finder();
 		$finder->files()->in($folder)->name($prefixId .'*');
-		file_put_contents($prefixId.'.txt', '');
+		
 		if ($finder->hasResults()) {
 			foreach ($finder as $file) {
-
 				$filename = $file->getFilename();
 				if(strpos($filename, $prefixId) !== false) {
 					$origen = $folder.'/'.$file->getFilename();
@@ -106,7 +105,35 @@ class AnetShopSystemFileService
 				}
 			}
 		}
+		
+		// Regresar solo aquellas fotos que son reordenadas con su nombre correcto
+		$rota = count($paths);
+		for ($i=0; $i < $rota; $i++) { 
+			$origin = $pathTmp.'/'.$paths[$i]['origin'];
+			$target = $folder.'/'.$paths[$i]['target'];
+			if($this->filesystem->exists($origen)) {
+				try {
+					$this->filesystem->rename($origen, $target, true);
+				} catch (FileException $e) {}
+			}
+		}
+		
+		// Eliminar el folder termporal
+		if($this->filesystem->exists($pathTmp)) {
+			$this->delTree($pathTmp);
+		}
+		
+	}
 
+	/** */
+	public function delTree(String $dir)
+	{
+		$files = array_diff(scandir($dir), array('.','..'));
+	
+		foreach ($files as $file) {
+			(is_dir("$dir/$file")) ? $this->delTree("$dir/$file") : unlink("$dir/$file");
+		}
+		return rmdir($dir);
 	}
 
 	/** 
