@@ -122,11 +122,12 @@ class AnetShopSystemFileService
 		}
 		
 		// Regresar solo aquellas fotos que son reordenadas con su nombre correcto
-		for ($i=0; $i < $rotaP; $i++) { 
+		for ($i=0; $i < $rotaP; $i++) {
+			$origen = $pathTmp.'/'.$paths[$i]['origin'];
 			if($this->filesystem->exists($origen)) {
 				try {
 					$this->filesystem->rename(
-						$pathTmp.'/'.$paths[$i]['origin'], $folder.'/'.$paths[$i]['target'], true
+						$origen, $folder.'/'.$paths[$i]['target'], true
 					);
 				} catch (FileException $e) {}
 			}
