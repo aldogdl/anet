@@ -101,13 +101,21 @@ class PostController extends AbstractController
       }
     }
 
+    $resort = [];
+    if(array_key_exists('resort', $data)) {
+      $resort = $data['resort'];
+      unset($data['resort']);
+    }
+
     $filename = $data['meta']['modo'].'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
     $filePath = $sysFile->setNewProduct($data, $filename);
 
     if($filePath == '') {
       
+      if(count($resort) > 0) {
+        $sysFile->reSortImage('', $resort);
+      }
       $sysFile->cleanImgToFolder($data, $modo);
-            
       try {
         $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
       } catch (\Throwable $th) {
