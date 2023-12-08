@@ -57,7 +57,7 @@ class AnetShopSystemFileService
 		if(array_key_exists('resort', $data)) {
 			$this->reSortImage($path, $data['resort']);
 		}
-		return 'X';
+		
 		try {
 			$img->move($path, $data['filename']);
 		} catch (FileException $e) {
