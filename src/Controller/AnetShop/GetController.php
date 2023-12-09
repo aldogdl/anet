@@ -146,6 +146,7 @@ class GetController extends AbstractController
     $res = $emProd->delete($idPza);
     $result['body'] = $res;
     if($res == 'ok') {
+      $result['abort'] = false;
       try {
         $wh->sendMy('api\\anet-shop\\delete-product', '', ['evento' => 'delete', 'delete' => $idPza]);
       } catch (\Throwable $th) {
