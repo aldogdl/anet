@@ -81,7 +81,7 @@ class WebHook
     }
 
     /** */
-    private function setDataFromShopCore(array $proto, array $data): array
+    private function setDataFromAnetShop(array $proto, array $data): array
     {
         if(array_key_exists('own', $data)) {
             $proto['from'] = $data['own']['slug'];
@@ -125,8 +125,8 @@ class WebHook
             $protocolo['evento'] = 'item_send_mlm';
             $protocolo['from']   = $data['from'];
         }
-        if(mb_strpos($uriCall, 'shop-core') !== false) {
-            $protocolo = $this->setDataFromShopCore($protocolo, $data);
+        if(mb_strpos($uriCall, 'anet-shop') !== false) {
+            $protocolo = $this->setDataFromAnetShop($protocolo, $data);
         }
         if(mb_strpos($uriCall, 'wa-wh') !== false) {
             $protocolo = $this->setDataFromWhatsapp($protocolo, $data);

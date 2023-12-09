@@ -119,7 +119,7 @@ class PostController extends AbstractController
 
       $sysFile->cleanImgToFolder($data, $modo);
       try {
-        $wh->sendMy('api\\shop-core\\send-product', $filePath, $data);
+        $wh->sendMy('api\\anet-shop\\send-product', $filePath, $data);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }

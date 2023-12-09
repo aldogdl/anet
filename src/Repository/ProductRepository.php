@@ -28,6 +28,24 @@ class ProductRepository extends ServiceEntityRepository
     }
 
     /** 
+     * Eliminamos la pieza
+    */
+    public function delete(String $idPza): String
+    {
+        $p = $this->_em->find(Product::class, $idPza);
+        if($p) {
+            $p->setIsVendida(5);
+            try {
+                $this->_em->persist($p);
+                $this->_em->flush();
+                return 'ok';
+            } catch (\Throwable $th) {
+                return 'Error en SR, no se eliminó';
+            }
+        }
+    }
+
+    /** 
      * Cuando el cotizador da de alta o edita una pieza en su AnetShop
     */
     public function setProduct(array $product): int

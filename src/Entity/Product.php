@@ -256,12 +256,12 @@ class Product
         return $this;
     }
 
-    public function getIsVendida(): ?bool
+    public function getIsVendida(): ?int
     {
         return $this->isVendida;
     }
 
-    public function setIsVendida(bool $isVendida): static
+    public function setIsVendida(int $isVendida): static
     {
         $this->isVendida = $isVendida;
 

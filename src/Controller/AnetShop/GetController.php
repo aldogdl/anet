@@ -15,6 +15,7 @@ use App\Repository\ProductRepository;
 use App\Service\SecurityBasic;
 use App\Service\AnetShop\DataSimpleMlm;
 use App\Service\AnetShop\AnetShopSystemFileService;
+use App\Service\WebHook;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
@@ -133,6 +134,25 @@ class GetController extends AbstractController
 	{
     $result = $sysFile->cleanForCancelImgToFolder($modo, $id, $slug);
     return $this->json(['abort' => false, 'body' => $result]);
+  }
+
+  /** 
+   * Eliminamos la pieza
+  */
+  #[Route('api/anet-shop/delete-product/{idPza}', methods:['get'])]
+	public function deletePza(ProductRepository $emProd, WebHook $wh, String $idPza): Response
+	{
+    $result = ['abort' => true, 'body' => 'Error desconocido'];
+    $res = $emProd->delete($idPza);
+    $result['body'] = $res;
+    if($res == 'ok') {
+      try {
+        $wh->sendMy('api\\anet-shop\\delete-product', '', ['evento' => 'delete', 'delete' => $idPza]);
+      } catch (\Throwable $th) {
+        $result['sin_wh'] = $th->getMessage();
+      }
+    }
+    return $this->json($result);
   }
 
   /** 
