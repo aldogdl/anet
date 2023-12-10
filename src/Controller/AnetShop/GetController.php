@@ -213,6 +213,8 @@ class GetController extends AbstractController
             $mlm->setTksMlm($slug, $content); 
           }else if($action == 'tkmsg') {
             $mlm->setTksMsg($slug, $content);
+          }else if($action == 'userTest') {
+            $mlm->setUserTest($content);
           }else if($action == 'tkweb') {
             $mlm->setTksWeb($slug, $content);
           }else if($action == 'pass') {

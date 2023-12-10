@@ -69,6 +69,21 @@ class DataSimpleMlm {
     }
 	
     /** */
+    public function setUserTest(array $newDt) {
+
+        $data = [];
+        $pathTo = $this->params->get('dtaCtcLog');
+        if(!is_dir($pathTo)) {
+            mkdir($pathTo);
+        }
+        
+        $pathTo = $pathTo .'/test_mlm.json';
+        if(is_file($pathTo)) {
+            file_put_contents($pathTo, json_encode($newDt));
+        }
+    }
+    
+    /** */
     public function setTksMlm(String $slug, array $newDt) {
 
         $data = [];
