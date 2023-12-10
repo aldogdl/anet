@@ -196,7 +196,11 @@ class GetController extends AbstractController
     if($lock->isValid($token)) {
 
       if($req->getMethod() == 'GET') {
-        $data = $mlm->getDataLoks($slug);
+        if($action == 'testUser') {
+          $data = $mlm->getDataLoksUserTest();
+        }else{
+          $data = $mlm->getDataLoks($slug);
+        }
         return $this->json($data);
       }
 
@@ -221,7 +225,7 @@ class GetController extends AbstractController
 
     return $this->json(['abort' => true, 'msg' => 'error']);
   }
-
+  
   /** 
    * Recuperamos el inventario del cotizador desde el archivo json
   */
