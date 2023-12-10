@@ -60,7 +60,7 @@ class DataSimpleMlm {
 
         $pathTo = $pathTo .'/test_mlm.json';
         if(is_file($pathTo)) {
-            $data = json_decode(file_get_contents($pathTo), true);
+            $data = file_get_contents($pathTo);
             if($data) {
                 return ['deco' => base64_encode($data)];
             }
