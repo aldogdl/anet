@@ -68,7 +68,7 @@ class ProductRepository extends ServiceEntityRepository
 
     /** 
      * Este producto fue enviado a MLM desde anetShop por lo tanto lo marcamos
-     * como suspendido (stt = 0)
+     * como suspendido (stt = 0).
     */
     public function updateStatusProduct(array $data): String
     {
