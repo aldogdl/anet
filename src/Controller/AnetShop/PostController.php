@@ -153,6 +153,7 @@ class PostController extends AbstractController
       $result['body'] = $changed;
     }
 
+    $result['detas'] = file_get_contents('desc_mlm.txt');
 	  return $this->json($result);
 	}
 
