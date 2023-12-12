@@ -62731,7 +62731,7 @@ c=A.a([],d)
 if(s.f===B.aj)c.push(A.bfY(!0,h))
 g=A.o().h(0,"lienzoH1")
 g.toString
-c.push(new A.cM(B.v,e,e,new A.aO(B.dT,A.R("Producto AnetShop V.1.2.2",g,12.5,!1,!0,1,e),e),e))
+c.push(new A.cM(B.v,e,e,new A.aO(B.dT,A.R("Producto AnetShop V.1.3.0",g,12.5,!1,!0,1,e),e),e))
 c.push(B.aE)
 c.push(k)
 c.push(m)
@@ -63962,7 +63962,7 @@ q=A.R("BIENVENIDO",q,40,!1,!1,1,a1)
 l=A.bq(B.dw,1,l*0.7)
 k=A.o().h(0,"priDark")
 k.toString
-k=A.az(A.a([q,l,B.oi,A.R("AnetShop V.1.2.2",k,14,!1,!1,1,a1)],t.p),B.h,B.R,B.k)
+k=A.az(A.a([q,l,B.oi,A.R("AnetShop V.1.3.0",k,14,!1,!1,1,a1)],t.p),B.h,B.R,B.k)
 q=k}else{j=A.aBC()
 q=$.by().e
 q=q.gaS(q)
