@@ -138,7 +138,7 @@ class GetController extends AbstractController
     }else{
       $attr = json_decode($attr, true);
     }
-    dump($attr);
+    
     $offset = $req->query->get('offset');
     $dql = $emProd->searchReferencias( $idSeller, $attr );
     if(strlen($offset) > 0) {
