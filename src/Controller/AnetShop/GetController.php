@@ -102,8 +102,8 @@ class GetController extends AbstractController
   /** 
    * Buscamos productos de otros cotizadores y/o coinsidencias
   */
-  #[Route('api/users/{idSeller}/items/search/', methods:['post', 'get'])]
-  public function searchItem(Request $req, String $idSeller, ProductRepository $emProd): Response
+  #[Route('api/users/{idSeller}/items/search/', methods:['GET'])]
+  public function searchItem(Request $req, ProductRepository $emProd, String $idSeller): Response
   {
     $attr = [];
     if($req->getMethod() == 'POST') {
@@ -111,6 +111,30 @@ class GetController extends AbstractController
       if($attr == null) {
         return $this->json(['abort' => true, 'body' => []]);
       }
+    }
+    
+    $offset = $req->query->get('offset');
+    $dql = $emProd->searchReferencias( $idSeller, $attr );
+    if(strlen($offset) > 0) {
+      $products = $emProd->paginador($dql);
+    }else{
+      $products = $dql->getArrayResult();
+    }
+
+    return $this->json(['abort' => false, 'body' => $products]);
+  }
+  
+
+  /** 
+   * Buscamos productos de otros cotizadores y/o coinsidencias
+  */
+  #[Route('api/users/{idSeller}/items/search/json/', methods:['POST'])]
+  public function searchItemPost(Request $req, ProductRepository $emProd, String $idSeller): Response
+  {
+    $attr = [];
+    $attr = $this->toArray($req, 'data');
+    if($attr == null) {
+      return $this->json(['abort' => true, 'body' => []]);
     }
     
     $offset = $req->query->get('offset');
@@ -154,6 +178,15 @@ class GetController extends AbstractController
       }
     }
     return $this->json($result);
+  }
+
+  /** */
+  #[Route('/api/anet-shop/get-tkwa/', methods:['get'])]
+  public function getTkWa(): Response
+  {
+    $pathToken = $this->getParameter('tkwaconm');
+    $token  = file_get_contents($pathToken);
+    return $this->json(['abort'=>false, 'msg' => 'ok', 'tkwa' => $token]);
   }
 
   /** 
@@ -303,15 +336,6 @@ class GetController extends AbstractController
       $dta = $userEm->cambiarPassword($idCot, $newPass);
     }
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $dta]);
-  }
-
-  /** */
-  #[Route('/api/anet-shop/get-tkwa/', methods:['get'])]
-  public function getTkWa(): Response
-  {
-    $pathToken = $this->getParameter('tkwaconm');
-    $token  = file_get_contents($pathToken);
-    return $this->json(['abort'=>false, 'msg' => 'ok', 'tkwa' => $token]);
   }
 
 }
