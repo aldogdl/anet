@@ -132,9 +132,11 @@ class GetController extends AbstractController
   public function searchItemPost(Request $req, ProductRepository $emProd, String $idSeller): Response
   {
     $attr = [];
-    $attr = $this->toArray($req, 'data');
+    $attr = $req->getContent();
     if($attr == null) {
       return $this->json(['abort' => true, 'body' => []]);
+    }else{
+      $attr = json_decode($attr, true);
     }
     
     $offset = $req->query->get('offset');
