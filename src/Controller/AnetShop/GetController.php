@@ -134,11 +134,11 @@ class GetController extends AbstractController
     $attr = [];
     $attr = $req->getContent();
     if($attr == null) {
-      return $this->json(['abort' => true, 'body' => []]);
+      return $this->json(['abort' => true, 'body' => ['X Sin Criterios de Búsqueda']]);
     }else{
       $attr = json_decode($attr, true);
     }
-    
+    dump($attr);
     $offset = $req->query->get('offset');
     $dql = $emProd->searchReferencias( $idSeller, $attr );
     if(strlen($offset) > 0) {
