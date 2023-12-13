@@ -102,41 +102,17 @@ class GetController extends AbstractController
   /** 
    * Buscamos productos de otros cotizadores y/o coinsidencias
   */
-  #[Route('api/users/{idSeller}/items/search/', methods:['GET'])]
+  #[Route('api/users/{idSeller}/items/search/', methods:['GET', 'POST'])]
   public function searchItem(Request $req, ProductRepository $emProd, String $idSeller): Response
   {
     $attr = [];
     if($req->getMethod() == 'POST') {
-      $attr = $this->toArray($req, 'data');
+      $attr = $req->getContent();
       if($attr == null) {
-        return $this->json(['abort' => true, 'body' => []]);
+        return $this->json(['abort' => true, 'body' => ['X Sin Criterios de Búsqueda']]);
+      }else{
+        $attr = json_decode($attr, true);
       }
-    }
-    
-    $offset = $req->query->get('offset');
-    $dql = $emProd->searchReferencias( $idSeller, $attr );
-    if(strlen($offset) > 0) {
-      $products = $emProd->paginador($dql);
-    }else{
-      $products = $dql->getArrayResult();
-    }
-
-    return $this->json(['abort' => false, 'body' => $products]);
-  }
-  
-
-  /** 
-   * Buscamos productos de otros cotizadores y/o coinsidencias
-  */
-  #[Route('api/users/{idSeller}/items/search/json/', methods:['POST'])]
-  public function searchItemPost(Request $req, ProductRepository $emProd, String $idSeller): Response
-  {
-    $attr = [];
-    $attr = $req->getContent();
-    if($attr == null) {
-      return $this->json(['abort' => true, 'body' => ['X Sin Criterios de Búsqueda']]);
-    }else{
-      $attr = json_decode($attr, true);
     }
     
     $offset = $req->query->get('offset');
