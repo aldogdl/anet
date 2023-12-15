@@ -26,7 +26,6 @@ parameters:
     waCots     : '%phtml%/wa_cots/'
     dtaCtc     : '%phtml%/ctcs/'
     dtaCtcLog  : '%phtml%/ctcs/log'
-    invCtc     : '%phtml%/inv/'
     tkwaconm   : '%phtml%/tkwaconm.json'
     waBackup   : '%phtml%/wa_backup'
     waAnalizar : '%phtml%/wa_analizar/'

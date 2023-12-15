@@ -240,16 +240,16 @@ class GetController extends AbstractController
   }
   
   /** 
-   * Recuperamos el inventario del cotizador desde el archivo json
+   * Recuperamos las solicitudes del taller desde el archivo json
   */
-  #[Route('security-basic/get-inv-ctc/{token}/{waId}/{slug}/', methods:['get'])]
-  public function getInvContact(
-    SecurityBasic $lock, AnetShopSystemFileService $sysFile, String $token, String $waId, String $slug
+  #[Route('security-basic/get-solicitudes/{token}/{waId}/{slug}/', methods:['get'])]
+  public function getSolicitudes(
+    SecurityBasic $lock, AnetShopSystemFileService $sysFile, String $token, String $slug
   ): Response
   {
     $data = [];
     if($lock->isValid($token)) {
-      $data = $sysFile->getInv($waId, $slug);
+      $data = $sysFile->getSolsTallerOf($slug);
     }
     return $this->json($data);
   }

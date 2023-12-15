@@ -111,8 +111,11 @@ class PostController extends AbstractController
     $filePath = $sysFile->setNewProduct($data, $filename);
     
     if($filePath == '') {
+
+      if($modo == 'cotiza') {
+        $filePath = $sysFile->setNewSolicitud($data);
+      }
       
-      $filePath = $sysFile->setNewSolicitud($data);
       if(count($resort) > 0) {
         $path = $sysFile->buildPathToImages($modo, $data['meta']['slug']);
         $sysFile->reSortImage($path, $resort);

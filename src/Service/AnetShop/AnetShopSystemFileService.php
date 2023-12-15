@@ -20,22 +20,14 @@ class AnetShopSystemFileService
 	}
 	
 	/** */
-	public function getInv(String $waId, $slug): array
+	public function getSolsTallerOf(String $slug): array
 	{
 		$data = [];
-
-		$path = $this->params->get('prodPubs');
+		$path = $this->params->get('prodSols');
 		$filename = $path.'/'.$slug.'/inv_anet.json';
 		if($this->filesystem->exists($filename)) {
 			$data = json_decode(file_get_contents($filename), true);
 		}
-		
-		$filename = $this->params->get('invCtc') . $waId . '_up.json';
-		if($this->filesystem->exists($filename)) {
-			$otros = json_decode(file_get_contents($filename), true);
-			$data = array_merge($data, $otros);
-		}
-
 		return $data;
 	}
 
@@ -248,11 +240,18 @@ class AnetShopSystemFileService
 	/** Guardamos el json resultante del alta de solicitud desde shopCore */
 	public function setNewSolicitud(array $product): String
 	{
+		$olds = [];
 		$path = $this->params->get('prodSols');
-		$filename = $product['meta']['id'].'.json';
-		$path = Path::canonicalize($path.'/'.$product['meta']['slug'].'/'.$filename);
+		$path = Path::canonicalize($path.'/'.$product['meta']['slug'].'/inv_anet.json');
+		if($this->filesystem->exists($path)) {
+			$olds = json_decode(file_get_contents($path), true);
+			array_unshift($olds, $product);
+		}else{
+			$olds[] = $product;
+		}
+
 		try {
-			$this->filesystem->dumpFile($path, json_encode($product));
+			$this->filesystem->dumpFile($path, json_encode($olds));
 		} catch (FileException $e) {
 			$path = 'X ' . $e->getMessage();
 		}
