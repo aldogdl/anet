@@ -144,7 +144,7 @@ class PostController extends AbstractController
     $result = ['abort' => true, 'body' => 'Error desconocido'];
     $data = $this->toArray($req, 'data');
     $res = $sysFile->deleteSolicitud($data);
-    $result['body'] = $data;
+    $result['body'] = $res;
     if($res == 'ok') {
       $result['abort'] = false;
       try {
@@ -153,8 +153,7 @@ class PostController extends AbstractController
         $result['sin_wh'] = $th->getMessage();
       }
     }
-    
-    $result['msg'] = $res;
+
     return $this->json($result);
   }
 

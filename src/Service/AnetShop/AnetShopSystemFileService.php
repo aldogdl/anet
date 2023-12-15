@@ -274,13 +274,15 @@ class AnetShopSystemFileService
 			}
 
 			if($item !== false) {
+				unset($data[$item]);
+				$this->filesystem->dumpFile($path, json_encode($data));
 				return 'ok';
 			} else {
-				return 'noEncontre';
+				return 'La solicitud no fué encontrada';
 			}
 		}
 
-		return 'ok';
+		return 'No hay archivo de '.$data['slug'];
 	}
 
 	/** Guardamos el json resultante del alta de productos desde shopCore */
