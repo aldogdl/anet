@@ -268,11 +268,23 @@ class AnetShopSystemFileService
 
 		if($this->filesystem->exists($filename)) {
 			$data = json_decode(file_get_contents($filename), true);
-			$item = array_search($product['uuid'], array_column($data['product'], 'uuid'));
-			if($item === false) {
-				$item = array_search($product['permalink'], array_column($data['product'], 'permalink'));
+			$rota = count($data);
+			$item = -1;
+			for ($i=0; $i < $rota; $i++) { 
+				if($data[$i]['product']['uuid'] == $product['uuid']) {
+					$item = $i;
+					break;
+				}
 			}
 
+			if($item == -1) {
+				for ($i=0; $i < $rota; $i++) { 
+					if($data[$i]['product']['permalink'] == $product['permalink']) {
+						$item = $i;
+						break;
+					}
+				}
+			}
 			if($item !== false) {
 				unset($data[$item]);
 				$this->filesystem->dumpFile($path, json_encode($data));
