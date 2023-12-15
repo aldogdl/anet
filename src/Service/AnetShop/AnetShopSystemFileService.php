@@ -264,7 +264,7 @@ class AnetShopSystemFileService
 	{
 		$data = [];
 		$path = $this->params->get('prodSols');
-		$filename = $path.'/'.$data['slug'].'/inv_anet.json';
+		$filename = $path.'/'.$product['slug'].'/inv_anet.json';
 
 		if($this->filesystem->exists($filename)) {
 			$data = json_decode(file_get_contents($filename), true);
@@ -282,7 +282,7 @@ class AnetShopSystemFileService
 			}
 		}
 
-		return 'No hay archivo de '.$data['slug'];
+		return 'No hay archivo de '.$product['slug'];
 	}
 
 	/** Guardamos el json resultante del alta de productos desde shopCore */
