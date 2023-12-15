@@ -285,9 +285,10 @@ class AnetShopSystemFileService
 					}
 				}
 			}
+
 			if($item !== false) {
 				unset($data[$item]);
-				$this->filesystem->dumpFile($path, json_encode($data));
+				$this->filesystem->dumpFile($filename, json_encode($data));
 				return 'ok';
 			} else {
 				return 'La solicitud no fué encontrada';
