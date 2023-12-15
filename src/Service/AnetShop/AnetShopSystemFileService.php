@@ -241,7 +241,22 @@ class AnetShopSystemFileService
 		} catch (FileException $e) {
 			$path = 'X ' . $e->getMessage();
 		}
+		
+		return '';
+	}
 
+	/** Guardamos el json resultante del alta de solicitud desde shopCore */
+	public function setNewSolicitud(String $slug, array $product): String
+	{
+		$path = $this->params->get('prodSols');
+		$filename = $slug.'_'.$product['meta']['id'].'.json';
+		$path = Path::canonicalize($path.'/'.$slug.'/'.$filename);
+		try {
+			$this->filesystem->dumpFile($path, json_encode($product));
+		} catch (FileException $e) {
+			$path = 'X ' . $e->getMessage();
+		}
+		
 		return '';
 	}
 
