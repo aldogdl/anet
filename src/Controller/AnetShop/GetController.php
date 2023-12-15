@@ -242,7 +242,7 @@ class GetController extends AbstractController
   /** 
    * Recuperamos las solicitudes del taller desde el archivo json
   */
-  #[Route('security-basic/get-solicitudes/{token}/{waId}/{slug}/', methods:['get'])]
+  #[Route('security-basic/get-solicitudes/{token}/{slug}/', methods:['get'])]
   public function getSolicitudes(
     SecurityBasic $lock, AnetShopSystemFileService $sysFile, String $token, String $slug
   ): Response
