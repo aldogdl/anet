@@ -90,7 +90,7 @@ class PostController extends AbstractController
     }
 
     $id = 0;
-    if(array_key_exists('product', $data)) {
+    if(array_key_exists('product', $data) && $modo == 'publik') {
       $id = $emProd->setProduct($data['product']);
       if($id == 0) {
         $result['msg']  = 'X No se logró guardar el producto';
