@@ -268,9 +268,9 @@ class AnetShopSystemFileService
 
 		if($this->filesystem->exists($filename)) {
 			$data = json_decode(file_get_contents($filename), true);
-			$item = array_search($product['uuid'], array_column($data, 'uuid'));
+			$item = array_search($product['uuid'], array_column($data['product'], 'uuid'));
 			if($item === false) {
-				$item = array_search($product['permalink'], array_column($data, 'permalink'));
+				$item = array_search($product['permalink'], array_column($data['product'], 'permalink'));
 			}
 
 			if($item !== false) {
