@@ -138,26 +138,6 @@ class GetController extends AbstractController
     return $this->json(['abort' => false, 'body' => $result]);
   }
 
-  /** 
-   * Eliminamos la pieza
-  */
-  #[Route('api/anet-shop/delete-product/{idPza}', methods:['get'])]
-	public function deletePza(ProductRepository $emProd, WebHook $wh, String $idPza): Response
-	{
-    $result = ['abort' => true, 'body' => 'Error desconocido'];
-    $res = $emProd->delete($idPza);
-    $result['body'] = $res;
-    if($res == 'ok') {
-      $result['abort'] = false;
-      try {
-        $wh->sendMy('api\\anet-shop\\delete-product', '', ['evento' => 'delete', 'delete' => $idPza]);
-      } catch (\Throwable $th) {
-        $result['sin_wh'] = $th->getMessage();
-      }
-    }
-    return $this->json($result);
-  }
-
   /** */
   #[Route('/api/anet-shop/get-tkwa/', methods:['get'])]
   public function getTkWa(): Response
@@ -274,6 +254,27 @@ class GetController extends AbstractController
     }
 
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
+  }
+
+  /** 
+   * Eliminamos la pieza
+  */
+  #[Route('api/anet-shop/delete-product/{idPza}/', methods:['get'])]
+	public function deletePza(ProductRepository $emProd, WebHook $wh, String $idPza): Response
+	{
+    $result = ['abort' => true, 'body' => 'Error desconocido'];
+
+    $res = $emProd->delete($idPza);
+    $result['body'] = $res;
+    if($res == 'ok') {
+      $result['abort'] = false;
+      try {
+        $wh->sendMy('api\\anet-shop\\delete-product', '', ['evento' => 'delete', 'delete' => $idPza]);
+      } catch (\Throwable $th) {
+        $result['sin_wh'] = $th->getMessage();
+      }
+    }
+    return $this->json($result);
   }
 
   /** */

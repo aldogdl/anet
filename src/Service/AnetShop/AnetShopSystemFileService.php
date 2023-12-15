@@ -20,18 +20,6 @@ class AnetShopSystemFileService
 	}
 	
 	/** */
-	public function getSolsTallerOf(String $slug): array
-	{
-		$data = [];
-		$path = $this->params->get('prodSols');
-		$filename = $path.'/'.$slug.'/inv_anet.json';
-		if($this->filesystem->exists($filename)) {
-			$data = json_decode(file_get_contents($filename), true);
-		}
-		return $data;
-	}
-
-	/** */
 	public function buildPathToImages(String $modo, String $slug): String
 	{
 		if($modo == 'publik') {
@@ -257,6 +245,42 @@ class AnetShopSystemFileService
 		}
 		
 		return '';
+	}
+
+	/** */
+	public function getSolsTallerOf(String $slug): array
+	{
+		$data = [];
+		$path = $this->params->get('prodSols');
+		$filename = $path.'/'.$slug.'/inv_anet.json';
+		if($this->filesystem->exists($filename)) {
+			$data = json_decode(file_get_contents($filename), true);
+		}
+		return $data;
+	}
+
+	/** */
+	public function deleteSolicitud(array $product): String
+	{
+		$data = [];
+		$path = $this->params->get('prodSols');
+		$filename = $path.'/'.$data['slug'].'/inv_anet.json';
+
+		if($this->filesystem->exists($filename)) {
+			$data = json_decode(file_get_contents($filename), true);
+			$item = array_search($product['uuid'], array_column($data, 'uuid'));
+			if($item === false) {
+				$item = array_search($product['permalink'], array_column($data, 'permalink'));
+			}
+
+			if($item !== false) {
+				return 'ok';
+			} else {
+				return 'noEncontre';
+			}
+		}
+
+		return 'ok';
 	}
 
 	/** Guardamos el json resultante del alta de productos desde shopCore */

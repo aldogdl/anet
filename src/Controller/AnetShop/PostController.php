@@ -115,7 +115,7 @@ class PostController extends AbstractController
       if($modo == 'cotiza') {
         $filePath = $sysFile->setNewSolicitud($data);
       }
-      
+
       if(count($resort) > 0) {
         $path = $sysFile->buildPathToImages($modo, $data['meta']['slug']);
         $sysFile->reSortImage($path, $resort);
@@ -134,6 +134,27 @@ class PostController extends AbstractController
     $result['msg']  = 'X Error al guardar producto';
 	  return $this->json($result);
 	}
+
+  /** 
+   * Eliminamos la pieza
+  */
+  #[Route('api/anet-shop/delete-product/', methods:['POST'])]
+	public function deleteSolicitud(Request $req, AnetShopSystemFileService $sysFile, WebHook $wh): Response
+	{
+    $result = ['abort' => true, 'body' => 'Error desconocido'];
+    $data = $this->toArray($req, 'data');
+    $res = $sysFile->deleteSolicitud($data);
+    $result['body'] = $data;
+    if($res == 'ok') {
+      $result['abort'] = false;
+      try {
+        $wh->sendMy('api\\anet-shop\\delete-product', '', ['evento' => 'delete', 'delete' => $data]);
+      } catch (\Throwable $th) {
+        $result['sin_wh'] = $th->getMessage();
+      }
+    }
+    return $this->json($result);
+  }
 
   /** 
    * Marcamos este producto como ?? desde AnetShop y enviamos aviso a BackCore
