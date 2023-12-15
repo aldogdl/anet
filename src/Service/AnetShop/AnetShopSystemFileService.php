@@ -246,11 +246,11 @@ class AnetShopSystemFileService
 	}
 
 	/** Guardamos el json resultante del alta de solicitud desde shopCore */
-	public function setNewSolicitud(String $slug, array $product): String
+	public function setNewSolicitud(array $product): String
 	{
 		$path = $this->params->get('prodSols');
-		$filename = $slug.'_'.$product['meta']['id'].'.json';
-		$path = Path::canonicalize($path.'/'.$slug.'/'.$filename);
+		$filename = $product['meta']['id'].'.json';
+		$path = Path::canonicalize($path.'/'.$product['meta']['slug'].'/'.$filename);
 		try {
 			$this->filesystem->dumpFile($path, json_encode($product));
 		} catch (FileException $e) {

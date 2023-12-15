@@ -109,9 +109,10 @@ class PostController extends AbstractController
 
     $filename = $modo.'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
     $filePath = $sysFile->setNewProduct($data, $filename);
-
+    
     if($filePath == '') {
       
+      $filePath = $sysFile->setNewSolicitud($data);
       if(count($resort) > 0) {
         $path = $sysFile->buildPathToImages($modo, $data['meta']['slug']);
         $sysFile->reSortImage($path, $resort);
