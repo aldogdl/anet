@@ -153,6 +153,8 @@ class PostController extends AbstractController
         $result['sin_wh'] = $th->getMessage();
       }
     }
+    
+    $result['msg'] = $res;
     return $this->json($result);
   }
 
