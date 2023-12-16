@@ -271,30 +271,20 @@ class AnetShopSystemFileService
 			$data = json_decode(file_get_contents($filename), true);
 			$rota = count($data);
 			$item = -1;
+			$newData = [];
 			for ($i=0; $i < $rota; $i++) { 
-				if($data[$i]['uuid'] == $product['uuid']) {
+				if($data[$i]['uuid'] == $product['uuid'] || $data[$i]['permalink'] == $product['permalink']) {
 					$item = $i;
-					break;
+				}else{
+					array_push($newData, $data[$i]);
 				}
 			}
 
-			if($item == -1) {
-				for ($i=0; $i < $rota; $i++) { 
-					if($data[$i]['permalink'] == $product['permalink']) {
-						$item = $i;
-						break;
-					}
-				}
-			}
-
-			if($item !== false) {
+			$this->filesystem->dumpFile($filename, json_encode($newData));
+			if($item != -1) {
 
 				$fotos = $data[$item]['fotos'];
 				$rota = count($fotos);
-
-				unset($data[$item]);
-				$this->filesystem->dumpFile($filename, json_encode($data));
-
 				if($rota > 0) {
 					$pathF = $path.'/'.$product['slug'].'/images/';
 					for ($i=0; $i < $rota; $i++) { 
