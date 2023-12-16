@@ -112,10 +112,8 @@ class PostController extends AbstractController
     
     if($filePath == '') {
 
-      if($modo == 'cotiza') {
-        if(array_key_exists('product', $data)) {
-          $filePath = $sysFile->setSolicitudInFile($data['product']);
-        }
+      if(array_key_exists('product', $data) && $modo == 'cotiza') {
+        $filePath = $sysFile->setSolicitudInFile($data['product']);
       }
 
       if(count($resort) > 0) {

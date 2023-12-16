@@ -230,13 +230,14 @@ class AnetShopSystemFileService
 	{
 		$olds = [];
 		$path = $this->params->get('prodSols');
-		$path = Path::canonicalize($path.'/'.$product['meta']['slug'].'/inv_anet.json');
+		$path = Path::canonicalize($path.'/'.$product['attrs']['slug'].'/inv_anet.json');
 		if($this->filesystem->exists($path)) {
 			$olds = json_decode(file_get_contents($path), true);
-			array_unshift($olds, $product);
+			$product['id'] = ''.count($olds);
 		}else{
-			$olds[] = $product;
+			$product['id'] = '1';
 		}
+		array_unshift($olds, $product);
 
 		try {
 			$this->filesystem->dumpFile($path, json_encode($olds));
