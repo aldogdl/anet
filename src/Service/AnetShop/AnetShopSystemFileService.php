@@ -288,7 +288,11 @@ class AnetShopSystemFileService
 			}
 
 			if($item !== false) {
+
 				$fotos = $data[$item]['product']['fotos'];
+				unset($data[$item]);
+				$this->filesystem->dumpFile($filename, json_encode($data));
+				
 				$rota = count($fotos);
 				if($rota > 0) {
 					$pathF = $path.'/'.$product['slug'].'/images/';
@@ -298,8 +302,6 @@ class AnetShopSystemFileService
 						}
 					}
 				}
-				unset($data[$item]);
-				$this->filesystem->dumpFile($filename, json_encode($data));
 				return 'ok';
 			} else {
 				return 'La solicitud no fué encontrada';
