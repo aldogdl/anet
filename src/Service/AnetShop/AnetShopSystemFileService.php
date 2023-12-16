@@ -222,7 +222,7 @@ class AnetShopSystemFileService
 			$path = 'X ' . $e->getMessage();
 		}
 		
-		return '';
+		return $path;
 	}
 
 	/** Guardamos el json resultante del alta de solicitud desde AnetShop */
@@ -233,7 +233,7 @@ class AnetShopSystemFileService
 		$path = Path::canonicalize($path.'/'.$product['attrs']['slug'].'/inv_anet.json');
 		if($this->filesystem->exists($path)) {
 			$olds = json_decode(file_get_contents($path), true);
-			$product['id'] = ''.count($olds);
+			$product['id'] = ''.time();
 		}else{
 			$product['id'] = '1';
 		}
@@ -242,10 +242,10 @@ class AnetShopSystemFileService
 		try {
 			$this->filesystem->dumpFile($path, json_encode($olds));
 		} catch (FileException $e) {
-			$path = 'X ' . $e->getMessage();
+			return 'X ' . $e->getMessage();
 		}
 		
-		return '';
+		return $product['id'];
 	}
 
 	/** */

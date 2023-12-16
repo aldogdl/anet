@@ -100,6 +100,17 @@ class PostController extends AbstractController
         $data['product']['id'] = $id;
       }
     }
+    
+    if(array_key_exists('product', $data) && $modo == 'cotiza') {
+      $id = $sysFile->setSolicitudInFile($data['product']);
+      if(mb_strpos($id, 'X ') !== false) {
+        $result['msg']  = $id;
+        return $this->json($result);
+      }else{
+        $result['add_product'] = $id;
+        $data['product']['id'] = $id;
+      }
+    }
 
     $resort = [];
     if(array_key_exists('resort', $data)) {
@@ -109,12 +120,7 @@ class PostController extends AbstractController
 
     $filename = $modo.'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
     $filePath = $sysFile->setItemInFolderNiFi($data, $filename);
-    
-    if($filePath == '') {
-
-      if(array_key_exists('product', $data) && $modo == 'cotiza') {
-        $filePath = $sysFile->setSolicitudInFile($data['product']);
-      }
+    if(mb_strpos($filePath, 'X ') === false) {
 
       if(count($resort) > 0) {
         $path = $sysFile->buildPathToImages($modo, $data['meta']['slug']);
