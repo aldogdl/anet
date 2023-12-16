@@ -233,9 +233,9 @@ class AnetShopSystemFileService
 		$path = Path::canonicalize($path.'/'.$product['attrs']['slug'].'/inv_anet.json');
 		if($this->filesystem->exists($path)) {
 			$olds = json_decode(file_get_contents($path), true);
-			$product['id'] = ''.time();
-		}else{
-			$product['id'] = '1';
+		}
+		if($product['id'].'' == '-1') {
+			$product['id'] = time();
 		}
 		array_unshift($olds, $product);
 
