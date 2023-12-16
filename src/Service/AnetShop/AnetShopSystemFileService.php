@@ -211,8 +211,8 @@ class AnetShopSystemFileService
 		return 'ok';
 	}
 
-	/** Guardamos el json resultante del alta de productos desde shopCore */
-	public function setNewProduct(array $product, String $filename): String
+	/** Guardamos el json resultante del alta de productos desde AnetShop */
+	public function setItemInFolderNiFi(array $product, String $filename): String
 	{
 		$path = $this->params->get('nifiFld');
 		$path = Path::canonicalize($path.'/'.$filename);
@@ -225,8 +225,8 @@ class AnetShopSystemFileService
 		return '';
 	}
 
-	/** Guardamos el json resultante del alta de solicitud desde shopCore */
-	public function setNewSolicitud(array $product): String
+	/** Guardamos el json resultante del alta de solicitud desde AnetShop */
+	public function setSolicitudInFile(array $product): String
 	{
 		$olds = [];
 		$path = $this->params->get('prodSols');
@@ -272,7 +272,7 @@ class AnetShopSystemFileService
 			$rota = count($data);
 			$item = -1;
 			for ($i=0; $i < $rota; $i++) { 
-				if($data[$i]['product']['uuid'] == $product['uuid']) {
+				if($data[$i]['uuid'] == $product['uuid']) {
 					$item = $i;
 					break;
 				}
@@ -280,7 +280,7 @@ class AnetShopSystemFileService
 
 			if($item == -1) {
 				for ($i=0; $i < $rota; $i++) { 
-					if($data[$i]['product']['permalink'] == $product['permalink']) {
+					if($data[$i]['permalink'] == $product['permalink']) {
 						$item = $i;
 						break;
 					}
@@ -289,11 +289,12 @@ class AnetShopSystemFileService
 
 			if($item !== false) {
 
-				$fotos = $data[$item]['product']['fotos'];
+				$fotos = $data[$item]['fotos'];
+				$rota = count($fotos);
+
 				unset($data[$item]);
 				$this->filesystem->dumpFile($filename, json_encode($data));
-				
-				$rota = count($fotos);
+
 				if($rota > 0) {
 					$pathF = $path.'/'.$product['slug'].'/images/';
 					for ($i=0; $i < $rota; $i++) { 
@@ -311,7 +312,7 @@ class AnetShopSystemFileService
 		return 'No hay archivo de '.$product['slug'];
 	}
 
-	/** Guardamos el json resultante del alta de productos desde shopCore */
+	/** Guardamos el json resultante del alta de productos desde AnetShop */
 	public function markProductAs(array $product): array
 	{
 		$result = ['abort' => false, 'body' => 'ok'];
@@ -332,7 +333,7 @@ class AnetShopSystemFileService
 		return $result;
 	}
 
-	/** Guardamos el json de los comentarios o sugerencias desde shopCore */
+	/** Guardamos el json de los errores al enviar producto a ML desde AnetShop */
 	public function saveLogError(array $error): array
 	{
 		$result = ['abort' => false, 'body' => 'ok'];
@@ -353,7 +354,7 @@ class AnetShopSystemFileService
 		return $result;
 	}
 
-	/** Guardamos el json de los comentarios o sugerencias desde shopCore */
+	/** Guardamos el json de los comentarios o sugerencias desde AnetShop */
 	public function saveComments(array $product): array
 	{
 		$result = ['abort' => false, 'body' => 'ok'];

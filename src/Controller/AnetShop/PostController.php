@@ -108,12 +108,14 @@ class PostController extends AbstractController
     }
 
     $filename = $modo.'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
-    $filePath = $sysFile->setNewProduct($data, $filename);
+    $filePath = $sysFile->setItemInFolderNiFi($data, $filename);
     
     if($filePath == '') {
 
       if($modo == 'cotiza') {
-        $filePath = $sysFile->setNewSolicitud($data);
+        if(array_key_exists('product', $data)) {
+          $filePath = $sysFile->setSolicitudInFile($data['product']);
+        }
       }
 
       if(count($resort) > 0) {
