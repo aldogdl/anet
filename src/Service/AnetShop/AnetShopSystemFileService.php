@@ -267,6 +267,7 @@ class AnetShopSystemFileService
 		$filename = $path.'/'.$product['slug'].'/inv_anet.json';
 
 		if($this->filesystem->exists($filename)) {
+
 			$data = json_decode(file_get_contents($filename), true);
 			$rota = count($data);
 			$item = -1;
@@ -287,6 +288,16 @@ class AnetShopSystemFileService
 			}
 
 			if($item !== false) {
+				$fotos = $data[$item]['product']['fotos'];
+				$rota = count($fotos);
+				if($rota > 0) {
+					$pathF = $path.'/'.$product['slug'].'/images/';
+					for ($i=0; $i < $rota; $i++) { 
+						if($this->filesystem->exists($pathF.$fotos[$i])) {
+							unlink( $pathF.$fotos[$i] );
+						}
+					}
+				}
 				unset($data[$item]);
 				$this->filesystem->dumpFile($filename, json_encode($data));
 				return 'ok';
