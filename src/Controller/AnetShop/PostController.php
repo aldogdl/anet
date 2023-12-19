@@ -121,13 +121,14 @@ class PostController extends AbstractController
     $filename = $modo.'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
     $filePath = $sysFile->setItemInFolderNiFi($data, $filename);
     if(mb_strpos($filePath, 'X ') === false) {
-
+      
       if(count($resort) > 0) {
         $path = $sysFile->buildPathToImages($modo, $data['meta']['slug']);
         $sysFile->reSortImage($path, $resort);
       }
-
-      $sysFile->cleanImgToFolder($data, $modo);
+      
+      $data['action'] = $modo;
+      $sysFile->cleanImgToFolder($data);
       try {
         $wh->sendMy('api\\anet-shop\\send-product', $filePath, $data);
       } catch (\Throwable $th) {

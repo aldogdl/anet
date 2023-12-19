@@ -134,9 +134,9 @@ class AnetShopSystemFileService
 	/** 
 	 * Limpiamos las imagenes que no esten incluidas en el registro
 	*/
-	public function cleanImgToFolder(array $data, String $modo): String
+	public function cleanImgToFolder(array $data): String
 	{
-		if($modo == 'publik') {
+		if($data['action'] == 'publik') {
 			$path = $this->params->get('prodPubs');
 		}else{
 			$path = $this->params->get('prodSols');
