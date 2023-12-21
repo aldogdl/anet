@@ -65,7 +65,7 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
       'curc'   => $entity->getCurc(),
       'cargo'  => $entity->getCargo(),
       'roles'  => $entity->getRoles(),
-      'waId'   => $entity->getCelular(),
+      'celular'=> $entity->getCelular(),
       'tokMess'=> $entity->getKeyCel(),
       'tokWeb' => $entity->getKeyWeb(),
     ];
