@@ -28,7 +28,7 @@ class Filtros
     /**
      * a = Alta Gama, Manejo solo marcas prestigiosas
      * b = Comerciales, Manejo solo marcas comunes
-     * c = Comerciales, Manejo Multimarcas
+     * c = Multimarca, Manejo Multimarcas
      * d = Restricción, Solo esta, Manejo solo esta
      * e = Excepción, Todas Excepto esta, no manejo esta
      * t = Tambien, Filtro que especifica lo que realmente maneja ya que lo ha cotizado

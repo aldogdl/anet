@@ -261,6 +261,24 @@ class AnetShopSystemFileService
 	}
 
 	/** */
+	public function getAllSolicitantes(): array
+	{
+		$data = [];
+		$path = $this->params->get('dtaCtc');
+		$finder = new Finder();
+		$path = Path::canonicalize($path);
+		dump($path);
+		$finder->files()->in($path)->depth('== 0')->contains('/ROLE_SOLZ/i');;
+		dump($finder->hasResults());
+		if ($finder->hasResults()) {
+			foreach ($finder as $file) {
+				array_push($data, json_decode($file->getContents(), true));
+			}
+		}
+		return $data;
+	}
+
+	/** */
 	public function deleteSolicitud(array $product): String
 	{
 		$data = [];
