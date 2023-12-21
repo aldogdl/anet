@@ -60,10 +60,14 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
   public function toArray(NG2Contactos $entity): array
   {
     return [
-      'id' => $entity->getId(),
+      'id'     => $entity->getId(),
       'nombre' => $entity->getNombre(),
-      'curc' => $entity->getCurc(),
-      'roles' => $entity->getRoles(),
+      'curc'   => $entity->getCurc(),
+      'cargo'  => $entity->getCargo(),
+      'roles'  => $entity->getRoles(),
+      'waId'   => $entity->getCelular(),
+      'tokMess'=> $entity->getKeyCel(),
+      'tokWeb' => $entity->getKeyWeb(),
     ];
   }
 
