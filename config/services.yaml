@@ -8,6 +8,7 @@ parameters:
     imgOrdRsp  : '%phtml%/to_orden_rsp/'
     prodPubs   : '%phtml%/prod_pubs/'
     prodSols   : '%phtml%/prod_sols/'
+    prodTrack  : '%phtml%/prod_track/'
     recents    : '%phtml%/prod_recents/'
     recRadec   : '%phtml%/req_radec/'
     logErrs    : '%phtml%/logs_errs/'

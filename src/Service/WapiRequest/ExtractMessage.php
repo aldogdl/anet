@@ -32,72 +32,51 @@ class ExtractMessage {
     {
         $phoneNumberId = '';
         $result = [];
+
         if(array_key_exists('entry', $message)) {
-            if(count($message['entry']) == 1) {
+            if(count($message['entry']) > 1) {
+                return false;
+            }
 
-                $result = $message['entry'][0];
-                if(array_key_exists('changes', $result)) {
+            $result = $message['entry'][0];
+            if(array_key_exists('changes', $result)) {
 
-                    if(count($result['changes']) == 1) {
+                if(count($result['changes']) > 1) {
+                    return false;
+                }
 
-                        $result = $result['changes'][0]['value'];
+                $result = $result['changes'][0]['value'];
+                if(array_key_exists('metadata', $result)) {
+                    $phoneNumberId = $result['metadata']['phone_number_id'];
+                }
 
-                        if(array_key_exists('metadata', $result)) {
-                            $phoneNumberId = $result['metadata']['phone_number_id'];
-                        }
+                if(array_key_exists('statuses', $result)) {
+                    $result = $this->extractMsgTypeStatus($result['statuses'][0]);
+                    $result['phone_number_id'] = $phoneNumberId;
+                    return true;
+                }
 
-                        if(array_key_exists('statuses', $result)) {
-                            
-                            $this->isStt = true;
-                            $result = $result['statuses'][0];
-                            $cat = 'Sin Especificar';
-                            if(array_key_exists('pricing', $result)) {
-                                $cat = $result['pricing']['category'];
-                            }
+                if(array_key_exists('messages', $result)) {
+                    if(count($result['messages']) > 1) {
+                        return false;
+                    }
 
-                            $status = [
-                                'id' => $result['id'],
-                                'status' => $result['status'],
-                                'timestamp' => $result['timestamp'],
-                                'from' => $result['recipient_id'],
-                                'category' => $cat,
-                                'phone_number_id' => $phoneNumberId,
-                                'myTime' => ''.strtotime('now'),
-                                'subEvento' => 'stt',
-                            ];
-                            
-                            $this->from = $result['recipient_id'];
-                            if(array_key_exists('conversation', $result)) {
-                                if(array_key_exists('expiration_timestamp', $result['conversation'])) {
-                                    $status['expiration_timestamp'] = $result['conversation']['expiration_timestamp'];
-                                }
-                            }
-                            
-                            $this->message = $status;
-                            $status = [];
-                            return true;
-                        }
-
-                        if(array_key_exists('messages', $result)) {
-                            if(count($result['messages']) == 1) {
-                                $result = $result['messages'][0];
-                                $this->from = $result['from'];
-                                $result['phone_number_id'] = $phoneNumberId;
-                                $result['myTime'] = ''.strtotime('now');
-                                if(array_key_exists('text', $result)) {
-                                    if(array_key_exists('body', $result['text'])) {                                        
-                                        $isCmd = $result['text']['body'];
-                                        if(mb_strpos($isCmd, '[cmd]') !== false) {
-                                            $this->isCmd = true;
-                                        }
-                                    }
-                                }
-                                $this->message = $result;
-                                $result = [];
-                                return true;
+                    $result = $result['messages'][0];
+                    $this->from = $result['from'];
+                    $result['phone_number_id'] = $phoneNumberId;
+                    $result['myTime'] = ''.strtotime('now');
+                    
+                    if(array_key_exists('text', $result)) {
+                        if(array_key_exists('body', $result['text'])) {                                        
+                            $isCmd = $result['text']['body'];
+                            if(mb_strpos($isCmd, '[cmd]') !== false) {
+                                $this->isCmd = true;
                             }
                         }
                     }
+                    $this->message = $result;
+                    $result = [];
+                    return true;
                 }
             }
         }
@@ -105,4 +84,34 @@ class ExtractMessage {
         return false;
     }
 
+    /** */
+    function extractMsgTypeStatus(array $result): array
+    {
+        $this->isStt = true;
+        $cat = 'Sin Especificar';
+        if(array_key_exists('pricing', $result)) {
+            $cat = $result['pricing']['category'];
+        }
+
+        $status = [
+            'id'        => $result['id'],
+            'status'    => $result['status'],
+            'timestamp' => $result['timestamp'],
+            'from'      => $result['recipient_id'],
+            'category'  => $cat,
+            'myTime'    => ''.strtotime('now'),
+            'subEvento' => 'stt',
+        ];
+        
+        $this->from = $result['recipient_id'];
+        if(array_key_exists('conversation', $result)) {
+            if(array_key_exists('expiration_timestamp', $result['conversation'])) {
+                $status['expiration_timestamp'] = $result['conversation']['expiration_timestamp'];
+            }
+        }
+        
+        $this->message = $status;
+        $status = [];
+        return $this->message;
+    }
 }

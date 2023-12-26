@@ -40,6 +40,52 @@ class ProcesarMessage {
     public function execute(array $message): void
     {
         $obj = new ExtractMessage($message);
+        if($obj->pathToAnalizar != '') {
+            $folder = $this->getFolderTo('waAnalizar');
+            $this->saveFile($folder.$obj->pathToAnalizar, $message);
+            // TODO Enviar a EventCore
+            return;
+        }
+        
+        if($obj->isStt) {
+            $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
+            return;
+        }
+
+        $msg = $obj->get();
+        $obj = new IsCotizacionMessage($msg, $this->params->get('waCots'));
+        if($obj->inTransit) {
+            $this->processCotInTransit($msg, $obj);
+            return;
+        }
+        
+        $isInteractive = new IsInteractiveMessage($msg);
+        if($isInteractive->isNtg) {
+            $msg['subEvento'] = 'ntg';
+            $this->whook->sendMy('wa-wh', 'notSave', $msg);
+            return;
+        }
+
+        if($isInteractive->isCot) {
+            $obj = new ReqFotosProcess(
+                $msg, new ConmutadorWa($msg, $this->params->get('tkwaconm')),
+                $obj, $this->wapiHttp, $this->whook
+            );
+            $obj->initializaCot();
+            return;
+        }
+
+        $obj = new IsLoginMessage($msg);
+        if($obj->isLogin) {
+            $this->processMsgOfLogin($msg);
+            return;
+        }
+    }
+
+    /** */
+    public function executeOld(array $message): void
+    {
+        $obj = new ExtractMessage($message);
         
         $cmd = new ProcessCMD($this->params->get('waCmds'));
         $hasCmdFile = $cmd->hasFileCmd($obj->from);
