@@ -54,56 +54,6 @@ class WebHook
         return true;
     }
 
-    /** */
-    public function getUrlToFrontDoor(): String
-    {
-        $hash = file_get_contents('../front_door/front_door.txt/front_door.txt');
-        if($hash) {
-            return base64_decode($hash);
-        }
-        return '';
-    }
-
-    /** */
-    private function setDataFromWhatsapp(array $proto, array $data): array
-    {
-        // antes era: evento: wa_message
-        $event = 'whatsapp_api';
-        if(array_key_exists('subEvento', $data)) {
-            if($data['subEvento'] == 'stt') {
-                $event = 'statuses';
-            }
-        }
-
-        $proto['evento'] = $event;
-        $proto['from'] = $data['from'];
-        return $proto;
-    }
-
-    /** */
-    private function setDataFromAnetShop(array $proto, array $data): array
-    {
-        if(array_key_exists('own', $data)) {
-            $proto['from'] = $data['own']['slug'];
-        }
-
-        if(array_key_exists('evento', $data)) {
-            $proto['evento'] = $data['evento'];
-        }
-
-        if(array_key_exists('action', $data)) {
-            
-            if($data['action'] == 'publik') {
-                $proto['evento'] = 'creada_publicacion';
-            }
-            if($data['action'] == 'cotiza') {
-                $proto['evento'] = 'creada_solicitud';
-            }
-        }
-
-        return $proto;
-    }
-
     ///
     private function buildProtocolo(String $uriCall, String $pathFileServer, array $data): array
     {
@@ -149,6 +99,56 @@ class WebHook
         }
 
         return $protocolo;
+    }
+
+    /** */
+    private function setDataFromWhatsapp(array $proto, array $data): array
+    {
+        // antes era: evento: wa_message
+        $event = 'whatsapp_api';
+        if(array_key_exists('subEvento', $data)) {
+            if($data['subEvento'] == 'stt') {
+                $event = 'statuses';
+            }
+        }
+
+        $proto['evento'] = $event;
+        $proto['from'] = $data['from'];
+        return $proto;
+    }
+
+    /** */
+    private function setDataFromAnetShop(array $proto, array $data): array
+    {
+        if(array_key_exists('own', $data)) {
+            $proto['from'] = $data['own']['slug'];
+        }
+
+        if(array_key_exists('evento', $data)) {
+            $proto['evento'] = $data['evento'];
+        }
+
+        if(array_key_exists('action', $data)) {
+            
+            if($data['action'] == 'publik') {
+                $proto['evento'] = 'creada_publicacion';
+            }
+            if($data['action'] == 'cotiza') {
+                $proto['evento'] = 'creada_solicitud';
+            }
+        }
+
+        return $proto;
+    }
+
+    /** */
+    public function getUrlToFrontDoor(): String
+    {
+        $hash = file_get_contents('../front_door/front_door.txt/front_door.txt');
+        if($hash) {
+            return base64_decode($hash);
+        }
+        return '';
     }
 
 }

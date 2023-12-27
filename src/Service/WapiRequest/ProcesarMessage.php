@@ -215,22 +215,18 @@ class ProcesarMessage {
     /**
      * Aqui procesamos los mensajes de login
     */
-    private function processMsgOfLogin(array $msg) {
-
+    private function processMsgOfLogin(array $msg)
+    {
         $obj = new LoginProcess($msg, $this->filesystem);
         if($obj->hasErr == '') {
             if(array_key_exists('from', $msg)) {
 
                 $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
                 $conm->setBody('text', $obj->toWhatsapp);
-                $message['response'] = $conm->toArray();
                 $result = $this->wapiHttp->send($conm);
-                
+
                 $msg['subEvento'] = 'iniLogin';
-                $msg['response']  = [
-                    'type' => $message['response']['type'],
-                    'body' => $message['response']['body']
-                ];
+                $msg['response']  = $result;
                 $this->whook->sendMy('wa-wh', 'notSave', $msg);
             }
         }

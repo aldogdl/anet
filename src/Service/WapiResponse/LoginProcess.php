@@ -10,10 +10,15 @@ class LoginProcess
     /** */
     public function __construct(array $message)
     {
+        $cuando = '';
         $timeFin = $this->getTimeKdk($message['timestamp']);
+        if($this->hasErr == '') {
+            $cuando = " a las " . $timeFin;
+        }
+
         $this->toWhatsapp = [
             "preview_url" => false,
-            "body" => "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana a las " . $timeFin
+            "body" => "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando
         ];
     }
 

@@ -53,8 +53,8 @@ class WrapHttp
     }
 
     /** */
-    private function wrapBody(String $to, String $type, array $body, bool $isReply): void {
-
+    private function wrapBody(String $to, String $type, array $body, bool $isReply): void
+    {
         $context = '';
         if($isReply) {
             if(array_key_exists('context', $body)) {

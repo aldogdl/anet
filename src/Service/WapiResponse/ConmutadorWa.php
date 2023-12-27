@@ -4,7 +4,6 @@ namespace App\Service\WapiResponse;
 
 class ConmutadorWa
 {
-
     public String $uriBase = 'https://graph.facebook.com/v17.0/';
     public String $token;
     public String $to;
@@ -37,15 +36,15 @@ class ConmutadorWa
     }
 
     /** */
-    public function setBody(String $tipoBody, array $bodySend) {
-
+    public function setBody(String $tipoBody, array $bodySend)
+    {
         $this->type = $tipoBody;
         $this->body = $bodySend;
     }
 
     /** */
-    public function toArray() {
-
+    public function toArray()
+    {
         return [
             'uriBase' => $this->uriBase,
             'token'   => $this->token,

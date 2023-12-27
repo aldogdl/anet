@@ -88,7 +88,7 @@ class GetController extends AbstractController
     #[Route('event-core/data-conmutador/', methods: ['GET', 'POST'])]
     public function getDataConmutador(Request $req): Response
     {
-        $filename = 'tkwaconm.json';
+        $filename = $this->getParameter('tkwaconm');
         if($req->getMethod() == 'GET') {
             $data = file_get_contents($filename);
             return $this->json(['code' => base64_encode($data)]);
