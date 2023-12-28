@@ -13,7 +13,6 @@ use App\Service\WapiResponse\ConmutadorWa;
 use App\Service\WapiResponse\LoginProcess;
 use App\Service\WapiResponse\WrapHttp;
 
-use App\Service\WapiRequest\IsLoginMessage;
 use App\Service\WapiRequest\ExtractMessage;
 use App\Service\WapiRequest\IsInteractiveMessage;
 use App\Service\WapiRequest\IsCotizacionMessage;
@@ -46,7 +45,14 @@ class ProcesarMessage {
             // TODO Enviar a EventCore
             return;
         }
-        
+
+        if($obj->isLogin) {
+            new LoginProcess(
+                $obj->get(), $this->params->get('tkwaconm'), $this->whook, $this->wapiHttp
+            );
+            return;
+        }
+
         if($obj->isStt) {
             $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
             return;
@@ -68,16 +74,10 @@ class ProcesarMessage {
 
         if($isInteractive->isCot) {
             $obj = new ReqFotosProcess(
-                $msg, new ConmutadorWa($msg, $this->params->get('tkwaconm')),
+                $msg, new ConmutadorWa($msg['from'], $this->params->get('tkwaconm')),
                 $obj, $this->wapiHttp, $this->whook
             );
             $obj->initializaCot();
-            return;
-        }
-
-        $obj = new IsLoginMessage($msg);
-        if($obj->isLogin) {
-            $this->processMsgOfLogin($msg);
             return;
         }
     }
@@ -113,7 +113,7 @@ class ProcesarMessage {
 
             $msg = $obj->get();
             $from = $cmd->setProcessOk($msg);
-            $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
+            $conm = new ConmutadorWa($msg['from'], $this->params->get('tkwaconm'));
 
             $txt = '*Revisar Mensaje Enviado e INICIAR SESIÓN*, desde tu Computadora.';
             if($from == 'pwa') {
@@ -150,16 +150,10 @@ class ProcesarMessage {
 
         if($isInteractive->isCot) {
             $obj = new ReqFotosProcess(
-                $msg, new ConmutadorWa($msg, $this->params->get('tkwaconm')),
+                $msg, new ConmutadorWa($msg['from'], $this->params->get('tkwaconm')),
                 $obj, $this->wapiHttp, $this->whook
             );
             $obj->initializaCot();
-            return;
-        }
-
-        $obj = new IsLoginMessage($msg);
-        if($obj->isLogin) {
-            $this->processMsgOfLogin($msg);
             return;
         }
     }
@@ -174,7 +168,7 @@ class ProcesarMessage {
         
         $isInteractive = new IsInteractiveMessage($msg);
         if( $isInteractive->isCot || $isInteractive->isNtg ) {
-            $conm = new ConmutadorWa($msg, $path);
+            $conm = new ConmutadorWa($msg['from'], $path);
             $conm->setBody('text', $cotTransit->getMsgErrorOtraCot($fileCot));
             $this->wapiHttp->send($conm, true);
             return;
@@ -184,7 +178,7 @@ class ProcesarMessage {
 
             case 'fotos':
                 $fto = new ReqFotosProcess(
-                    $msg, new ConmutadorWa($msg, $path),
+                    $msg, new ConmutadorWa($msg['from'], $path),
                     $cotTransit, $this->wapiHttp, $this->whook
                 );
                 $fto->exe($isInteractive->noFto);
@@ -193,7 +187,7 @@ class ProcesarMessage {
             case 'detalles':
 
                 $det = new ReqDetallesProcess(
-                    $msg, new ConmutadorWa($msg, $path),
+                    $msg, new ConmutadorWa($msg['from'], $path),
                     $cotTransit, $this->wapiHttp, $this->whook
                 );
                 $det->exe($isInteractive->good, $isInteractive->normal, $isInteractive->reparada);
@@ -202,33 +196,13 @@ class ProcesarMessage {
             case 'costo':
 
                 $cto = new ReqCostoProcess(
-                    $msg, new ConmutadorWa($msg, $path),
+                    $msg, new ConmutadorWa($msg['from'], $path),
                     $cotTransit, $this->wapiHttp, $this->whook
                 );
                 $cto->exe();
                 break;
 
             default:
-        }
-    }
-
-    /**
-     * Aqui procesamos los mensajes de login
-    */
-    private function processMsgOfLogin(array $msg)
-    {
-        $obj = new LoginProcess($msg, $this->filesystem);
-        if($obj->hasErr == '') {
-            if(array_key_exists('from', $msg)) {
-
-                $conm = new ConmutadorWa($msg, $this->params->get('tkwaconm'));
-                $conm->setBody('text', $obj->toWhatsapp);
-                $result = $this->wapiHttp->send($conm);
-
-                $msg['subEvento'] = 'iniLogin';
-                $msg['response']  = $result;
-                $this->whook->sendMy('wa-wh', 'notSave', $msg);
-            }
         }
     }
 

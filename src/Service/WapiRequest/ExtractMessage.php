@@ -10,6 +10,11 @@ class ExtractMessage {
     public bool $isStt = false;
     public bool $isCmd = false;
     public String $from = '';
+    public bool $isLogin = false;
+
+    private array $tokenLogin = [
+        'Hola', 'AutoparNet,', 'atenderte.', 'piezas', 'necesitas?'
+    ];
 
     /** 
      * Extraemos la esencia real del mensaje recibido por Whatsapp.
@@ -51,6 +56,7 @@ class ExtractMessage {
                 }
 
                 if(array_key_exists('statuses', $result)) {
+
                     $result = $this->extractMsgTypeStatus($result['statuses'][0]);
                     $result['phone_number_id'] = $phoneNumberId;
                     return true;
@@ -60,28 +66,68 @@ class ExtractMessage {
                     if(count($result['messages']) > 1) {
                         return false;
                     }
-
-                    $result = $result['messages'][0];
-                    $this->from = $result['from'];
-                    $result['phone_number_id'] = $phoneNumberId;
-                    $result['myTime'] = ''.strtotime('now');
-                    
-                    if(array_key_exists('text', $result)) {
-                        if(array_key_exists('body', $result['text'])) {                                        
-                            $isCmd = $result['text']['body'];
-                            if(mb_strpos($isCmd, '[cmd]') !== false) {
-                                $this->isCmd = true;
-                            }
-                        }
-                    }
-                    $this->message = $result;
-                    $result = [];
+                    $this->extractMessageType($result['messages'][0]);
+                    $this->message['phone_number_id'] = $phoneNumberId;
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    /** */
+    function extractMessageType(array $msg): void
+    {
+        $this->from = $msg['from'];
+        
+        if(array_key_exists('type', $msg)) {
+            switch ($msg['type']) {
+                case 'text':
+                    $this->extractText($msg);
+                    break;
+                
+                case 'text':
+                    $this->extractText($msg);
+                    break;
+                
+                default:
+                    # code...
+                    break;
+            }
+        }
+    }
+
+    ///
+    function extractText(array $msg): void
+    {
+        $txt = 'Error, no se recibio ningun texto';
+        if(array_key_exists('body', $msg['text'])) {                                        
+            $txt = $msg['text']['body'];
+            if(mb_strpos($txt, '[cmd]') !== false) {
+                $this->isCmd = true;
+            }
+        }
+
+        $idContext = '';
+        if(array_key_exists('context', $msg)) {
+            $idContext = $msg['context']['id'];
+        }
+
+        if(mb_strpos($txt, $this->tokenLogin[0]) !== false) {
+            $this->isLoginMsg($txt);
+        }
+        
+        $this->message = [
+            'from'     => $msg['from'],
+            'id'       => $msg['id'],
+            'context'  => $idContext,
+            'creado'   => $msg['timestamp'],
+            'recibido' => ''.strtotime('now'),
+            'type'     => 'text',
+            'message'  => $txt,
+        ];
+        $result = [];
     }
 
     /** */
@@ -113,5 +159,24 @@ class ExtractMessage {
         $this->message = $status;
         $status = [];
         return $this->message;
+    }
+
+    /** */
+    public function isLoginMsg(String $txtMsg)
+    {
+        $palClas = [];
+        $partes = explode(' ', $txtMsg);
+        $rota = count($partes);
+        for ($i=0; $i < $rota; $i++) {
+
+            $search = trim($partes[$i]);
+            if(in_array($search, $this->tokenLogin)) {
+                $palClas[] = $search;
+            }
+        }
+        
+        if(count($this->tokenLogin) == count($palClas)) {
+            $this->isLogin = true;
+        }
     }
 }

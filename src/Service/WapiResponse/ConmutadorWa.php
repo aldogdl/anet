@@ -13,7 +13,7 @@ class ConmutadorWa
     public array $body = [];
 
     /** */
-    public function __construct(array $message, String $path)
+    public function __construct(String $waId, String $path)
     {
         $fileConm = file_get_contents($path);
 
@@ -26,7 +26,7 @@ class ConmutadorWa
                 $this->token = str_replace('aldo_', '', $this->token);
             }
 
-            $this->waid = $message['from'];
+            $this->waid = $waId;
             if(mb_strpos($this->waid, '521') !== false) {
                 $this->to = str_replace('521', '52', $this->waid);
             }
