@@ -12,8 +12,9 @@ class ExtractMessage {
     public String $pathToAnalizar = '';
     public bool $isStt = false;
     public bool $isCmd = false;
-    public String $from = '';
     public bool $isLogin = false;
+    
+    public String $from = '';
     public String $phoneNumberId = '';
     private array $tokenLogin = [
         'Hola', 'AutoparNet,', 'atenderte.', 'piezas', 'necesitas?'
@@ -164,6 +165,7 @@ class ExtractMessage {
             ($isExp) ? $conv  : $result['status'],
             $cat
         );
+        $this->message->subEvento = 'stt';
     }
 
     /** */
@@ -184,4 +186,5 @@ class ExtractMessage {
             $this->isLogin = true;
         }
     }
+
 }

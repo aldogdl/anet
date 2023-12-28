@@ -20,11 +20,12 @@ class LoginProcess
         }
 
         $conm = new ConmutadorWa($message->from, $conmutaPath);
+        $conm->bodyRaw = "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando;
         $conm->setBody(
             'text',
             [
                 "preview_url" => false,
-                "body" => "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando
+                "body" => $conm->bodyRaw
             ]
         );
         $message->subEvento = 'iniLogin';

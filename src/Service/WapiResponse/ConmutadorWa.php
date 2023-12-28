@@ -13,6 +13,7 @@ class ConmutadorWa
 
     public string $type = '';
     public array $body = [];
+    public $bodyRaw = '';
 
     /** */
     public function __construct(String $waId, String $path)
@@ -65,7 +66,7 @@ class ConmutadorWa
             $creado,
             $creado,
             $this->type,
-            '',
+            $this->bodyRaw,
             'sent',
             '',
             'response_'.$recibido->subEvento
