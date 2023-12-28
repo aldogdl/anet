@@ -28,9 +28,9 @@ class LoginProcess
         );
         $result = $wapiHttp->send($conm);
 
-        $msg['subEvento'] = 'iniLogin';
-        $msg['response']  = $result;
-        $wh->sendMy('wa-wh', 'notSave', $msg);
+        $message['subEvento'] = 'iniLogin';
+        $message['response']  = $result;
+        $wh->sendMy('wa-wh', 'notSave', $message);
     }
 
     ///

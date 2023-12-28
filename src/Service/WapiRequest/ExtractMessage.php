@@ -117,7 +117,7 @@ class ExtractMessage {
         if(mb_strpos($txt, $this->tokenLogin[0]) !== false) {
             $this->isLoginMsg($txt);
         }
-        
+
         $this->message = [
             'from'     => $msg['from'],
             'id'       => $msg['id'],
