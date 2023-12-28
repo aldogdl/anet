@@ -38,7 +38,7 @@ class WrapHttp
             );
 
             $code = $response->getStatusCode();
-            $body = $response->getContent();
+            $body = json_decode($response->getContent());
         }
 
         return [
