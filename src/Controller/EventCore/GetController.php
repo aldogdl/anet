@@ -111,6 +111,7 @@ class GetController extends AbstractController
 
             $data = $this->toArray($req, 'data');
             if(array_key_exists('evento', $data)) {
+
                 if($data['evento'] == 'test') {
                     $data['status'] = 'recibido';
                     // Enviamos el evento de nueva orden
@@ -121,7 +122,7 @@ class GetController extends AbstractController
                 if($data['evento'] == 'backup') {
                     $hash = file_put_contents(
                         '../front_door/front_door.txt/front_door.txt',
-                        $data['path']
+                        base64_encode($data['path'])
                     );
                     
                     $res = ['abort'=> true, 'msg' => 'No se guardo el Hash'];
