@@ -32,6 +32,7 @@ class LoginProcess
 
         $result = $wapiHttp->send($conm);
         $sended = $conm->setIdToMsgSended($message, $result);
+        
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'enviado'  => $sended->toArray(),

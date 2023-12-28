@@ -49,6 +49,7 @@ class ConmutadorWa
     public function setIdToMsgSended(WaMsgMdl $recibido, array $response): WaMsgMdl
     {
         $id = '';
+        file_put_contents('wa_enviado.json', json_encode($response));
         if($response['statuscode'] == 200) {
             $response = $response['body'];
             if(array_key_exists('response', $response)) {
