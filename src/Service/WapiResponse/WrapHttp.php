@@ -24,7 +24,8 @@ class WrapHttp
         $code  = 501;
 
         $this->wrapBody($conm->to, $conm->type, $conm->body, $isReply);
-
+        
+        $body = '';
         if(count($this->bodyToSend) != 0) {
 
             $response = $this->client->request(
@@ -38,12 +39,12 @@ class WrapHttp
             );
 
             $code = $response->getStatusCode();
-            $body = json_decode($response->getContent());
+            $body = json_decode($response->getContent(), true);
         }
 
         return [
             'statuscode' => $code,
-            'response'   => $body,
+            'response'   => ($body == '') ? $error : $body,
             'message'    => $this->bodyToSend
         ];
     }
