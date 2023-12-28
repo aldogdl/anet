@@ -37,17 +37,13 @@ class WrapHttp
                 ]
             );
 
-            if($response->getStatusCode() == 200) {
-                return [];
-            }
-
             $code = $response->getStatusCode();
-            $error = $response->getContent(); 
+            $body = $response->getContent();
         }
 
         return [
             'statuscode' => $code,
-            'response'   => $error,
+            'response'   => $body,
             'message'    => $this->bodyToSend
         ];
     }
