@@ -2,6 +2,8 @@
 
 namespace App\Service\WapiResponse;
 
+use App\Entity\WaMsgMdl;
+
 class ConmutadorWa
 {
     public String $uriBase = 'https://graph.facebook.com/v17.0/';
@@ -40,6 +42,34 @@ class ConmutadorWa
     {
         $this->type = $tipoBody;
         $this->body = $bodySend;
+    }
+
+    /** */
+    public function setIdToMsgSended(WaMsgMdl $recibido, array $response): WaMsgMdl
+    {
+        $id = '';
+        if($response['statuscode'] == 200) {
+            $response = $response['body'];
+            if(array_key_exists('response', $response)) {
+                if(array_key_exists('messages', $response['response'])) {
+                    $id = $response['response']['messages'][0]['id'];
+                }
+            }
+        }
+
+        $creado = round(microtime(true) * 1000);
+        return new WaMsgMdl(
+            $recibido->from,
+            $id,
+            $recibido->id,
+            $creado,
+            $creado,
+            $this->type,
+            '',
+            'sent',
+            '',
+            'response_'.$recibido->subEvento
+        );
     }
 
     /** */

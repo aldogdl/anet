@@ -44,8 +44,7 @@ class WrapHttp
 
         return [
             'statuscode' => $code,
-            'response'   => ($body == '') ? $error : $body,
-            'message'    => $this->bodyToSend
+            'body'   => ($body == '') ? $error : $body,
         ];
     }
 
@@ -71,6 +70,7 @@ class WrapHttp
         if($context != '') {
             $this->bodyToSend['context'] = ['message_id' => $context];
         }
+
     }
 
 }

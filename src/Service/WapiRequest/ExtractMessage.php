@@ -2,16 +2,19 @@
 
 namespace App\Service\WapiRequest;
 
+use App\Entity\WaMsgMdl;
+
 class ExtractMessage {
 
-    private array $message;
+    private WaMsgMdl $message;
+    private String $recibido;
 
     public String $pathToAnalizar = '';
     public bool $isStt = false;
     public bool $isCmd = false;
     public String $from = '';
     public bool $isLogin = false;
-
+    public String $phoneNumberId = '';
     private array $tokenLogin = [
         'Hola', 'AutoparNet,', 'atenderte.', 'piezas', 'necesitas?'
     ];
@@ -21,13 +24,15 @@ class ExtractMessage {
     */
     public function __construct(array $message)
     {
+        $date = new \DateTime('now');
+        $this->recibido = $date->format('d-m-Y');
         if(!$this->isSingle($message)) {
             $this->pathToAnalizar = round(microtime(true) * 1000).'.json';
         }
     }
 
     /** */
-    public function get(): array { return $this->message; }
+    public function get(): WaMsgMdl { return $this->message; }
 
     /** 
      * Analizamos si el contenido del mensaje esta comprendido de listas unicas,
@@ -35,7 +40,6 @@ class ExtractMessage {
      */
     private function isSingle(array $message) : bool
     {
-        $phoneNumberId = '';
         $result = [];
 
         if(array_key_exists('entry', $message)) {
@@ -52,13 +56,11 @@ class ExtractMessage {
 
                 $result = $result['changes'][0]['value'];
                 if(array_key_exists('metadata', $result)) {
-                    $phoneNumberId = $result['metadata']['phone_number_id'];
+                    $this->phoneNumberId = $result['metadata']['phone_number_id'];
                 }
 
                 if(array_key_exists('statuses', $result)) {
-
-                    $result = $this->extractMsgTypeStatus($result['statuses'][0]);
-                    $result['phone_number_id'] = $phoneNumberId;
+                    $this->extractMsgTypeStatus($result['statuses'][0]);
                     return true;
                 }
 
@@ -67,7 +69,6 @@ class ExtractMessage {
                         return false;
                     }
                     $this->extractMessageType($result['messages'][0]);
-                    $this->message['phone_number_id'] = $phoneNumberId;
                     return true;
                 }
             }
@@ -117,48 +118,52 @@ class ExtractMessage {
         if(mb_strpos($txt, $this->tokenLogin[0]) !== false) {
             $this->isLoginMsg($txt);
         }
-
-        $this->message = [
-            'from'     => $msg['from'],
-            'id'       => $msg['id'],
-            'context'  => $idContext,
-            'creado'   => $msg['timestamp'],
-            'recibido' => ''.strtotime('now'),
-            'type'     => 'text',
-            'message'  => $txt,
-        ];
-        $result = [];
+        $this->message = new WaMsgMdl(
+            $msg['from'],
+            $msg['id'],
+            $idContext,
+            $msg['timestamp'],
+            $this->recibido,
+            "text",
+            $txt,
+            "read"
+        );
     }
 
     /** */
-    function extractMsgTypeStatus(array $result): array
+    function extractMsgTypeStatus(array $result): void
     {
         $this->isStt = true;
+        $this->from = $result['recipient_id'];
         $cat = 'Sin Especificar';
+
         if(array_key_exists('pricing', $result)) {
             $cat = $result['pricing']['category'];
         }
-
-        $status = [
-            'id'        => $result['id'],
-            'status'    => $result['status'],
-            'timestamp' => $result['timestamp'],
-            'from'      => $result['recipient_id'],
-            'category'  => $cat,
-            'myTime'    => ''.strtotime('now'),
-            'subEvento' => 'stt',
-        ];
         
-        $this->from = $result['recipient_id'];
+        $conv = [];
         if(array_key_exists('conversation', $result)) {
             if(array_key_exists('expiration_timestamp', $result['conversation'])) {
-                $status['expiration_timestamp'] = $result['conversation']['expiration_timestamp'];
+                $conv = [
+                    'conv' => $result['conversation']['id'],
+                    'expi' => $result['conversation']['expiration_timestamp'],
+                    'type' => $result['conversation']['origin']['type']   ,
+                    'stt'  => $result['status']   
+                ];
             }
         }
-        
-        $this->message = $status;
-        $status = [];
-        return $this->message;
+
+        $isExp = (count($conv) > 0) ? true : false;
+        $this->message = new WaMsgMdl(
+            $result['recipient_id'],
+            $result['id'],
+            "",
+            $result['timestamp'],
+            $this->recibido,
+            ($isExp) ? "expi" : "text",
+            ($isExp) ? $conv  : $result['status'],
+            $cat
+        );
     }
 
     /** */

@@ -2,6 +2,7 @@
 
 namespace App\Service\WapiResponse;
 
+use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiResponse\WrapHttp;
 
@@ -10,15 +11,15 @@ class LoginProcess
     public String $hasErr = '';
 
     /** */
-    public function __construct(array $message, String $conmutaPath, WebHook $wh, WrapHttp $wapiHttp)
+    public function __construct(WaMsgMdl $message, String $conmutaPath, WebHook $wh, WrapHttp $wapiHttp)
     {
         $cuando = '';
-        $timeFin = $this->getTimeKdk($message['creado']);
+        $timeFin = $this->getTimeKdk($message->creado);
         if($this->hasErr == '') {
             $cuando = " a las " . $timeFin;
         }
 
-        $conm = new ConmutadorWa($message['from'], $conmutaPath);
+        $conm = new ConmutadorWa($message->from, $conmutaPath);
         $conm->setBody(
             'text',
             [
@@ -26,11 +27,14 @@ class LoginProcess
                 "body" => "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando
             ]
         );
-        $result = $wapiHttp->send($conm);
+        $message->subEvento = 'iniLogin';
 
-        $message['subEvento'] = 'iniLogin';
-        $message['response']  = $result;
-        $wh->sendMy('wa-wh', 'notSave', $message);
+        $result = $wapiHttp->send($conm);
+        $sended = $conm->setIdToMsgSended($message, $result);
+        $wh->sendMy('wa-wh', 'notSave', [
+            'recibido' => $message->toArray(),
+            'enviado'  => $sended->toArray(),
+        ]);
     }
 
     ///

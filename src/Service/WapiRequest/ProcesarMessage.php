@@ -17,6 +17,8 @@ use App\Service\WapiRequest\ExtractMessage;
 use App\Service\WapiRequest\IsInteractiveMessage;
 use App\Service\WapiRequest\IsCotizacionMessage;
 
+use function App\Service\WapiResponse\toArray;
+
 class ProcesarMessage {
 
     private $params;
@@ -54,11 +56,11 @@ class ProcesarMessage {
         }
 
         if($obj->isStt) {
-            $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
+            $this->whook->sendMy('wa-wh', 'notSave', $obj->get()->toArray());
             return;
         }
 
-        $msg = $obj->get();
+        $msg = $obj->get()->toArray();
         $obj = new IsCotizacionMessage($msg, $this->params->get('waCots'));
         if($obj->inTransit) {
             $this->processCotInTransit($msg, $obj);
@@ -98,7 +100,7 @@ class ProcesarMessage {
                 $cmd->denegarMotivo('conv_free');
                 return;
             }
-            $this->whook->sendMy('convFree', 'notSave', $obj->get());
+            $this->whook->sendMy('convFree', 'notSave', $obj->get()->toArray());
             return;
         }
 
@@ -111,7 +113,7 @@ class ProcesarMessage {
         // Este ya no se usa, pero lo dejo para muestrario de comandos futuros
         if($obj->isCmd && $hasCmdFile) {
 
-            $msg = $obj->get();
+            $msg = $obj->get()->toArray();
             $from = $cmd->setProcessOk($msg);
             $conm = new ConmutadorWa($msg['from'], $this->params->get('tkwaconm'));
 
@@ -130,11 +132,11 @@ class ProcesarMessage {
         }
 
         if($obj->isStt) {
-            $this->whook->sendMy('wa-wh', 'notSave', $obj->get());
+            $this->whook->sendMy('wa-wh', 'notSave', $obj->get()->toArray());
             return;
         }
 
-        $msg = $obj->get();
+        $msg = $obj->get()->toArray();
         $obj = new IsCotizacionMessage($msg, $this->params->get('waCots'));
         if($obj->inTransit) {
             $this->processCotInTransit($msg, $obj);
