@@ -49,19 +49,20 @@ class ConmutadorWa
     public function setIdToMsgSended(WaMsgMdl $recibido, array $response): WaMsgMdl
     {
         $id = '';
-        file_put_contents('wa_enviado.json', json_encode($response));
+        $from = '';
         if($response['statuscode'] == 200) {
             $response = $response['body'];
-            if(array_key_exists('response', $response)) {
-                if(array_key_exists('messages', $response['response'])) {
-                    $id = $response['response']['messages'][0]['id'];
-                }
+            if(array_key_exists('messages', $response)) {
+                $id = $response['messages'][0]['id'];
+            }
+            if(array_key_exists('contacts', $response)) {
+                $from = $response['contacts'][0]['wa_id'];
             }
         }
 
         $creado = round(microtime(true) * 1000);
         return new WaMsgMdl(
-            $recibido->from,
+            ($from == '') ? $recibido->from : $from,
             $id,
             $recibido->id,
             $creado,
