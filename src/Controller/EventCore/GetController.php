@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 
 use App\Repository\NG2ContactosRepository;
 use App\Service\AnetShop\AnetShopSystemFileService;
+use App\Service\WebHook;
 
 class GetController extends AbstractController
 {
@@ -101,5 +102,53 @@ class GetController extends AbstractController
 
         return $this->json(['code' => 'error']);
     }
-  
+
+    /** */
+    #[Route('event-core/ngrok/', methods:['POST'])]
+    public function testToSistemNifi(Request $req, WebHook $wh): Response
+    {
+        if($req->getMethod() == 'POST') {
+
+            $data = $this->toArray($req, 'data');
+            if(array_key_exists('evento', $data)) {
+                if($data['evento'] == 'test') {
+                    $data['status'] = 'recibido';
+                    // Enviamos el evento de nueva orden
+                    $wh->sendMy('event-core\\ngrok', $data['evento'], $data);
+                    return $this->json($data);
+                }
+
+                if($data['evento'] == 'backup') {
+                    $hash = file_put_contents(
+                        '../front_door/front_door.txt/front_door.txt',
+                        $data['path']
+                    );
+                    
+                    $res = ['abort'=> true, 'msg' => 'No se guardo el Hash'];
+                    if($hash > 0) {
+                        $data['status'] = 'salvado';
+                        $res = ['abort'=> false, 'msg' => 'ok'];
+                    }
+                    return $this->json($res);
+                }
+
+                if($data['evento'] == 'get') {
+
+                    $hash = file_get_contents('../front_door/front_door.txt/front_door.txt');
+                    $res = ['abort'=> true, 'msg' => 'No se encontró el Hash'];
+                    if($hash != '') {
+                        $data['status'] = 'recuperado';
+                        $res = ['abort'=> false, 'msg' => 'ok', 'body' => $hash];
+                    }
+                    return $this->json($res);
+                }
+            }
+            
+            $data['status'] = 'fail';
+            return $this->json($data);
+        }
+        
+        return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => 'Hola Intruso...']);
+    }
+
 }

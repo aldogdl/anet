@@ -85,8 +85,8 @@ class WebHook
             $protocolo['evento'] = 'error_whatsapp_api';
             $protocolo['from'] = 'S.R. Autoparnet';
         }
-        if(mb_strpos($uriCall, 'make-test') !== false) {
-            $protocolo['evento'] = $pathFileServer;
+        if(mb_strpos($uriCall, 'ngrok') !== false) {
+            $protocolo['evento'] = 'ngrok_event';
             $protocolo['from']   = 'Autoparnet';
         }
         if(mb_strpos($uriCall, 'enviar-orden') !== false) {
