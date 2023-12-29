@@ -60,7 +60,6 @@ class WebHook
         $date = new \DateTime('now');
         $protocolo = [
             'evento'    => 'unknow',
-            'from'      => '',
             'uriCall'   => $uriCall,
             'srcServer' => $pathFileServer,
             'creado'    => $date->format('Y-m-d h:i:s'),
@@ -69,61 +68,29 @@ class WebHook
         
         if(mb_strpos($uriCall, 'convFree') !== false) {
             $protocolo['evento'] = 'conv_free';
-            $protocolo['from']   = $data['from'];
         }
         if(mb_strpos($uriCall, 'send-product-mlm') !== false) {
             $protocolo['evento'] = 'item_send_mlm';
-            $protocolo['from']   = $data['from'];
         }
         if(mb_strpos($uriCall, 'anet-shop') !== false) {
             $protocolo = $this->setDataFromAnetShop($protocolo, $data);
         }
         if(mb_strpos($uriCall, 'wa-wh') !== false) {
-            $protocolo = $this->setDataFromWhatsapp($protocolo, $data);
+            $protocolo['evento'] = 'whatsapp_api';
         }
         if(mb_strpos($uriCall, 'wa-wh-err') !== false) {
             $protocolo['evento'] = 'error_whatsapp_api';
-            $protocolo['from'] = 'S.R. Autoparnet';
         }
         if(mb_strpos($uriCall, 'ngrok') !== false) {
             $protocolo['evento'] = 'ngrok_event';
-            $protocolo['from']   = 'Autoparnet';
-        }
-        if(mb_strpos($uriCall, 'enviar-orden') !== false) {
-            $protocolo['evento'] = 'creada_solicitud';
-            $protocolo['from']   = 'old-System';
-        }
-        if(mb_strpos($uriCall, 'cotiza-simula-sol') !== false) {
-            $protocolo['evento'] = 'creada_solicitud';
-            $protocolo['from']   = 'old-System';
         }
 
         return $protocolo;
     }
 
     /** */
-    private function setDataFromWhatsapp(array $proto, array $data): array
-    {
-        // antes era: evento: wa_message
-        $event = 'whatsapp_api';
-        if(array_key_exists('subEvento', $data)) {
-            if($data['subEvento'] == 'stt') {
-                $event = 'statuses';
-            }
-        }
-
-        $proto['evento'] = $event;
-        $proto['from'] = $data['from'];
-        return $proto;
-    }
-
-    /** */
     private function setDataFromAnetShop(array $proto, array $data): array
     {
-        if(array_key_exists('own', $data)) {
-            $proto['from'] = $data['own']['slug'];
-        }
-
         if(array_key_exists('evento', $data)) {
             $proto['evento'] = $data['evento'];
         }

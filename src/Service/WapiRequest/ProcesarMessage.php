@@ -16,8 +16,7 @@ use App\Service\WapiResponse\WrapHttp;
 use App\Service\WapiRequest\ExtractMessage;
 use App\Service\WapiRequest\IsInteractiveMessage;
 use App\Service\WapiRequest\IsCotizacionMessage;
-
-use function App\Service\WapiResponse\toArray;
+use App\Service\WapiResponse\StatusProcess;
 
 class ProcesarMessage {
 
@@ -50,13 +49,14 @@ class ProcesarMessage {
 
         if($obj->isLogin) {
             new LoginProcess(
-                $obj->get(), $this->params->get('tkwaconm'), $this->whook, $this->wapiHttp
+                $obj->get(), $this->params->get('tkwaconm'), $this->params->get('chat'),
+                $this->whook, $this->wapiHttp
             );
             return;
         }
-
+        
         if($obj->isStt) {
-            $this->whook->sendMy('wa-wh', 'notSave', $obj->get()->toArray());
+            new StatusProcess($obj->get(), $this->params->get('chat'), $this->whook);
             return;
         }
 
@@ -66,7 +66,7 @@ class ProcesarMessage {
             $this->processCotInTransit($msg, $obj);
             return;
         }
-        
+
         $isInteractive = new IsInteractiveMessage($msg);
         if($isInteractive->isNtg) {
             $msg['subEvento'] = 'ntg';

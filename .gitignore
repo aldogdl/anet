@@ -43,6 +43,7 @@ public_html/bgs_shop/
 public_html/mlm_*
 public_html/scm/
 public_html/shop/*
+public_html/chat/*
 public_html/nifi/
 public_html/nifi/fails/
 public_html/filtros/
