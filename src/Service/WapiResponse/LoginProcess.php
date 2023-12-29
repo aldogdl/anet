@@ -36,7 +36,7 @@ class LoginProcess
 
         $result = $wapiHttp->send($conm);
         $sended = $conm->setIdToMsgSended($message, $result);
-
+        
         $fSys = new FsysProcess($pathChat);
         $fSys->dumpIn($message->toArray());
         $fSys->dumpIn($sended->toArray());

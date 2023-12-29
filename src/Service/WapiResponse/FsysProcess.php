@@ -56,19 +56,10 @@ class FsysProcess
         if(count($content) == 0) {
             return;
         }
-        $path = '';
-        $filename = '';
-        if(array_key_exists('from', $content)) {
-            if(array_key_exists('id', $content)) {
-                $filename = $content['id'] .'.json';
-                if(array_key_exists('recibido', $content)) {
-                    $path = $this->toChat.'/'.$content['from'].'/'.$content['recibido'];
-                }
-            }
-        }
-        if($filename == '' || $path == '') {
+        $this->setRoot($content);
+        if($this->filename == '' || $this->path == '') {
             return;
         }
-        $this->fSys->dumpFile($path.'/'.$filename, json_encode($content));
+        $this->fSys->dumpFile($this->path.'/'.$this->filename, json_encode($content));
     }
 }

@@ -45,9 +45,7 @@ class ConmutadorWa
         $this->body = $bodySend;
     }
 
-    /**
-     * Guardamos el id del mensaje enviando a whatsapp y colocamos el from desde ANET
-    */
+    /** */
     public function setIdToMsgSended(WaMsgMdl $recibido, array $response): WaMsgMdl
     {
         $id = '';
@@ -63,8 +61,8 @@ class ConmutadorWa
         }
 
         $creado = round(microtime(true) * 1000);
-        return new WaMsgMdl(
-            'ANET',
+        $obj = new WaMsgMdl(
+            ($from == '') ? $recibido->from: $from,
             $id,
             $recibido->id,
             $creado,
@@ -75,6 +73,8 @@ class ConmutadorWa
             '',
             'response_'.$recibido->subEvento
         );
+        $obj->isFromAnet = true;
+        return $obj;
     }
 
     /** */

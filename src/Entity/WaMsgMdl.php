@@ -5,6 +5,7 @@ namespace App\Entity;
 class WaMsgMdl
 {
     public String $from;
+    public bool $isFromAnet;
     public String $id;
     public String $context;
     public String $creado;
@@ -12,25 +13,24 @@ class WaMsgMdl
     public String $type;
     public String $message;
     public String $status;
-    public String $sesKduk;
     public String $subEvento;
 
     /** */
     public function __construct(
         String $from, String $id, String $context, String $creado, String $recibido,
-        String $type, String $message, String $status, String $sesKduk = '', String $subEvento = '',
+        String $type, String $message, String $status, String $subEvento = '',
     )
     {
         $this->from      = $from;
+        $this->isFromAnet= false;
         $this->id        = $id;
         $this->context   = $context;
         $this->creado    = $creado;
         $this->recibido  = $recibido;
         $this->type      = $type;
         $this->message   = $message;
-        $this->subEvento = $subEvento;
         $this->status    = $status;
-        $this->sesKduk   = $sesKduk;
+        $this->subEvento = $subEvento;
     }
 
     /** */
@@ -38,6 +38,7 @@ class WaMsgMdl
     {
         return [
             'from'      => $this->from,
+            'isFromAnet'=> $this->isFromAnet,
             'id'        => $this->id,
             'context'   => $this->context,
             'creado'    => $this->creado,
@@ -45,8 +46,7 @@ class WaMsgMdl
             'type'      => $this->type,
             'message'   => $this->message,
             'subEvento' => $this->subEvento,
-            'status'    => $this->status,
-            'sesKduk'   => $this->sesKduk,
+            'status'    => $this->status
         ];
     }
 
