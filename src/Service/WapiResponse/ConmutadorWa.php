@@ -66,11 +66,10 @@ class ConmutadorWa
             $id,
             $recibido->id,
             $creado,
-            $creado,
+            $recibido->recibido,
             $this->type,
             $this->bodyRaw,
             'sent',
-            '',
             'response_'.$recibido->subEvento
         );
         $obj->isFromAnet = true;

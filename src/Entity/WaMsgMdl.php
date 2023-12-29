@@ -11,14 +11,14 @@ class WaMsgMdl
     public String $creado;
     public String $recibido;
     public String $type;
-    public String $message;
+    public String|array $message;
     public String $status;
     public String $subEvento;
 
     /** */
     public function __construct(
         String $from, String $id, String $context, String $creado, String $recibido,
-        String $type, String $message, String $status, String $subEvento = '',
+        String $type, String|array $message, String $status, String $subEvento = '',
     )
     {
         $this->from      = $from;
