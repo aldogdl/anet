@@ -13,7 +13,7 @@ class ExtractMessage {
     public bool $isStt = false;
     public bool $isCmd = false;
     public bool $isLogin = false;
-    
+
     public String $from = '';
     public String $phoneNumberId = '';
     private array $tokenLogin = [
@@ -156,16 +156,16 @@ class ExtractMessage {
 
         $isExp = (count($conv) > 0) ? true : false;
         $this->message = new WaMsgMdl(
-            $result['recipient_id'],
+            $this->from,
             $result['id'],
             "",
             $result['timestamp'],
             $this->recibido,
             ($isExp) ? "expi" : "text",
             ($isExp) ? $conv  : $result['status'],
-            $cat
+            $cat,
+            'stt'
         );
-        $this->message->subEvento = 'stt';
     }
 
     /** */

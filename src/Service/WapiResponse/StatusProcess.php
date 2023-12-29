@@ -17,7 +17,16 @@ class StatusProcess
         if(count($chat) == 0) {
             return;
         }
-        $chat['status'] = $message->message;
+
+        $stt = 'unknow';
+        if(is_array($message->message)) {
+            if(array_key_exists('stt', $message->message)) {
+                $stt = $message->message['stt'];
+            }
+        }else{
+            $stt = $message->message;
+        }
+        $chat['status'] = $stt;
 
         $fSys->dumpIn($chat);
         $wh->sendMy('wa-wh', 'notSave', [
