@@ -35,8 +35,13 @@ class LoginProcess
         $conm->setBody('text', ["preview_url" => false, "body" => $conm->bodyRaw]);
 
         $result = $wapiHttp->send($conm);
-        $sended = $conm->setIdToMsgSended($message, $result);
+        if($result['statuscode'] != 200) {
+            $wh->sendMy('wa-wh', 'notSave', $result);
+            return;
+        }
         
+        $sended = $conm->setIdToMsgSended($message, $result);
+
         $fSys = new FsysProcess($pathChat);
         $fSys->dumpIn($message->toArray());
         $fSys->dumpIn($sended->toArray());
