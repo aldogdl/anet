@@ -39,6 +39,8 @@ class ProcesarMessage {
     /** */
     public function execute(array $message): void
     {
+        file_put_contents('message.json', json_encode($message));
+
         $obj = new ExtractMessage($message);
         if($obj->pathToAnalizar != '') {
             $folder = $this->getFolderTo('waAnalizar');
