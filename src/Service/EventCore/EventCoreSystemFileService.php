@@ -75,6 +75,19 @@ class EventCoreSystemFileService
 		}
 	}
 
+	/** Guardamos el json del mensaje para Whatsapp de un rastreo de solicitud */
+	public function setProdTrack(array $trackFile): String
+	{
+		$path = $this->params->get('prodTrack');
+		$path = Path::canonicalize($path.'/'.$trackFile['id'].'.json');
+		try {
+			$this->filesystem->dumpFile($path, json_encode($trackFile['message']));
+		} catch (FileException $e) {
+			return 'X ' . $e->getMessage();
+		}
+		return 'TrackFile guardado con éxito';
+	}
+
 	/** Guardamos el json resultante del alta de solicitud desde AnetShop */
 	public function setSolicitudInFile(array $product): String
 	{

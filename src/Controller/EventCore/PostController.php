@@ -9,10 +9,8 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\WebHook;
-use App\Service\SecurityBasic;
-use App\Repository\ProductRepository;
 use App\Service\AnetShop\AnetShopSystemFileService;
-
+use App\Service\EventCore\EventCoreSystemFileService;
 
 class PostController extends AbstractController
 {
@@ -61,6 +59,27 @@ class PostController extends AbstractController
       }
     }
     
+	  return $this->json($result);
+	}
+
+  /** 
+   * Guardar el mensaje prefabricado del rastreo de una solicitud
+  */
+  #[Route('api/event-core/save-prod-track/', methods:['post'])]
+	public function saveProdTrack(Request $req, EventCoreSystemFileService $sysFile): Response
+	{
+    $result = ['abort' => false];
+    $data = $this->toArray($req, 'data');
+    if(array_key_exists('id', $data)) {
+
+      $res = $sysFile->setProdTrack($data);
+      if(mb_strpos($res, 'X ') !== false) {
+        $result['abort']  = true;
+        $result['msg']  = 'error';
+      }
+      $result['body'] = $res;
+    }
+
 	  return $this->json($result);
 	}
 

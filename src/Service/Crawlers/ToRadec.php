@@ -17,7 +17,7 @@ class ToRadec {
     public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
     {
         $this->client = $client;
-        $this->folder = $container->get('recRadec');
+        $this->folder = $container->get('reqRadec');
         if(!is_dir($this->folder)) {
             mkdir($this->folder);
         }
