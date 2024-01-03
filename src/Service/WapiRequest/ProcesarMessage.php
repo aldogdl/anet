@@ -55,6 +55,7 @@ class ProcesarMessage {
             return;
         }
         
+        return;
         if($obj->isStt) {
             new StatusProcess($obj->get(), $this->params->get('chat'), $this->whook);
             return;
