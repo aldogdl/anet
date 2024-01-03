@@ -20,7 +20,8 @@ class InteractiveProcess
         WaMsgMdl $message, array $paths, WebHook $wh, WrapHttp $wapiHttp,
     ) {
 
-        $msg = json_decode(file_get_contents($paths['waTemplates']), true);
+        $path = $paths['waTemplates'].$message->subEvento.'.json';
+        $msg = json_decode(file_get_contents($path), true);
         $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
         $conm->bodyRaw = $msg['body'];
         $conm->setBody('text', $msg);
