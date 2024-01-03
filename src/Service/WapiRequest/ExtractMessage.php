@@ -13,6 +13,7 @@ class ExtractMessage {
     public bool $isStt = false;
     public bool $isCmd = false;
     public bool $isLogin = false;
+    public bool $isInteractive = false;
 
     public String $from = '';
     public String $phoneNumberId = '';
@@ -89,8 +90,8 @@ class ExtractMessage {
                     $this->extractText($msg);
                     break;
                 
-                case 'text':
-                    $this->extractText($msg);
+                case 'interactive':
+                    $this->extractInteractive($msg);
                     break;
                 
                 default:
@@ -104,30 +105,65 @@ class ExtractMessage {
     function extractText(array $msg): void
     {
         $txt = 'Error, no se recibio ningun texto';
-        if(array_key_exists('body', $msg['text'])) {                                        
-            $txt = $msg['text']['body'];
-            if(mb_strpos($txt, '[cmd]') !== false) {
-                $this->isCmd = true;
-            }
-        }
-
         $idContext = '';
         if(array_key_exists('context', $msg)) {
             $idContext = $msg['context']['id'];
         }
 
+        if(array_key_exists('body', $msg[$msg['type']])) {                                        
+            $txt = $msg[$msg['type']]['body'];
+            if(mb_strpos($txt, '[cmd]') !== false) {
+                $this->isCmd = true;
+            }
+        }
+
         if(mb_strpos($txt, $this->tokenLogin[0]) !== false) {
             $this->isLoginMsg($txt);
         }
+
         $this->message = new WaMsgMdl(
             $msg['from'],
             $msg['id'],
             $idContext,
             $msg['timestamp'],
             $this->recibido,
-            "text",
+            $msg['type'],
             $txt,
-            "read"
+            "delivered"
+        );
+    }
+
+    ///
+    function extractInteractive(array $msg): void
+    {
+        $btnAction = 'Error, no se recibio ningun Interactivo';
+        $idContext = '';
+        if(array_key_exists('context', $msg)) {
+            $idContext = $msg['context']['id'];
+        }
+
+        // Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
+        // que se necesita enviar como respuesta inmendiata a este
+        $subEvent = '';
+        if(array_key_exists('button_reply', $msg[$msg['type']])) {                                        
+            $btnAction = $msg[$msg['type']]['button_reply'];
+            $action = $btnAction['id'];
+            $partes = explode('_', $action);
+            $subEvent = $partes[0];
+            $btnAction['idItem'] = $partes[1];
+        }
+
+        $this->isInteractive = true;
+        $this->message = new WaMsgMdl(
+            $msg['from'],
+            $msg['id'],
+            $idContext,
+            $msg['timestamp'],
+            $this->recibido,
+            $msg['type'],
+            $btnAction,
+            "delivered",
+            $subEvent
         );
     }
 

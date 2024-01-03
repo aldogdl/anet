@@ -14,8 +14,8 @@ use App\Service\WapiResponse\LoginProcess;
 use App\Service\WapiResponse\WrapHttp;
 
 use App\Service\WapiRequest\ExtractMessage;
-use App\Service\WapiRequest\IsInteractiveMessage;
 use App\Service\WapiRequest\IsCotizacionMessage;
+use App\Service\WapiResponse\InteractiveProcess;
 use App\Service\WapiResponse\StatusProcess;
 
 class ProcesarMessage {
@@ -57,34 +57,24 @@ class ProcesarMessage {
             return;
         }
         
-        return;
         if($obj->isStt) {
             new StatusProcess($obj->get(), $this->params->get('chat'), $this->whook);
             return;
         }
 
-        $msg = $obj->get()->toArray();
-        $obj = new IsCotizacionMessage($msg, $this->params->get('waCots'));
-        if($obj->inTransit) {
-            $this->processCotInTransit($msg, $obj);
+        if($obj->isInteractive) {
+            $paths = [
+                'chat'       => $this->params->get('chat'),
+                'tkwaconm'   => $this->params->get('tkwaconm'),
+                'waTemplates'=> $this->params->get('waTemplates'),
+            ];
+            new InteractiveProcess($obj->get(), $paths, $this->whook, $this->wapiHttp);
             return;
         }
 
-        $isInteractive = new IsInteractiveMessage($msg);
-        if($isInteractive->isNtg) {
-            $msg['subEvento'] = 'ntg';
-            $this->whook->sendMy('wa-wh', 'notSave', $msg);
-            return;
-        }
-
-        if($isInteractive->isCot) {
-            $obj = new ReqFotosProcess(
-                $msg, new ConmutadorWa($msg['from'], $this->params->get('tkwaconm')),
-                $obj, $this->wapiHttp, $this->whook
-            );
-            $obj->initializaCot();
-            return;
-        }
+        // Si el mensaje no es ningun tipo de los anteriores entonces es un text
+        // hay que procesarlo para saber si es parte de una cotizacion en curso o un texto libre.
+        
     }
 
     /** */
@@ -146,21 +136,21 @@ class ProcesarMessage {
             return;
         }
         
-        $isInteractive = new IsInteractiveMessage($msg);
-        if($isInteractive->isNtg) {
-            $msg['subEvento'] = 'ntg';
-            $this->whook->sendMy('wa-wh', 'notSave', $msg);
-            return;
-        }
+        // $isInteractive = new IsInteractiveMessage($msg);
+        // if($isInteractive->isNtg) {
+        //     $msg['subEvento'] = 'ntg';
+        //     $this->whook->sendMy('wa-wh', 'notSave', $msg);
+        //     return;
+        // }
 
-        if($isInteractive->isCot) {
-            $obj = new ReqFotosProcess(
-                $msg, new ConmutadorWa($msg['from'], $this->params->get('tkwaconm')),
-                $obj, $this->wapiHttp, $this->whook
-            );
-            $obj->initializaCot();
-            return;
-        }
+        // if($isInteractive->isCot) {
+        //     $obj = new ReqFotosProcess(
+        //         $msg, new ConmutadorWa($msg['from'], $this->params->get('tkwaconm')),
+        //         $obj, $this->wapiHttp, $this->whook
+        //     );
+        //     $obj->initializaCot();
+        //     return;
+        // }
     }
 
     /** 
@@ -171,44 +161,44 @@ class ProcesarMessage {
         $path = $this->params->get('tkwaconm');
         $fileCot = $cotTransit->getCotizacionInTransit();
         
-        $isInteractive = new IsInteractiveMessage($msg);
-        if( $isInteractive->isCot || $isInteractive->isNtg ) {
-            $conm = new ConmutadorWa($msg['from'], $path);
-            $conm->setBody('text', $cotTransit->getMsgErrorOtraCot($fileCot));
-            $this->wapiHttp->send($conm, true);
-            return;
-        }
+        // $isInteractive = new IsInteractiveMessage($msg);
+        // if( $isInteractive->isCot || $isInteractive->isNtg ) {
+        //     $conm = new ConmutadorWa($msg['from'], $path);
+        //     $conm->setBody('text', $cotTransit->getMsgErrorOtraCot($fileCot));
+        //     $this->wapiHttp->send($conm, true);
+        //     return;
+        // }
 
-        switch ($fileCot['current']) {
+        // switch ($fileCot['current']) {
 
-            case 'fotos':
-                $fto = new ReqFotosProcess(
-                    $msg, new ConmutadorWa($msg['from'], $path),
-                    $cotTransit, $this->wapiHttp, $this->whook
-                );
-                $fto->exe($isInteractive->noFto);
-                break;
+        //     case 'fotos':
+        //         $fto = new ReqFotosProcess(
+        //             $msg, new ConmutadorWa($msg['from'], $path),
+        //             $cotTransit, $this->wapiHttp, $this->whook
+        //         );
+        //         $fto->exe($isInteractive->noFto);
+        //         break;
 
-            case 'detalles':
+        //     case 'detalles':
 
-                $det = new ReqDetallesProcess(
-                    $msg, new ConmutadorWa($msg['from'], $path),
-                    $cotTransit, $this->wapiHttp, $this->whook
-                );
-                $det->exe($isInteractive->good, $isInteractive->normal, $isInteractive->reparada);
-                break;
+        //         $det = new ReqDetallesProcess(
+        //             $msg, new ConmutadorWa($msg['from'], $path),
+        //             $cotTransit, $this->wapiHttp, $this->whook
+        //         );
+        //         $det->exe($isInteractive->good, $isInteractive->normal, $isInteractive->reparada);
+        //         break;
 
-            case 'costo':
+        //     case 'costo':
 
-                $cto = new ReqCostoProcess(
-                    $msg, new ConmutadorWa($msg['from'], $path),
-                    $cotTransit, $this->wapiHttp, $this->whook
-                );
-                $cto->exe();
-                break;
+        //         $cto = new ReqCostoProcess(
+        //             $msg, new ConmutadorWa($msg['from'], $path),
+        //             $cotTransit, $this->wapiHttp, $this->whook
+        //         );
+        //         $cto->exe();
+        //         break;
 
-            default:
-        }
+        //     default:
+        // }
     }
 
     /** */
