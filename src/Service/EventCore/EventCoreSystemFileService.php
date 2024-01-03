@@ -79,6 +79,9 @@ class EventCoreSystemFileService
 	public function setProdTrack(array $trackFile): String
 	{
 		$path = $this->params->get('prodTrack');
+		if(!$this->filesystem->exists($path)) {
+			mkdir($path);
+		}
 		$path = Path::canonicalize($path.'/'.$trackFile['id'].'.json');
 		try {
 			$this->filesystem->dumpFile($path, json_encode($trackFile['message']));
