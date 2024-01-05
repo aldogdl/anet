@@ -28,18 +28,26 @@ class WrapHttp
         $body = '';
         if(count($this->bodyToSend) != 0) {
 
-            $response = $this->client->request(
-                'POST', $conm->uriBase.'/messages', [
-                    'headers' => [
-                        'Authorization' => 'Bearer '.$conm->token,
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => $this->bodyToSend
-                ]
-            );
-
-            $code = $response->getStatusCode();
-            $body = json_decode($response->getContent(), true);
+            try {
+                $response = $this->client->request(
+                    'POST', $conm->uriBase.'/messages', [
+                        'headers' => [
+                            'Authorization' => 'Bearer '.$conm->token,
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => $this->bodyToSend
+                    ]
+                );
+                $code = $response->getStatusCode();
+                $body = json_decode($response->getContent(), true);
+            } catch (\Throwable $th) {
+                $code = 401;
+                if(mb_strpos($th->getMessage(), '401') !== false) {
+                    $body = ['error' => 'Token de Whatsapp API caducado'];
+                }else{
+                    $body = ['error' => 'Error de Whatsapp desconocido'];
+                }
+            }
         }
 
         return [

@@ -8,8 +8,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-use App\Service\WebHook;
-use App\Service\AnetShop\AnetShopSystemFileService;
 use App\Service\EventCore\EventCoreSystemFileService;
 
 class PostController extends AbstractController
@@ -34,33 +32,6 @@ class PostController extends AbstractController
     }
     return $content;
   }
-
-  /** 
-   * Guardamos el producto enviado desde AnetShop
-  */
-  #[Route('api/event-core/save-product/', methods:['post'])]
-	public function saveProduct(
-    Request $req, AnetShopSystemFileService $sysFile, WebHook $wh
-  ): Response
-	{
-    $result = ['abort' => true];
-    $data = $this->toArray($req, 'data');
-        
-    if(array_key_exists('product', $data)) {
-      // TODO Aqui me quede, es necesario hacer otra clase igual a AnetShopSystemFileService
-      // para EventCore...
-      $id = $sysFile->setSolicitudInFile($data);
-      if(mb_strpos($id, 'X ') !== false) {
-        $result['msg']  = $id;
-        $result['body'] = 'X Error al guardar producto';
-        return $this->json($result);
-      }else{
-        $result['add_product'] = $id;
-      }
-    }
-    
-	  return $this->json($result);
-	}
 
   /** 
    * Guardar el mensaje prefabricado del rastreo de una solicitud

@@ -11,39 +11,117 @@ class FsysProcess
     private String $filename;
 
     public String $hasErr = '';
-    public String $toChat = '';
+    public String $pathBase = '';
 
-    /** */
-    public function __construct(String $pathChat) {
+    /** 
+     * insertamos un path el cual funje como base(root) para
+     * los demas metodos
+    */
+    public function __construct(String $pathIn) {
+        $this->buildPath($pathIn);
+    }
 
-        $this->fSys = new Filesystem();
-        if(!$this->fSys->exists($pathChat)) {
-            $this->fSys->mkdir($pathChat);
-        }
-        $this->toChat = $pathChat;
+    /**
+     * Usado para insertar un nuevo pathBase y usarlo como constructor, es decir.
+    */
+    public function setPathBase(String $pathIn) {
+        $this->buildPath($pathIn);
     }
 
     /** */
-    private function setRoot(array $content) {
+    private function buildPath(String $pathIn) {
+        $this->fSys = new Filesystem();
+        if(!$this->fSys->exists($pathIn)) {
+            $this->fSys->mkdir($pathIn);
+        }
+        $this->pathBase = $pathIn;
+    }
+
+    /**
+     * Recuperamos el archivo de track del cotizador
+     */
+    public function getTrackedsFileOf(String $waId): array
+    {
+        $pathTo = $this->pathBase.'/'.$waId.'.json';
+        if($this->fSys->exists($pathTo)) {
+            $content = file_get_contents($pathTo);
+            if($content != '') {
+                return json_decode($content, true);
+            }
+        }
+        return [];
+    }
+
+    /**
+     * Recuperamos el archivo de track del cotizador
+     */
+    public function getTrackFileOf(String $waId): array
+    {
+        $pathTo = $this->pathBase.'/'.$waId.'.json';
+        if($this->fSys->exists($pathTo)) {
+            $content = file_get_contents($pathTo);
+            if($content != '') {
+                return json_decode($content, true);
+            }
+        }
+        return [];
+    }
+
+    /**
+     * Recuperamos el el contenido de un archivo
+     */
+    public function getContent(String $filename): array
+    {
+        $pathTo = $this->pathBase.'/'.$filename;
+        if($this->fSys->exists($pathTo)) {
+            $content = file_get_contents($pathTo);
+            if($content != '') {
+                return json_decode($content, true);
+            }
+        }
+        return [];
+    }
+
+    /**
+     * Vaciamos el contenido dentro de un archivo.
+    */
+    public function setContent(String $filename, array $content): void
+    {
+        if(count($content) == 0) {
+            return;
+        }
+        if($filename == '' || $this->pathBase == '') {
+            return;
+        }
+        $this->fSys->dumpFile($this->pathBase.'/'.$filename, json_encode($content));
+    }
+
+    /**
+     * Construimos el sistema de archivos (serie de carpetas) para almacenar los
+     * chats (Mensajes recibidos y enviados desde y para whatsapp)
+    */
+    private function setRootChat(array $content) {
 
         if(array_key_exists('from', $content)) {
             if(array_key_exists('id', $content)) {
                 $this->filename = $content['id'] .'.json';
                 if(array_key_exists('recibido', $content)) {
-                    $this->path = $this->toChat.$content['from'].'/'.$content['recibido'];
+                    $this->path = $this->pathBase.$content['from'].'/'.$content['recibido'];
                 }
             }
         }
     }
 
-    /** */
-    public function get(array $content): array
+    /**
+     * Recuperamos un mensaje de Chat para actualizar sus datos
+    */
+    public function getChat(array $content): array
     {
         if(count($content) == 0) {
             return [];
         }
         
-        $this->setRoot($content);
+        $this->setRootChat($content);
         if($this->filename == '' || $this->path == '') {
             return [];
         }
@@ -53,16 +131,21 @@ class FsysProcess
         return [];
     }
 
-    /** */
+    /**
+     * Vaciamos el contenido dentro de un archivo. el path y filename son determinados por
+     * @see $this->setRootChat.
+    */
     public function dumpIn(array $content): void
     {
         if(count($content) == 0) {
             return;
         }
-        $this->setRoot($content);
+        $this->setRootChat($content);
         if($this->filename == '' || $this->path == '') {
             return;
         }
         $this->fSys->dumpFile($this->path.'/'.$this->filename, json_encode($content));
     }
+
+
 }

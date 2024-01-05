@@ -16,6 +16,22 @@ class WaController extends AbstractController
     /**
      * Endpoint para la verificacion de conección
      */
+    #[Route('wa/wh/test/', methods: ['GET'])]
+    public function whatsTest(Request $req, ProcesarMessage $processMsg): Response
+    {
+        if($req->getMethod() == 'GET') {
+
+            $path = $this->getParameter('tracking');
+            $path = $path .'/test_interactive.json';
+            $message = json_decode(file_get_contents($path), true);
+            $processMsg->execute($message, true);
+        }
+        return new Response('ok', 200);
+    }
+
+    /**
+     * Endpoint para la verificacion de conección
+     */
     #[Route('wa/wh/', methods: ['GET', 'POST'])]
     public function verifyWa(Request $req, ProcesarMessage $processMsg): Response
     {
