@@ -40,8 +40,9 @@ class ProcesarMessage {
     public function execute(array $message, bool $isTest = false): void
     {
         file_put_contents('message.json', json_encode($message));
+        $pathTracking = $this->params->get('tracking');
 
-        $obj = new ExtractMessage($message);
+        $obj = new ExtractMessage($message, $pathTracking);
         if($obj->pathToAnalizar != '') {
             $folder = $this->getFolderTo('waAnalizar');
             $this->saveFile($folder.$obj->pathToAnalizar, $message);
@@ -68,7 +69,7 @@ class ProcesarMessage {
                 'tkwaconm'   => $this->params->get('tkwaconm'),
                 'waTemplates'=> $this->params->get('waTemplates'),
                 'prodTrack'  => $this->params->get('prodTrack'),
-                'tracking'   => $this->params->get('tracking'),
+                'tracking'   => $pathTracking,
                 'trackeds'   => $this->params->get('trackeds'),
             ];
             new InteractiveProcess($obj->get(), $paths, $this->whook, $this->wapiHttp);

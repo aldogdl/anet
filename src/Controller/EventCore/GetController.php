@@ -112,7 +112,7 @@ class GetController extends AbstractController
             $data = $this->toArray($req, 'data');
             if(array_key_exists('evento', $data)) {
 
-                if($data['evento'] == 'test') {
+                if(mb_strpos($data['evento'], 'test') !== false) {
                     $data['status'] = 'recibido';
                     // Enviamos el evento de nueva orden
                     $wh->sendMy('event-core\\ngrok', $data['evento'], $data);

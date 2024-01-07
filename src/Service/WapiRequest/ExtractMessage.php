@@ -13,10 +13,15 @@ class ExtractMessage {
     public bool $isStt = false;
     public bool $isCmd = false;
     public bool $isLogin = false;
+    public bool $isImage = false;
+    public bool $isCot = false;
     public bool $isInteractive = false;
 
     public String $from = '';
+    public String $pathFileTrack = '';
     public String $phoneNumberId = '';
+    private array $tracking = [];
+
     private array $tokenLogin = [
         'Hola', 'AutoparNet,', 'atenderte.', 'piezas', 'necesitas?'
     ];
@@ -24,10 +29,12 @@ class ExtractMessage {
     /** 
      * Extraemos la esencia real del mensaje recibido por Whatsapp.
     */
-    public function __construct(array $message)
+    public function __construct(array $message, String $pathToFileTrack)
     {
         $date = new \DateTime('now');
+        $this->pathFileTrack = $pathToFileTrack;
         $this->recibido = $date->format('d-m-Y');
+
         if(!$this->isSingle($message)) {
             $this->pathToAnalizar = round(microtime(true) * 1000).'.json';
         }
@@ -88,10 +95,15 @@ class ExtractMessage {
             switch ($msg['type']) {
                 case 'text':
                     $this->extractText($msg);
+                    $this->hasTracking();
                     break;
                 
                 case 'interactive':
                     $this->extractInteractive($msg);
+                    break;
+
+                case 'image':
+                    
                     break;
                 
                 default:
@@ -202,6 +214,15 @@ class ExtractMessage {
             $cat,
             'stt'
         );
+    }
+
+    /** Abrimos el archivo tracking para revisar si hay cotizacion en curso */
+    private function hasTracking()
+    {
+        $path = $this->pathFileTrack.'/'.$this->message->from.'.json';
+        if(is_file($path)) {
+            
+        }
     }
 
     /** */
