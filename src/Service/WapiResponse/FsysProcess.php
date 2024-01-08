@@ -125,9 +125,12 @@ class FsysProcess
         if($this->filename == '' || $this->path == '') {
             return [];
         }
-        try {
-            return json_decode( file_get_contents($this->path.'/'.$this->filename), true);
-        } catch (\Throwable $th) {}
+        $filename = $this->path.'/'.$this->filename;
+        if(is_file($filename)) {
+            try {
+                return json_decode( file_get_contents($filename), true);
+            } catch (\Throwable $th) {}
+        }
         return [];
     }
 
