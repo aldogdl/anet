@@ -13,7 +13,7 @@ class StatusProcess
     public function __construct(WaMsgMdl $message, String $pathChat, WebHook $wh)
     {
         $fSys = new FsysProcess($pathChat);
-        $chat = $fSys->get($message->toArray());
+        $chat = $fSys->getChat($message->toArray());
         if(count($chat) == 0) {
             return;
         }
