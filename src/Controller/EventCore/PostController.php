@@ -51,6 +51,11 @@ class PostController extends AbstractController
       $result['body'] = $res;
     }
 
+    // Como proteccion al sistema, creamos la carpeta tracking en coso de no existir
+    $pathTracking = $this->getParameter('tracking');
+    if(!is_dir($pathTracking)) {
+      mkdir($pathTracking);
+    }
 	  return $this->json($result);
 	}
 

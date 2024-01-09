@@ -85,18 +85,9 @@ class ProcesarMessage {
     public function executeOld(array $message): void
     {
         $obj = new ExtractMessage($message);
-        
-        $cmd = new ProcessCMD($this->params->get('waCmds'));
-        $hasCmdFile = $cmd->hasFileCmd($obj->from);
-        
+
         $filename = 'conv_free.'.$obj->from.'.cnv';
         if(is_file($filename)) {
-            if($obj->isCmd && $hasCmdFile) {
-                // El mensaje es un comando, ademas sí se encontró el archivo cmd pero...
-                // Hay una conversacion libre en curso.
-                $cmd->denegarMotivo('conv_free');
-                return;
-            }
             $this->whook->sendMy('convFree', 'notSave', $obj->get()->toArray());
             return;
         }
@@ -107,27 +98,6 @@ class ProcesarMessage {
             return;
         }
         
-        // Este ya no se usa, pero lo dejo para muestrario de comandos futuros
-        if($obj->isCmd && $hasCmdFile) {
-
-            $msg = $obj->get()->toArray();
-            $from = $cmd->setProcessOk($msg);
-            $conm = new ConmutadorWa($msg['from'], $this->params->get('tkwaconm'));
-
-            $txt = '*Revisar Mensaje Enviado e INICIAR SESIÓN*, desde tu Computadora.';
-            if($from == 'pwa') {
-                $txt = '*REVISAR Y CONECTAR*, desde tu Aplicación AnetShop.';
-            }
-            $conm->setBody('text', [
-                "context"     => $msg['id'],
-                "preview_url" => false,
-                "body"        => "🤖👍🏼 Orden Recibida!\n,Ahora haz click en el Botón:\n" . $txt
-            ]);
-
-            $this->wapiHttp->send($conm, true);
-            return;
-        }
-
         if($obj->isStt) {
             $this->whook->sendMy('wa-wh', 'notSave', $obj->get()->toArray());
             return;
