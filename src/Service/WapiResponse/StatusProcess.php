@@ -10,12 +10,9 @@ class StatusProcess
     public String $hasErr = '';
 
     /** */
-    public function __construct(WaMsgMdl $message, String $pathChat, WebHook $wh)
+    public function __construct(WaMsgMdl $message, String $pathChat, String $pathTrackFile, WebHook $wh)
     {
         $stt = 'unknow';
-        $fSys = new FsysProcess($pathChat);
-        $chat = $fSys->getChat($message->toArray());
-
         if(is_array($message->message)) {
             if(array_key_exists('stt', $message->message)) {
                 $stt = $message->message['stt'];
@@ -23,6 +20,12 @@ class StatusProcess
         }else{
             $stt = $message->message;
         }
+
+        $fSys = new FsysProcess($pathTrackFile);
+        $trackFile = $fSys->getContent($message->from.'.json');
+
+        $fSys->setPathBase($pathChat);
+        $chat = $fSys->getChat($message->toArray());
 
         $hasChat = false;
         if(count($chat) == 0) {
@@ -33,7 +36,8 @@ class StatusProcess
 
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
-            'procesado'=> ($hasChat) ? $chat : 'Sin Chat'
+            'procesado'=> ($hasChat) ? $chat : 'Sin Chat',
+            'trackfile'=> $trackFile
         ]);
     }
 
