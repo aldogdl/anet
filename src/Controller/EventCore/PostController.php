@@ -56,6 +56,7 @@ class PostController extends AbstractController
     if(!is_dir($pathTracking)) {
       mkdir($pathTracking);
     }
+    
 	  return $this->json($result);
 	}
 

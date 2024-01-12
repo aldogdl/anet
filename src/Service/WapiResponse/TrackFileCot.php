@@ -17,7 +17,7 @@ class TrackFileCot {
     // El archivo completo del fileTrack del cotizador, se manipulara y se actualizara
     public array $fileTrackItem = [];
     // El item el cual fue respondido por medio de los botones
-    private $itemCurrentResponse = [];
+    private $itemCurrentResponsed = [];
     // Los items que se enviarán al archivo trackeds de atendidos.
     private $itemsToTrackeds = [];
 
@@ -56,17 +56,19 @@ class TrackFileCot {
                 $itemCurrentIndx = array_search($this->message->message['idItem'], $idsItems);
                 
                 if($itemCurrentIndx !== false) {
-                    $this->itemCurrentResponse = $this->fileTrackItem['items'][$itemCurrentIndx];
+                    $this->itemCurrentResponsed = $this->fileTrackItem['items'][$itemCurrentIndx];
                     // solo si el index del item encontrado es mayor a cero, lo colocamos al principio
                     if($itemCurrentIndx > 0) {
                         unset($this->fileTrackItem['items'][$itemCurrentIndx]);
-                        array_unshift($this->fileTrackItem['items'], $this->itemCurrentResponse);
+                        array_unshift($this->fileTrackItem['items'], $this->itemCurrentResponsed);
                     }
+                    // Si no es atendido, lo marcamos como atendido para evitar enivar el mismo mensaje de Cot.
                     if(!$this->isAtendido) {
-                        $this->itemsToTrackeds[] = $this->itemCurrentResponse['idItem'];
+                        $this->itemsToTrackeds[] = $this->itemCurrentResponsed['idItem'];
                     }
-                    // mientras este en esta lista forzamos a que isAtendida sea false para
-                    // continuar con los siguientes pasos
+                    // mientras este en la lista del FileTrack es por que aun no ha terminado de cotizar
+                    // por lo tanto forzamos a que isAtendida sea false para continuar con los
+                    // siguientes pasos.
                     $this->isAtendido = false;
                 }
             }
@@ -75,19 +77,20 @@ class TrackFileCot {
 
     /** 
     * Solo el no tengo o no tengo auto, son los unicos eventos que disparan un
-    * sierto proceso para ver si hay mas ordenes de solicitud de cotizaciones
+    * cierto proceso para ver si hay mas ordenes de solicitud de cotizaciones
     * para enviarle al cotizador.
     */
     public function fetchItemToSent(): array
     {
         $itemFetchToSent = [];
-        // El archivo Track existe, por lo tanto vemos si hay mas items
+        // El archivo TrackFile existe, por lo tanto vemos si hay mas items
         if($this->hasItems) {
 
-            // En caso de que este bacio el $this->itemCurrentResponse, es que no se encontró
-            // entre la lista de tracking pero aun asi, si hay mas items para enviar los mandamos
-            if($this->hasItems && count($this->itemCurrentResponse) > 0) {
-                if($this->fileTrackItem['items'][0]['idItem'] == $this->itemCurrentResponse['idItem']) {
+            // En caso de que este bacio el $this->itemCurrentResponsed, es que no se encontró
+            // entre la lista de item respondido, pero aun asi, si hay mas items para enviar
+            // los mandamos
+            if($this->hasItems && count($this->itemCurrentResponsed) > 0) {
+                if($this->fileTrackItem['items'][0]['idItem'] == $this->itemCurrentResponsed['idItem']) {
                     unset($this->fileTrackItem['items'][0]);
                     sort($this->fileTrackItem['items']);
                 }
@@ -100,7 +103,7 @@ class TrackFileCot {
                 $copyFileTrack = [];
                 $rota = count($this->fileTrackItem['items']);
                 for ($i=0; $i < $rota; $i++) {
-                    if($this->fileTrackItem['items'][$i]['mdl'] == $this->itemCurrentResponse['mdl']) {
+                    if($this->fileTrackItem['items'][$i]['mdl'] == $this->itemCurrentResponsed['mdl']) {
                         $this->itemsToTrackeds[] = $this->fileTrackItem['items'][$i]['idItem'];
                     }else{
                         $copyFileTrack[] = $this->fileTrackItem['items'][$i];

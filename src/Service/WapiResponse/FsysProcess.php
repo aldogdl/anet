@@ -38,24 +38,19 @@ class FsysProcess
     }
 
     /**
-     * Recuperamos el archivo de track del cotizador
+     * Recuperamos el archivo de tracked del cotizador
      */
-    public function getTrackedsFileOf(String $waId): array
-    {
-        $pathTo = $this->pathBase.'/'.$waId.'.json';
-        if($this->fSys->exists($pathTo)) {
-            $content = file_get_contents($pathTo);
-            if($content != '') {
-                return json_decode($content, true);
-            }
-        }
-        return [];
-    }
+    public function getTrackedsFileOf(String $waId): array { return $this->getFileTrackBy($waId); }
 
     /**
-     * Recuperamos el archivo de track del cotizador
+     * Recuperamos el archivo de trackFile del cotizador
      */
-    public function getTrackFileOf(String $waId): array
+    public function getTrackFileOf(String $waId): array { return $this->getFileTrackBy($waId); }
+
+    /**
+     * Recuperamos el archivo de trackFile o Tracked
+     */
+    public function getFileTrackBy(String $waId): array
     {
         $pathTo = $this->pathBase.'/'.$waId.'.json';
         if($this->fSys->exists($pathTo)) {

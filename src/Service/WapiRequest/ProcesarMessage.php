@@ -42,7 +42,7 @@ class ProcesarMessage {
         file_put_contents('message.json', json_encode($message));
         $pathTracking = $this->params->get('tracking');
 
-        $obj = new ExtractMessage($message, $pathTracking);
+        $obj = new ExtractMessage($message);
         if($obj->pathToAnalizar != '') {
             $folder = $this->getFolderTo('waAnalizar');
             $this->saveFile($folder.$obj->pathToAnalizar, $message);

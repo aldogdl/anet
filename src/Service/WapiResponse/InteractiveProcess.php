@@ -23,9 +23,10 @@ class InteractiveProcess
         $fTrack = new TrackFileCot($message,
             ['tracking' => $paths['tracking'], 'trackeds' => $paths['trackeds']]
         );
+
         if($fTrack->isAtendido) {
             // Al entrar aqui es que no se encontró el item respondido por un boton entre
-            // la lista de trackings pero es necesario evaluar ciertas cosas...
+            // la lista del TrackFile pero es necesario evaluar ciertas cosas...
 
             // 1.- Hay mas items que atender??
             if($fTrack->hasItems) {
@@ -56,7 +57,7 @@ class InteractiveProcess
         if(count($itemFetchToSent) > 0) {
             //Buscamos para ver si existe el mensaje del item prefabricado.
             $fSys->setPathBase($paths['prodTrack']);
-            $template = $fSys->getContent($itemFetchToSent['idItem'].'.json');
+            $template = $fSys->getContent($itemFetchToSent['idItem'].'_track.json');
             if(count($template) > 0) {
                 $typeMsgToSent = $template['type'];
                 $template = $template[$typeMsgToSent];
