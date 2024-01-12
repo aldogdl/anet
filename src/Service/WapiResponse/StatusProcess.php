@@ -37,7 +37,7 @@ class StatusProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'procesado'=> ($hasChat) ? $chat : 'Sin Chat',
-            'trackfile'=> $trackFile
+            'trackfile'=> $trackFile['version']
         ]);
     }
 
