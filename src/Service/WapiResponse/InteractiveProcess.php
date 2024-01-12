@@ -72,10 +72,10 @@ class InteractiveProcess
             $template = $fSys->getContent($message->subEvento.'.json');
         }
         
-        $sended = [];
+        $entroToSended = false;
         $fSys->setPathBase($paths['chat']);
         if(count($template) > 0) {
-
+            
             $conm->bodyRaw = $template['body'];
             $conm->setBody($typeMsgToSent, $template);
             $result = $wapiHttp->send($conm);
@@ -83,12 +83,13 @@ class InteractiveProcess
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
             }
-
+            
             $sended = $conm->setIdToMsgSended($message, $result);
+            $entroToSended = true;
         }
 
         $fSys->dumpIn($message->toArray());
-        if(count($sended) > 0) {
+        if($entroToSended) {
             $fSys->dumpIn($sended->toArray());
         }
 
