@@ -33,11 +33,14 @@ class StatusProcess
             $fSys->dumpIn($chat);
             $hasChat = true;
         }
-
+        $version = 0;
+        if(count($trackFile) > 0 && array_key_exists('version', $trackFile)) {
+            $version = $trackFile['version'];
+        }
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'procesado'=> ($hasChat) ? $chat : 'Sin Chat',
-            'trackfile'=> $trackFile['version']
+            'trackfile'=> $version
         ]);
     }
 
