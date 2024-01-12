@@ -4,6 +4,7 @@ parameters:
     prodTrack  : '%phtml%/prod_track/'
     reqRadec   : '%phtml%/req_radec/'
     waTemplates: '%phtml%/wa_templates/'
+    waAnalizar : '%phtml%/wa_analizar/'
     trackeds   : '%phtml%/trackeds/'
     tracking   : '%phtml%/tracking/'
     trackFlow  : '%tracking%/_track_flow.json'
@@ -11,7 +12,6 @@ parameters:
     dtaCtc     : '%phtml%/ctcs/'
     dtaCtcLog  : '%phtml%/ctcs/log'
 
-    waAnalizar : '%phtml%/wa_analizar/'
     waSort     : '%phtml%/wa/_orden_put.json'
     anetMlm    : '%phtml%/anet_mlm.json'
     getWaToken : '%env(resolve:WA_TOKEN)%'

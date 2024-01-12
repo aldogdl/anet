@@ -12,13 +12,10 @@ class StatusProcess
     /** */
     public function __construct(WaMsgMdl $message, String $pathChat, WebHook $wh)
     {
+        $stt = 'unknow';
         $fSys = new FsysProcess($pathChat);
         $chat = $fSys->getChat($message->toArray());
-        if(count($chat) == 0) {
-            return;
-        }
 
-        $stt = 'unknow';
         if(is_array($message->message)) {
             if(array_key_exists('stt', $message->message)) {
                 $stt = $message->message['stt'];
@@ -26,12 +23,17 @@ class StatusProcess
         }else{
             $stt = $message->message;
         }
-        $chat['status'] = $stt;
 
-        $fSys->dumpIn($chat);
+        $hasChat = false;
+        if(count($chat) == 0) {
+            $chat['status'] = $stt;
+            $fSys->dumpIn($chat);
+            $hasChat = true;
+        }
+
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
-            'procesado'=> $chat
+            'procesado'=> ($hasChat) ? $chat : 'Sin Chat'
         ]);
     }
 
