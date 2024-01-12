@@ -49,7 +49,8 @@ class InteractiveProcess
         }
         $filetrack = $fTrack->fileTrackItem;
         $fTrack = null;
-
+        
+        $template = [];
         $typeMsgToSent = 'text';
         $fSys = new FsysProcess($paths['chat']);
         $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
@@ -71,6 +72,8 @@ class InteractiveProcess
             $template = $fSys->getContent($message->subEvento.'.json');
         }
         
+        $sended = [];
+        $fSys->setPathBase($paths['chat']);
         if(count($template) > 0) {
 
             $conm->bodyRaw = $template['body'];
@@ -82,17 +85,18 @@ class InteractiveProcess
             }
 
             $sended = $conm->setIdToMsgSended($message, $result);
-    
-            $fSys->setPathBase($paths['chat']);
-            $fSys->dumpIn($message->toArray());
-            $fSys->dumpIn($sended->toArray());
-    
-            $wh->sendMy('wa-wh', 'notSave', [
-                'recibido' => $message->toArray(),
-                'enviado'  => $sended->toArray(),
-                'trackFile'=> $$filetrack
-            ]);
         }
+
+        $fSys->dumpIn($message->toArray());
+        if(count($sended) > 0) {
+            $fSys->dumpIn($sended->toArray());
+        }
+
+        $wh->sendMy('wa-wh', 'notSave', [
+            'recibido' => $message->toArray(),
+            'enviado'  => $sended->toArray(),
+            'trackFile'=> $filetrack
+        ]);
 
     }
 
