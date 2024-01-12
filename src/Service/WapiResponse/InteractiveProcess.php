@@ -59,6 +59,9 @@ class InteractiveProcess
             $fSys->setPathBase($paths['prodTrack']);
             $template = $fSys->getContent($itemFetchToSent['idItem'].'_track.json');
             if(count($template) > 0) {
+                if(array_key_exists('message', $template)) {
+                    $template = $template['message'];
+                }
                 $typeMsgToSent = $template['type'];
                 $template = $template[$typeMsgToSent];
             }
