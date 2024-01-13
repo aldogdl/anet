@@ -34,6 +34,7 @@ class InteractiveProcess
                 // si es track es que quiere cotizar la que ya habia atendido y eso no esta permitido.
                 if($message->subEvento == 'sfto') {
                     // TODO avisar al cotizador con un mensaje.
+                    file_put_contents('wa_rechazada.json', json_encode($message->message));
                     return;
                 }
             }
@@ -47,6 +48,7 @@ class InteractiveProcess
             // Si se respondio con un Cotizar ahora, solo guardamos el fileTrack
             $trackFile->update();
         }
+
         $filetrack = $trackFile->trackFile['version'];
         $trackFile = null;
         
@@ -54,6 +56,7 @@ class InteractiveProcess
         $typeMsgToSent = 'text';
         $fSys = new FsysProcess($paths['chat']);
         $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
+
         /// El boton disparador fue un ntg|ntga y se encontró un item a enviar
         if(count($itemFetchToSent) > 0) {
             //Buscamos para ver si existe el mensaje del item prefabricado.
