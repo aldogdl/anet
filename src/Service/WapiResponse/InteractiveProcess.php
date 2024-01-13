@@ -76,6 +76,12 @@ class InteractiveProcess
         $fSys->setPathBase($paths['chat']);
         if(count($template) > 0) {
 
+            $conm->setBody($typeMsgToSent, $template);
+            $result = $wapiHttp->send($conm);
+            if($result['statuscode'] != 200) {
+                $wh->sendMy('wa-wh', 'notSave', $result);
+                return;
+            }
             $idItem = '0';
             if(array_key_exists('action', $template)) {
                 if(array_key_exists('buttons', $template['action'])) {
@@ -85,13 +91,6 @@ class InteractiveProcess
                 }
             }
             $conm->bodyRaw = ['text' => $template['body'], 'idItem' => $idItem];
-            $conm->setBody($typeMsgToSent, $template);
-            $result = $wapiHttp->send($conm);
-            if($result['statuscode'] != 200) {
-                $wh->sendMy('wa-wh', 'notSave', $result);
-                return;
-            }
-            
             $sended = $conm->setIdToMsgSended($message, $result);
             $entroToSended = true;
         }
