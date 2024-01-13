@@ -59,6 +59,7 @@ class InteractiveProcess
 
         /// El boton disparador fue un ntg|ntga y se encontró un item a enviar
         if(count($itemFetchToSent) > 0) {
+
             //Buscamos para ver si existe el mensaje del item prefabricado.
             $fSys->setPathBase($paths['prodTrack']);
             $template = $fSys->getContent($itemFetchToSent['idItem'].'_track.json');
@@ -69,12 +70,24 @@ class InteractiveProcess
                 $typeMsgToSent = $template['type'];
                 $template = $template[$typeMsgToSent];
             }
+
         }else{
+
             // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
             $fSys->setPathBase($paths['waTemplates']);
             $template = $fSys->getContent($message->subEvento.'.json');
             if(strlen($message->context) > 0) {
                 $template['context'] = $message->context;
+            }
+            // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
+            if($message->subEvento == 'sfto') {
+                $idItem = '0';
+                try {
+                    if(array_key_exists('idItem', $message->message)) {
+                        $idItem = $message->message['idItem'];
+                    }
+                } catch (\Throwable $th) {}
+                file_put_contents($message->from.'_'.$idItem.'_.txt', $template['context']);
             }
         }
         
@@ -89,6 +102,8 @@ class InteractiveProcess
                 return;
             }
 
+            // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
+            // responde con otro mensaje interactivo
             $idItem = '0';
             if(array_key_exists('action', $template)) {
                 if(array_key_exists('buttons', $template['action'])) {
@@ -96,11 +111,6 @@ class InteractiveProcess
                     $partes = explode('_', $idItem);
                     $idItem = $partes[1];
                 }
-            }
-
-            // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
-            if($message->subEvento == 'sfto') {
-                file_put_contents($message->from.'_'.$idItem.'_.cot', '');
             }
 
             $conm->bodyRaw = ['text' => $template['body'], 'idItem' => $idItem];
