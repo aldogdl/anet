@@ -34,8 +34,8 @@ class InteractiveProcess
                 // si es track es que quiere cotizar la que ya habia atendido y eso no esta permitido.
                 if($message->subEvento == 'sfto') {
                     // TODO avisar al cotizador con un mensaje.
-                    file_put_contents('wa_rechazada.json', json_encode($message->message));
-                    return;
+                    // file_put_contents('wa_rechazada.json', json_encode($message->message));
+                    // return;
                 }
             }
         }
