@@ -11,6 +11,7 @@ parameters:
     chat       : '%phtml%/chat/'
     dtaCtc     : '%phtml%/ctcs/'
     dtaCtcLog  : '%phtml%/ctcs/log'
+    cotProgres : '%phtml%/cot_progress/'
 
     waSort     : '%phtml%/wa/_orden_put.json'
     anetMlm    : '%phtml%/anet_mlm.json'
@@ -38,7 +39,6 @@ parameters:
     filNoTgo   : '%phtml%/filnotgo.json'
     waCmds     : '%phtml%/wacmds/'
     comments   : '%phtml%/comments/'
-    waCots     : '%phtml%/wa_cots/'
     tkwaconm   : '%phtml%/tkwaconm.json'
     waBackup   : '%phtml%/wa_backup'
 

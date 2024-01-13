@@ -75,6 +75,7 @@ class ProcesarMessage {
                 'prodTrack'  => $this->params->get('prodTrack'),
                 'tracking'   => $pathTracking,
                 'trackeds'   => $this->params->get('trackeds'),
+                'cotProgres' => $this->params->get('cotProgres'),
             ];
             new InteractiveProcess($obj->get(), $paths, $this->whook, $this->wapiHttp);
             return;

@@ -79,15 +79,17 @@ class InteractiveProcess
             if(strlen($message->context) > 0) {
                 $template['context'] = $message->context;
             }
+            
             // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
             if($message->subEvento == 'sfto') {
+                $fSys->setPathBase($paths['cotProgres']);
                 $idItem = '0';
                 try {
                     if(array_key_exists('idItem', $message->message)) {
                         $idItem = $message->message['idItem'];
                     }
                 } catch (\Throwable $th) {}
-                file_put_contents($message->from.'_'.$idItem.'_.txt', $template['context']);
+                file_put_contents($message->from.'.json', json_encode(['cot' => $template['context'], 'item' => $idItem]));
             }
         }
         
