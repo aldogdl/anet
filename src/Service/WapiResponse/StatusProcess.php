@@ -22,7 +22,7 @@ class StatusProcess
         }
 
         $fSys = new FsysProcess($pathTrackFile);
-        $trackFile = $fSys->getContent($message->from.'.json');
+        $trackFile = $fSys->getTrackFileOf($message->from);
 
         $fSys->setPathBase($pathChat);
         $chat = $fSys->getChat($message->toArray());

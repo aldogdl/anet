@@ -20,18 +20,18 @@ class InteractiveProcess
     */
     public function __construct(WaMsgMdl $message, array $paths, WebHook $wh, WrapHttp $wapiHttp)
     {
-        $fTrack = new TrackFileCot($message,
+        $trackFile = new TrackFileCot($message,
             ['tracking' => $paths['tracking'], 'trackeds' => $paths['trackeds']]
         );
 
-        if($fTrack->isAtendido) {
+        if($trackFile->isAtendido) {
             // Al entrar aqui es que no se encontró el item respondido por un boton entre
             // la lista del TrackFile pero es necesario evaluar ciertas cosas...
 
             // 1.- Hay mas items que atender??
-            if($fTrack->hasItems) {
+            if($trackFile->hasItems) {
                 // Si hay mas items pero necesitamos ver si el boton que se apreto es diferente a track
-                // si es track es que quiere cotizar la que ya abia atendido y eso no esta permitido.
+                // si es track es que quiere cotizar la que ya habia atendido y eso no esta permitido.
                 if($message->subEvento == 'sfto') {
                     // TODO avisar al cotizador con un mensaje.
                     return;
@@ -42,13 +42,13 @@ class InteractiveProcess
         $filetrack = [];
         $itemFetchToSent = [];
         if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
-            $itemFetchToSent = $fTrack->fetchItemToSent();
+            $itemFetchToSent = $trackFile->fetchItemToSent();
         }else{
             // Si se respondio con un Cotizar ahora, solo guardamos el fileTrack
-            $fTrack->update();
+            $trackFile->update();
         }
-        $filetrack = $fTrack->fileTrackItem;
-        $fTrack = null;
+        $filetrack = $trackFile->trackFile['version'];
+        $trackFile = null;
         
         $template = [];
         $typeMsgToSent = 'text';
@@ -96,7 +96,7 @@ class InteractiveProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'enviado'  => $sended->toArray(),
-            'trackFile'=> $filetrack
+            'trackfile'=> $filetrack
         ]);
 
     }

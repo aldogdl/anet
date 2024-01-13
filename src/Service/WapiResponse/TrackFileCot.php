@@ -14,17 +14,17 @@ class TrackFileCot {
     public bool $hasItems = false;
     // Revisamos que el item que se respondio no exista entre los atendidos
     public bool $isAtendido = false;
-    // El archivo completo del fileTrack del cotizador, se manipulara y se actualizara
-    public array $fileTrackItem = [];
+    // El archivo completo del trackFile del cotizador, se manipulara y se actualizara
+    public array $trackFile = [];
     // El item el cual fue respondido por medio de los botones
     private $itemCurrentResponsed = [];
     // Los items que se enviarán al archivo trackeds de atendidos.
     private $itemsToTrackeds = [];
 
     /** 
-     * Tomamos el FileTrack del cotizador.
+     * Tomamos el trackFile del cotizador.
      * Buscamos el item respondido y lo pasamos a itemsToTrackeds.
-     * A su ves lo eliminamos de la lista de fileTrack
+     * A su ves lo eliminamos de la lista de trackFile
     */
     public function __construct(WaMsgMdl $message, array $paths) {
 
@@ -44,23 +44,23 @@ class TrackFileCot {
         
         // Tomamos el archivo TrackFile
         $this->fSys->setPathBase($this->paths['tracking']);
-        $this->fileTrackItem = $this->fSys->getTrackFileOf($this->message->from);
+        $this->trackFile = $this->fSys->getTrackFileOf($this->message->from);
 
-        if(count($this->fileTrackItem) > 0) {
+        if(count($this->trackFile) > 0) {
             
-            if(count($this->fileTrackItem['items']) > 0) {
+            if(count($this->trackFile['items']) > 0) {
                 
                 $this->hasItems = true;
                 // 1.- Tomamos el item que disparo este evento (el respondido por un boton)
-                $idsItems = array_column($this->fileTrackItem['items'], 'idItem');
+                $idsItems = array_column($this->trackFile['items'], 'idItem');
                 $itemCurrentIndx = array_search($this->message->message['idItem'], $idsItems);
                 
                 if($itemCurrentIndx !== false) {
-                    $this->itemCurrentResponsed = $this->fileTrackItem['items'][$itemCurrentIndx];
+                    $this->itemCurrentResponsed = $this->trackFile['items'][$itemCurrentIndx];
                     // solo si el index del item encontrado es mayor a cero, lo colocamos al principio
                     if($itemCurrentIndx > 0) {
-                        unset($this->fileTrackItem['items'][$itemCurrentIndx]);
-                        array_unshift($this->fileTrackItem['items'], $this->itemCurrentResponsed);
+                        unset($this->trackFile['items'][$itemCurrentIndx]);
+                        array_unshift($this->trackFile['items'], $this->itemCurrentResponsed);
                     }
                     // Si no es atendido, lo marcamos como atendido para evitar enivar el mismo mensaje de Cot.
                     if(!$this->isAtendido) {
@@ -90,9 +90,9 @@ class TrackFileCot {
             // entre la lista de item respondido, pero aun asi, si hay mas items para enviar
             // los mandamos
             if($this->hasItems && count($this->itemCurrentResponsed) > 0) {
-                if($this->fileTrackItem['items'][0]['idItem'] == $this->itemCurrentResponsed['idItem']) {
-                    unset($this->fileTrackItem['items'][0]);
-                    sort($this->fileTrackItem['items']);
+                if($this->trackFile['items'][0]['idItem'] == $this->itemCurrentResponsed['idItem']) {
+                    unset($this->trackFile['items'][0]);
+                    sort($this->trackFile['items']);
                 }
             }
 
@@ -101,21 +101,21 @@ class TrackFileCot {
             if($this->message->subEvento == 'ntga') {
 
                 $copyFileTrack = [];
-                $rota = count($this->fileTrackItem['items']);
+                $rota = count($this->trackFile['items']);
                 for ($i=0; $i < $rota; $i++) {
-                    if($this->fileTrackItem['items'][$i]['mdl'] == $this->itemCurrentResponsed['mdl']) {
-                        $this->itemsToTrackeds[] = $this->fileTrackItem['items'][$i]['idItem'];
+                    if($this->trackFile['items'][$i]['mdl'] == $this->itemCurrentResponsed['mdl']) {
+                        $this->itemsToTrackeds[] = $this->trackFile['items'][$i]['idItem'];
                     }else{
-                        $copyFileTrack[] = $this->fileTrackItem['items'][$i];
+                        $copyFileTrack[] = $this->trackFile['items'][$i];
                     }
                 }
                 sort($copyFileTrack);
-                $this->fileTrackItem['items'] = $copyFileTrack;
+                $this->trackFile['items'] = $copyFileTrack;
             }
 
             // Despues de haber echo la limpieza del trackFile, revisamos si quedan items
-            if(count($this->fileTrackItem['items']) > 0) {
-                $itemFetchToSent = $this->fileTrackItem['items'][0];
+            if(count($this->trackFile['items']) > 0) {
+                $itemFetchToSent = $this->trackFile['items'][0];
             }
             $this->update();
         }
@@ -130,7 +130,7 @@ class TrackFileCot {
 
         $filename = $this->message->from.'.json';
         $this->fSys->setPathBase($this->paths['tracking']);
-        $this->fSys->setContent($filename, $this->fileTrackItem);
+        $this->fSys->setContent($filename, $this->trackFile);
         if(count($this->itemsToTrackeds) > 0) {
             $this->fSys->setPathBase($this->paths['trackeds']);
             $this->fSys->setContent($filename, $this->itemsToTrackeds);
