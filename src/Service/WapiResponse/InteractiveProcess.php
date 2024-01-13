@@ -89,7 +89,7 @@ class InteractiveProcess
                         $idItem = $message->message['idItem'];
                     }
                 } catch (\Throwable $th) {}
-                file_put_contents($message->from.'.json', json_encode(['cot' => $template['context'], 'item' => $idItem]));
+                $fSys->setContent($message->from.'.json', ['cot' => $template['context'], 'item' => $idItem]);
             }
         }
         
