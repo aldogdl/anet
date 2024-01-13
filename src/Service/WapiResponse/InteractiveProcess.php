@@ -75,8 +75,16 @@ class InteractiveProcess
         $entroToSended = false;
         $fSys->setPathBase($paths['chat']);
         if(count($template) > 0) {
-            file_put_contents('message_int.json', json_encode($template));
-            $conm->bodyRaw = ['text' => $template['body'], 'idItem' => '??'];
+
+            $idItem = '0';
+            if(array_key_exists('action', $template)) {
+                if(array_key_exists('buttons', $template['action'])) {
+                    $idItem = $template['action']['buttons'][0]['reply']['id'];
+                    $partes = explode('_', $idItem);
+                    $idItem = $partes[1];
+                }
+            }
+            $conm->bodyRaw = ['text' => $template['body'], 'idItem' => $idItem];
             $conm->setBody($typeMsgToSent, $template);
             $result = $wapiHttp->send($conm);
             if($result['statuscode'] != 200) {
