@@ -68,14 +68,14 @@ class InteractiveProcess
                 }
                 $typeMsgToSent = $template['type'];
                 $template = $template[$typeMsgToSent];
-                if(strlen($message->context) > 0) {
-                    $template['context']['message_id'] = $message->context;
-                }
             }
         }else{
             // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
             $fSys->setPathBase($paths['waTemplates']);
             $template = $fSys->getContent($message->subEvento.'.json');
+            if(strlen($message->context) > 0) {
+                $template['context']['message_id'] = $message->context;
+            }
         }
         
         $entroToSended = false;
