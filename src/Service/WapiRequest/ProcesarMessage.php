@@ -39,11 +39,13 @@ class ProcesarMessage {
     /** */
     public function execute(array $message, bool $isTest = false): void
     {
-        file_put_contents('message.json', json_encode($message));
         $pathTracking = $this->params->get('tracking');
         
         $obj = new ExtractMessage($message);
-        file_put_contents('message_process.json', json_encode($obj->get()->toArray()));
+        if(!$obj->isStt) {
+            file_put_contents('message.json', json_encode($message));
+            file_put_contents('message_process.json', json_encode($obj->get()->toArray()));
+        }
 
         if($obj->pathToAnalizar != '') {
             $folder = $this->getFolderTo('waAnalizar');

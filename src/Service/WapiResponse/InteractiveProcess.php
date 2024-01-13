@@ -48,7 +48,7 @@ class InteractiveProcess
             // Si se respondio con un Cotizar ahora, solo guardamos el fileTrack
             $trackFile->update();
         }
-
+        
         $filetrack = $trackFile->trackFile['version'];
         $trackFile = null;
         
@@ -68,6 +68,9 @@ class InteractiveProcess
                 }
                 $typeMsgToSent = $template['type'];
                 $template = $template[$typeMsgToSent];
+                if(strlen($message->context) > 0) {
+                    $template['context']['message_id'] = $message->context;
+                }
             }
         }else{
             // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
@@ -85,6 +88,7 @@ class InteractiveProcess
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
             }
+
             $idItem = '0';
             if(array_key_exists('action', $template)) {
                 if(array_key_exists('buttons', $template['action'])) {
@@ -93,6 +97,12 @@ class InteractiveProcess
                     $idItem = $partes[1];
                 }
             }
+
+            // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
+            if($message->subEvento == 'sfto') {
+                file_put_contents($message->from.'_'.$idItem.'_.cot', '');
+            }
+
             $conm->bodyRaw = ['text' => $template['body'], 'idItem' => $idItem];
             $sended = $conm->setIdToMsgSended($message, $result);
             $entroToSended = true;
@@ -108,7 +118,6 @@ class InteractiveProcess
             'enviado'  => $sended->toArray(),
             'trackfile'=> $filetrack
         ]);
-
     }
 
 }
