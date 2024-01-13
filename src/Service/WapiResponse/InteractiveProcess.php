@@ -75,8 +75,8 @@ class InteractiveProcess
         $entroToSended = false;
         $fSys->setPathBase($paths['chat']);
         if(count($template) > 0) {
-            
-            $conm->bodyRaw = $template['body'];
+            file_put_contents('message_int.json', json_encode($template));
+            $conm->bodyRaw = ['text' => $template['body'], 'idItem' => '??'];
             $conm->setBody($typeMsgToSent, $template);
             $result = $wapiHttp->send($conm);
             if($result['statuscode'] != 200) {
