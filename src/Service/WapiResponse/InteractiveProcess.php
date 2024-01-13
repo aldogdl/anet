@@ -74,7 +74,7 @@ class InteractiveProcess
             $fSys->setPathBase($paths['waTemplates']);
             $template = $fSys->getContent($message->subEvento.'.json');
             if(strlen($message->context) > 0) {
-                $template['context']['message_id'] = $message->context;
+                $template['context'] = $message->context;
             }
         }
         

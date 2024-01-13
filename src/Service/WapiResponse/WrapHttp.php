@@ -18,12 +18,12 @@ class WrapHttp
     }
 
     /** */
-    public function send(ConmutadorWa $conm, bool $isReply = false): array
+    public function send(ConmutadorWa $conm): array
     {
         $error = 'No se recibió cuerpo de mensaje valido para enviar.';
         $code  = 501;
 
-        $this->wrapBody($conm->to, $conm->type, $conm->body, $isReply);
+        $this->wrapBody($conm->to, $conm->type, $conm->body);
         
         $body = '';
         if(count($this->bodyToSend) != 0) {
@@ -57,14 +57,12 @@ class WrapHttp
     }
 
     /** */
-    private function wrapBody(String $to, String $type, array $body, bool $isReply): void
+    private function wrapBody(String $to, String $type, array $body): void
     {
         $context = '';
-        if($isReply) {
-            if(array_key_exists('context', $body)) {
-                $context = $body['context'];
-                unset($body['context']);
-            }
+        if(array_key_exists('context', $body)) {
+            $context = $body['context'];
+            unset($body['context']);
         }
 
         $this->bodyToSend = [
