@@ -69,6 +69,7 @@ class InteractiveProcess
             $template = $trackFile->fSys->getContent($message->subEvento.'.json');
             if(strlen($message->context) > 0) {
                 $template['context'] = $message->context;
+                $trackFile->itemCurrentResponsed['idCot'] = time();
                 $trackFile->itemCurrentResponsed['version'] = $trackFile->trackFile['version'];
                 $trackFile->itemCurrentResponsed['wamid_cot'] = $message->context;
             }
