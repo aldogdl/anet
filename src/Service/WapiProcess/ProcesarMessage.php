@@ -23,6 +23,7 @@ class ProcesarMessage {
     private WebHook $whook;
     private WrapHttp $wapiHttp;
     private Filesystem $filesystem;
+    private bool $hasCotProgress;
 
     /** 
      * Analizamos si el mensaje es parte de una cotizacion
@@ -40,15 +41,9 @@ class ProcesarMessage {
     {        
         $obj = new ExtractMessage($message);
         // Revisamos si hay cotizacion en curso
-        $hasCotProgress = false;
+        $this->hasCotProgress  = false;
         $pathCotProgress = $this->getFolderTo('cotProgres');
-        try {
-            $cotProgress = file_get_contents($pathCotProgress.'/'.$obj->from.'.json');
-            if(strlen($cotProgress) > 0) {
-                $cotProgress = json_decode($cotProgress, true);
-                $hasCotProgress = true;
-            }
-        } catch (\Throwable $th) {}
+        $cotProgress     = $this->getFileCotProgress($pathCotProgress, $obj->from.'.json');
 
         // Esto es solo para desarrollo
         if(!$obj->isStt) {
@@ -73,7 +68,7 @@ class ProcesarMessage {
         $pathTracking = $this->getFolderTo('tracking');
         if($obj->isStt) {
             // No procesamos los status cuando se esta cotizando
-            if($hasCotProgress) {
+            if($this->hasCotProgress) {
                 return;
             }
             new StatusProcess($obj->get(), $pathChat, $pathTracking, $this->whook);
@@ -96,27 +91,45 @@ class ProcesarMessage {
             return;
         }
 
-        if($hasCotProgress && $cotProgress['current'] == 'sfto' && $obj->isImage) {
+        if($this->hasCotProgress && $cotProgress['current'] == 'sfto' && $obj->isImage) {
             new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
         }
         
         // Esto es como un refuerzo por si siguen llegando imagenes cuando se esta esperando detalles
-        if($hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isImage) {
+        if($this->hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isImage) {
             new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
         }
         
-        if($hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isText) {
+        if($this->hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isText) {
             new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
             return;
         }
 
-        if($hasCotProgress && $cotProgress['current'] == 'scto' && $obj->isText) {
+        if($this->hasCotProgress && $cotProgress['current'] == 'scto' && $obj->isText) {
             new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
             return;
         }
 
         // Si llega aqui es por que la conversion es libre;
         return;
+    }
+
+    /** 
+     * Revisamos para ver si existe un archivo de cotizacion en curso del cotizador
+    */
+    private function getFileCotProgress(String $pathCotProgress, String $filename): array
+    {
+        $path = $pathCotProgress.'/'.$filename;
+        if($this->filesystem->exists($path)) {
+            try {
+                $cotProgress = file_get_contents($path);
+                if(strlen($cotProgress) > 0) {
+                    $this->hasCotProgress = true;
+                    return json_decode($cotProgress, true);
+                }
+            } catch (\Throwable $th) {}
+        }
+        return [];
     }
 
     /** */
