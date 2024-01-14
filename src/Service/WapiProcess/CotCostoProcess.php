@@ -34,7 +34,10 @@ class CotCostoProcess
 
         if(count($this->cotProgress) > 0) {
             if(array_key_exists('item', $this->cotProgress)) {
-                $message->message['idItem'] = $this->cotProgress['item'];
+                $message->message = [
+                    'body' => $message->message,
+                    'idItem' => $this->cotProgress['item']
+                ];
             }
         }
         $trackFile = new TrackFileCot($message,
