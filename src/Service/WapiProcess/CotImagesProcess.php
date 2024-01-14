@@ -23,46 +23,35 @@ class CotImagesProcess
             // TODO enviar mensaje al cliente de no permitida la extencion
             return;
         }
-
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
-
-        if(count($this->cotProgress) > 0) {
-            if(array_key_exists('item', $this->cotProgress)) {
-                $message->message['idItem'] = $this->cotProgress['item'];
-            }
-        }
-        $trackFile = new TrackFileCot($message,
-            ['tracking' => $paths['tracking'], 'trackeds' => $paths['trackeds']]
-        );
-        if(count($trackFile->itemCurrentResponsed) == 0) {
-            // TODO Avisar al cliente que no se encontró la solicitud, que cotize otra
-            return;
-        }
-
-        // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
-        if($this->cotProgress['espero'] == 'images') {
-            $trackFile->itemCurrentResponsed['current'] = 'sdta';
-            $trackFile->itemCurrentResponsed['next'] = 'scto';
-        }
         
+        $fotos = [];
         $sended = [];
         $entroToSended = false;
-        $trackFile->fSys->setPathBase($paths['waTemplates']);
-        if($this->cotProgress['espero'] == 'images') {
+        if(array_key_exists('fotos', $this->cotProgress['track'])) {
+            $fotos = $this->cotProgress['track']['fotos'];
+        }
+        $fotos[] = $message->message['id'];
+        $this->cotProgress['track']['fotos'] = $fotos;
+        
+        $current = $this->cotProgress['current'];
+
+        $fSys = new FsysProcess($paths['cotProgres']);
+        if($current == 'sfto') {
             
+            $this->cotProgress['current'] = 'sdta';
+            $this->cotProgress['next'] = 'scto';
             // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-            $this->cotProgress['espero'] = 'detalles';
-            $trackFile->fSys->setPathBase($paths['cotProgres']);
-            $trackFile->fSys->setContent($message->from.'.json', $this->cotProgress);
+            $fSys->setContent($message->from.'.json', $this->cotProgress);
             
             // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
-            $trackFile->fSys->setPathBase($paths['waTemplates']);
-            $template = $trackFile->fSys->getContent($trackFile->itemCurrentResponsed['current'].'.json');
+            $fSys->setPathBase($paths['waTemplates']);
+            $template = $fSys->getContent($this->cotProgress['current'].'.json');
             
             // Revisamos si existe el id del contexto de la cotizacion para agregarlo al msg de respuesta
-            if(array_key_exists('cot', $this->cotProgress)) {
-                $template['context'] = $this->cotProgress['cot'];
+            if(array_key_exists('wamid_cot', $this->cotProgress)) {
+                $template['context'] = $this->cotProgress['wamid_cot'];
             }
 
             $typeMsgToSent = 'text';
@@ -95,26 +84,18 @@ class CotImagesProcess
                 $entroToSended = true;
             }
         }
-
-        $fotos = [];
-        if(array_key_exists('fotos', $trackFile->itemCurrentResponsed['track'])) {
-            $fotos = $trackFile->itemCurrentResponsed['track']['fotos'];
-        }
-        
-        $fotos[] = $message->message['id'];
-        $trackFile->itemCurrentResponsed['track']['fotos'] = $fotos;
         
         $recibido = $message->toArray();
-        $trackFile->fSys->setPathBase($paths['chat']);
-        $trackFile->fSys->dumpIn($recibido);
+        $fSys->setPathBase($paths['chat']);
+        $fSys->dumpIn($recibido);
         if($entroToSended) {
-            $trackFile->fSys->dumpIn($sended);
+            $fSys->dumpIn($sended);
         }
 
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> $trackFile->itemCurrentResponsed
+            'trackfile'=> $cotProgress
         ]);
     }
 

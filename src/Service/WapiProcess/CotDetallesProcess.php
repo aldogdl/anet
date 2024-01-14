@@ -97,7 +97,6 @@ class CotDetallesProcess
         }
 
         $trackFile->itemCurrentResponsed['track']['detalles'] = $message->message;
-        $trackFile->update();
 
         $recibido = $message->toArray();
         $trackFile->fSys->setPathBase($paths['chat']);

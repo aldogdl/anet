@@ -75,6 +75,8 @@ class ProcesarMessage {
             'prodTrack'  => $this->params->get('prodTrack'),
         ];
         if($obj->isInteractive) {
+            // Si despues de analizar el boton que se precionó se determina que...
+            // presiono COTIZAR AHORA, se creo el archivo [cotProgress]
             new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths);
             return;
         }
@@ -89,21 +91,21 @@ class ProcesarMessage {
             }
         } catch (\Throwable $th) {}
 
-        if($hasCotProgress && $cotProgress['espero'] == 'images' && $obj->isImage) {
+        if($hasCotProgress && $cotProgress['current'] == 'sfto' && $obj->isImage) {
             new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
         }
         
         // Esto es como un refuerzo por si siguen llegando imagenes cuando se esta esperando detalles
-        if($hasCotProgress && $cotProgress['espero'] == 'detalles' && $obj->isImage) {
+        if($hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isImage) {
             new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
         }
         
-        if($hasCotProgress && $cotProgress['espero'] == 'detalles' && $obj->isText) {
+        if($hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isText) {
             new CotDetallesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
             return;
         }
 
-        if($hasCotProgress && $cotProgress['espero'] == 'costo' && $obj->isText) {
+        if($hasCotProgress && $cotProgress['current'] == 'scto' && $obj->isText) {
             new CotCostoProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
             return;
         }

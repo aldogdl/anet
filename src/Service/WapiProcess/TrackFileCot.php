@@ -64,7 +64,10 @@ class TrackFileCot {
                     }
                     // Si no es atendido, lo marcamos como atendido para evitar enivar el mismo mensaje de Cot.
                     if(!$this->isAtendido) {
-                        $this->itemsToTrackeds[] = $this->itemCurrentResponsed['idItem'];
+                        if(in_array($this->itemCurrentResponsed['idItem'], $this->itemsToTrackeds)) {
+                            $this->itemsToTrackeds[] = $this->itemCurrentResponsed['idItem'];
+                            $this->updateTrackeds();
+                        }
                     }
                     // mientras este en la lista del FileTrack es por que aun no ha terminado de cotizar
                     // por lo tanto forzamos a que isAtendida sea false para continuar con los
@@ -117,21 +120,27 @@ class TrackFileCot {
             if(count($this->trackFile['items']) > 0) {
                 $itemFetchToSent = $this->trackFile['items'][0];
             }
-            $this->update();
+            $this->updateTracking();
         }
 
         return $itemFetchToSent;
     }
 
     /** */
-    public function update()
+    public function updateTracking()
     {
         if(!$this->hasItems){ return; }
 
         $filename = $this->message->from.'.json';
         $this->fSys->setPathBase($this->paths['tracking']);
         $this->fSys->setContent($filename, $this->trackFile);
+    }
+
+    /** */
+    public function updateTrackeds()
+    {
         if(count($this->itemsToTrackeds) > 0) {
+            $filename = $this->message->from.'.json';
             $this->fSys->setPathBase($this->paths['trackeds']);
             $this->fSys->setContent($filename, $this->itemsToTrackeds);
         }

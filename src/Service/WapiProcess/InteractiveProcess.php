@@ -42,9 +42,6 @@ class InteractiveProcess
         $itemFetchToSent = [];
         if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
             $itemFetchToSent = $trackFile->fetchItemToSent();
-        }else{
-            // Si se respondio con un Cotizar ahora, solo guardamos el fileTrack
-            $trackFile->update();
         }
         
         $template = [];
@@ -72,21 +69,13 @@ class InteractiveProcess
             $template = $trackFile->fSys->getContent($message->subEvento.'.json');
             if(strlen($message->context) > 0) {
                 $template['context'] = $message->context;
+                $trackFile->itemCurrentResponsed['wamid_cot'] = $message->context;
             }
             
             // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
             if($message->subEvento == 'sfto') {
                 $trackFile->fSys->setPathBase($paths['cotProgres']);
-                $idItem = '0';
-                try {
-                    if(array_key_exists('idItem', $message->message)) {
-                        $idItem = $message->message['idItem'];
-                    }
-                } catch (\Throwable $th) {}
-                $trackFile->fSys->setContent(
-                    $message->from.'.json',
-                    ['cot' => $template['context'], 'item' => $idItem, 'espero' => 'images']
-                );
+                $trackFile->fSys->setContent($message->from.'.json', $trackFile->itemCurrentResponsed);
             }
         }
         
@@ -103,8 +92,9 @@ class InteractiveProcess
                 return;
             }
 
-            // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
-            // responde con otro mensaje interactivo
+            // Se responde con un mensaje al cotizador en respuesta a su accion.
+            // Si el mensaje fue una nueva solicitud de cotizacion procesada por el estanque
+            // Extraemos el IdItem del producto para que EventCore reaccione a este.
             $idItem = '0';
             if(array_key_exists('action', $template)) {
                 if(array_key_exists('buttons', $template['action'])) {

@@ -98,7 +98,6 @@ class CotCostoProcess
         }
 
         $trackFile->itemCurrentResponsed['track']['costo'] = $message->message;
-        $trackFile->update();
 
         $recibido = $message->toArray();
         $trackFile->fSys->setPathBase($paths['chat']);
