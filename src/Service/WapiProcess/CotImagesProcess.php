@@ -38,6 +38,10 @@ class CotImagesProcess
         $current = $this->cotProgress['current'];
 
         $fSys = new FsysProcess($paths['cotProgres']);
+        if($current == 'sdta') {
+            $fSys->setContent($message->from.'.json', $this->cotProgress);
+        }
+        
         if($current == 'sfto') {
             
             $this->cotProgress['current'] = 'sdta';
