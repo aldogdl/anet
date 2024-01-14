@@ -48,7 +48,7 @@ class FsysProcess
     public function getTrackFileOf(String $waId): array { return $this->getContent($waId.'.json'); }
 
     /**
-     * Recuperamos el el contenido de un archivo
+     * Recuperamos el contenido de un archivo
      */
     public function getContent(String $filename): array
     {
@@ -63,7 +63,7 @@ class FsysProcess
     }
 
     /**
-     * Vaciamos el contenido dentro de un archivo.
+     * Colocamos el contenido dentro de un archivo.
     */
     public function setContent(String $filename, array $content): void
     {
@@ -74,6 +74,17 @@ class FsysProcess
             return;
         }
         $this->fSys->dumpFile($this->pathBase.'/'.$filename, json_encode($content));
+    }
+
+    /**
+     * Borramos un archivo
+    */
+    public function delete(String $filename): void
+    {
+        if($filename == '' || $this->pathBase == '') {
+            return;
+        }
+        $this->fSys->remove($this->pathBase.'/'.$filename);
     }
 
     /**

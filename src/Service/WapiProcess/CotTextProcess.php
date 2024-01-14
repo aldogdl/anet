@@ -45,7 +45,12 @@ class CotTextProcess
 
         $fSys = new FsysProcess($paths['cotProgres']);
         // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-        $fSys->setContent($message->from.'.json', $this->cotProgress);
+        if($current == 'sdta') {
+            $fSys->setContent($message->from.'.json', $this->cotProgress);
+        }else {
+            // Si ya es el costo borramos el mensaje
+            $fSys->delete($message->from.'.json');
+        }
         
         $sended = [];
         $entroToSended = false;
@@ -54,8 +59,10 @@ class CotTextProcess
         $template = $fSys->getContent($this->cotProgress['current'].'.json');
         
         // Revisamos si existe el id del contexto de la cotizacion para agregarlo al msg de respuesta
-        if(array_key_exists('wamid_cot', $this->cotProgress)) {
-            $template['context'] = $this->cotProgress['wamid_cot'];
+        if($current == 'sdta') {
+            if(array_key_exists('wamid_cot', $this->cotProgress)) {
+                $template['context'] = $this->cotProgress['wamid_cot'];
+            }
         }
 
         $typeMsgToSent = 'text';
