@@ -48,6 +48,7 @@ class CotDetallesProcess
         }
 
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
+        $this->cotProgress['espero'] = 'costo';
         $trackFile->itemCurrentResponsed['current'] = 'scto';
         $trackFile->itemCurrentResponsed['next'] = 'sgrx';
         
@@ -58,7 +59,6 @@ class CotDetallesProcess
         $template = $trackFile->fSys->getContent($trackFile->itemCurrentResponsed['current'].'.json');
         
         // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-        $this->cotProgress['espero'] = 'costo';
         $trackFile->fSys->setPathBase($paths['cotProgres']);
         $trackFile->fSys->setContent($message->from.'.json', $this->cotProgress);
 

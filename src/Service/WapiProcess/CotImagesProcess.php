@@ -41,20 +41,21 @@ class CotImagesProcess
         }
 
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
-        $trackFile->itemCurrentResponsed['current'] = 'sdta';
-        $trackFile->itemCurrentResponsed['next'] = 'scto';
-
+        if($this->cotProgress['espero'] == 'images') {
+            $this->cotProgress['espero'] = 'detalles';
+            $trackFile->itemCurrentResponsed['current'] = 'sdta';
+            $trackFile->itemCurrentResponsed['next'] = 'scto';
+        }
+        
         $sended = [];
         $entroToSended = false;
         $trackFile->fSys->setPathBase($paths['waTemplates']);
-        
         if($this->cotProgress['espero'] == 'images') {
             
             // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
             $template = $trackFile->fSys->getContent($trackFile->itemCurrentResponsed['current'].'.json');
             
             // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-            $this->cotProgress['espero'] = 'detalles';
             $trackFile->fSys->setPathBase($paths['cotProgres']);
             $trackFile->fSys->setContent($message->from.'.json', $this->cotProgress);
             // Revisamos si existe el id del contexto de la cotizacion para agregarlo al msg de respuesta
