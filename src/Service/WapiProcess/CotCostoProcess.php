@@ -52,6 +52,9 @@ class CotCostoProcess
         $this->cotProgress['espero'] = 'estanque';
         $trackFile->itemCurrentResponsed['current'] = 'scto';
         $trackFile->itemCurrentResponsed['next'] = 'sgrx';
+        // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
+        $trackFile->fSys->setPathBase($paths['cotProgres']);
+        $trackFile->fSys->setContent($message->from.'.json', $this->cotProgress);
 
         $sended = [];
         $entroToSended = false;
@@ -59,10 +62,6 @@ class CotCostoProcess
         // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
         $template = $trackFile->fSys->getContent($trackFile->itemCurrentResponsed['current'].'.json');
         
-        // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-        $trackFile->fSys->setPathBase($paths['cotProgres']);
-        $trackFile->fSys->setContent($message->from.'.json', $this->cotProgress);
-
         // Revisamos si existe el id del contexto de la cotizacion para agregarlo al msg de respuesta
         if(array_key_exists('cot', $this->cotProgress)) {
             $template['context'] = $this->cotProgress['cot'];
