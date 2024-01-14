@@ -76,6 +76,7 @@ class InteractiveProcess
             // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
             if($message->subEvento == 'sfto') {
                 $trackFile->fSys->setPathBase($paths['cotProgres']);
+                $trackFile->itemCurrentResponsed['track'] = ['idCot' => time()];
                 $trackFile->fSys->setContent($message->from.'.json', $trackFile->itemCurrentResponsed);
             }
         }
