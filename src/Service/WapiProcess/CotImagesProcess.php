@@ -29,6 +29,9 @@ class CotImagesProcess
         $fotos = [];
         $sended = [];
         $entroToSended = false;
+        if(array_key_exists('idCot', $this->cotProgress['track'])) {
+            $this->cotProgress['track']['idCot'] = time();
+        }
         if(array_key_exists('fotos', $this->cotProgress['track'])) {
             $fotos = $this->cotProgress['track']['fotos'];
         }
