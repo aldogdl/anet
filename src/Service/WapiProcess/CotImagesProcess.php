@@ -29,6 +29,8 @@ class CotImagesProcess
         $fotos = [];
         $sended = [];
         $entroToSended = false;
+        $message->subEvento = 'sfto';
+        
         if(array_key_exists('fotos', $this->cotProgress['track'])) {
             $fotos = $this->cotProgress['track']['fotos'];
         }

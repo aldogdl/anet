@@ -28,7 +28,7 @@ class CotTextProcess
             return;
         }
         $current = $cotProgress['current'];
-
+        $message->subEvento = $current;
         $isValid = $this->isValid($current, $message->message);
         if(!$isValid) {
             return;
