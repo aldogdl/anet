@@ -39,6 +39,17 @@ class ProcesarMessage {
     public function execute(array $message, bool $isTest = false): void
     {        
         $obj = new ExtractMessage($message);
+        // Revisamos si hay cotizacion en curso
+        $hasCotProgress = false;
+        $pathCotProgress = $this->getFolderTo('cotProgres');
+        try {
+            $cotProgress = file_get_contents($pathCotProgress.'/'.$obj->from.'.json');
+            if(strlen($cotProgress) > 0) {
+                $cotProgress = json_decode($cotProgress, true);
+                $hasCotProgress = true;
+            }
+        } catch (\Throwable $th) {}
+
         // Esto es solo para desarrollo
         if(!$obj->isStt) {
             file_put_contents('message.json', json_encode($message));
@@ -60,7 +71,7 @@ class ProcesarMessage {
         }
         
         $pathTracking = $this->getFolderTo('tracking');
-        if($obj->isStt) {
+        if($obj->isStt && !$hasCotProgress) {
             new StatusProcess($obj->get(), $pathChat, $pathTracking, $this->whook);
             return;
         }
@@ -69,7 +80,7 @@ class ProcesarMessage {
             'chat'       => $pathChat,
             'tkwaconm'   => $pathConm,
             'tracking'   => $pathTracking,
-            'cotProgres' => $this->getFolderTo('cotProgres'),
+            'cotProgres' => $pathCotProgress,
             'trackeds'   => $this->getFolderTo('trackeds'),
             'waTemplates'=> $this->params->get('waTemplates'),
             'prodTrack'  => $this->params->get('prodTrack'),
@@ -80,16 +91,6 @@ class ProcesarMessage {
             new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths);
             return;
         }
-
-        // Revisamos si hay cotizacion en curso
-        $hasCotProgress = false;
-        try {
-            $cotProgress = file_get_contents($paths['cotProgres'].'/'.$obj->from.'.json');
-            if(strlen($cotProgress) > 0) {
-                $cotProgress = json_decode($cotProgress, true);
-                $hasCotProgress = true;
-            }
-        } catch (\Throwable $th) {}
 
         if($hasCotProgress && $cotProgress['current'] == 'sfto' && $obj->isImage) {
             new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
