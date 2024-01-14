@@ -14,7 +14,7 @@ class CotImagesProcess
     private $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
 
     /** 
-     * 
+     * Esperamos la llegada de las imagenes departe del cotizador
     */
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
@@ -25,7 +25,7 @@ class CotImagesProcess
         }
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
-        
+
         $fotos = [];
         $sended = [];
         $entroToSended = false;
