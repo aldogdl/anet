@@ -9,13 +9,13 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 use App\Service\WebHook;
 
+use App\Service\WapiProcess\WrapHttp;
 use App\Service\WapiProcess\ExtractMessage;
 use App\Service\WapiProcess\LoginProcess;
-use App\Service\WapiProcess\WrapHttp;
-use App\Service\WapiProcess\CotDetallesesProcess;
+use App\Service\WapiProcess\StatusProcess;
+use App\Service\WapiProcess\CotTextProcess;
 use App\Service\WapiProcess\CotImagesProcess;
 use App\Service\WapiProcess\InteractiveProcess;
-use App\Service\WapiProcess\StatusProcess;
 
 class ProcesarMessage {
 
@@ -101,12 +101,12 @@ class ProcesarMessage {
         }
         
         if($hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isText) {
-            new CotDetallesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+            new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
             return;
         }
 
         if($hasCotProgress && $cotProgress['current'] == 'scto' && $obj->isText) {
-            new CotCostoProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+            new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
             return;
         }
 

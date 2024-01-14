@@ -6,65 +6,56 @@ use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
 
-class CotCostoProcess
+class CotTextProcess
 {
 
     public String $hasErr = '';
-    private array $cotProgress;
     private String $result;
-    
+    private array $cotProgress;
+    private array $msgs = [
+        'sdta' => ['current' => 'scto', 'next' => 'sgrx'],
+        'scto' => ['current' => 'sgrx', 'next' => 'sfto'],
+    ];
+
     /** 
      * 
     */
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
-
         if($message->type != 'text') {
             // TODO enviar error al cliente
             return;
         }
-        if(strlen($message->message) < 3) {
-            // TODO enviar error al cliente
+        $current = $cotProgress['current'];
+
+        $isValid = $this->isValid($current, $message->message);
+        if(!$isValid) {
             return;
         }
 
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
 
-        if(count($this->cotProgress) > 0) {
-            if(array_key_exists('item', $this->cotProgress)) {
-                $message->message = [
-                    'body' => $message->message,
-                    'idItem' => $this->cotProgress['item']
-                ];
-            }
-        }
-        $trackFile = new TrackFileCot($message,
-            ['tracking' => $paths['tracking'], 'trackeds' => $paths['trackeds']]
-        );
-        if(count($trackFile->itemCurrentResponsed) == 0) {
-            // TODO Avisar al cliente que no se encontró la solicitud, que cotize otra
-            return;
-        }
-
+        $campo = ($current == 'sdta') ? 'detalles' : 'precio';
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
-        $this->cotProgress['espero'] = 'estanque';
-        $trackFile->itemCurrentResponsed['current'] = 'sgrx';
-        $trackFile->itemCurrentResponsed['next'] = 'sfto';
-        // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-        $trackFile->fSys->setPathBase($paths['cotProgres']);
-        $trackFile->fSys->setContent($message->from.'.json', $this->cotProgress);
+        $this->cotProgress['current'] = $this->msgs[$current]['current'];
+        $this->cotProgress['next']    = $this->msgs[$current]['next'];
+        $this->cotProgress['track'][$campo] = $message->message;
 
+        $fSys = new FsysProcess($paths['cotProgres']);
+        // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
+        $fSys->setContent($message->from.'.json', $this->cotProgress);
+        
         $sended = [];
         $entroToSended = false;
-        $trackFile->fSys->setPathBase($paths['waTemplates']);
         // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
-        $template = $trackFile->fSys->getContent($trackFile->itemCurrentResponsed['current'].'.json');
+        $fSys->setPathBase($paths['waTemplates']);
+        $template = $fSys->getContent($this->cotProgress['current'].'.json');
         
         // Revisamos si existe el id del contexto de la cotizacion para agregarlo al msg de respuesta
-        if(array_key_exists('cot', $this->cotProgress)) {
-            $template['context'] = $this->cotProgress['cot'];
+        if(array_key_exists('wamid_cot', $this->cotProgress)) {
+            $template['context'] = $this->cotProgress['wamid_cot'];
         }
 
         $typeMsgToSent = 'text';
@@ -97,22 +88,40 @@ class CotCostoProcess
             $entroToSended = true;
         }
 
-        $trackFile->itemCurrentResponsed['track']['costo'] = $message->message;
-
         $recibido = $message->toArray();
-        $trackFile->fSys->setPathBase($paths['chat']);
-        $trackFile->fSys->dumpIn($recibido);
+        $fSys->setPathBase($paths['chat']);
+        $fSys->dumpIn($recibido);
         if($entroToSended) {
-            $trackFile->fSys->dumpIn($sended);
+            $fSys->dumpIn($sended);
         }
 
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> $trackFile->itemCurrentResponsed
+            'trackfile'=> $this->cotProgress
         ]);
     }
 
+    /** */
+    private function isValid(String $campo, String $data): bool
+    {   
+        if($campo == 'sdta') {
+            if(strlen($campo) < 3) {
+                // TODO enviar error al cliente
+                return false;
+            }
+        }
+
+        if($campo == 'scto') {
+            if(strlen($campo) < 3) {
+                // TODO enviar error al cliente
+                return false;
+            }
+        }
+        return true;
+    }
+
+    
     /**
      * Solo es necesario revisar el costo para saber si estan enviando un numero
      * o letras para indicar este valor.
