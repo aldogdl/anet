@@ -99,12 +99,12 @@ class ProcesarMessage {
         }
         
         if($hasCotProgress && $cotProgress['espero'] == 'detalles' && $obj->isText) {
-            new CotDetallesesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+            new CotDetallesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
             return;
         }
 
         if($hasCotProgress && $cotProgress['espero'] == 'costo' && $obj->isText) {
-            new CotDetallesesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+            new CotCostoProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
             return;
         }
 

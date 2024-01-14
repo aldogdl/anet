@@ -6,7 +6,7 @@ use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
 
-class CotDetallesesProcess
+class CotDetallesProcess
 {
 
     public String $hasErr = '';
@@ -19,8 +19,13 @@ class CotDetallesesProcess
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
 
-        if(strlen($message->message['body']) < 3) {
+        if($message->type != 'text') {
             // TODO enviar error al cliente
+            return;
+        }
+        if(strlen($message->message) < 3) {
+            // TODO enviar error al cliente
+            return;
         }
 
         $this->cotProgress = $cotProgress;
@@ -89,7 +94,7 @@ class CotDetallesesProcess
             $entroToSended = true;
         }
 
-        $trackFile->itemCurrentResponsed['track']['detalles'] = $message->message['body'];
+        $trackFile->itemCurrentResponsed['track']['detalles'] = $message->message;
         $trackFile->update();
 
         $recibido = $message->toArray();
@@ -101,7 +106,7 @@ class CotDetallesesProcess
 
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
-            'enviado'  => $sended,
+            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
             'trackfile'=> $trackFile->itemCurrentResponsed
         ]);
     }

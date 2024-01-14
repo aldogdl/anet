@@ -110,7 +110,7 @@ class CotImagesProcess
 
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
-            'enviado'  => $sended,
+            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
             'trackfile'=> $trackFile->itemCurrentResponsed
         ]);
     }
