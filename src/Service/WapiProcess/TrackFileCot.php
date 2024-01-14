@@ -32,7 +32,7 @@ class TrackFileCot {
     {
         $this->paths = $paths;
         $this->message = $message;
-        
+        $this->isAtendido = false;
         $this->fSys = new FsysProcess($this->paths['trackeds']);
         $this->itemsToTrackeds = $this->fSys->getTrackedsFileOf($this->message->from);
         $itemCurrentIndx = array_search($this->message->message['idItem'], $this->itemsToTrackeds);

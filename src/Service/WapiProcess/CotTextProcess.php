@@ -103,6 +103,13 @@ class CotTextProcess
         }
 
         if($campo == 'precio') {
+            
+            if(!array_key_exists('idItem', $message->message)) {
+                $message->message = [
+                    'idItem' => $this->cotProgress['idItem'],
+                    'body' => $message->message
+                ];
+            }
             $ftObj = new TrackFileCot($message, $paths);
             // $ftObj->finDeCotizacion();
         }
