@@ -78,6 +78,7 @@ class CotCostoProcess
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
             }
+
             // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
             // responde con otro mensaje interactivo
             $idItem = '0';
