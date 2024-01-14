@@ -102,6 +102,10 @@ class CotTextProcess
             $fSys->dumpIn($sended);
         }
 
+        if($campo == 'precio') {
+            $ftObj = new TrackFileCot($message, $paths);
+            // $ftObj->finDeCotizacion();
+        }
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
