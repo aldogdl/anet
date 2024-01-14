@@ -11,7 +11,7 @@ parameters:
     chat       : '%phtml%/chat/'
     dtaCtc     : '%phtml%/ctcs/'
     dtaCtcLog  : '%phtml%/ctcs/log'
-    cotProgres : '%phtml%/cot_progress/'
+    cotProgres : '%phtml%/wa_cot_progress/'
 
     waSort     : '%phtml%/wa/_orden_put.json'
     anetMlm    : '%phtml%/anet_mlm.json'
