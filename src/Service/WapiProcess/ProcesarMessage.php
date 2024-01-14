@@ -71,7 +71,11 @@ class ProcesarMessage {
         }
         
         $pathTracking = $this->getFolderTo('tracking');
-        if($obj->isStt && !$hasCotProgress) {
+        if($obj->isStt) {
+            // No procesamos los status cuando se esta cotizando
+            if($hasCotProgress) {
+                return;
+            }
             new StatusProcess($obj->get(), $pathChat, $pathTracking, $this->whook);
             return;
         }
