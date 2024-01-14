@@ -86,7 +86,7 @@ class FsysProcess
             if(array_key_exists('id', $content)) {
                 $this->filename = $content['id'] .'.json';
                 if(array_key_exists('recibido', $content)) {
-                    $this->path = $this->pathBase.$content['from'].'/'.$content['recibido'];
+                    $this->path = $this->pathBase.'/'.$content['from'].'/'.$content['recibido'];
                 }
             }
         }
