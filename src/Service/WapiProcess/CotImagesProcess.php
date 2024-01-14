@@ -41,7 +41,7 @@ class CotImagesProcess
         if($current == 'sdta') {
             $fSys->setContent($message->from.'.json', $this->cotProgress);
         }
-        
+
         if($current == 'sfto') {
             
             $this->cotProgress['current'] = 'sdta';
@@ -99,7 +99,7 @@ class CotImagesProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> $cotProgress
+            'trackfile'=> $this->cotProgress
         ]);
     }
 
