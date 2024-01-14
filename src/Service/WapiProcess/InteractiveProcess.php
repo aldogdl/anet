@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Service\WapiResponse;
+namespace App\Service\WapiProcess;
 
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
-use App\Service\WapiResponse\WrapHttp;
-use App\Service\WapiResponse\FsysProcess;
+use App\Service\WapiProcess\WrapHttp;
 
 class InteractiveProcess
 {
@@ -18,7 +17,7 @@ class InteractiveProcess
      * Este dato debe de colacarce en la propiedad subEvento del Objeto WaMsgMdl creado
      * en la clase: @see App\Service\WapiRequest\ExtractMessage()
     */
-    public function __construct(WaMsgMdl $message, array $paths, WebHook $wh, WrapHttp $wapiHttp)
+    public function __construct(WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths)
     {
         $trackFile = new TrackFileCot($message,
             ['tracking' => $paths['tracking'], 'trackeds' => $paths['trackeds']]
@@ -40,7 +39,6 @@ class InteractiveProcess
             }
         }
 
-        $filetrack = [];
         $itemFetchToSent = [];
         if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
             $itemFetchToSent = $trackFile->fetchItemToSent();
@@ -49,20 +47,16 @@ class InteractiveProcess
             $trackFile->update();
         }
         
-        $filetrack = $trackFile->trackFile['version'];
-        $trackFile = null;
-        
         $template = [];
         $typeMsgToSent = 'text';
-        $fSys = new FsysProcess($paths['chat']);
-        $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
-
+        $trackFile->fSys->setPathBase($paths['chat']);
+        
         /// El boton disparador fue un ntg|ntga y se encontró un item a enviar
         if(count($itemFetchToSent) > 0) {
 
             //Buscamos para ver si existe el mensaje del item prefabricado.
-            $fSys->setPathBase($paths['prodTrack']);
-            $template = $fSys->getContent($itemFetchToSent['idItem'].'_track.json');
+            $trackFile->fSys->setPathBase($paths['prodTrack']);
+            $template = $trackFile->fSys->getContent($itemFetchToSent['idItem'].'_track.json');
             if(count($template) > 0) {
                 if(array_key_exists('message', $template)) {
                     $template = $template['message'];
@@ -74,27 +68,32 @@ class InteractiveProcess
         }else{
 
             // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
-            $fSys->setPathBase($paths['waTemplates']);
-            $template = $fSys->getContent($message->subEvento.'.json');
+            $trackFile->fSys->setPathBase($paths['waTemplates']);
+            $template = $trackFile->fSys->getContent($message->subEvento.'.json');
             if(strlen($message->context) > 0) {
                 $template['context'] = $message->context;
             }
             
             // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
             if($message->subEvento == 'sfto') {
-                $fSys->setPathBase($paths['cotProgres']);
+                $trackFile->fSys->setPathBase($paths['cotProgres']);
                 $idItem = '0';
                 try {
                     if(array_key_exists('idItem', $message->message)) {
                         $idItem = $message->message['idItem'];
                     }
                 } catch (\Throwable $th) {}
-                $fSys->setContent($message->from.'.json', ['cot' => $template['context'], 'item' => $idItem]);
+                $trackFile->fSys->setContent(
+                    $message->from.'.json',
+                    ['cot' => $template['context'], 'item' => $idItem, 'espero' => 'images']
+                );
             }
         }
         
+        $sended = [];
         $entroToSended = false;
-        $fSys->setPathBase($paths['chat']);
+        $trackFile->fSys->setPathBase($paths['chat']);
+        $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
         if(count($template) > 0) {
 
             $conm->setBody($typeMsgToSent, $template);
@@ -113,22 +112,25 @@ class InteractiveProcess
                     $partes = explode('_', $idItem);
                     $idItem = $partes[1];
                 }
+                $conm->bodyRaw = ['body' => $template['body'], 'idItem' => $idItem];
+            }else{
+                $conm->bodyRaw = $template['body'];
             }
 
-            $conm->bodyRaw = ['text' => $template['body'], 'idItem' => $idItem];
-            $sended = $conm->setIdToMsgSended($message, $result);
+            $objMdl = $conm->setIdToMsgSended($message, $result);
+            $sended = $objMdl->toArray();
             $entroToSended = true;
         }
 
-        $fSys->dumpIn($message->toArray());
+        $trackFile->fSys->dumpIn($message->toArray());
         if($entroToSended) {
-            $fSys->dumpIn($sended->toArray());
+            $trackFile->fSys->dumpIn($sended);
         }
 
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
-            'enviado'  => $sended->toArray(),
-            'trackfile'=> $filetrack
+            'enviado'  => $sended,
+            'trackfile'=> $trackFile->trackFile['version']
         ]);
     }
 

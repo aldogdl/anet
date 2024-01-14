@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\WapiResponse;
+namespace App\Service\WapiProcess;
 
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -129,6 +129,5 @@ class FsysProcess
         }
         $this->fSys->dumpFile($this->path.'/'.$this->filename, json_encode($content));
     }
-
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\WapiResponse;
+namespace App\Service\WapiProcess;
 
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;

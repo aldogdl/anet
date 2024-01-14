@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Service\WapiResponse;
+namespace App\Service\WapiProcess;
 
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
-use App\Service\WapiResponse\WrapHttp;
-use App\Service\WapiResponse\FsysProcess;
+use App\Service\WapiProcess\WrapHttp;
+use App\Service\WapiProcess\FsysProcess;
 
 class LoginProcess
 {

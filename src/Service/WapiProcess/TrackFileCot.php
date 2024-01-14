@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Service\WapiResponse;
+namespace App\Service\WapiProcess;
 
 use App\Entity\WaMsgMdl;
-use App\Service\WapiResponse\FsysProcess;
+use App\Service\WapiProcess\FsysProcess;
 
 class TrackFileCot {
 
-    private FsysProcess $fSys;
+    public FsysProcess $fSys;
     private WaMsgMdl $message;
     private array $paths;
     
@@ -17,7 +17,7 @@ class TrackFileCot {
     // El archivo completo del trackFile del cotizador, se manipulara y se actualizara
     public array $trackFile = [];
     // El item el cual fue respondido por medio de los botones
-    private $itemCurrentResponsed = [];
+    public $itemCurrentResponsed = [];
     // Los items que se enviarán al archivo trackeds de atendidos.
     private $itemsToTrackeds = [];
 
@@ -26,8 +26,8 @@ class TrackFileCot {
      * Buscamos el item respondido y lo pasamos a itemsToTrackeds.
      * A su ves lo eliminamos de la lista de trackFile
     */
-    public function __construct(WaMsgMdl $message, array $paths) {
-
+    public function __construct(WaMsgMdl $message, array $paths)
+    {
         $this->paths = $paths;
         $this->message = $message;
         
@@ -45,7 +45,7 @@ class TrackFileCot {
         // Tomamos el archivo TrackFile
         $this->fSys->setPathBase($this->paths['tracking']);
         $this->trackFile = $this->fSys->getTrackFileOf($this->message->from);
-
+        
         if(count($this->trackFile) > 0) {
             
             if(count($this->trackFile['items']) > 0) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\WapiResponse;
+namespace App\Service\WapiProcess;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

@@ -28,16 +28,19 @@ public_html/cot_progress/
 public_html/sendmy_fails/
 public_html/img_publik/
 public_html/wa_get_imgs/
-public_html/tkwaconm.json
 public_html/error_log
 public_html/error.log
 public_html/request.log
-public_html/filnotgo.json
-public_html/centinela.json
-public_html/anet_mlm.json
 public_html/harbi_connx.txt
-public_html/harbi_connx.json
-public_html/opcotizo.json
+public_html/*.json
+# public_html/tkwaconm.json
+# public_html/filnotgo.json
+# public_html/centinela.json
+# public_html/anet_mlm.json
+# public_html/harbi_connx.json
+# public_html/anet_group.json
+# public_html/slug_intros.json
+# public_html/.well-known/assetlinks.json
 public_html/htacces.zip
 public_html/prod_recents/
 public_html/bgs_shop/
@@ -65,10 +68,7 @@ public_html/wacmds/
 public_html/pnid.pni
 public_html/cotz_cata_data/
 public_html/ctc_logo/
-public_html/anet_group.json
-public_html/slug_intros.json
 public_html/desc_mlm.txt
-public_html/.well-known/assetlinks.json
 front_door/front_door.txt/front_door.txt
 
 var/

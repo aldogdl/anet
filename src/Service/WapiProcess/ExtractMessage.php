@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\WapiRequest;
+namespace App\Service\WapiProcess;
 
 use App\Entity\WaMsgMdl;
 
@@ -11,11 +11,11 @@ class ExtractMessage {
 
     public String $pathToAnalizar = '';
     public bool $isStt = false;
-    public bool $isCmd = false;
     public bool $isLogin = false;
     public bool $isImage = false;
-    public bool $isCot = false;
+    public bool $isText = false;
     public bool $isInteractive = false;
+    public bool $isCmd = false;
 
     public String $from = '';
     public String $phoneNumberId = '';
@@ -93,15 +93,12 @@ class ExtractMessage {
                 case 'text':
                     $this->extractText($msg);
                     break;
-                
-                case 'interactive':
+                    case 'interactive':
                     $this->extractInteractive($msg);
                     break;
-
                 case 'image':
-                    
+                    $this->extractImage($msg);
                     break;
-                
                 default:
                     # code...
                     break;
@@ -128,7 +125,8 @@ class ExtractMessage {
         if(mb_strpos($txt, $this->tokenLogin[0]) !== false) {
             $this->isLoginMsg($txt);
         }
-
+        
+        $this->isText = true;
         $this->message = new WaMsgMdl(
             $msg['from'],
             $msg['id'],
@@ -138,6 +136,34 @@ class ExtractMessage {
             $msg['type'],
             $txt,
             "delivered"
+        );
+    }
+
+    ///
+    function extractImage(array $msg): void
+    {
+        $txt = 'Error, no se recibio ninguna Imágen';
+        $idContext = '';
+        if(array_key_exists('context', $msg)) {
+            $idContext = $msg['context']['id'];
+        }
+        $mime = '';
+        if(array_key_exists('mime_type', $msg[$msg['type']])) {                                        
+            $partes = explode('/', $msg[$msg['type']]['mime_type']);
+            $mime = $partes[1];
+        }
+
+        $this->isImage = true;
+        $this->message = new WaMsgMdl(
+            $msg['from'],
+            $msg['id'],
+            $idContext,
+            $msg['timestamp'],
+            $this->recibido,
+            $msg['type'],
+            $msg[$msg['type']],
+            $mime,
+            'sfto'
         );
     }
 
