@@ -67,7 +67,7 @@ class TrackFileCot {
                     }
                     // Si no es atendido, lo marcamos como atendido para evitar enivar el mismo mensaje de Cot.
                     if(!$this->isAtendido) {
-                        if(in_array($this->itemCurrentResponsed['idItem'], $this->itemsToTrackeds)) {
+                        if(!in_array($this->itemCurrentResponsed['idItem'], $this->itemsToTrackeds)) {
                             $this->itemsToTrackeds[] = $this->itemCurrentResponsed['idItem'];
                             $this->updateTrackeds();
                         }
