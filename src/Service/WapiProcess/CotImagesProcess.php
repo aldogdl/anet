@@ -19,10 +19,13 @@ class CotImagesProcess
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
+        $fSys = new FsysProcess($paths['waTemplates']);
         if(!in_array($message->status, $this->permitidas)) {
-            // TODO enviar mensaje al cliente de no permitida la extencion
+            // TODO
+            $template = $fSys->getContent($this->cotProgress['current'].'.json');
             return;
         }
+
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
 
@@ -30,7 +33,7 @@ class CotImagesProcess
         $sended = [];
         $entroToSended = false;
         $message->subEvento = 'sfto';
-        
+
         if(array_key_exists('fotos', $this->cotProgress['track'])) {
             $fotos = $this->cotProgress['track']['fotos'];
         }
@@ -39,7 +42,7 @@ class CotImagesProcess
         
         $current = $this->cotProgress['current'];
 
-        $fSys = new FsysProcess($paths['cotProgres']);
+        $fSys->setPathBase($paths['cotProgres']);
         if($current == 'sdta') {
             $fSys->setContent($message->from.'.json', $this->cotProgress);
         }
