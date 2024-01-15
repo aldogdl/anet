@@ -11,7 +11,6 @@ class CotImagesProcess
 
     public String $hasErr = '';
     private array $cotProgress;
-    private $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
 
     /** 
      * Esperamos la llegada de las imagenes departe del cotizador
@@ -19,21 +18,15 @@ class CotImagesProcess
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
-        $fSys = new FsysProcess($paths['waTemplates']);
-        if(!in_array($message->status, $this->permitidas)) {
-            // TODO
-            $template = $fSys->getContent($this->cotProgress['current'].'.json');
-            return;
-        }
 
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
-
+        
         $fotos = [];
         $sended = [];
         $entroToSended = false;
         $message->subEvento = 'sfto';
-
+        
         if(array_key_exists('fotos', $this->cotProgress['track'])) {
             $fotos = $this->cotProgress['track']['fotos'];
         }
@@ -41,8 +34,8 @@ class CotImagesProcess
         $this->cotProgress['track']['fotos'] = $fotos;
         
         $current = $this->cotProgress['current'];
-
-        $fSys->setPathBase($paths['cotProgres']);
+        
+        $fSys = new FsysProcess($paths['cotProgres']);
         if($current == 'sdta') {
             $fSys->setContent($message->from.'.json', $this->cotProgress);
         }

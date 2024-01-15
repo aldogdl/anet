@@ -40,23 +40,23 @@ class ProcesarMessage {
     public function execute(array $message, bool $isTest = false): void
     {        
         $obj = new ExtractMessage($message);
-        // Revisamos si hay cotizacion en curso
-        $this->hasCotProgress  = false;
-        $pathCotProgress = $this->getFolderTo('cotProgres');
-        $cotProgress     = $this->getFileCotProgress($pathCotProgress, $obj->from.'.json');
-
-        // Esto es solo para desarrollo
-        if(!$obj->isStt) {
-            file_put_contents('message.json', json_encode($message));
-            file_put_contents('message_process.json', json_encode($obj->get()->toArray()));
-        }
-
         if($obj->pathToAnalizar != '') {
             $folder = $this->getFolderTo('waAnalizar');
             $this->saveFile($folder.$obj->pathToAnalizar, $message);
             // TODO Enviar a EventCore
             return;
         }
+
+        // Revisamos si hay cotizacion en curso
+        $this->hasCotProgress  = false;
+        $pathCotProgress = $this->getFolderTo('cotProgres');
+        $cotProgress     = $this->getFileCotProgress($pathCotProgress, $obj->from.'.json');
+
+        // Esto es solo para desarrollo
+        // if(!$obj->isStt) {
+        //     file_put_contents('message.json', json_encode($message));
+        //     file_put_contents('message_process.json', json_encode($obj->get()->toArray()));
+        // }
 
         $pathChat = $this->getFolderTo('chat');
         $pathConm = $this->params->get('tkwaconm');
@@ -68,46 +68,46 @@ class ProcesarMessage {
         $pathTracking = $this->getFolderTo('tracking');
         if($obj->isStt) {
             // No procesamos los status cuando se esta cotizando
-            if($this->hasCotProgress) {
-                return;
+            if(!$this->hasCotProgress) {
+                new StatusProcess($obj->get(), $pathChat, $pathTracking, $this->whook);
             }
-            new StatusProcess($obj->get(), $pathChat, $pathTracking, $this->whook);
             return;
         }
 
+        $pathTemplates = $this->params->get('waTemplates');
+        $code = 0;
+        if($this->hasCotProgress) {
+            $validator = new ValidarMessageOfCot(
+                $obj, $this->wapiHttp, [$pathTemplates, $pathConm], $cotProgress
+            );
+            if(!$validator->isValid) { return; }
+            $code = $validator->code;
+            $validator = null;
+        }
+        
         $paths = [
             'chat'       => $pathChat,
             'tkwaconm'   => $pathConm,
             'tracking'   => $pathTracking,
             'cotProgres' => $pathCotProgress,
+            'waTemplates'=> $pathTemplates,
             'trackeds'   => $this->getFolderTo('trackeds'),
-            'waTemplates'=> $this->params->get('waTemplates'),
             'prodTrack'  => $this->params->get('prodTrack'),
         ];
-        if($obj->isInteractive) {
-            // Si despues de analizar el boton que se precionó se determina que...
-            // presiono COTIZAR AHORA, se creo el archivo [cotProgress]
-            new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths);
-            return;
-        }
-
-        if($this->hasCotProgress && $cotProgress['current'] == 'sfto' && $obj->isImage) {
-            new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
-        }
-        
-        // Esto es como un refuerzo por si siguen llegando imagenes cuando se esta esperando detalles
-        if($this->hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isImage) {
-            new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
-        }
-        
-        if($this->hasCotProgress && $cotProgress['current'] == 'sdta' && $obj->isText) {
-            new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
-            return;
-        }
-
-        if($this->hasCotProgress && $cotProgress['current'] == 'scto' && $obj->isText) {
-            new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
-            return;
+        switch ($code) {
+            case 100:
+                // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
+                new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths);
+                break;
+            case 101:
+                new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                break;
+            case 102:
+                new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                break;
+            default:
+                # code...
+                break;
         }
 
         // Si llega aqui es por que la conversion es libre;
