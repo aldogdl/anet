@@ -11,6 +11,7 @@ class ValidarMessageOfCot {
     public String $hasErr = '';
     public int $code = 100;
     public bool $isValid = false;
+    public bool $isEmptyDetalles = false;
     
     public array $paths = [];
     public array $cotProgress = [];
@@ -38,14 +39,9 @@ class ValidarMessageOfCot {
         $this->filesystem  = new Filesystem();
 
         if($obj->isDoc) {
-            file_put_contents('wa_audio.json', "");
-            $template = [
-                'type' => 'text',
-                'text' => [
-                    'preview_url' => false,
-                    'body' => "*LO SENTIMOS MUCHO*.\n\n📝Por el momento solo Imagánes y Texto acepta el Sistema automatizado."
-                ]
-            ];
+            $template = $this->buildMsgSimple(
+                "*LO SENTIMOS MUCHO*.\n\n📝Por el momento solo Imagánes y Texto acepta el Sistema automatizado."
+            );
             $msg = $obj->get();
             $this->sentMsg($template, $msg->from);
             $this->isValid  = false;
@@ -76,6 +72,7 @@ class ValidarMessageOfCot {
         }
         
         if($cotProgress['current'] == 'scto' && $obj->isText) {
+            $this->validateText($obj->get());
             return;
         }
     }
@@ -125,13 +122,9 @@ class ValidarMessageOfCot {
             }
             if($cant > 2) {
                 if (($cant % 2) != 0) {
-                    $template = [
-                        'type' => 'text',
-                        'text' => [
-                            'preview_url' => false,
-                            'body' => '*Hemos recibido '.$cant." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*."
-                        ]
-                    ];
+                    $template = $this->buildMsgSimple(
+                        '*Hemos recibido '.$cant." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
+                    );
                     $this->sentMsg($template, $msg->from);
                     return;
                 }
@@ -155,6 +148,18 @@ class ValidarMessageOfCot {
             }
             if($campo == 'scto') {
                 $template = $this->getFile('ecto.json');
+                if($this->isEmptyDetalles) {
+
+                    $this->cotProgress['current'] = 'sdta';
+                    $this->cotProgress['next'] = 'scto';
+                    file_put_contents($this->paths[2].'/'.$msg->from.'.json', json_encode($this->cotProgress));
+                    $template = $this->buildMsgSimple(
+                        "*POR FAVOR...*.\n\n📝Indica algunos detalles de la pieza antes de continuar 🙂"
+                    );
+                    $this->sentMsg($template, $msg->from);
+                    $this->isValid  = false;
+                    return;
+                }
             }
             $this->sentMsg($template, $msg->from);
             $this->isValid = false;
@@ -186,6 +191,20 @@ class ValidarMessageOfCot {
         }
 
         if($campo == 'scto') {
+
+            $hasDetalles = true;
+            if(!array_key_exists('detalles', $this->cotProgress)) {
+                $hasDetalles = false;
+            }else{
+                if(mb_strlen($this->cotProgress['detalles']) < 3) {
+                    $hasDetalles = false;
+                }
+            }
+            if(!$hasDetalles) {
+                $this->isEmptyDetalles = true;
+                return false;
+            }
+
             if(strlen($data) < 3) {
                 // TODO enviar error al cliente
                 return false;
@@ -243,6 +262,18 @@ class ValidarMessageOfCot {
             }
         }
         return '-1';
+    }
+
+    /** */
+    private function buildMsgSimple(String $text): array
+    {
+        return [
+            'type' => 'text',
+            'text' => [
+                'preview_url' => false,
+                'body' => $text
+            ]
+        ];
     }
 
     /** */

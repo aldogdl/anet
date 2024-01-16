@@ -78,7 +78,7 @@ class ProcesarMessage {
         $code = 100;
         if($this->hasCotProgress) {
             $validator = new ValidarMessageOfCot(
-                $obj, $this->wapiHttp, [$pathTemplates, $pathConm], $cotProgress
+                $obj, $this->wapiHttp, [$pathTemplates, $pathConm, $pathCotProgress], $cotProgress
             );
             if(!$validator->isValid) { return; }
             $code = $validator->code;
