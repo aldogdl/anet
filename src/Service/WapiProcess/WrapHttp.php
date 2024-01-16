@@ -66,11 +66,11 @@ class WrapHttp
         }
 
         $this->bodyToSend = [
-            "to"   => $to,
-            "type" => $type,
-            $type  => $body,
             "messaging_product" => "whatsapp",
             "recipient_type"    => "individual",
+            "to"   => $to,
+            "type" => $type,
+            $type  => $body[$type]
         ];
  
         if($context != '') {
