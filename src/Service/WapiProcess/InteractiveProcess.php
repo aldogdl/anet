@@ -57,16 +57,9 @@ class InteractiveProcess
             $trackFile->fSys->setPathBase($paths['prodTrack']);
             $template = $trackFile->fSys->getContent($itemFetchToSent['idItem'].'_track.json');
             if(count($template) > 0) {
-
                 if(array_key_exists('message', $template)) {
                     $template = $template['message'];
-                }else{
-                    if(array_key_exists($template['type'], $template)) {
-                        $template = $template[$template['type']];
-                    }
                 }
-                $typeMsgToSent = $template['type'];
-                $template = $template[$typeMsgToSent];
             }
 
         }else{
@@ -110,7 +103,7 @@ class InteractiveProcess
         if(count($template) > 0) {
 
             $typeMsgToSent = $template['type'];
-            $conm->setBody($typeMsgToSent, $template[$typeMsgToSent]);
+            $conm->setBody($typeMsgToSent, $template);
             $result = $wapiHttp->send($conm);
             
             if($result['statuscode'] != 200) {
