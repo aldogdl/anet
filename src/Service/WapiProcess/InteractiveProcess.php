@@ -110,7 +110,12 @@ class InteractiveProcess
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
             }
+            
+            $stopEvent = ['nfto', 'sifto'];
+            // Revisamos si el evento efectuado esta entre los que no hay que seguir procesando
+            if(in_array($message->subEvento, $stopEvent)) {
 
+            }
             // Se responde con un mensaje al cotizador en respuesta a su accion.
             // Si el mensaje fue una nueva solicitud de cotizacion procesada por el estanque
             // Extraemos el IdItem del producto para que EventCore reaccione a este.
