@@ -38,9 +38,7 @@ class InteractiveProcess
                     $template = $trackFile->fSys->getContent('eatn.json');
                     $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
                     $conm->setBody($template['type'], $template);
-                    $result = $wapiHttp->send($conm);
-                    file_put_contents('wa_result.json', json_encode($result));
-                    return;
+                    $wapiHttp->send($conm);
                 }
             }
         }
@@ -59,8 +57,13 @@ class InteractiveProcess
             $trackFile->fSys->setPathBase($paths['prodTrack']);
             $template = $trackFile->fSys->getContent($itemFetchToSent['idItem'].'_track.json');
             if(count($template) > 0) {
+
                 if(array_key_exists('message', $template)) {
                     $template = $template['message'];
+                }else{
+                    if(array_key_exists($template['type'], $template)) {
+                        $template = $template[$template['type']];
+                    }
                 }
                 $typeMsgToSent = $template['type'];
                 $template = $template[$typeMsgToSent];
@@ -101,8 +104,10 @@ class InteractiveProcess
         $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
         if(count($template) > 0) {
 
-            $conm->setBody($typeMsgToSent, $template);
+            $conm->setBody($typeMsgToSent, $template[$typeMsgToSent]);
             $result = $wapiHttp->send($conm);
+            file_put_contents('wa_result.json', json_encode($result));
+            return;
             if($result['statuscode'] != 200) {
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
