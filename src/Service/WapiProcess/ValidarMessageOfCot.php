@@ -25,6 +25,20 @@ class ValidarMessageOfCot {
         ExtractMessage $obj, WrapHttp $wapi, array $paths, array $cotProgress
     ){
 
+        if($obj->isDoc) {
+            $template = [
+                'type' => 'text',
+                'text' => [
+                    'preview_url' => false,
+                    'body' => "*LO SENTIMOS MUCHO*.\n\n📝Por el momento solo Imagánes y Texto acepta el Sistema automatizado."
+                ]
+            ];
+            $msg = $obj->get();
+            $this->sentMsg($template, $msg->from);
+            $this->isValid  = false;
+            return;
+        }
+
         $this->isValid  = true;
 
         $this->paths       = $paths;
@@ -50,6 +64,7 @@ class ValidarMessageOfCot {
         
         $this->code = 102;
         if($cotProgress['current'] == 'sdta' && $obj->isText) {
+            $this->validateText($obj->get());
             return;
         }
         
@@ -118,34 +133,43 @@ class ValidarMessageOfCot {
     }
 
     /** */
-    private function validateX(WaMsgMdl $msg): void
+    private function validateText(WaMsgMdl $msg): void
     {
-        // if($message->type != 'text') {
-        //     // TODO enviar error al cliente
-        //     return;
-        // }
-        // $isValid = $this->isValid($current, $message->message);
-        // if(!$isValid) {
-        //     return;
-        // }
+        if($msg->type != 'text') {
+            // TODO enviar error al cliente
+            return;
+        }
+
+        $campo = $this->cotProgress['current'];
+        $isValid = $this->isValid($campo, $msg->message);
+        if(!$isValid) {
+            if($campo == 'sdta') {
+                $template = $this->getFile('edta.json');
+            }
+            if($campo == 'scto') {
+                $template = $this->getFile('ecto.json');
+            }
+            $this->sentMsg($template, $msg->from);
+            $this->isValid = false;
+        }
     }
     
     /** */
-    private function isValidX(String $campo, String $data): bool
+    private function isValid(String $campo, String $data): bool
     {   
         if($campo == 'sdta') {
-            if(strlen($campo) < 3) {
-                // TODO enviar error al cliente
+            if(strlen($data) < 3) {
                 return false;
             }
         }
 
         if($campo == 'scto') {
-            if(strlen($campo) < 3) {
+            if(strlen($data) < 3) {
                 // TODO enviar error al cliente
                 return false;
             }
         }
+
         return true;
     }
 

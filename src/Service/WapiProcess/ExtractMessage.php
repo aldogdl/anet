@@ -11,6 +11,7 @@ class ExtractMessage {
 
     public String $pathToAnalizar = '';
     public bool $isStt = false;
+    public bool $isDoc = false;
     public bool $isLogin = false;
     public bool $isImage = false;
     public bool $isText = false;
@@ -100,7 +101,7 @@ class ExtractMessage {
                     $this->extractImage($msg);
                     break;
                 default:
-                    # code...
+                    $this->isDoc = true;
                     break;
             }
         }
