@@ -92,7 +92,7 @@ class InteractiveProcess
             }
             if(strlen($contexto) > 0) {
                 $template['context'] = $contexto;
-                $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
+                // $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
                 $trackFile->itemCurrentResponsed['wamid_cot'] = $contexto;
             }
             

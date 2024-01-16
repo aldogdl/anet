@@ -83,6 +83,7 @@ class ProcesarMessage {
             'trackeds'   => $this->getFolderTo('trackeds'),
             'prodTrack'  => $this->params->get('prodTrack'),
         ];
+        
         $code = 100;
         if($this->hasCotProgress) {
             $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
