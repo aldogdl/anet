@@ -74,7 +74,7 @@ class CotImagesProcess
                     return;
                 }
                 $template = $template[$typeMsgToSent];
-                
+
                 // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
                 // responde con otro mensaje interactivo
                 $idItem = '0';
@@ -94,7 +94,7 @@ class CotImagesProcess
                 $entroToSended = true;
             }
         }
-        
+
         $recibido = $message->toArray();
         $fSys->setPathBase($paths['chat']);
         $fSys->dumpIn($recibido);

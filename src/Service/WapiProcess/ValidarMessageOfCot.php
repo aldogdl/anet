@@ -64,7 +64,10 @@ class ValidarMessageOfCot {
         // El mensaje recibido es que... No agregará fotos
         if($msg->subEvento == 'nfto') {
             // Enviamos el mensaje de confirmacion de sin fotos
-            $this->sentMsg($msg->subEvento.'.json', $msg->from);
+            $template = $this->getFile($msg->subEvento.'.json');
+            $deco = new DecodeTemplate($this->cotProgress);
+            $template = $deco->decode($template);
+            $this->sentMsg($template, $msg->from);
             $this->isValid = false;
             return;
         }
@@ -72,7 +75,8 @@ class ValidarMessageOfCot {
         // El mensaje recibido es que... Que se arrepintio y agregara fotos
         if($msg->subEvento == 'sifto') {
             // Enviamos el mensaje de buena elenccion agrega fotos
-            $this->sentMsg($msg->subEvento.'.json', $msg->from, true);
+            $template = $this->getFile($msg->subEvento.'.json');
+            $this->sentMsg($template, $msg->from);
             $this->isValid = false;
             return;
         }
@@ -83,7 +87,8 @@ class ValidarMessageOfCot {
     {
         $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
         if(!in_array($msg->status, $permitidas)) {
-            $this->sentMsg('eftoExt.json', $msg->from);
+            $template = $this->getFile('eftoExt.json');
+            $this->sentMsg($template, $msg->from);
             $this->isValid = false;
             return;
         }
@@ -92,7 +97,24 @@ class ValidarMessageOfCot {
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
         if($type == 'deep') {
-
+            $cant = 0;
+            if(array_key_exists('fotos', $this->cotProgress['track'])) {
+                $cant = count($this->cotProgress['track']['fotos']) + 1;
+            }
+            if($cant > 2) {
+                if (($cant % 2) != 0) {
+                    $template = [
+                        'type' => 'text',
+                        'text' => [
+                            'preview_url' => false,
+                            'body' => '*Hemos recibido '.$cant.' fotografías*.\n\n📝Al finalizar de enviar fotos, puedes continuar con los detalles de la pieza.'
+                        ]
+                    ];
+                    $this->sentMsg($template, $msg->from);
+                    $this->isValid = false;
+                    return;
+                }
+            }
         }
     }
 
@@ -179,11 +201,8 @@ class ValidarMessageOfCot {
     }
 
     /** */
-    private function sentMsg(String $typeMsg, String $to, bool $withContext = false)
+    private function sentMsg(array $template, String $to, bool $withContext = false)
     {
-        $template = $this->getFile($typeMsg);
-        $deco = new DecodeTemplate($this->cotProgress);
-        $template = $deco->decode($template);
         if(count($template) > 0) {
 
             if($withContext) {
