@@ -33,9 +33,12 @@ class InteractiveProcess
                 // Si hay mas items pero necesitamos ver si el boton que se apreto es diferente a track
                 // si es track es que quiere cotizar la que ya habia atendido y eso no esta permitido.
                 if($message->subEvento == 'sfto') {
-                    // TODO avisar al cotizador con un mensaje.
-                    // file_put_contents('wa_rechazada.json', json_encode($message->message));
-                    // return;
+                    $trackFile->fSys->setPathBase($paths['waTemplates']);
+                    $template = $trackFile->fSys->getContent($message->subEvento.'.json');
+                    $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
+                    $conm->setBody($template['type'], $template);
+                    $result = $wapiHttp->send($conm);
+                    return;
                 }
             }
         }
