@@ -81,6 +81,11 @@ class InteractiveProcess
             $trackFile->fSys->setPathBase($paths['waTemplates']);
             // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
             $template = $trackFile->fSys->getContent($message->subEvento.'.json');
+                        
+            // Buscamos si contiene AnetLanguage para decodificar
+            $deco = new DecodeTemplate($cotProgress);
+            $template = $deco->decode($template);
+
             if(strlen($message->context) > 0) {
                 $template['context'] = $message->context;
                 $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
@@ -103,9 +108,10 @@ class InteractiveProcess
         $trackFile->fSys->setPathBase($paths['chat']);
         $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
         if(count($template) > 0) {
-            
+
             $typeMsgToSent = $template['type'];
             $conm->setBody($typeMsgToSent, $template[$typeMsgToSent]);
+            file_put_contents('wa_result_t.json', json_encode($template[$typeMsgToSent]));
             $result = $wapiHttp->send($conm);
             file_put_contents('wa_result.json', json_encode($result));
             return;

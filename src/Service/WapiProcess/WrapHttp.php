@@ -45,7 +45,7 @@ class WrapHttp
                 if(mb_strpos($th->getMessage(), '401') !== false) {
                     $body = ['error' => 'Token de Whatsapp API caducado'];
                 }else{
-                    $body = ['error' => 'Error de Whatsapp desconocido'];
+                    $body = json_decode($response->getContent(), true);
                 }
             }
         }
