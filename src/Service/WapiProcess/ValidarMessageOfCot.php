@@ -143,13 +143,14 @@ class ValidarMessageOfCot {
         $campo = $this->cotProgress['current'];
         $isValid = $this->isValid($campo, $msg->message);
         if(!$isValid) {
+
             if($campo == 'sdta') {
                 $template = $this->getFile('edta.json');
             }
-            if($campo == 'scto') {
-                $template = $this->getFile('ecto.json');
-                if($this->isEmptyDetalles) {
 
+            if($campo == 'scto') {
+                
+                if($this->isEmptyDetalles) {
                     $this->cotProgress['current'] = 'sdta';
                     $this->cotProgress['next'] = 'scto';
                     file_put_contents($this->paths[2].'/'.$msg->from.'.json', json_encode($this->cotProgress));
@@ -160,7 +161,9 @@ class ValidarMessageOfCot {
                     $this->isValid  = false;
                     return;
                 }
+                $template = $this->getFile('ecto.json');
             }
+
             $this->sentMsg($template, $msg->from);
             $this->isValid = false;
         }
@@ -195,16 +198,15 @@ class ValidarMessageOfCot {
 
         if($campo == 'scto') {
 
-            $hasDetalles = true;
+            $this->isEmptyDetalles = false;
             if(!array_key_exists('detalles', $this->cotProgress)) {
-                $hasDetalles = false;
+                $this->isEmptyDetalles = true;
             }else{
                 if(mb_strlen($this->cotProgress['detalles']) < 3) {
-                    $hasDetalles = false;
+                    $this->isEmptyDetalles = true;
                 }
             }
-            if(!$hasDetalles) {
-                $this->isEmptyDetalles = true;
+            if($this->isEmptyDetalles = true) {
                 return false;
             }
 
