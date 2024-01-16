@@ -111,9 +111,8 @@ class InteractiveProcess
 
             $typeMsgToSent = $template['type'];
             $conm->setBody($typeMsgToSent, $template[$typeMsgToSent]);
-            file_put_contents('wa_result_t.json', json_encode($template[$typeMsgToSent]));
             $result = $wapiHttp->send($conm);
-            file_put_contents('wa_result.json', json_encode($result));
+            
             if($result['statuscode'] != 200) {
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
