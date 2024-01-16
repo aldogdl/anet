@@ -94,6 +94,7 @@ class ProcesarMessage {
             'trackeds'   => $this->getFolderTo('trackeds'),
             'prodTrack'  => $this->params->get('prodTrack'),
         ];
+        file_put_contents('wa_seg0.json', '');
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]

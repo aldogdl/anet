@@ -20,6 +20,7 @@ class InteractiveProcess
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
+        file_put_contents('wa_seg1.json', '');
         $trackFile = new TrackFileCot($message,
             ['tracking' => $paths['tracking'], 'trackeds' => $paths['trackeds']]
         );
