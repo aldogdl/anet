@@ -10,7 +10,7 @@ class InteractiveProcess
 {
 
     public String $hasErr = '';
-    private array $stopEvent = ['nfto', 'sifto'];
+    private array $stopEvent = ['nfto'];
 
     /** 
      * Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
@@ -81,10 +81,18 @@ class InteractiveProcess
             $template = $deco->decode($template);
 
             if(!in_array($message->subEvento, $this->stopEvent)) {
-                if(strlen($message->context) > 0) {
-                    $template['context'] = $message->context;
+                $contexto = '';
+                if(array_key_exists('wamid_cot', $trackFile->itemCurrentResponsed)) {
+                    $contexto = $trackFile->itemCurrentResponsed['wamid_cot'];
+                }else{
+                    if(strlen($message->context) > 0) {
+                        $contexto = $message->context;
+                    }
+                }
+                if(strlen($contexto) > 0) {
+                    $template['context'] = $contexto;
                     $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
-                    $trackFile->itemCurrentResponsed['wamid_cot'] = $message->context;
+                    $trackFile->itemCurrentResponsed['wamid_cot'] = $contexto;
                 }
             }
             
