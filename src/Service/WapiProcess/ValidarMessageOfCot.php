@@ -199,10 +199,10 @@ class ValidarMessageOfCot {
         if($campo == 'scto') {
 
             $this->isEmptyDetalles = false;
-            if(!array_key_exists('detalles', $this->cotProgress)) {
+            if(!array_key_exists('detalles', $this->cotProgress['track'])) {
                 $this->isEmptyDetalles = true;
             }else{
-                if(mb_strlen($this->cotProgress['detalles']) < 3) {
+                if(mb_strlen($this->cotProgress['track']['detalles']) < 3) {
                     $this->isEmptyDetalles = true;
                 }
             }
