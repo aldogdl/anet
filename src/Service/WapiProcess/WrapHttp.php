@@ -28,7 +28,6 @@ class WrapHttp
         $body = '';
         if(count($this->bodyToSend) != 0) {
             
-            file_put_contents('wa_result_t.json', json_encode($this->bodyToSend));
             try {
                 $response = $this->client->request(
                     'POST', $conm->uriBase.'/messages', [
@@ -42,7 +41,6 @@ class WrapHttp
                 $code = $response->getStatusCode();
                 $body = json_decode($response->getContent(), true);
             } catch (\Throwable $th) {
-                file_put_contents('wa_result.json', json_encode($response->getContent()));
                 $code = 401;
                 if(mb_strpos($th->getMessage(), '401') !== false) {
                     $body = ['error' => 'Token de Whatsapp API caducado'];

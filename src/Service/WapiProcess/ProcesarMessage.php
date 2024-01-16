@@ -53,7 +53,7 @@ class ProcesarMessage {
         $cotProgress     = $this->getFileCotProgress($pathCotProgress, $obj->from.'.json');
 
         // Esto es solo para desarrollo
-        if(!$obj->isStt) {
+        if(!$obj->isStt && $this->hasCotProgress) {
             file_put_contents('message.json', json_encode($message));
             file_put_contents('message_process.json', json_encode($obj->get()->toArray()));
         }
@@ -74,27 +74,24 @@ class ProcesarMessage {
             return;
         }
 
-        $pathTemplates = $this->params->get('waTemplates');
-        $code = 100;
-        if($this->hasCotProgress) {
-            $validator = new ValidarMessageOfCot(
-                $obj, $this->wapiHttp, [$pathTemplates, $pathConm, $pathCotProgress], $cotProgress
-            );
-            if(!$validator->isValid) { return; }
-            $code = $validator->code;
-            $validator = null;
-        }
-        
         $paths = [
             'chat'       => $pathChat,
             'tkwaconm'   => $pathConm,
             'tracking'   => $pathTracking,
             'cotProgres' => $pathCotProgress,
-            'waTemplates'=> $pathTemplates,
+            'waTemplates'=> $this->params->get('waTemplates'),
             'trackeds'   => $this->getFolderTo('trackeds'),
             'prodTrack'  => $this->params->get('prodTrack'),
         ];
-
+        $code = 100;
+        if($this->hasCotProgress) {
+            $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
+            $validator->validate();
+            if(!$validator->isValid) { return; }
+            $code = $validator->code;
+            $validator = null;
+        }
+        
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]

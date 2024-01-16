@@ -17,7 +17,8 @@ class ValidarMessageOfCot {
     public array $cotProgress = [];
     private Filesystem $filesystem;
     private WrapHttp $wapiHttp;
-    
+    private ExtractMessage $message;
+
     private array $conj = [
         'así', 'asi', 'bien', 'bueno', 'como', 'con', 'cómo', 'contra', 'cuando', 'donde', 'de', 'el', 'en',
         'espero', 'está', 'esta', 'fuera', 'igual', 'foto', 'la', 'las', 'lo', 'los', 'mas', 'mientras',
@@ -36,43 +37,60 @@ class ValidarMessageOfCot {
         $this->paths       = $paths;
         $this->cotProgress = $cotProgress;
         $this->wapiHttp    = $wapi;
+        $this->message     = $obj;
         $this->filesystem  = new Filesystem();
+    }
 
-        if($obj->isDoc) {
+    ///
+    public function validate()
+    {
+
+        $msg = $this->message->get();
+        $trackFile = new TrackFileCot($msg, $this->paths);
+        
+        if($trackFile->isAtendido) {
+            $trackFile->fSys->setPathBase($this->paths['waTemplates']);
+            $template = $trackFile->fSys->getContent('eatn.json');
+            $conm = new ConmutadorWa($msg->from, $this->paths['tkwaconm']);
+            $conm->setBody($template['type'], $template);
+            $this->wapiHttp->send($conm);
+            return;
+        }
+
+        if($this->message->isDoc) {
             $template = $this->buildMsgSimple(
                 "*LO SENTIMOS MUCHO*.\n\n📝Por el momento solo Imagánes y Texto acepta el Sistema automatizado."
             );
-            $msg = $obj->get();
             $this->sentMsg($template, $msg->from);
             $this->isValid  = false;
             return;
         }
 
         $this->isValid  = true;
-        if($obj->isInteractive) {
-            $this->validateInteractive($obj->get());
+        if($this->message->isInteractive) {
+            $this->validateInteractive($msg);
             return;
         }
 
         $this->code = 101;
-        if($cotProgress['current'] == 'sfto' && $obj->isImage) {
-            $this->validateImage($obj->get());
+        if($this->cotProgress['current'] == 'sfto' && $this->message->isImage) {
+            $this->validateImage($msg);
             return;
         }
-        
-        if($cotProgress['current'] == 'sdta' && $obj->isImage) {
-            $this->validateImage($obj->get(), 'deep');
+
+        if($this->cotProgress['current'] == 'sdta' && $this->message->isImage) {
+            $this->validateImage($msg, 'deep');
             return;
         }
-        
+
         $this->code = 102;
-        if($cotProgress['current'] == 'sdta' && $obj->isText) {
-            $this->validateText($obj->get());
+        if($this->cotProgress['current'] == 'sdta' && $this->message->isText) {
+            $this->validateText($msg);
             return;
         }
-        
-        if($cotProgress['current'] == 'scto' && $obj->isText) {
-            $this->validateText($obj->get());
+
+        if($this->cotProgress['current'] == 'scto' && $this->message->isText) {
+            $this->validateText($msg);
             return;
         }
     }

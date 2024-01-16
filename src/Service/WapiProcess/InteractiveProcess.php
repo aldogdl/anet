@@ -20,30 +20,9 @@ class InteractiveProcess
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
 
-        $trackFile = new TrackFileCot($message,
-            ['tracking' => $paths['tracking'], 'trackeds' => $paths['trackeds']]
-        );
-
-        if($trackFile->isAtendido) {
-            // Al entrar aqui es que no se encontró el item respondido por un boton entre
-            // la lista del TrackFile pero es necesario evaluar ciertas cosas...
-
-            // 1.- Hay mas items que atender??
-            if($trackFile->hasItems) {
-                // Si hay mas items pero necesitamos ver si el boton que se apreto es diferente a track
-                // si es track es que quiere cotizar la que ya habia atendido y eso no esta permitido.
-                if($message->subEvento == 'sfto') {
-                    $trackFile->fSys->setPathBase($paths['waTemplates']);
-                    $template = $trackFile->fSys->getContent('eatn.json');
-                    $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
-                    $conm->setBody($template['type'], $template);
-                    $wapiHttp->send($conm);
-                }
-            }
-        }
-
         $itemFetchToSent = [];
         if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
+            $trackFile = new TrackFileCot($message, $paths);
             $itemFetchToSent = $trackFile->fetchItemToSent();
         }
         
@@ -147,7 +126,6 @@ class InteractiveProcess
             // Extraemos el IdItem del producto para que EventCore reaccione a este.
             $idItem = '0';
             $template = $template[$typeMsgToSent];
-            file_put_contents('wa_result_x.json', json_encode($template));
 
             if(array_key_exists('action', $template)) {
                 if(array_key_exists('buttons', $template['action'])) {

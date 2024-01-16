@@ -32,7 +32,7 @@ class CotTextProcess
         if(!array_key_exists($current, $this->msgs)) {
             return;
         }
-        
+
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
         $this->cotProgress['current'] = $this->msgs[$current]['current'];
         $this->cotProgress['next']    = $this->msgs[$current]['next'];
@@ -99,7 +99,10 @@ class CotTextProcess
                 'body' => $message->message
             ];
             $ftObj = new TrackFileCot($message, $paths);
-            // $ftObj->finDeCotizacion();
+            $hasCarnada = $ftObj->finDeCotizacion($this->cotProgress);
+            if($hasCarnada) {
+                
+            }
         }
 
         $wh->sendMy('wa-wh', 'notSave', [

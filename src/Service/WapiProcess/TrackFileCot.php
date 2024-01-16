@@ -32,18 +32,25 @@ class TrackFileCot {
     {
         $this->paths = $paths;
         $this->message = $message;
+        
         $this->isAtendido = false;
-        $this->fSys = new FsysProcess($this->paths['trackeds']);
-        $this->itemsToTrackeds = $this->fSys->getTrackedsFileOf($this->message->from);
-        $itemCurrentIndx = array_search($this->message->message['idItem'], $this->itemsToTrackeds);
-        
-        // Siempre que el cotizador responda a cualquier boton, el sistema registrará este item
-        // como atendido, pero... si se encuentra entre la lista de trakings es por que esta en
-        // un proceso de cotización.
-        if($itemCurrentIndx !== false) {
-            $this->isAtendido = true;
+        $path = $this->paths['trackeds'].'/'.$this->message->from.'.json';
+        if(is_file($path)) {
+            $trakeds = json_decode(file_get_contents($path), true);
+            if(in_array($this->message->message['idItem'], $trakeds)) {
+                $this->isAtendido = true;
+            }
         }
-        
+    }
+
+    /** 
+     * Tomamos el trackFile del cotizador.
+     * Buscamos el item respondido y lo pasamos a itemsToTrackeds.
+     * A su ves lo eliminamos de la lista de trackFile
+    */
+    public function sabe()
+    {
+
         // Tomamos el archivo TrackFile
         $this->fSys->setPathBase($this->paths['tracking']);
         $this->trackFile = $this->fSys->getTrackFileOf($this->message->from);
@@ -84,14 +91,16 @@ class TrackFileCot {
     /**
      * Eliminamos el item que se cotizó en Tracking
      */
-    public function finDeCotizacion()
+    public function finDeCotizacion(array $cotProcess): bool
     {
-        unset($this->trackFile['items'][$this->itemCurrentIndx]);
-        $this->updateTracking();
+        // Buscar en el estanque otra carnada
+        // unset($this->trackFile['items'][$this->itemCurrentIndx]);
+        // $this->updateTracking();
+        return false;
     }
 
     /** 
-    * Solo el no tengo o no tengo auto, son los unicos eventos que disparan un
+    * Solo el no tengo, no tengo auto o fin de cotizacion, son los unicos eventos que disparan un
     * cierto proceso para ver si hay mas ordenes de solicitud de cotizaciones
     * para enviarle al cotizador.
     */
