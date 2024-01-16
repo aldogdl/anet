@@ -63,13 +63,14 @@ class DecodeTemplate {
         return $template;
     }
 
-
     /** */
     private function fetchCode(String $txt): String
     {
         foreach ($this->codesAnet as $code => $campo) {
-            if(mb_strpos($txt, $code) !== false) {
-                $txt = str_replace($code, $this->cotProgress[$campo], $txt);
+            if(array_key_exists($campo, $this->cotProgress)) {
+                if(mb_strpos($txt, $code) !== false) {
+                    $txt = str_replace($code, $this->cotProgress[$campo], $txt);
+                }
             }
         }
         return $txt;
