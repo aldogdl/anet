@@ -10,7 +10,6 @@ class CotTextProcess
 {
 
     public String $hasErr = '';
-    private String $result;
     private array $cotProgress;
     private array $msgs = [
         'sdta' => ['current' => 'scto', 'next' => 'sgrx'],
@@ -35,29 +34,24 @@ class CotTextProcess
         $this->cotProgress['next']    = $this->msgs[$current]['next'];
         $this->cotProgress['track'][$campo] = $message->message;
 
-        $fSys = new FsysProcess($paths['cotProgres']);
         // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-        if($current == 'sdta') {
-            $fSys->setContent($message->from.'.json', $this->cotProgress);
-        }else {
-            // Si ya es el costo borramos el mensaje
-            $fSys->delete($message->from.'.json');
-        }
-        
+        $fSys = new FsysProcess($paths['cotProgres']);
+        $fSys->setContent($message->from.'.json', $this->cotProgress);
+
         $sended = [];
         $entroToSended = false;
+        
         // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
         $fSys->setPathBase($paths['waTemplates']);
         $template = $fSys->getContent($this->cotProgress['current'].'.json');
-        
-        // Revisamos si existe el id del contexto de la cotizacion para agregarlo al msg de respuesta
-        if($current == 'sdta') {
-            if(array_key_exists('wamid_cot', $this->cotProgress)) {
-                $template['context'] = $this->cotProgress['wamid_cot'];
-            }
+        // Buscamos si contiene AnetLanguage para decodificar
+        $deco = new DecodeTemplate($cotProgress);
+        $template = $deco->decode($template);
+        if(array_key_exists('wamid_cot', $this->cotProgress)) {
+            $template['context'] = $this->cotProgress['wamid_cot'];
         }
 
-        $typeMsgToSent = 'text';
+        $typeMsgToSent = $template['type'];
         $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
         if(count($template) > 0) {
 
@@ -67,7 +61,8 @@ class CotTextProcess
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
             }
-
+            
+            $template = $template[$typeMsgToSent];
             // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
             // responde con otro mensaje interactivo
             $idItem = '0';

@@ -22,7 +22,7 @@ class ValidarMessageOfCot {
         'espero', 'está', 'esta', 'fuera', 'igual', 'foto', 'lo', 'los', 'las', 'mas', 'mientras',
         'mismo', 'ni', 'no', 'ora', 'otra', 'otro', 'pero', 'que', 'solo', 'sino',
         'sea', 'tanto', 'también', 'tambien', 'un', 'una', 'uno', 'vien', 'ya'
-    ]; 
+    ];
     
     /** 
      * Analizamos los mensajes para detectar errores, y como se condiciona cada
@@ -33,6 +33,7 @@ class ValidarMessageOfCot {
     ){
 
         if($obj->isDoc) {
+            file_put_contents('wa_audio.json', "");
             $template = [
                 'type' => 'text',
                 'text' => [
