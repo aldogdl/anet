@@ -36,6 +36,8 @@ class CotImagesProcess
         $current = $this->cotProgress['current'];
         
         $fSys = new FsysProcess($paths['cotProgres']);
+        // Si current es sdta es que estamos solicitando los detalles y siguen llegando fotos
+        // por lo tanto guardamos las fotos inmediatamente en el archivo cotProgress
         if($current == 'sdta') {
             $fSys->setContent($message->from.'.json', $this->cotProgress);
         }
@@ -63,14 +65,16 @@ class CotImagesProcess
             $typeMsgToSent = 'text';
             $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
             if(count($template) > 0) {
-
+                
+                $typeMsgToSent = $template['type'];
                 $conm->setBody($typeMsgToSent, $template);
                 $result = $wapiHttp->send($conm);
                 if($result['statuscode'] != 200) {
                     $wh->sendMy('wa-wh', 'notSave', $result);
                     return;
                 }
-
+                $template = $template[$typeMsgToSent];
+                
                 // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
                 // responde con otro mensaje interactivo
                 $idItem = '0';
