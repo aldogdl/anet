@@ -141,7 +141,6 @@ class ValidarMessageOfCot {
         }
 
         $campo = $this->cotProgress['current'];
-        file_put_contents('wa_'.$campo.'.txt', '');
         $isValid = $this->isValid($campo, $msg->message);
         if(!$isValid) {
 
@@ -201,15 +200,13 @@ class ValidarMessageOfCot {
 
             $this->isEmptyDetalles = false;
             if(!array_key_exists('detalles', $this->cotProgress['track'])) {
-                file_put_contents('wa_empty.txt', '');
                 $this->isEmptyDetalles = true;
             }else{
                 if(mb_strlen($this->cotProgress['track']['detalles']) < 3) {
-                    file_put_contents('wa_length.txt', $this->cotProgress['track']['detalles']);
                     $this->isEmptyDetalles = true;
                 }
             }
-            if($this->isEmptyDetalles = true) {
+            if($this->isEmptyDetalles) {
                 return false;
             }
 
