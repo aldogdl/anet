@@ -68,15 +68,30 @@ class InteractiveProcess
                 $partes = explode('.', $message->subEvento);
                 $message->subEvento = $partes[0];
                 $respRapida = $partes[1];
+                
+                $saveProcess = false;
+                if($message->subEvento == 'sdta' && $cotProgress['current'] == 'sfto') {
+                    // Estamos en fotos y preciono un boton de opcion
+                    if($respRapida == 'fton') {
+                        $cotProgress['current'] = 'sdta';
+                        $cotProgress['next'] = 'scto';
+                        $cotProgress['track']['fotos'] = [];
+                        $saveProcess = true;
+                    }
+                }
+                
                 if($message->subEvento == 'scto' && $cotProgress['current'] == 'sdta') {
                     // Estamos en detalles y preciono un boton de opcion
                     if($respRapida == 'uso') {
                         $cotProgress['current'] = 'scto';
                         $cotProgress['next'] = 'sgrx';
                         $cotProgress['track']['detalles'] = 'La pieza cuenta con Detalles de Uso';
-                        $trackFile->fSys->setPathBase($paths['cotProgres']);
-                        $trackFile->fSys->setContent($message->from.'.json', $cotProgress);
+                        $saveProcess = true;
                     }
+                }
+                if($saveProcess) {
+                    $trackFile->fSys->setPathBase($paths['cotProgres']);
+                    $trackFile->fSys->setContent($message->from.'.json', $cotProgress);
                 }
             }
 
