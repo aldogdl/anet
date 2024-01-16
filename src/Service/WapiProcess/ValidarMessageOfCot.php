@@ -111,7 +111,6 @@ class ValidarMessageOfCot {
                         ]
                     ];
                     $this->sentMsg($template, $msg->from);
-                    $this->isValid = false;
                     return;
                 }
             }
