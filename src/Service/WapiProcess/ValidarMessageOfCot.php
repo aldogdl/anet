@@ -16,7 +16,14 @@ class ValidarMessageOfCot {
     public array $cotProgress = [];
     private Filesystem $filesystem;
     private WrapHttp $wapiHttp;
-
+    
+    private array $conj = [
+        'así', 'asi', 'bien', 'como', 'cómo', 'cuando', 'donde', 'de', 'el', 'en',
+        'espero', 'fuera', 'igual', 'foto', 'lo', 'los', 'las', 'mas', 'mientras',
+        'mismo', 'ni', 'no', 'ora', 'otra', 'otro', 'pero', 'que', 'solo', 'sino',
+        'sea', 'tanto', 'también', 'tambien', 'un', 'una', 'uno', 'vien', 'ya'
+    ]; 
+    
     /** 
      * Analizamos los mensajes para detectar errores, y como se condiciona cada
      * mensaje para determinar su tipo, evitamos hacerlo doble con la variable $code
@@ -161,6 +168,21 @@ class ValidarMessageOfCot {
             if(strlen($data) < 3) {
                 return false;
             }
+
+            $partes = explode(' ', $data);
+            $palabras = count($partes);
+            if(strlen($data) > 9 && $palabras == 1) {
+                return false;
+            }
+            $rota = count($this->conj);
+            $data = strtolower($data);
+            $data = trim($data);
+            for ($i=0; $i < $rota; $i++) { 
+                if(mb_strpos($data, $this->conj[$i]) !== false) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         if($campo == 'scto') {
