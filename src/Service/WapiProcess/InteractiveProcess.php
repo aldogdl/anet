@@ -10,8 +10,6 @@ class InteractiveProcess
 {
 
     public String $hasErr = '';
-    private array $stopEvent = ['nfto'];
-
     /** 
      * Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
      * que se necesita enviar como respuesta inmendiata a este.
@@ -80,25 +78,22 @@ class InteractiveProcess
             $deco = new DecodeTemplate($cotProgress);
             $template = $deco->decode($template);
 
-            if(!in_array($message->subEvento, $this->stopEvent)) {
-                $contexto = '';
-                if(array_key_exists('wamid_cot', $trackFile->itemCurrentResponsed)) {
-                    $contexto = $trackFile->itemCurrentResponsed['wamid_cot'];
-                }else{
-                    if(strlen($message->context) > 0) {
-                        $contexto = $message->context;
-                    }
+            $contexto = '';
+            if(array_key_exists('wamid_cot', $cotProgress)) {
+                $contexto = $cotProgress['wamid_cot'];
+            }else{
+                if(strlen($message->context) > 0) {
+                    $contexto = $message->context;
                 }
-                if(strlen($contexto) > 0) {
-                    $template['context'] = $contexto;
-                    $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
-                    $trackFile->itemCurrentResponsed['wamid_cot'] = $contexto;
-                }
+            }
+            if(strlen($contexto) > 0) {
+                $template['context'] = $contexto;
+                $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
+                $trackFile->itemCurrentResponsed['wamid_cot'] = $contexto;
             }
             
             // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
             if($message->subEvento == 'sfto') {
-
                 $trackFile->fSys->setPathBase($paths['cotProgres']);
                 if(!array_key_exists('idCot', $trackFile->itemCurrentResponsed['track'])) {
                     $trackFile->itemCurrentResponsed['track'] = ['idCot' => time()];
@@ -119,11 +114,6 @@ class InteractiveProcess
             
             if($result['statuscode'] != 200) {
                 $wh->sendMy('wa-wh', 'notSave', $result);
-                return;
-            }
-            
-            // Revisamos si el evento efectuado esta entre los que no hay que seguir procesando
-            if(in_array($message->subEvento, $this->stopEvent)) {
                 return;
             }
 
