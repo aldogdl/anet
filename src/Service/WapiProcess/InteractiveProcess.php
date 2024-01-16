@@ -68,7 +68,7 @@ class InteractiveProcess
                 $partes = explode('.', $message->subEvento);
                 $message->subEvento = $partes[0];
                 $respRapida = $partes[1];
-                if($message->subEvento == 'scto' && $cotProgress['current']['sdta']) {
+                if($message->subEvento == 'scto' && $cotProgress['current'] == 'sdta') {
                     // Estamos en detalles y preciono un boton de opcion
                     if($respRapida == 'uso') {
                         $cotProgress['current'] = 'scto';
