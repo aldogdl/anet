@@ -34,10 +34,11 @@ class InteractiveProcess
                 // si es track es que quiere cotizar la que ya habia atendido y eso no esta permitido.
                 if($message->subEvento == 'sfto') {
                     $trackFile->fSys->setPathBase($paths['waTemplates']);
-                    $template = $trackFile->fSys->getContent($message->subEvento.'.json');
+                    $template = $trackFile->fSys->getContent('eatn.json');
                     $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
                     $conm->setBody($template['type'], $template);
                     $result = $wapiHttp->send($conm);
+                    file_put_contents('wa_result.json', json_encode($result));
                     return;
                 }
             }
