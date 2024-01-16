@@ -158,7 +158,9 @@ class InteractiveProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'enviado'  => $sended,
-            'trackfile'=> $cotProgress
+            'trackfile'=> (count($cotProgress) == 0)
+                ? $trackFile->itemCurrentResponsed['version']
+                : $cotProgress
         ]);
     }
 
