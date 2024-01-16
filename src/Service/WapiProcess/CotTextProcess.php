@@ -29,6 +29,10 @@ class CotTextProcess
         $cotProgress = [];
 
         $campo = ($current == 'sdta') ? 'detalles' : 'precio';
+        if(!array_key_exists($current, $this->msgs)) {
+            return;
+        }
+        
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
         $this->cotProgress['current'] = $this->msgs[$current]['current'];
         $this->cotProgress['next']    = $this->msgs[$current]['next'];
@@ -61,7 +65,7 @@ class CotTextProcess
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
             }
-            
+
             $template = $template[$typeMsgToSent];
             // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
             // responde con otro mensaje interactivo
