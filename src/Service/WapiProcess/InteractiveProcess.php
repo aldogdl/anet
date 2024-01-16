@@ -103,7 +103,8 @@ class InteractiveProcess
         $trackFile->fSys->setPathBase($paths['chat']);
         $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
         if(count($template) > 0) {
-
+            
+            $typeMsgToSent = $template['type'];
             $conm->setBody($typeMsgToSent, $template[$typeMsgToSent]);
             $result = $wapiHttp->send($conm);
             file_put_contents('wa_result.json', json_encode($result));
