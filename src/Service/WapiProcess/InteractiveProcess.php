@@ -10,6 +10,7 @@ class InteractiveProcess
 {
 
     public String $hasErr = '';
+    private array $stopEvent = ['nfto', 'sifto'];
 
     /** 
      * Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
@@ -79,10 +80,12 @@ class InteractiveProcess
             $deco = new DecodeTemplate($cotProgress);
             $template = $deco->decode($template);
 
-            if(strlen($message->context) > 0) {
-                $template['context'] = $message->context;
-                $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
-                $trackFile->itemCurrentResponsed['wamid_cot'] = $message->context;
+            if(!in_array($message->subEvento, $this->stopEvent)) {
+                if(strlen($message->context) > 0) {
+                    $template['context'] = $message->context;
+                    $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
+                    $trackFile->itemCurrentResponsed['wamid_cot'] = $message->context;
+                }
             }
             
             // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
@@ -111,11 +114,11 @@ class InteractiveProcess
                 return;
             }
             
-            $stopEvent = ['nfto', 'sifto'];
             // Revisamos si el evento efectuado esta entre los que no hay que seguir procesando
-            if(in_array($message->subEvento, $stopEvent)) {
+            if(in_array($message->subEvento, $this->stopEvent)) {
                 return;
             }
+
             // Se responde con un mensaje al cotizador en respuesta a su accion.
             // Si el mensaje fue una nueva solicitud de cotizacion procesada por el estanque
             // Extraemos el IdItem del producto para que EventCore reaccione a este.
