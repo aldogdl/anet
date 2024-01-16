@@ -18,8 +18,8 @@ class ValidarMessageOfCot {
     private WrapHttp $wapiHttp;
     
     private array $conj = [
-        'así', 'asi', 'bien', 'como', 'cómo', 'cuando', 'donde', 'de', 'el', 'en',
-        'espero', 'fuera', 'igual', 'foto', 'lo', 'los', 'las', 'mas', 'mientras',
+        'así', 'asi', 'bien', 'bueno', 'como', 'cómo', 'cuando', 'donde', 'de', 'el', 'en',
+        'espero', 'está', 'esta', 'fuera', 'igual', 'foto', 'lo', 'los', 'las', 'mas', 'mientras',
         'mismo', 'ni', 'no', 'ora', 'otra', 'otro', 'pero', 'que', 'solo', 'sino',
         'sea', 'tanto', 'también', 'tambien', 'un', 'una', 'uno', 'vien', 'ya'
     ]; 
