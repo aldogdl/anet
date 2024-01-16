@@ -211,7 +211,6 @@ class ValidarMessageOfCot {
             }
 
             if(strlen($data) < 3) {
-                // TODO enviar error al cliente
                 return false;
             }
 

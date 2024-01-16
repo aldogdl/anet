@@ -68,6 +68,16 @@ class InteractiveProcess
                 $partes = explode('.', $message->subEvento);
                 $message->subEvento = $partes[0];
                 $respRapida = $partes[1];
+                if($message->subEvento == 'scto' && $cotProgress['current']['sdta']) {
+                    // Estamos en detalles y preciono un boton de opcion
+                    if($respRapida == 'uso') {
+                        $cotProgress['current'] = 'scto';
+                        $cotProgress['next'] = 'sgrx';
+                        $cotProgress['track']['detalles'] = 'La pieza cuenta con Detalles de Uso';
+                        $trackFile->fSys->setPathBase($paths['cotProgres']);
+                        $trackFile->fSys->setContent($message->from.'.json', $cotProgress);
+                    }
+                }
             }
 
             $trackFile->fSys->setPathBase($paths['waTemplates']);
@@ -148,7 +158,7 @@ class InteractiveProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'enviado'  => $sended,
-            'trackfile'=> $trackFile->trackFile['version']
+            'trackfile'=> $cotProgress
         ]);
     }
 
