@@ -107,7 +107,7 @@ class ValidarMessageOfCot {
                         'type' => 'text',
                         'text' => [
                             'preview_url' => false,
-                            'body' => '*Hemos recibido '.$cant.' fotografías*.\n\n📝Al finalizar de enviar fotos, puedes continuar con los detalles de la pieza.'
+                            'body' => '*Hemos recibido '.$cant." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*."
                         ]
                     ];
                     $this->sentMsg($template, $msg->from);

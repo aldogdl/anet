@@ -30,7 +30,9 @@ class CotImagesProcess
         if(array_key_exists('fotos', $this->cotProgress['track'])) {
             $fotos = $this->cotProgress['track']['fotos'];
         }
-        $fotos[] = $message->message['id'];
+        if(!in_array($message->message['id'], $fotos)) {
+            $fotos[] = $message->message['id'];
+        }
         $this->cotProgress['track']['fotos'] = $fotos;
         
         $current = $this->cotProgress['current'];
