@@ -13,6 +13,7 @@ class ValidarMessageOfCot {
     public bool $isValid = false;
     
     public array $paths = [];
+    public array $cotProgress = [];
     private Filesystem $filesystem;
     private WrapHttp $wapiHttp;
 
@@ -25,12 +26,14 @@ class ValidarMessageOfCot {
     ){
 
         $this->isValid  = true;
-        
-        $this->paths    = $paths;
+
+        $this->paths       = $paths;
+        $this->cotProgress = $cotProgress;
         $this->wapiHttp = $wapi;
         $this->filesystem = new Filesystem();
 
         if($obj->isInteractive) {
+            $this->validateInteractive($obj->get());
             return;
         }
 
@@ -51,6 +54,26 @@ class ValidarMessageOfCot {
         }
         
         if($cotProgress['current'] == 'scto' && $obj->isText) {
+            return;
+        }
+    }
+
+    /** */
+    private function validateInteractive(WaMsgMdl $msg): void
+    {
+        // El mensaje recibido es que... No agregará fotos
+        if($msg->subEvento == 'nfto') {
+            // Enviamos el mensaje de confirmacion de sin fotos
+            $this->sentMsg($msg->subEvento.'.json', $msg->from);
+            $this->isValid = false;
+            return;
+        }
+        
+        // El mensaje recibido es que... Que se arrepintio y agregara fotos
+        if($msg->subEvento == 'sifto') {
+            // Enviamos el mensaje de buena elenccion agrega fotos
+            $this->sentMsg($msg->subEvento.'.json', $msg->from, true);
+            $this->isValid = false;
             return;
         }
     }
@@ -156,14 +179,20 @@ class ValidarMessageOfCot {
     }
 
     /** */
-    private function sentMsg(String $typeMsg, String $to)
+    private function sentMsg(String $typeMsg, String $to, bool $withContext = false)
     {
         $template = $this->getFile($typeMsg);
-        $typeMsgToSent = 'text';
+        $deco = new DecodeTemplate($this->cotProgress);
+        $template = $deco->decode($template);
         if(count($template) > 0) {
-            
+
+            if($withContext) {
+                if(array_key_exists('wamid_cot', $this->cotProgress)) {
+                    $template['context'] = $this->cotProgress['wamid_cot'];
+                }
+            }
             $conm = new ConmutadorWa($to, $this->paths[1]);
-            $conm->setBody($typeMsgToSent, $template);
+            $conm->setBody($template['type'], $template);
             $result = $this->wapiHttp->send($conm);
             if($result['statuscode'] != 200) {
                 // TODO Hacer archivo de registros de errores
