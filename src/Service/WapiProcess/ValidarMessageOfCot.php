@@ -19,10 +19,10 @@ class ValidarMessageOfCot {
     private WrapHttp $wapiHttp;
     
     private array $conj = [
-        'así', 'asi', 'bien', 'bueno', 'como', 'cómo', 'cuando', 'donde', 'de', 'el', 'en',
-        'espero', 'está', 'esta', 'fuera', 'igual', 'foto', 'lo', 'los', 'las', 'mas', 'mientras',
-        'mismo', 'ni', 'no', 'ora', 'otra', 'otro', 'pero', 'que', 'solo', 'sino',
-        'sea', 'tanto', 'también', 'tambien', 'un', 'una', 'uno', 'vien', 'ya'
+        'así', 'asi', 'bien', 'bueno', 'como', 'con', 'cómo', 'contra', 'cuando', 'donde', 'de', 'el', 'en',
+        'espero', 'está', 'esta', 'fuera', 'igual', 'foto', 'la', 'las', 'lo', 'los', 'mas', 'mientras',
+        'mismo', 'ni', 'no', 'ora', 'otra', 'otro', 'pero', 'porque', 'que', 'solo', 'sino',
+        'sea', 'tanto', 'también', 'tambien', 'un', 'una', 'unas', 'uno', 'unos', 'vien', 'ya'
     ];
     
     /** 
@@ -178,6 +178,9 @@ class ValidarMessageOfCot {
             $palabras = count($partes);
             if(strlen($data) > 9 && $palabras == 1) {
                 return false;
+            }
+            if(strlen($data) < 9 && $palabras == 1) {
+                return true;
             }
             $rota = count($this->conj);
             $data = strtolower($data);
