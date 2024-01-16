@@ -225,6 +225,25 @@ class ExtractMessage {
         }
 
         $isExp = (count($conv) > 0) ? true : false;
+        if($cat == 'Sin Especificar') {
+            if(array_key_exists('errors', $result)) {
+                $rota = count($result['errors']);
+                for ($i=0; $i < $rota; $i++) {
+                    if(array_key_exists('error_data', $result['errors'][$i])) {
+                        if(mb_strpos($result['errors'][$i]['error_data']['details'], '24 hours')) {
+                            $conv = [
+                                'code' => $result['errors'][$i]['code'],
+                                'title'=> 'Mensaje de reintegración',
+                                'body' => 'Sesion Caducada del Destinatario.',
+                                'stt'  => $result['status']
+                            ];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
         $this->message = new WaMsgMdl(
             $this->from,
             $result['id'],

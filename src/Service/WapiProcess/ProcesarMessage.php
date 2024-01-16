@@ -38,7 +38,7 @@ class ProcesarMessage {
 
     /** */
     public function execute(array $message, bool $isTest = false): void
-    {        
+    {
         $obj = new ExtractMessage($message);
         if($obj->pathToAnalizar != '') {
             $folder = $this->getFolderTo('waAnalizar');
