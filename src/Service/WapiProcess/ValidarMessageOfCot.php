@@ -214,6 +214,8 @@ class ValidarMessageOfCot {
                 // TODO enviar error al cliente
                 return false;
             }
+
+            return $this->isValidNumero($data);
         }
 
         return true;
@@ -241,7 +243,6 @@ class ValidarMessageOfCot {
             if($entera != '-1') {
                 $decimal = $this->isDigit($partes[1]);
                 if($decimal != '-1') {
-                    $result = $entera.'.'.$decimal;
                     return true;
                 }
             }
@@ -249,7 +250,6 @@ class ValidarMessageOfCot {
 
         $entera = $this->isDigit($str);
         if($entera != '-1') {
-            $result = $entera.'.00';
             return true;
         }
         return false; 
