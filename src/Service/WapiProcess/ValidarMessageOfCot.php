@@ -141,6 +141,7 @@ class ValidarMessageOfCot {
         }
 
         $campo = $this->cotProgress['current'];
+        file_put_contents('wa_'.$campo.'.txt', '');
         $isValid = $this->isValid($campo, $msg->message);
         if(!$isValid) {
 
@@ -149,7 +150,7 @@ class ValidarMessageOfCot {
             }
 
             if($campo == 'scto') {
-                
+                file_put_contents('wa_costo.txt', '');
                 if($this->isEmptyDetalles) {
                     $this->cotProgress['current'] = 'sdta';
                     $this->cotProgress['next'] = 'scto';
