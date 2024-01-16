@@ -75,7 +75,7 @@ class ProcesarMessage {
         }
 
         $pathTemplates = $this->params->get('waTemplates');
-        $code = 0;
+        $code = 100;
         if($this->hasCotProgress) {
             $validator = new ValidarMessageOfCot(
                 $obj, $this->wapiHttp, [$pathTemplates, $pathConm], $cotProgress
@@ -94,7 +94,7 @@ class ProcesarMessage {
             'trackeds'   => $this->getFolderTo('trackeds'),
             'prodTrack'  => $this->params->get('prodTrack'),
         ];
-        file_put_contents('wa_seg0.json', '');
+
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
