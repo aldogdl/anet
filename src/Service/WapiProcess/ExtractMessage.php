@@ -102,6 +102,16 @@ class ExtractMessage {
                     break;
                 default:
                     $this->isDoc = true;
+                    $this->message = new WaMsgMdl(
+                        $msg['from'],
+                        $msg['id'],
+                        '',
+                        $msg['timestamp'],
+                        $this->recibido,
+                        $msg['type'],
+                        'Un '.$msg['type'].' fué enviado por el cliente',
+                        "delivered"
+                    );
                     break;
             }
         }
