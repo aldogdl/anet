@@ -226,8 +226,10 @@ class ExtractMessage {
 
         $isExp = (count($conv) > 0) ? true : false;
         if($cat == 'Sin Especificar') {
+
             if(array_key_exists('errors', $result)) {
                 $rota = count($result['errors']);
+                $isExp = true;
                 for ($i=0; $i < $rota; $i++) {
                     if(array_key_exists('error_data', $result['errors'][$i])) {
                         if(mb_strpos($result['errors'][$i]['error_data']['details'], '24 hours')) {
@@ -243,7 +245,7 @@ class ExtractMessage {
                 }
             }
         }
-        
+
         $this->message = new WaMsgMdl(
             $this->from,
             $result['id'],
