@@ -53,7 +53,7 @@ class ProcesarMessage {
         $cotProgress     = $this->getFileCotProgress($pathCotProgress, $obj->from.'.json');
 
         // Esto es solo para desarrollo
-        if($obj->isStt) {
+        if(!$obj->isStt) {
             file_put_contents('message.json', json_encode($message));
             file_put_contents('message_process.json', json_encode($obj->get()->toArray()));
         }
@@ -97,7 +97,7 @@ class ProcesarMessage {
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
-                new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths);
+                new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 break;
             case 101:
                 new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);

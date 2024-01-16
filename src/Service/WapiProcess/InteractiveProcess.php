@@ -17,8 +17,9 @@ class InteractiveProcess
      * Este dato debe de colacarce en la propiedad subEvento del Objeto WaMsgMdl creado
      * en la clase: @see App\Service\WapiRequest\ExtractMessage()
     */
-    public function __construct(WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths)
-    {
+    public function __construct(
+        WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
+    ){
         $trackFile = new TrackFileCot($message,
             ['tracking' => $paths['tracking'], 'trackeds' => $paths['trackeds']]
         );
@@ -46,8 +47,6 @@ class InteractiveProcess
         
         $template = [];
         $typeMsgToSent = 'text';
-        $trackFile->fSys->setPathBase($paths['chat']);
-        
         /// El boton disparador fue un ntg|ntga y se encontró un item a enviar
         if(count($itemFetchToSent) > 0) {
 
@@ -64,8 +63,15 @@ class InteractiveProcess
 
         }else{
 
-            // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
+            $respRapida = '';
+            if(mb_strpos($message->subEvento, '.') !== false) {
+                $partes = explode('.', $message->subEvento);
+                $message->subEvento = $partes[0];
+                $respRapida = $partes[1];
+            }
+
             $trackFile->fSys->setPathBase($paths['waTemplates']);
+            // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
             $template = $trackFile->fSys->getContent($message->subEvento.'.json');
             if(strlen($message->context) > 0) {
                 $template['context'] = $message->context;

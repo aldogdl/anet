@@ -2,6 +2,7 @@
 
 namespace App\Controller\WA;
 
+use App\Service\WapiProcess\DecodeTemplate;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,8 +20,12 @@ class WaController extends AbstractController
     {
         if($req->getMethod() == 'GET') {
 
-            $message = json_decode(file_get_contents('message.json'), true);
-            $processMsg->execute($message, true);
+            $message = json_decode(file_get_contents('wa_templates/sdta.json'), true);
+            // $processMsg->execute($message, true);
+            $deco = new DecodeTemplate([]);
+            $final = $deco->decode($message);
+            dd($final);
+            
         }
         return new Response('ok', 200);
     }

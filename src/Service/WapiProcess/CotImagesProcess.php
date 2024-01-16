@@ -51,6 +51,10 @@ class CotImagesProcess
             $fSys->setPathBase($paths['waTemplates']);
             $template = $fSys->getContent($this->cotProgress['current'].'.json');
             
+            // Buscamos si contiene AnetLanguage para decodificar
+            $deco = new DecodeTemplate($this->cotProgress);
+            $template = $deco->decode($template);
+
             // Revisamos si existe el id del contexto de la cotizacion para agregarlo al msg de respuesta
             if(array_key_exists('wamid_cot', $this->cotProgress)) {
                 $template['context'] = $this->cotProgress['wamid_cot'];
