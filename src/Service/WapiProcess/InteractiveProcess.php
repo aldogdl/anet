@@ -115,7 +115,9 @@ class InteractiveProcess
             // Si el mensaje fue una nueva solicitud de cotizacion procesada por el estanque
             // Extraemos el IdItem del producto para que EventCore reaccione a este.
             $idItem = '0';
+            $template = $template[$typeMsgToSent];
             file_put_contents('wa_result_x.json', json_encode($template));
+
             if(array_key_exists('action', $template)) {
                 if(array_key_exists('buttons', $template['action'])) {
                     $idItem = $template['action']['buttons'][0]['reply']['id'];
