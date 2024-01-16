@@ -32,6 +32,11 @@ class ValidarMessageOfCot {
         ExtractMessage $obj, WrapHttp $wapi, array $paths, array $cotProgress
     ){
 
+        $this->paths       = $paths;
+        $this->cotProgress = $cotProgress;
+        $this->wapiHttp    = $wapi;
+        $this->filesystem  = new Filesystem();
+
         if($obj->isDoc) {
             file_put_contents('wa_audio.json', "");
             $template = [
@@ -48,12 +53,6 @@ class ValidarMessageOfCot {
         }
 
         $this->isValid  = true;
-
-        $this->paths       = $paths;
-        $this->cotProgress = $cotProgress;
-        $this->wapiHttp = $wapi;
-        $this->filesystem = new Filesystem();
-
         if($obj->isInteractive) {
             $this->validateInteractive($obj->get());
             return;
