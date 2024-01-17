@@ -64,7 +64,9 @@ class ValidarMessageOfCot {
         if($trackFile->isAtendido) {
             $trackFile->fSys->setPathBase($this->paths['waTemplates']);
             $template = $trackFile->fSys->getContent('eatn.json');
+
             file_put_contents('wa_sent.json', json_encode($template));
+
             $conm = new ConmutadorWa($msg->from, $this->paths['tkwaconm']);
             $conm->setBody($template['type'], $template);
             $this->wapiHttp->send($conm);
@@ -73,7 +75,7 @@ class ValidarMessageOfCot {
 
         if($this->message->isDoc) {
             $template = $this->buildMsgSimple(
-                "*LO SENTIMOS MUCHO*.\n\n📝Por el momento solo Imagánes y Texto acepta el Sistema automatizado."
+                "*LO SENTIMOS MUCHO*.\n\n📝Por el momento solo Imágenes y/o Texto acepta el Sistema automatizado."
             );
             $this->sentMsg($template, $msg->from);
             $this->isValid  = false;
