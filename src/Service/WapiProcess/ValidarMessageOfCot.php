@@ -50,6 +50,13 @@ class ValidarMessageOfCot {
                 'idItem' => $this->cotProgress['idItem'],
                 'body' => $msg->message
             ];
+        }else{
+            if(array_key_exists('idItem', $msg->message)) {
+                $msg->message = [
+                    'idItem' => $msg->message['idItem'],
+                    'body' => $msg->message
+                ];  
+            }
         }
         $trackFile = new TrackFileCot($msg, $this->paths);
 

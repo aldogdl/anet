@@ -85,13 +85,11 @@ class ProcesarMessage {
         ];
         
         $code = 100;
-        if($this->hasCotProgress) {
-            $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
-            $validator->validate();
-            if(!$validator->isValid) { return; }
-            $code = $validator->code;
-            $validator = null;
-        }
+        $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
+        $validator->validate();
+        if(!$validator->isValid) { return; }
+        $code = $validator->code;
+        $validator = null;
         
         switch ($code) {
             case 100:
