@@ -214,7 +214,7 @@ class ValidarMessageOfCot {
             if(strlen($data) < 3) {
                 return false;
             }
-
+            $data = mb_strtolower($data);
             $partes = explode(' ', $data);
             $palabras = count($partes);
             if(strlen($data) > 9 && $palabras == 1) {
