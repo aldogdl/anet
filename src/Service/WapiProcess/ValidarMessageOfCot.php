@@ -59,6 +59,7 @@ class ValidarMessageOfCot {
             }
         }
 
+        file_put_contents('wa_msg.json', json_encode($msg->message));
         $trackFile = new TrackFileCot($msg, $this->paths);
 
         if($trackFile->isAtendido) {
