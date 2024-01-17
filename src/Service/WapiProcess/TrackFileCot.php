@@ -52,10 +52,9 @@ class TrackFileCot {
         if(!is_array($this->message->message)) {
             return [];
         }
-        file_put_contents('wa_llego1.json', json_encode($this->message->message));
+
         $this->fSys->getContent($this->message->from.'.json');
         if(array_key_exists('idItem', $this->message->message)) {
-            file_put_contents('wa_llego2.json', json_encode($this->message->message));
             if(in_array($this->message->message['idItem'], $trakeds)) {
                 $this->isAtendido = true;
             }

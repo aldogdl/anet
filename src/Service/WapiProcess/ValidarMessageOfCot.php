@@ -59,15 +59,11 @@ class ValidarMessageOfCot {
             }
         }
 
-        file_put_contents('wa_msg.json', json_encode($msg->message));
         $trackFile = new TrackFileCot($msg, $this->paths);
 
         if($trackFile->isAtendido) {
             $trackFile->fSys->setPathBase($this->paths['waTemplates']);
             $template = $trackFile->fSys->getContent('eatn.json');
-
-            file_put_contents('wa_sent.json', json_encode($template));
-
             $conm = new ConmutadorWa($msg->from, $this->paths['tkwaconm']);
             $conm->setBody($template['type'], $template);
             $this->wapiHttp->send($conm);
