@@ -35,7 +35,11 @@ class CotTextProcess
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
         $this->cotProgress['current'] = $this->msgs[$current]['current'];
         $this->cotProgress['next']    = $this->msgs[$current]['next'];
-        $this->cotProgress['track'][$campo] = $message->message;
+        if(array_key_exists('body', $message->message)) {
+            $this->cotProgress['track'][$campo] = $message->message['body'];
+        }else{
+            $this->cotProgress['track'][$campo] = $message->message;
+        }
 
         // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
         $pathInit = ($this->cotProgress['current'] == 'sgrx') ? 'waTemplates' : 'cotProgres';

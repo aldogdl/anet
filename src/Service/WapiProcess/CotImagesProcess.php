@@ -30,8 +30,15 @@ class CotImagesProcess
         if(array_key_exists('fotos', $this->cotProgress['track'])) {
             $fotos = $this->cotProgress['track']['fotos'];
         }
-        if(!in_array($message->message['id'], $fotos)) {
-            $fotos[] = $message->message['id'];
+
+        if(array_key_exists('body', $message->message)) {
+            if(!in_array($message->message['body']['id'], $fotos)) {
+                $fotos[] = $message->message['body']['id'];
+            }
+        }else{
+            if(!in_array($message->message['id'], $fotos)) {
+                $fotos[] = $message->message['id'];
+            }
         }
         $this->cotProgress['track']['fotos'] = $fotos;
         
