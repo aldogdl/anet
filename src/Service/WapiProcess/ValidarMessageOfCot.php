@@ -164,7 +164,13 @@ class ValidarMessageOfCot {
         }
 
         $campo = $this->cotProgress['current'];
-        $isValid = $this->isValid($campo, $msg->message['body']);
+        $valor = '';
+        if(array_key_exists('body', $msg->message)) {
+            $valor = $msg->message['body'];
+        }else{
+            $valor = $msg->message;
+        }
+        $isValid = $this->isValid($campo, $valor);
         if(!$isValid) {
 
             if($campo == 'sdta') {
