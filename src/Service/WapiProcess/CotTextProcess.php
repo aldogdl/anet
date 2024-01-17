@@ -39,7 +39,7 @@ class CotTextProcess
 
         // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
         $pathInit = ($this->cotProgress['current'] == 'sgrx') ? 'waTemplates' : 'cotProgres';
-        $fSys = new FsysProcess($pathInit);
+        $fSys = new FsysProcess($paths[$pathInit]);
         if($pathInit == 'cotProgres') {
             $fSys->setContent($message->from.'.json', $this->cotProgress);
             $fSys->setPathBase($paths['waTemplates']);
