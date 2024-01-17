@@ -104,7 +104,7 @@ class CotTextProcess
         }
         
         $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => ['type' => 'interactive', ],
+            'recibido' => ['type' => 'interactive', 'estanque' => 'fetch'],
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
             'trackfile'=> $this->cotProgress
         ]);
@@ -122,8 +122,9 @@ class CotTextProcess
             $conm->setBody($typeMsgToSent, $template);
             $result = $wapiHttp->send($conm);
             if($result['statuscode'] != 200) {
+                $this->entroToSended = false;
                 $wh->sendMy('wa-wh', 'notSave', $result);
-                return;
+                return [];
             }
 
             $template = $template[$typeMsgToSent];
@@ -143,8 +144,8 @@ class CotTextProcess
 
             $objMdl = $conm->setIdToMsgSended($message, $result);
             $conm = null;
-            return $objMdl->toArray();
             $this->entroToSended = true;
+            return $objMdl->toArray();
         }
 
         $conm = null;
