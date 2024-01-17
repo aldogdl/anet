@@ -81,6 +81,7 @@ class CotTextProcess
     private function fetchBait(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, FsysProcess $fSys, array $paths
     ){
+        $this->entroToSended = false;
         $message->message = [
             'idItem' => $this->cotProgress['idItem'],
             'body' => $message->message
@@ -89,47 +90,33 @@ class CotTextProcess
         $tf = new TrackFileCot($message, $paths, $fSys);
         // Lo primero es eliminar del estanque la solicitud cotizada y enviarlo a tracked
         $tf->finOfCotizacion();
+        if(count($tf->cotProcess) == 0) {
+            return;
+        }
 
-        $typeMsg = 'sgrx';
-        if(count($tf->cotProcess) > 0) {
-
-            $this->cotProgress = $tf->cotProcess;
-            //Buscamos para ver si existe el mensaje del item prefabricado.
-            $tf->fSys->setPathBase($paths['prodTrack']);
-            $template = $tf->fSys->getContent($this->cotProgress['idItem'].'_track.json');
-            if(count($template) > 0) {
-                if(array_key_exists('message', $template)) {
-                    $typeMsg = 'sfto';
-                    $template = $template['message'];
-                }
-            }
+        $this->cotProgress = $tf->cotProcess;
+        //Buscamos para ver si existe el mensaje del item prefabricado.
+        $tf->fSys->setPathBase($paths['prodTrack']);
+        $template = $tf->fSys->getContent($this->cotProgress['idItem'].'_track.json');
+        if(count($template) == 0) {
+            return;
+        }
+        if(!array_key_exists('message', $template)) {
+            return;
         }
         
-        if($typeMsg == 'sgrx') {
-            $this->cotProgress = [];
-            $tf->fSys->setPathBase($paths['waTemplates']);
-            $template = $tf->fSys->getContent($typeMsg.'.json');
-            if(count($template) == 0) {
-                return;
-            }
-        }
-
-        if(count($template) > 0) {
-
-            $this->entroToSended = false;
-            $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
-
+        $template = $template['message'];
+        $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
+        if($this->entroToSended) {
             $fSys->setPathBase($paths['chat']);
-            if($this->entroToSended) {
-                $fSys->dumpIn($sended);
-            }
-
-            $wh->sendMy('wa-wh', 'notSave', [
-                'recibido' => ['type' => 'interactive', 'estanque' => 'fetch'],
-                'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-                'trackfile'=> $this->cotProgress
-            ]);
+            $fSys->dumpIn($sended);
         }
+
+        $wh->sendMy('wa-wh', 'notSave', [
+            'recibido' => ['type' => 'interactive', 'estanque' => 'fetch'],
+            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
+            'trackfile'=> $this->cotProgress
+        ]);
     }
 
     /** */
