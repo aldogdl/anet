@@ -51,13 +51,13 @@ class ValidarMessageOfCot {
                 'body' => $msg->message
             ];
         }else{
-            if(array_key_exists('idItem', $msg->message)) {
-                $msg->message = [
-                    'idItem' => $msg->message['idItem'],
-                    'body' => $msg->message
-                ];  
+            if(is_array($msg->message)) {
+                if(!array_key_exists('idItem', $msg->message)) {
+                    return false;
+                }
             }
         }
+
         $trackFile = new TrackFileCot($msg, $this->paths);
 
         if($trackFile->isAtendido) {

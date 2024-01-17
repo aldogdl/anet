@@ -65,7 +65,7 @@ class TrackFileCot {
     public function finOfCotizacion(): void
     {
         $this->build();
-        
+
         $this->deleteFileCotProcess();
         if(count($this->cotProcess) > 0) {
             // Se encontró el item dentro del estanque
@@ -125,7 +125,7 @@ class TrackFileCot {
                 $copyFileTrack = [];
                 $rota = count($this->trackFile['items']);
                 for ($i=0; $i < $rota; $i++) {
-                    if($$this->trackFile['items'][$i]['mdl'] == $this->cotProcess['mdl']) {
+                    if($this->trackFile['items'][$i]['mdl'] == $this->cotProcess['mdl']) {
                         $trackeds[] = $this->trackFile['items'][$i]['idItem'];
                     }else{
                         $copyFileTrack[] = $this->trackFile['items'][$i];
