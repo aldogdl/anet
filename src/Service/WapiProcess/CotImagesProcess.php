@@ -21,7 +21,7 @@ class CotImagesProcess
 
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
-        
+        $versionTrackFile = -1;
         $fotos = [];
         $sended = [];
         $entroToSended = false;
@@ -114,7 +114,7 @@ class CotImagesProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> $this->cotProgress
+            'trackfile'=> (count($this->cotProgress) == 0) ? $versionTrackFile : $this->cotProgress
         ]);
     }
 

@@ -22,7 +22,7 @@ class TrackFileCot {
     // Revisamos que el item que se respondio no exista entre los atendidos
     public bool $isAtendido = false;
     // El item el cual fue respondido por medio de los botones
-    public $itemCurrentResponsed = [];
+    public int $versionFileTrack = -1;
 
     /** 
      * Tomamos el trackFile del cotizador.
@@ -61,36 +61,14 @@ class TrackFileCot {
         return $trakeds;
     }
 
-    /**
-     * Eliminamos el item que se cotizó en Tracking
-     */
-    public function finDeCotizacion(array $cotProcessCurrent): bool
-    {
-        // Buscar en el estanque otra carnada
-        // unset($this->trackFile['items'][$this->itemCurrentIndx]);
-        // $this->updateTracking();
-
-        // Si no es atendido, lo marcamos como atendido para evitar enivar el mismo mensaje de Cot.
-        // if(!$this->isAtendido) {
-        //     if(!in_array($this->itemCurrentResponsed['idItem'], $this->itemsToTrackeds)) {
-        //         $this->itemsToTrackeds[] = $this->itemCurrentResponsed['idItem'];
-        //         $this->updateTrackeds();
-        //     }
-        // }
-        // // mientras este en la lista del FileTrack es por que aun no ha terminado de cotizar
-        // // por lo tanto forzamos a que isAtendida sea false para continuar con los
-        // // siguientes pasos.
-        // $this->isAtendido = false;
-        return false;
-    }
-
     /** */
     public function finOfCotizacion(): void
     {
         $this->build();
 
+        file_put_contents('seg_3.txt', '');
         $this->deleteFileCotProcess();
-        
+        file_put_contents('seg_5.txt', '');
         if(count($this->cotProcess) > 0) {
             // Se encontró el item dentro del estanque
             $trackeds = $this->getFileContentTrackeds();
@@ -130,6 +108,7 @@ class TrackFileCot {
             // En caso de que el Item se halla encontrado aun dentro de FileTrack lo enviamos
             // a trackeds y lo eliminamos del FileTrack
             $cotProcessIsFill = false;
+            // Si hay cambios en el TrackFile lo guardamos al final de este metodo
             $hasChangeFileTrack = false;
             if(count($this->cotProcess) > 0) {
                 if($this->trackFile['items'][$this->indexItemTrigger]['idItem'] == $this->cotProcess['idItem']) {
@@ -184,7 +163,8 @@ class TrackFileCot {
         $this->trackFile = $this->fSys->getTrackFileOf($this->message->from);
         
         if(count($this->trackFile) > 0) {
-            
+
+            $this->versionFileTrack = $this->trackFile['version'];
             if(count($this->trackFile['items']) > 0) {
                 
                 $this->hasBaits = true;
@@ -223,7 +203,7 @@ class TrackFileCot {
     public function deleteFileCotProcess()
     {
         $this->fSys->setPathBase($this->paths['cotProgres']);
-        $this->fSys->delete($this->message->from);
+        $this->fSys->delete($this->message->from.'.json');
     }
 
     /** */

@@ -21,7 +21,7 @@ class InteractiveProcess
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
         $tf = new TrackFileCot($message, $paths);
-        
+        $versionTrackFile = -1;
         $template = [];
         $itemBaitToSent = [];
         $createCotProgress = false;
@@ -29,6 +29,7 @@ class InteractiveProcess
         if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
             // Buscamo una carnada en el estanque
             $itemBaitToSent = $tf->lookForBait();
+            $versionTrackFile = $tf->versionFileTrack;
         }
 
         /// El boton disparador fue un ntg|ntga y se encontró una carnada para enviar
@@ -181,7 +182,7 @@ class InteractiveProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'enviado'  => $sended,
-            'trackfile'=> $cotProgress
+            'trackfile'=> (count($cotProgress) == 0) ? $versionTrackFile : $cotProgress
         ]);
     }
 

@@ -19,7 +19,7 @@ class CotTextProcess
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
-
+        $versionTrackFile = -1;
         $current = $cotProgress['current'];
         $campo = ($current == 'sdta') ? 'detalles' : 'precio';
         $message->subEvento = $current;
@@ -86,6 +86,7 @@ class CotTextProcess
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, FsysProcess $fSys, array $paths
     ){
         $this->entroToSended = false;
+        $versionTrackFile = -1;
         $message->message = [
             'idItem' => $this->cotProgress['idItem'],
             'body' => $message->message
@@ -97,7 +98,7 @@ class CotTextProcess
         if(count($tf->cotProcess) == 0) {
             return;
         }
-
+        $versionTrackFile = $tf->versionFileTrack;
         $this->cotProgress = $tf->cotProcess;
         //Buscamos para ver si existe el mensaje del item prefabricado.
         $tf->fSys->setPathBase($paths['prodTrack']);
@@ -119,7 +120,7 @@ class CotTextProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => ['type' => 'interactive', 'estanque' => 'fetch'],
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> $this->cotProgress
+            'trackfile'=> (count($this->cotProgress) == 0) ? $versionTrackFile : $this->cotProgress
         ]);
     }
 
