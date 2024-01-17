@@ -10,6 +10,7 @@ class InteractiveProcess
 {
 
     public String $hasErr = '';
+
     /** 
      * Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
      * que se necesita enviar como respuesta inmendiata a este.
@@ -19,21 +20,31 @@ class InteractiveProcess
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
-
-        $itemFetchToSent = [];
-        if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
-            $trackFile = new TrackFileCot($message, $paths);
-            $itemFetchToSent = $trackFile->fetchItemToSent();
+        $itemBaitToSent = [];
+        $tf = new TrackFileCot($message, $paths);
+        // No hay actualmente ninguna cotizacion en progreso, por lo tanto buscamos
+        // el item entre el TrackFile
+        if(count($cotProgress) == 0) {
+            $tf->build();
+            if(count($tf->cotProcess) == 0) {
+                // TODO La solicitud ya no esta disponible MSG al cliente
+                return;
+            }
+            $cotProgress = $tf->cotProcess;
         }
-        
+
+        if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
+            // Buscamo una carnada en el estanque
+            $itemBaitToSent = $tf->lookForBait();
+        }
+
         $template = [];
-        $typeMsgToSent = 'text';
-        /// El boton disparador fue un ntg|ntga y se encontró un item a enviar
-        if(count($itemFetchToSent) > 0) {
+        /// El boton disparador fue un ntg|ntga y se encontró una carnada para enviar
+        if(count($itemBaitToSent) > 0) {
 
             //Buscamos para ver si existe el mensaje del item prefabricado.
-            $trackFile->fSys->setPathBase($paths['prodTrack']);
-            $template = $trackFile->fSys->getContent($itemFetchToSent['idItem'].'_track.json');
+            $tf->fSys->setPathBase($paths['prodTrack']);
+            $template = $tf->fSys->getContent($itemBaitToSent['idItem'].'_track.json');
             if(count($template) > 0) {
                 if(array_key_exists('message', $template)) {
                     $template = $template['message'];
@@ -69,14 +80,14 @@ class InteractiveProcess
                     }
                 }
                 if($saveProcess) {
-                    $trackFile->fSys->setPathBase($paths['cotProgres']);
-                    $trackFile->fSys->setContent($message->from.'.json', $cotProgress);
+                    $tf->fSys->setPathBase($paths['cotProgres']);
+                    $tf->fSys->setContent($message->from.'.json', $cotProgress);
                 }
             }
 
-            $trackFile->fSys->setPathBase($paths['waTemplates']);
+            $tf->fSys->setPathBase($paths['waTemplates']);
             // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
-            $template = $trackFile->fSys->getContent($message->subEvento.'.json');
+            $template = $tf->fSys->getContent($message->subEvento.'.json');
                         
             // Buscamos si contiene AnetLanguage para decodificar
             $deco = new DecodeTemplate($cotProgress);
@@ -90,25 +101,27 @@ class InteractiveProcess
                     $contexto = $message->context;
                 }
             }
+
             if(strlen($contexto) > 0) {
-                $template['context'] = $contexto;
-                // $trackFile->itemCurrentResponsed['version']   = $trackFile->trackFile['version'];
-                $trackFile->itemCurrentResponsed['wamid_cot'] = $contexto;
+                $template['context']    = $contexto;
+                $cotProgress['version'] = $tf->trackFile['version'];
+                $cotProgress['wamid_cot'] = $contexto;
             }
             
             // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
             if($message->subEvento == 'sfto') {
-                $trackFile->fSys->setPathBase($paths['cotProgres']);
-                if(!array_key_exists('idCot', $trackFile->itemCurrentResponsed['track'])) {
-                    $trackFile->itemCurrentResponsed['track'] = ['idCot' => time()];
+                $tf->fSys->setPathBase($paths['cotProgres']);
+                if(!array_key_exists('idCot', $cotProgress['track'])) {
+                    $cotProgress['track'] = ['idCot' => time()];
                 }
-                $trackFile->fSys->setContent($message->from.'.json', $trackFile->itemCurrentResponsed);
+                $tf->fSys->setContent($message->from.'.json', $cotProgress);
             }
         }
         
         $sended = [];
         $entroToSended = false;
-        $trackFile->fSys->setPathBase($paths['chat']);
+        $typeMsgToSent = 'text';
+        $tf->fSys->setPathBase($paths['chat']);
         $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
         if(count($template) > 0) {
 
@@ -143,17 +156,15 @@ class InteractiveProcess
             $entroToSended = true;
         }
 
-        $trackFile->fSys->dumpIn($message->toArray());
+        $tf->fSys->dumpIn($message->toArray());
         if($entroToSended) {
-            $trackFile->fSys->dumpIn($sended);
+            $tf->fSys->dumpIn($sended);
         }
 
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'enviado'  => $sended,
-            'trackfile'=> (count($cotProgress) == 0)
-                ? $trackFile->itemCurrentResponsed['version']
-                : $cotProgress
+            'trackfile'=> $cotProgress
         ]);
     }
 

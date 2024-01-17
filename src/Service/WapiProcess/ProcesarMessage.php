@@ -92,7 +92,7 @@ class ProcesarMessage {
             $code = $validator->code;
             $validator = null;
         }
-        
+
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]

@@ -8,27 +8,26 @@ use App\Service\WapiProcess\WrapHttp;
 
 class CotTextProcess
 {
-
-    public String $hasErr = '';
+    private bool $entroToSended = false;
     private array $cotProgress;
     private array $msgs = [
         'sdta' => ['current' => 'scto', 'next' => 'sgrx'],
         'scto' => ['current' => 'sgrx', 'next' => 'sfto'],
     ];
 
-    /** 
-     * 
-    */
+    /** */
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
 
         $current = $cotProgress['current'];
+        $campo = ($current == 'sdta') ? 'detalles' : 'precio';
         $message->subEvento = $current;
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
+        $sended = [];
+        $this->entroToSended = false;
 
-        $campo = ($current == 'sdta') ? 'detalles' : 'precio';
         if(!array_key_exists($current, $this->msgs)) {
             return;
         }
@@ -42,10 +41,7 @@ class CotTextProcess
         $fSys = new FsysProcess($paths['cotProgres']);
         $fSys->setContent($message->from.'.json', $this->cotProgress);
 
-        $sended = [];
-        $entroToSended = false;
-        
-        // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
+        // Respondemos inmediatamente a este con el mensaje adecuado
         $fSys->setPathBase($paths['waTemplates']);
         $template = $fSys->getContent($this->cotProgress['current'].'.json');
         // Buscamos si contiene AnetLanguage para decodificar
@@ -55,10 +51,74 @@ class CotTextProcess
             $template['context'] = $this->cotProgress['wamid_cot'];
         }
 
-        $typeMsgToSent = $template['type'];
-        $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
-        if(count($template) > 0) {
+        $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
+        $recibido = $message->toArray();
+        $fSys->setPathBase($paths['chat']);
+        $fSys->dumpIn($recibido);
+        if($this->entroToSended) {
+            $fSys->dumpIn($sended);
+        }
 
+        $wh->sendMy('wa-wh', 'notSave', [
+            'recibido' => $recibido,
+            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
+            'trackfile'=> $this->cotProgress
+        ]);
+
+        if($campo == 'precio') {
+            $this->fetchBait($message, $wh, $wapiHttp, $fSys, $paths);
+        }
+    }
+
+    /** */
+    private function fetchBait(
+        WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, FsysProcess $fSys, array $paths
+    ){
+        $message->message = [
+            'idItem' => $this->cotProgress['idItem'],
+            'body' => $message->message
+        ];
+
+        $tf = new TrackFileCot($message, $paths);
+        
+        $itemBaitToSent = $tf->lookForBait();
+        if(count($itemBaitToSent) > 0) {
+
+            $this->cotProgress = $tf->cotProcess;
+            //Buscamos para ver si existe el mensaje del item prefabricado.
+            $tf->fSys->setPathBase($paths['prodTrack']);
+            $template = $tf->fSys->getContent($itemBaitToSent['idItem'].'_track.json');
+            
+            if(count($template) > 0) {
+
+                if(array_key_exists('message', $template)) {
+                    $template = $template['message'];
+                }
+                $this->entroToSended = false;
+                $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
+                $fSys->setPathBase($paths['chat']);
+                if($this->entroToSended) {
+                    $fSys->dumpIn($sended);
+                }
+            }
+        }
+        
+        $wh->sendMy('wa-wh', 'notSave', [
+            'recibido' => ['type' => 'interactive', ],
+            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
+            'trackfile'=> $this->cotProgress
+        ]);
+    }
+
+    /** */
+    private function sentMsg(
+        array $template, WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, String $pathCom
+    ): array {
+
+        $typeMsgToSent = $template['type'];
+        $conm = new ConmutadorWa($message->from, $pathCom);
+        if(count($template) > 0) {
+            
             $conm->setBody($typeMsgToSent, $template);
             $result = $wapiHttp->send($conm);
             if($result['statuscode'] != 200) {
@@ -82,34 +142,12 @@ class CotTextProcess
             }
 
             $objMdl = $conm->setIdToMsgSended($message, $result);
-            $sended = $objMdl->toArray();
-            $entroToSended = true;
+            $conm = null;
+            return $objMdl->toArray();
+            $this->entroToSended = true;
         }
 
-        $recibido = $message->toArray();
-        $fSys->setPathBase($paths['chat']);
-        $fSys->dumpIn($recibido);
-        if($entroToSended) {
-            $fSys->dumpIn($sended);
-        }
-
-        if($campo == 'precio') {
-            $message->message = [
-                'idItem' => $this->cotProgress['idItem'],
-                'body' => $message->message
-            ];
-            $ftObj = new TrackFileCot($message, $paths);
-            $hasCarnada = $ftObj->finDeCotizacion($this->cotProgress);
-            if($hasCarnada) {
-                
-            }
-        }
-
-        $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => $recibido,
-            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> $this->cotProgress
-        ]);
+        $conm = null;
+        return [];
     }
-
 }
