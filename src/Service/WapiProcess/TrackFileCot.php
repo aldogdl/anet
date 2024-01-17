@@ -49,6 +49,9 @@ class TrackFileCot {
     public function getFileContentTrackeds(): array 
     {
         $trakeds = [];
+        if(!is_array($this->message->message)) {
+            return [];
+        }
         $this->fSys->getContent($this->message->from.'.json');
         if(array_key_exists('idItem', $this->message->message)) {
             if(in_array($this->message->message['idItem'], $trakeds)) {
@@ -86,6 +89,8 @@ class TrackFileCot {
     {
         $this->build();
 
+        $this->deleteFileCotProcess();
+        
         if(count($this->cotProcess) > 0) {
             // Se encontró el item dentro del estanque
             $trackeds = $this->getFileContentTrackeds();
@@ -98,8 +103,7 @@ class TrackFileCot {
             unset($this->trackFile['items'][$this->indexItemTrigger]);
             sort($this->trackFile['items']);
             $this->updateTracking();
-            $this->deleteFileCotProcess();
-            
+
             $this->cotProcess = [];
             $bait = $this->lookForBait(true);
             if(count($bait) > 0) {

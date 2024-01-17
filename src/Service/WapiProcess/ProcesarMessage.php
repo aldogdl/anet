@@ -86,7 +86,6 @@ class ProcesarMessage {
         
         $code = 100;
         if($this->hasCotProgress) {
-            file_put_contents('seg_1.json', json_encode($obj->get()));
             $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
             $validator->validate();
             if(!$validator->isValid) { return; }
@@ -94,7 +93,6 @@ class ProcesarMessage {
             $validator = null;
         }
         
-        file_put_contents('seg_2.json', json_encode($obj->get()));
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
@@ -104,7 +102,6 @@ class ProcesarMessage {
                     new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
                     break;
             case 102:
-                file_put_contents('seg_3.json', json_encode($obj->get()));
                 new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 break;
             default:
