@@ -36,9 +36,10 @@ class TrackFileCot {
         $this->isAtendido = false;
         $this->fSys       = new FsysProcess($paths['trackeds']);
         $trakeds          = $this->fSys->getContent($this->message->from.'.json');
-
-        if(in_array($this->message['idItem'], $trakeds)) {
-            $this->isAtendido = true;
+        if(array_key_exists('idItem', $this->message->message)) {
+            if(in_array($this->message->message['idItem'], $trakeds)) {
+                $this->isAtendido = true;
+            }
         }
     }
 
