@@ -20,8 +20,10 @@ class InteractiveProcess
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
-        $itemBaitToSent = [];
         $tf = new TrackFileCot($message, $paths);
+        
+        $template = [];
+        $itemBaitToSent = [];
         $createCotProgress = false;
 
         if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
@@ -29,7 +31,6 @@ class InteractiveProcess
             $itemBaitToSent = $tf->lookForBait();
         }
 
-        $template = [];
         /// El boton disparador fue un ntg|ntga y se encontró una carnada para enviar
         if(count($itemBaitToSent) > 0) {
 
@@ -64,9 +65,9 @@ class InteractiveProcess
                 $createCotProgress = true;
             }
 
+            $cotProgress['sended'] = round(microtime(true) * 1000);
             if($createCotProgress && $message->subEvento == 'sfto') {
                 // Si no hay ningun archivo que indica cotizacion en progreso lo creamos
-                $cotProgress['sended'] = round(microtime(true) * 1000);
                 $cotProgress['track'] = ['idCot' => time()];
                 $saveCotProcess = true;
             }
@@ -77,14 +78,14 @@ class InteractiveProcess
                 $message->subEvento = $partes[0];
                 $respRapida = $partes[1];
                 
-                $saveProcess = false;
+                $saveCotProcess = false;
                 if($message->subEvento == 'sdta' && $cotProgress['current'] == 'sfto') {
                     // Estamos en fotos y preciono un boton de opcion
                     if($respRapida == 'fton') {
                         $cotProgress['current'] = 'sdta';
                         $cotProgress['next'] = 'scto';
                         $cotProgress['track']['fotos'] = [];
-                        $saveProcess = true;
+                        $saveCotProcess = true;
                     }
                 }
                 
@@ -94,10 +95,10 @@ class InteractiveProcess
                         $cotProgress['current'] = 'scto';
                         $cotProgress['next']    = 'sgrx';
                         $cotProgress['track']['detalles'] = 'La pieza cuenta con Detalles de Uso';
-                        $saveProcess = true;
+                        $saveCotProcess = true;
                     }
                 }
-                if($saveProcess) {
+                if($saveCotProcess) {
                     $tf->fSys->setPathBase($paths['cotProgres']);
                     $tf->fSys->setContent($message->from.'.json', $cotProgress);
                 }
