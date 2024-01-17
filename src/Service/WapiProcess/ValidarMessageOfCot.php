@@ -44,8 +44,14 @@ class ValidarMessageOfCot {
     ///
     public function validate()
     {
-
+        
         $msg = $this->message->get();
+        if(count($this->cotProgress) > 0) {
+            $msg->message = [
+                'idItem' => $this->cotProgress['idItem'],
+                'body' => $msg->message
+            ];
+        }
         $trackFile = new TrackFileCot($msg, $this->paths);
 
         if($trackFile->isAtendido) {
