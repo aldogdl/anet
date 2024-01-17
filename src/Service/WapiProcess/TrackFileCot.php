@@ -65,10 +65,8 @@ class TrackFileCot {
     public function finOfCotizacion(): void
     {
         $this->build();
-
-        file_put_contents('seg_3.txt', '');
+        
         $this->deleteFileCotProcess();
-        file_put_contents('seg_5.txt', '');
         if(count($this->cotProcess) > 0) {
             // Se encontró el item dentro del estanque
             $trackeds = $this->getFileContentTrackeds();
