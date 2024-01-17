@@ -53,7 +53,7 @@ class ProcesarMessage {
         $cotProgress     = $this->getFileCotProgress($pathCotProgress, $obj->from.'.json');
 
         // Esto es solo para desarrollo
-        if(!$obj->isStt && $this->hasCotProgress) {
+        if(!$obj->isStt) {
             file_put_contents('message.json', json_encode($message));
             file_put_contents('message_process.json', json_encode($obj->get()->toArray()));
         }

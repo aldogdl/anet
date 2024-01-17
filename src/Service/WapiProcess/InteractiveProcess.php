@@ -139,7 +139,7 @@ class InteractiveProcess
         if(count($template) > 0) {
             
             $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
-            
+
             $typeMsgToSent = $template['type'];
             $conm->setBody($typeMsgToSent, $template);
 
@@ -161,7 +161,7 @@ class InteractiveProcess
                     $partes = explode('_', $idItem);
                     $idItem = $partes[1];
                 }
-                $conm->bodyRaw = ['body' => $template['body'], 'idItem' => $idItem];
+                $conm->bodyRaw = ['idItem' => $idItem, 'body' => $template['body']];
             }else{
                 $conm->bodyRaw = $template['body'];
             }
