@@ -31,7 +31,8 @@ class CotTextProcess
         if(!array_key_exists($current, $this->msgs)) {
             return;
         }
-
+        return;
+        
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
         $this->cotProgress['current'] = $this->msgs[$current]['current'];
         $this->cotProgress['next']    = $this->msgs[$current]['next'];
