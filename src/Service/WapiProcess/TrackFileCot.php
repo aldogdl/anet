@@ -110,7 +110,7 @@ class TrackFileCot {
             $hasChangeFileTrack = false;
             if(count($this->cotProcess) > 0) {
                 if($this->trackFile['items'][$this->indexItemTrigger]['idItem'] == $this->cotProcess['idItem']) {
-                    $trackeds[] = $this->cotProcess;
+                    $trackeds[] = $this->cotProcess['idItem'];
                     unset($this->trackFile['items'][$this->indexItemTrigger]);
                     sort($this->trackFile['items']);
                     $hasChangeFileTrack = true;
