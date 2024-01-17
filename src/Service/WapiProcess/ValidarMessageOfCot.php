@@ -220,8 +220,30 @@ class ValidarMessageOfCot {
             if(strlen($data) > 9 && $palabras == 1) {
                 return false;
             }
+
             if(strlen($data) < 9 && $palabras == 1) {
-                return true;
+
+                $vocales = ['a', 'e', 'i', 'o', 'u'];
+                $rota = count($vocales);
+                $hasVocales = false;
+                $hasConso = false;
+                for ($i=0; $i < $rota; $i++) { 
+                    if(mb_strpos($data, $vocales[$i]) !== false) {
+                        $hasVocales = true;
+                        break;
+                    }
+                }
+                if($hasVocales) {
+                    $conso = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'w', 'x', 'y', 'z'];
+                    $rota = count($conso);
+                    for ($i=0; $i < $rota; $i++) { 
+                        if(mb_strpos($data, $vocales[$i]) !== false) {
+                            $hasConso = true;
+                            break;
+                        }
+                    }
+                }
+                return ($hasVocales && $hasConso) ? true : false;
             }
             $rota = count($this->conj);
             $data = strtolower($data);
