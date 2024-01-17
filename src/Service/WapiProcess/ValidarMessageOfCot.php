@@ -78,6 +78,14 @@ class ValidarMessageOfCot {
         }
 
         $this->code = 101;
+        if($this->cotProgress['current'] == 'sfto' && !$this->message->isImage) {
+            $template = $this->buildMsgSimple(
+                "*DISCULPA pero...*.\n\n📝El sistema automatizado esperaba Imagánes."
+            );
+            $this->sentMsg($template, $msg->from);
+            $this->isValid  = false;
+            return;
+        }
         if($this->cotProgress['current'] == 'sfto' && $this->message->isImage) {
             $this->validateImage($msg);
             return;
