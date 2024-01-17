@@ -47,7 +47,7 @@ class ValidarMessageOfCot {
 
         $msg = $this->message->get();
         $trackFile = new TrackFileCot($msg, $this->paths);
-        
+
         if($trackFile->isAtendido) {
             $trackFile->fSys->setPathBase($this->paths['waTemplates']);
             $template = $trackFile->fSys->getContent('eatn.json');
@@ -167,11 +167,11 @@ class ValidarMessageOfCot {
             }
 
             if($campo == 'scto') {
-                file_put_contents('wa_costo.txt', '');
+
                 if($this->isEmptyDetalles) {
                     $this->cotProgress['current'] = 'sdta';
                     $this->cotProgress['next'] = 'scto';
-                    file_put_contents($this->paths[2].'/'.$msg->from.'.json', json_encode($this->cotProgress));
+                    file_put_contents($this->paths['cotProgres'].'/'.$msg->from.'.json', json_encode($this->cotProgress));
                     $template = $this->buildMsgSimple(
                         "*POR FAVOR...*.\n\n📝Indica algunos detalles de la pieza antes de continuar 🙂"
                     );
@@ -308,7 +308,7 @@ class ValidarMessageOfCot {
                     $template['context'] = $this->cotProgress['wamid_cot'];
                 }
             }
-            $conm = new ConmutadorWa($to, $this->paths[1]);
+            $conm = new ConmutadorWa($to, $this->paths['tkwaconm']);
             $conm->setBody($template['type'], $template);
             $result = $this->wapiHttp->send($conm);
             if($result['statuscode'] != 200) {
@@ -321,7 +321,7 @@ class ValidarMessageOfCot {
     /** */
     private function getFile(String $filename): array
     {
-        $path = $this->paths[0].'/'.$filename;
+        $path = $this->paths['waTemplates'].'/'.$filename;
         if($this->filesystem->exists($path)) {
             try {
                 $tpl = file_get_contents($path);
