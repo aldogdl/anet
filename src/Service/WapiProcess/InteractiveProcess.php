@@ -22,16 +22,7 @@ class InteractiveProcess
     ){
         $itemBaitToSent = [];
         $tf = new TrackFileCot($message, $paths);
-        // No hay actualmente ninguna cotizacion en progreso, por lo tanto buscamos
-        // el item entre el TrackFile
-        if(count($cotProgress) == 0) {
-            $tf->build();
-            if(count($tf->cotProcess) == 0) {
-                // TODO La solicitud ya no esta disponible MSG al cliente
-                return;
-            }
-            $cotProgress = $tf->cotProcess;
-        }
+        $createCotProgress = false;
 
         if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
             // Buscamo una carnada en el estanque
@@ -52,6 +43,33 @@ class InteractiveProcess
             }
 
         }else{
+
+            $saveCotProcess = false;
+            if(count($cotProgress) == 0) {
+                // No hay actualmente ninguna cotizacion en progreso, por lo tanto buscamos
+                // el item entre el TrackFile
+                $tf->build();
+                if(count($tf->cotProcess) == 0) {
+                    // TODO La solicitud ya no esta disponible MSG al cliente
+                    return;
+                }
+                $cotProgress = $tf->cotProcess;
+            }
+
+            if(array_key_exists('track', $cotProgress)) {
+                if(!array_key_exists('idCot', $cotProgress['track'])) {
+                    $createCotProgress = true;
+                }
+            }else{
+                $createCotProgress = true;
+            }
+
+            if($createCotProgress && $message->subEvento == 'sfto') {
+                // Si no hay ningun archivo que indica cotizacion en progreso lo creamos
+                $cotProgress['sended'] = round(microtime(true) * 1000);
+                $cotProgress['track'] = ['idCot' => time()];
+                $saveCotProcess = true;
+            }
 
             $respRapida = '';
             if(mb_strpos($message->subEvento, '.') !== false) {
@@ -74,7 +92,7 @@ class InteractiveProcess
                     // Estamos en detalles y preciono un boton de opcion
                     if($respRapida == 'uso') {
                         $cotProgress['current'] = 'scto';
-                        $cotProgress['next'] = 'sgrx';
+                        $cotProgress['next']    = 'sgrx';
                         $cotProgress['track']['detalles'] = 'La pieza cuenta con Detalles de Uso';
                         $saveProcess = true;
                     }
@@ -103,17 +121,13 @@ class InteractiveProcess
             }
 
             if(strlen($contexto) > 0) {
-                $template['context']    = $contexto;
-                $cotProgress['version'] = $tf->trackFile['version'];
+                $template['context']      = $contexto;
                 $cotProgress['wamid_cot'] = $contexto;
             }
             
             // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
-            if($message->subEvento == 'sfto') {
+            if($saveCotProcess) {
                 $tf->fSys->setPathBase($paths['cotProgres']);
-                if(!array_key_exists('idCot', $cotProgress['track'])) {
-                    $cotProgress['track'] = ['idCot' => time()];
-                }
                 $tf->fSys->setContent($message->from.'.json', $cotProgress);
             }
         }
@@ -121,14 +135,15 @@ class InteractiveProcess
         $sended = [];
         $entroToSended = false;
         $typeMsgToSent = 'text';
-        $tf->fSys->setPathBase($paths['chat']);
-        $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
-        if(count($template) > 0) {
 
+        if(count($template) > 0) {
+            
+            $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
+            
             $typeMsgToSent = $template['type'];
             $conm->setBody($typeMsgToSent, $template);
+
             $result = $wapiHttp->send($conm);
-            
             if($result['statuscode'] != 200) {
                 $wh->sendMy('wa-wh', 'notSave', $result);
                 return;
@@ -156,6 +171,7 @@ class InteractiveProcess
             $entroToSended = true;
         }
 
+        $tf->fSys->setPathBase($paths['chat']);
         $tf->fSys->dumpIn($message->toArray());
         if($entroToSended) {
             $tf->fSys->dumpIn($sended);

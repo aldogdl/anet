@@ -31,8 +31,9 @@ class CotTextProcess
         if(!array_key_exists($current, $this->msgs)) {
             return;
         }
-        return;
         
+        // AQUI VOY hay un error al enviar el costo el cotProcess parece estar bacio...  0  
+
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
         $this->cotProgress['current'] = $this->msgs[$current]['current'];
         $this->cotProgress['next']    = $this->msgs[$current]['next'];
