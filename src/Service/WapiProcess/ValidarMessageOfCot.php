@@ -170,6 +170,7 @@ class ValidarMessageOfCot {
         }else{
             $valor = $msg->message;
         }
+        file_get_contents('wa_llego-'.$valor.'.txt', '');
         $isValid = $this->isValid($campo, $valor);
         if(!$isValid) {
 
