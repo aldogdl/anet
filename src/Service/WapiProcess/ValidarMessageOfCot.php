@@ -80,7 +80,7 @@ class ValidarMessageOfCot {
         $this->code = 101;
         if($this->cotProgress['current'] == 'sfto' && !$this->message->isImage) {
             $template = $this->buildMsgSimple(
-                "*DISCULPA pero...*.\n\n📝El sistema automatizado esperaba Imagánes."
+                "*DISCULPA pero...*.\n\n📸El sistema automatizado está esperando las *Fotografias* de la Autoparte."
             );
             $this->sentMsg($template, $msg->from);
             $this->isValid  = false;
