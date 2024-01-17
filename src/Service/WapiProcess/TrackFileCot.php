@@ -85,7 +85,7 @@ class TrackFileCot {
     public function finOfCotizacion(): void
     {
         $this->build();
-        
+
         if(count($this->cotProcess) > 0) {
             // Se encontró el item dentro del estanque
             $trackeds = $this->getFileContentTrackeds();
@@ -98,7 +98,8 @@ class TrackFileCot {
             unset($this->trackFile['items'][$this->indexItemTrigger]);
             sort($this->trackFile['items']);
             $this->updateTracking();
-
+            $this->deleteFileCotProcess();
+            
             $this->cotProcess = [];
             $bait = $this->lookForBait(true);
             if(count($bait) > 0) {
@@ -212,6 +213,13 @@ class TrackFileCot {
             $trackeds = $news;
         }
         $this->fSys->setContent($this->message->from.'.json', $trackeds);
+    }
+
+    /** */
+    public function deleteFileCotProcess()
+    {
+        $this->fSys->setPathBase($this->paths['cotProgres']);
+        $this->fSys->delete($this->message->from);
     }
 
     /** */
