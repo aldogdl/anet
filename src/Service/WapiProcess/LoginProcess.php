@@ -32,7 +32,7 @@ class LoginProcess
 
         $conm = new ConmutadorWa($message->from, $conmutaPath);
         $conm->bodyRaw = "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando;
-        $conm->setBody('text', ["preview_url" => false, "body" => $conm->bodyRaw]);
+        $conm->setBody('text', ['text' => ["preview_url" => false, "body" => $conm->bodyRaw]]);
 
         $result = $wapiHttp->send($conm);
         file_put_contents('wa_initLogin_res.txt', json_encode($result));
