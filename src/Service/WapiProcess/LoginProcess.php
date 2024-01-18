@@ -16,7 +16,7 @@ class LoginProcess
     public function __construct(
         WaMsgMdl $message, String $conmutaPath, String $pathChat, WebHook $wh, WrapHttp $wapiHttp,
     ) {
-        file_put_contents('wa_initLogin.txt', '');
+        
         $cuando = '';
         $message->subEvento = 'iniLogin';
         try {
@@ -35,12 +35,11 @@ class LoginProcess
         $conm->setBody('text', ['text' => ["preview_url" => false, "body" => $conm->bodyRaw]]);
 
         $result = $wapiHttp->send($conm);
-        file_put_contents('wa_initLogin_res.txt', json_encode($result));
         if($result['statuscode'] != 200) {
             $wh->sendMy('wa-wh', 'notSave', $result);
             return;
         }
-        
+
         $sended = $conm->setIdToMsgSended($message, $result);
 
         $fSys = new FsysProcess($pathChat);
