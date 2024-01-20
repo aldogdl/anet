@@ -40,7 +40,7 @@ class StatusProcess
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'procesado'=> ($hasChat) ? $chat : 'Sin Chat',
-            'estanque '=> $result->toArray()
+            'estanque' => $result->toArray()
         ]);
     }
 
