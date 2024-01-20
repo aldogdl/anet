@@ -49,7 +49,7 @@ class LoginProcess
 
         // Recuperamos el Estanque del cotizador que esta iniciando sesion
         $fSys->setPathBase($paths['tracking']);
-        $estanque = $fSys->getTrackFileOf($message->from);
+        $estanque = $fSys->getEstanqueOf($message->from);
         $result = new EstanqueReturn($estanque, $paths['hasCotPro']);
 
         $wh->sendMy('wa-wh', 'notSave', [

@@ -159,7 +159,7 @@ class TrackFileCot {
     {
         // Tomamos el archivo TrackFile
         $this->fSys->setPathBase($this->paths['tracking']);
-        $this->trackFile = $this->fSys->getTrackFileOf($this->message->from);
+        $this->trackFile = $this->fSys->getEstanqueOf($this->message->from);
         
         if(count($this->trackFile) > 0) {
 

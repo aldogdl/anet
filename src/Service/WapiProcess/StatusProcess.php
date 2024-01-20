@@ -24,7 +24,7 @@ class StatusProcess
 
         // Recuperamos el Estanque del cotizador que esta iniciando sesion
         $fSys = new FsysProcess($paths['tracking']);
-        $estanque = $fSys->getTrackFileOf($message->from);
+        $estanque = $fSys->getEstanqueOf($message->from);
         $result = new EstanqueReturn($estanque, $paths['hasCotPro']);
 
         $fSys->setPathBase($paths['chat']);

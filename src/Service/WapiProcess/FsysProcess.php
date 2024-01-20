@@ -43,9 +43,9 @@ class FsysProcess
     public function getTrackedsFileOf(String $waId): array { return $this->getContent($waId.'.json'); }
 
     /**
-     * Recuperamos el archivo de trackFile del cotizador
+     * Recuperamos el archivo Estanque del cotizador
      */
-    public function getTrackFileOf(String $waId): array { return $this->getContent($waId.'.json'); }
+    public function getEstanqueOf(String $waId): array { return $this->getContent($waId.'.json'); }
 
     /**
      * Recuperamos el contenido de un archivo
