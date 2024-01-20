@@ -2,6 +2,7 @@
 
 namespace App\Service\WapiProcess;
 
+use App\Entity\EstanqueReturn;
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 
@@ -10,7 +11,7 @@ class StatusProcess
     public String $hasErr = '';
 
     /** */
-    public function __construct(WaMsgMdl $message, String $pathChat, String $pathTrackFile, WebHook $wh)
+    public function __construct(WaMsgMdl $message, array $paths, WebHook $wh)
     {
         $stt = 'unknow';
         if(is_array($message->message)) {
@@ -21,10 +22,12 @@ class StatusProcess
             $stt = $message->message;
         }
 
-        $fSys = new FsysProcess($pathTrackFile);
-        $trackFile = $fSys->getTrackFileOf($message->from);
+        // Recuperamos el Estanque del cotizador que esta iniciando sesion
+        $fSys = new FsysProcess($paths['tracking']);
+        $estanque = $fSys->getTrackFileOf($message->from);
+        $result = new EstanqueReturn($estanque, $paths['hasCotPro']);
 
-        $fSys->setPathBase($pathChat);
+        $fSys->setPathBase($paths['chat']);
         $chat = $fSys->getChat($message->toArray());
 
         $hasChat = false;
@@ -33,14 +36,11 @@ class StatusProcess
             $fSys->dumpIn($chat);
             $hasChat = true;
         }
-        $version = 0;
-        if(count($trackFile) > 0 && array_key_exists('version', $trackFile)) {
-            $version = $trackFile['version'];
-        }
+
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'procesado'=> ($hasChat) ? $chat : 'Sin Chat',
-            'trackfile'=> $version
+            'estanque '=> $result->toArray()
         ]);
     }
 

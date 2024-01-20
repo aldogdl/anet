@@ -58,32 +58,29 @@ class ProcesarMessage {
             file_put_contents('message_process.json', json_encode($obj->get()->toArray()));
         }
 
-        $pathChat = $this->getFolderTo('chat');
-        $pathConm = $this->params->get('tkwaconm');
+        $paths = [
+            'chat'       => $this->getFolderTo('chat'),
+            'tkwaconm'   => $this->params->get('tkwaconm'),
+            'waTemplates'=> $this->params->get('waTemplates'),
+            'tracking'   => $this->getFolderTo('tracking'),
+            'trackeds'   => $this->getFolderTo('trackeds'),
+            'prodTrack'  => $this->params->get('prodTrack'),
+            'cotProgres' => $pathCotProgress,
+            'hasCotPro'  => $this->hasCotProgress
+        ];
         if($obj->isLogin) {
-            new LoginProcess($obj->get(), $pathConm, $pathChat, $this->whook, $this->wapiHttp);
+            new LoginProcess($obj->get(), $paths, $this->whook, $this->wapiHttp);
             return;
         }
         
-        $pathTracking = $this->getFolderTo('tracking');
         if($obj->isStt) {
             // No procesamos los status cuando se esta cotizando
             if(!$this->hasCotProgress) {
-                new StatusProcess($obj->get(), $pathChat, $pathTracking, $this->whook);
+                new StatusProcess($obj->get(), $paths, $this->whook);
             }
             return;
         }
 
-        $paths = [
-            'chat'       => $pathChat,
-            'tkwaconm'   => $pathConm,
-            'tracking'   => $pathTracking,
-            'cotProgres' => $pathCotProgress,
-            'waTemplates'=> $this->params->get('waTemplates'),
-            'trackeds'   => $this->getFolderTo('trackeds'),
-            'prodTrack'  => $this->params->get('prodTrack'),
-        ];
-        
         $code = 100;
         $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
         $validator->validate();
@@ -96,9 +93,9 @@ class ProcesarMessage {
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
                 new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 break;
-                case 101:
-                    new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
-                    break;
+            case 101:
+                new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                break;
             case 102:
                 new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 break;

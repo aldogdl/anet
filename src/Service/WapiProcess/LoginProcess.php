@@ -2,6 +2,7 @@
 
 namespace App\Service\WapiProcess;
 
+use App\Entity\EstanqueReturn;
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
@@ -14,7 +15,7 @@ class LoginProcess
 
     /** */
     public function __construct(
-        WaMsgMdl $message, String $conmutaPath, String $pathChat, WebHook $wh, WrapHttp $wapiHttp,
+        WaMsgMdl $message, array $paths, WebHook $wh, WrapHttp $wapiHttp,
     ) {
         
         $cuando = '';
@@ -30,7 +31,7 @@ class LoginProcess
             $cuando = " a las " . $timeFin;
         }
 
-        $conm = new ConmutadorWa($message->from, $conmutaPath);
+        $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
         $conm->bodyRaw = "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando;
         $conm->setBody('text', ['text' => ["preview_url" => false, "body" => $conm->bodyRaw]]);
 
@@ -42,13 +43,19 @@ class LoginProcess
 
         $sended = $conm->setIdToMsgSended($message, $result);
 
-        $fSys = new FsysProcess($pathChat);
+        $fSys = new FsysProcess($paths['chat']);
         $fSys->dumpIn($message->toArray());
         $fSys->dumpIn($sended->toArray());
+
+        // Recuperamos el Estanque del cotizador que esta iniciando sesion
+        $fSys->setPathBase($paths['tracking']);
+        $estanque = $fSys->getTrackFileOf($message->from);
+        $result = new EstanqueReturn($estanque, $paths['hasCotPro']);
 
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'enviado'  => $sended->toArray(),
+            'estanque' => $result->toArray()
         ]);
     }
 
