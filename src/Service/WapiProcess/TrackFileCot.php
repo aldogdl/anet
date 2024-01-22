@@ -2,15 +2,16 @@
 
 namespace App\Service\WapiProcess;
 
+use App\Entity\EstanqueReturn;
 use App\Entity\WaMsgMdl;
 use App\Service\WapiProcess\FsysProcess;
 
 class TrackFileCot {
 
     public FsysProcess $fSys;
-    private WaMsgMdl $message;
     private array $paths;
     
+    public WaMsgMdl $message;
     /** */
     public array $trackFile = [];
     /** El item que se esta cotizando actualmente */
@@ -39,7 +40,7 @@ class TrackFileCot {
             $this->getFileContentTrackeds();
         }else{
             $this->fSys = $fSys;
-            $this->fSys->setPathBase('trackeds');
+            $this->fSys->setPathBase($paths['trackeds']);
         }
     }
 
@@ -183,6 +184,15 @@ class TrackFileCot {
                 }
             }
         }
+    }
+
+    /** */
+    public function getEstanqueReturn(array $baitForce = [], String $type = 'less'): array
+    {
+        $hasCot = (count($this->cotProcess) > 0) ? true : false;
+        $est = new EstanqueReturn($this->trackFile, $type, $hasCot, $baitForce);
+        return $est->toArray();
+        return [];
     }
 
     /** */
