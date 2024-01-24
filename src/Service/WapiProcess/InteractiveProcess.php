@@ -41,7 +41,7 @@ class InteractiveProcess
         if(mb_strpos($message->subEvento, '.') !== false) {
             $this->tratarConRespRapidas($cotProgress);
         }
-        
+
         if(!$this->hasTemplate) {
             $this->tratarCotizarAhora();
         }
@@ -85,7 +85,6 @@ class InteractiveProcess
                 $this->template = $template;
                 $this->hasTemplate = true;
                 $this->returnBait = $this->tf->getEstanqueReturn($this->tf->cotProcess, 'less');
-                return;
             }
         }
     }
@@ -231,6 +230,7 @@ class InteractiveProcess
         $this->tf->fSys->setPathBase($this->paths['chat']);
         $this->tf->fSys->dumpIn($msg);
         $this->tf->fSys->dumpIn($sended);
+        $this->returnBait['wamid'] = $objMdl->id;
         
         $this->wh->sendMy(
             'wa-wh', 'notSave', [
@@ -238,4 +238,5 @@ class InteractiveProcess
             ]
         );
     }
+
 }
