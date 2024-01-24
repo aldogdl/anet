@@ -40,7 +40,9 @@ class InteractiveProcess
 
         if(mb_strpos($message->subEvento, '.') !== false) {
             $this->tratarConRespRapidas($cotProgress);
-        } else {
+        }
+        
+        if(!$this->hasTemplate) {
             $this->tratarCotizarAhora();
         }
 
@@ -54,7 +56,7 @@ class InteractiveProcess
     {
         // Buscamo una carnada en el estanque
         $newBait = $this->tf->lookForBait();
-
+        
         if(count($newBait) > 0) {
 
             // Se encontro una carnada para enviar por lo tanto, buscamos para ver si existe
@@ -66,11 +68,13 @@ class InteractiveProcess
                     $this->template = $template['message'];
                     $this->hasTemplate = true;
                     $this->returnBait = $this->tf->getEstanqueReturn($newBait, 'bait');
+                    // Si hidratamo la plantilla a ser enviada al cotizador nos regresamos
                     return;
                 }
             }
+        }
 
-        }else{
+        if(!$this->hasTemplate) {
 
             $this->returnBait = [];
             // No se encotró una carnada para enviar, por lo tanto, enviar mensaje de gracias enterados
@@ -161,7 +165,7 @@ class InteractiveProcess
             $this->tf->fSys->setPathBase($this->paths['cotProgres']);
             $this->tf->fSys->setContent($this->tf->message->from.'.json', $this->tf->cotProcess);
         }
-        
+
         $this->returnBait = $this->tf->getEstanqueReturn($this->tf->cotProcess, 'less');
     }
 

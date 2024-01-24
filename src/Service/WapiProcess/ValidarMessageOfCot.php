@@ -45,10 +45,9 @@ class ValidarMessageOfCot {
     public function validate()
     {
         $msg = $this->message->get();
-
         if(count($this->cotProgress) > 0) {
             $msg->message = [
-                'idItem' => $this->cotProgress['idItem'],
+                'idItem' => $this->cotProgress['item'],
                 'body' => $msg->message
             ];
         }else{

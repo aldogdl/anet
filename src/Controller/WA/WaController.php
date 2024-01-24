@@ -20,11 +20,10 @@ class WaController extends AbstractController
     {
         if($req->getMethod() == 'GET') {
 
-            $message = json_decode(file_get_contents('wa_templates/sdta.json'), true);
-            // $processMsg->execute($message, true);
-            $deco = new DecodeTemplate([]);
-            $final = $deco->decode($message);
-            dd($final);
+            $message = json_decode(file_get_contents('tracking/message.json'), true);
+            $processMsg->execute($message, true);
+            // $deco = new DecodeTemplate([]);
+            // $final = $deco->decode($message);
             
         }
         return new Response('ok', 200);
