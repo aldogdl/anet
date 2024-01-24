@@ -222,16 +222,17 @@ class InteractiveProcess
             return;
         }
 
-        $conm->bodyRaw = $this->template[$typeMsgToSent]['body'];
         $objMdl = $conm->setIdToMsgSended($this->tf->message, $result);
+        $this->returnBait['bait']['wamid'] = $objMdl->id;
+
+        $conm->bodyRaw = $this->template[$typeMsgToSent]['body'];
         $sended = $objMdl->toArray();
         $msg    = $this->tf->message->toArray();
 
         $this->tf->fSys->setPathBase($this->paths['chat']);
         $this->tf->fSys->dumpIn($msg);
         $this->tf->fSys->dumpIn($sended);
-        $this->returnBait['wamid'] = $objMdl->id;
-        
+
         $this->wh->sendMy(
             'wa-wh', 'notSave', [
                 'recibido' => $msg, 'enviado'  => $sended, 'estanque' => $this->returnBait
