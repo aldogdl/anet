@@ -62,15 +62,30 @@ class TrackFileCot {
         }
         return $trakeds;
     }
+    
+    /** */
+    public function build()
+    {
+        // Tomamos el archivo TrackFile
+        $this->fSys->setPathBase($this->paths['tracking']);
+        $this->trackFile = $this->fSys->getEstanqueOf($this->message->from);
+        
+        if(count($this->trackFile) > 0) {
+            $this->versionFileTrack = $this->trackFile['version'];
+            $this->fetchCotProgress();
+        }
+    }
 
     /** */
     public function finOfCotizacion(): void
     {
         $this->build();
-
+        // Eliminamos el archivo que indica que se esta cotizando
         $this->deleteFileCotProcess();
+
         if(count($this->cotProcess) > 0) {
-            // Se encontró el item dentro del estanque
+
+            // Se encontró el bait dentro del estanque
             $trackeds = $this->getFileContentTrackeds();
             if(!in_array($this->cotProcess['idItem'], $trackeds)) {
                 $trackeds[] = $this->cotProcess['idItem'];
@@ -154,41 +169,31 @@ class TrackFileCot {
 
         return $itemFetchToSent;
     }
-    
-    /** */
-    public function build()
-    {
-        // Tomamos el archivo TrackFile
-        $this->fSys->setPathBase($this->paths['tracking']);
-        $this->trackFile = $this->fSys->getEstanqueOf($this->message->from);
-        
-        if(count($this->trackFile) > 0) {
-            $this->versionFileTrack = $this->trackFile['version'];
-            $this->fetchCotProgress();
-        }
-    }
 
     /** */
     public function fetchCotProgress() {
 
         $this->cotProcess = [];
         $this->indexItemTrigger = false;
-        if(count($this->trackFile['items']) > 0) {
-                
-            $this->hasBaits = true;
-            // 1.- Tomamos el item que disparo este evento (el respondido por un boton)
-            $idsItems = array_column($this->trackFile['items'], 'idItem');
-            $this->indexItemTrigger = array_search($this->message->message['idItem'], $idsItems);
-            
-            if($this->indexItemTrigger !== false) {
-                $this->cotProcess = $this->trackFile['items'][$this->indexItemTrigger];
-                // solo si el index del item encontrado es mayor a cero, lo colocamos al principio
-                if($this->indexItemTrigger > 0) {
-                    unset($this->trackFile['items'][$this->indexItemTrigger]);
-                    array_unshift($this->trackFile['items'], $this->cotProcess);
-                    $this->indexItemTrigger = 0;
-                    $this->updateTracking();
-                }
+        $this->hasBaits = false;
+        if(count($this->trackFile['items']) == 0) {
+            // No hay mas items
+            return;
+        }
+
+        $this->hasBaits = true;
+        // 1.- Tomamos el item que disparo este evento (el respondido por un boton)
+        $idsItems = array_column($this->trackFile['items'], 'idItem');
+        $this->indexItemTrigger = array_search($this->message->message['idItem'], $idsItems);
+        
+        if($this->indexItemTrigger !== false) {
+            $this->cotProcess = $this->trackFile['items'][$this->indexItemTrigger];
+            // solo si el index del item encontrado es mayor a cero, lo colocamos al principio
+            if($this->indexItemTrigger > 0) {
+                unset($this->trackFile['items'][$this->indexItemTrigger]);
+                array_unshift($this->trackFile['items'], $this->cotProcess);
+                $this->indexItemTrigger = 0;
+                $this->updateTracking();
             }
         }
     }
@@ -215,7 +220,9 @@ class TrackFileCot {
         $this->fSys->setContent($this->message->from.'.json', $trackeds);
     }
 
-    /** */
+    /** 
+     * El archivo que indica que el cotizador esta en proceso de cotizacion
+    */
     public function deleteFileCotProcess()
     {
         $this->fSys->setPathBase($this->paths['cotProgres']);

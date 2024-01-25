@@ -251,7 +251,9 @@ class InteractiveProcess
 
         $this->wh->sendMy(
             'wa-wh', 'notSave', [
-                'recibido' => $msg, 'enviado'  => $sended, 'estanque' => $this->returnBait
+                'recibido' => $msg,
+                'enviado'  => $sended,
+                'estanque' => $this->returnBait
             ]
         );
     }

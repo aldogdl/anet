@@ -2,6 +2,7 @@
 
 namespace App\Service\WapiProcess;
 
+use App\Entity\EstanqueReturn;
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
@@ -10,7 +11,7 @@ class CotTextProcess
 {
     private bool $entroToSended = false;
     private array $cotProgress;
-    private array $msgs = [
+    private array $msgsNames = [
         'sdta' => ['current' => 'scto', 'next' => 'sgrx'],
         'scto' => ['current' => 'sgrx', 'next' => 'sok'],
     ];
@@ -19,22 +20,23 @@ class CotTextProcess
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
-        $versionTrackFile = -1;
-        $current = $cotProgress['current'];
-        $campo = ($current == 'sdta') ? 'detalles' : 'precio';
-        $message->subEvento = $current;
+
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
+
+        $current = $this->cotProgress['current'];
+        $campo = ($current == 'sdta') ? 'detalles' : 'precio';
+        $message->subEvento = $current;
         $sended = [];
         $this->entroToSended = false;
 
-        if(!array_key_exists($current, $this->msgs)) {
+        if(!array_key_exists($current, $this->msgsNames)) {
             return;
         }
         
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
-        $this->cotProgress['current'] = $this->msgs[$current]['current'];
-        $this->cotProgress['next']    = $this->msgs[$current]['next'];
+        $this->cotProgress['current'] = $this->msgsNames[$current]['current'];
+        $this->cotProgress['next']    = $this->msgsNames[$current]['next'];
         if(array_key_exists('body', $message->message)) {
             $this->cotProgress['track'][$campo] = $message->message['body'];
         }else{
@@ -70,10 +72,11 @@ class CotTextProcess
             $fSys->dumpIn($sended);
         }
 
+        $result = new EstanqueReturn([], 'less', true, $this->cotProgress);
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> $this->cotProgress
+            'trackfile'=> $result
         ]);
 
         if($this->cotProgress['current'] == 'sgrx') {
@@ -86,19 +89,27 @@ class CotTextProcess
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, FsysProcess $fSys, array $paths
     ){
         $this->entroToSended = false;
-        $versionTrackFile = -1;
-        $message->message = [
-            'idItem' => $this->cotProgress['idItem'],
-            'body' => $message->message
-        ];
+        $baitCotizado = $this->cotProgress;
+        if(!array_key_exists('idItem', $message->message)) {
+            $message->message = [
+                'idItem' => $this->cotProgress['idItem'],
+                'body' => $message->message
+            ];
+        }
 
         $tf = new TrackFileCot($message, $paths, $fSys);
-        // Lo primero es eliminar del estanque la solicitud cotizada y enviarlo a tracked
+        // En el siguiente metodo se hace:
+        // 1.- Recontruimos el objeto para iniclizar variables y buscar el bait en progreso
+        // 2.- Eliminar el archivo que indica cotizando
+        // 3.- Eliminar del estanque el bait que se cotizó y enviarlo a tracked
+        // 4.- Buscar una nueva carnada
         $tf->finOfCotizacion();
         if(count($tf->cotProcess) == 0) {
+            // No se encontro carnada, no se envía ningun mensaje ya que el metodo anterior
+            // es decir el __contruct envio el listo cotizada.
             return;
         }
-        $versionTrackFile = $tf->versionFileTrack;
+        
         $this->cotProgress = $tf->cotProcess;
         //Buscamos para ver si existe el mensaje del item prefabricado.
         $tf->fSys->setPathBase($paths['prodTrack']);
@@ -117,10 +128,11 @@ class CotTextProcess
             $fSys->dumpIn($sended);
         }
 
+        $return = $tf->getEstanqueReturn($this->cotProgress, 'bait');
         $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => ['type' => 'interactive', 'estanque' => 'fetch'],
+            'recibido' => ['type' => 'cotizada', 'bait' => $baitCotizado],
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> (count($this->cotProgress) == 0) ? $versionTrackFile : $this->cotProgress
+            'estanque' => $return
         ]);
     }
 
