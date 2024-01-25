@@ -2,14 +2,13 @@
 
 namespace App\Service\WapiProcess;
 
+use App\Entity\EstanqueReturn;
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
 
 class CotImagesProcess
 {
-
-    public String $hasErr = '';
     private array $cotProgress;
 
     /** 
@@ -21,7 +20,7 @@ class CotImagesProcess
 
         $this->cotProgress = $cotProgress;
         $cotProgress = [];
-        $versionTrackFile = -1;
+
         $fotos = [];
         $sended = [];
         $entroToSended = false;
@@ -58,7 +57,7 @@ class CotImagesProcess
             // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
             $fSys->setContent($message->from.'.json', $this->cotProgress);
             
-            // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
+            // Respondemos inmediatamente a este boton interactivo con el mensaje adecuado
             $fSys->setPathBase($paths['waTemplates']);
             $template = $fSys->getContent($this->cotProgress['current'].'.json');
             
@@ -110,11 +109,12 @@ class CotImagesProcess
         if($entroToSended) {
             $fSys->dumpIn($sended);
         }
-
+        
+        $result = new EstanqueReturn([], 'less', true, $this->cotProgress);
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $recibido,
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> (count($this->cotProgress) == 0) ? $versionTrackFile : $this->cotProgress
+            'estanque' => $result
         ]);
     }
 
