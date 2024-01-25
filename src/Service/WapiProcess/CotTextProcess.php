@@ -130,7 +130,7 @@ class CotTextProcess
 
         $return = $tf->getEstanqueReturn($this->cotProgress, 'bait');
         $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => ['type' => 'cotizada', 'bait' => $baitCotizado],
+            'recibido' => ['type' => 'text', 'subEvento' => 'cotizada', 'bait' => $baitCotizado],
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
             'estanque' => $return
         ]);
