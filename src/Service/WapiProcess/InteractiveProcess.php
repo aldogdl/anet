@@ -90,6 +90,57 @@ class InteractiveProcess
     }
 
     /** */
+    private function tratarCotizarAhora()
+    {
+        $saveCotProcess = false;
+        $this->tf->build();
+
+        $hasCriticalErro = false;
+        if(count($this->tf->cotProcess) == 0) {
+            $hasCriticalErro = true;
+        }
+
+        if($this->tf->cotProcess['idItem'] != $this->tf->message->message['idItem']) {
+            $this->tf->fetchCotProgress();
+            if(count($this->tf->cotProcess) == 0) {
+                $hasCriticalErro = true;
+            }
+            if($this->tf->cotProcess['idItem'] != $this->tf->message->message['idItem']) {
+                $hasCriticalErro = true;
+            }
+        }
+
+        if($hasCriticalErro) {
+            // TODO La solicitud ya no esta disponible MSG al cliente
+            return;
+        }
+        
+        if(array_key_exists('track', $this->tf->cotProcess)) {
+            if(!array_key_exists('idCot', $this->tf->cotProcess['track'])) {
+                $createCotProgress = true;
+            }
+        }else{
+            $createCotProgress = true;
+        }
+
+        $this->tf->cotProcess['sended'] = round(microtime(true) * 1000);
+        if($createCotProgress && $this->tf->message->subEvento == 'sfto') {
+            // Si no hay ningun archivo que indica cotizacion en progreso lo creamos
+            $this->tf->cotProcess['track'] = ['idCot' => time()];
+            $saveCotProcess = true;
+        }
+        
+        $this->tf->cotProcess = $this->getTemplate($this->tf->cotProcess);
+        // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
+        if($saveCotProcess) {
+            $this->tf->fSys->setPathBase($this->paths['cotProgres']);
+            $this->tf->fSys->setContent($this->tf->message->from.'.json', $this->tf->cotProcess);
+        }
+
+        $this->returnBait = $this->tf->getEstanqueReturn($this->tf->cotProcess, 'less');
+    }
+    
+    /** */
     private function tratarConRespRapidas(array $cotProgress): void
     {
 
@@ -131,41 +182,6 @@ class InteractiveProcess
             $this->returnBait = $this->tf->getEstanqueReturn($cotProgress, 'less');
             return;
         }
-    }
-
-    /** */
-    private function tratarCotizarAhora()
-    {
-        $saveCotProcess = false;
-        $this->tf->build();
-        if(count($this->tf->cotProcess) == 0) {
-            // TODO La solicitud ya no esta disponible MSG al cliente
-            return;
-        }
-        
-        if(array_key_exists('track', $this->tf->cotProcess)) {
-            if(!array_key_exists('idCot', $this->tf->cotProcess['track'])) {
-                $createCotProgress = true;
-            }
-        }else{
-            $createCotProgress = true;
-        }
-
-        $this->tf->cotProcess['sended'] = round(microtime(true) * 1000);
-        if($createCotProgress && $this->tf->message->subEvento == 'sfto') {
-            // Si no hay ningun archivo que indica cotizacion en progreso lo creamos
-            $this->tf->cotProcess['track'] = ['idCot' => time()];
-            $saveCotProcess = true;
-        }
-        
-        $this->tf->cotProcess = $this->getTemplate($this->tf->cotProcess);
-        // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
-        if($saveCotProcess) {
-            $this->tf->fSys->setPathBase($this->paths['cotProgres']);
-            $this->tf->fSys->setContent($this->tf->message->from.'.json', $this->tf->cotProcess);
-        }
-
-        $this->returnBait = $this->tf->getEstanqueReturn($this->tf->cotProcess, 'less');
     }
 
     /** */
