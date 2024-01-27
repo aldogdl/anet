@@ -43,12 +43,8 @@ class LoginProcess
 
         $sended = $conm->setIdToMsgSended($message, $result);
 
-        $fSys = new FsysProcess($paths['chat']);
-        $fSys->dumpIn($message->toArray());
-        $fSys->dumpIn($sended->toArray());
-
         // Recuperamos el Estanque del cotizador que esta iniciando sesion
-        $fSys->setPathBase($paths['tracking']);
+        $fSys = new FsysProcess($paths['tracking']);
         $estanque = $fSys->getEstanqueOf($message->from);
         $result = new EstanqueReturn($estanque, $paths['hasCotPro']);
 

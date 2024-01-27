@@ -59,7 +59,6 @@ class ProcesarMessage {
         }
 
         $paths = [
-            'chat'       => $this->getFolderTo('chat'),
             'tkwaconm'   => $this->params->get('tkwaconm'),
             'waTemplates'=> $this->params->get('waTemplates'),
             'tracking'   => $this->getFolderTo('tracking'),

@@ -64,19 +64,11 @@ class CotTextProcess
         }
         $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
 
-        $recibido = $message->toArray();
-        $fSys->setPathBase($paths['chat']);
-        $fSys->dumpIn($recibido);
-
-        if($this->entroToSended) {
-            $fSys->dumpIn($sended);
-        }
-
         $result = new EstanqueReturn([], 'less', true, $this->cotProgress);
         $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => $recibido,
+            'recibido' => $message->toArray(),
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'trackfile'=> $result
+            'estanque' => $result
         ]);
 
         if($this->cotProgress['current'] == 'sgrx') {
@@ -123,10 +115,6 @@ class CotTextProcess
         
         $template = $template['message'];
         $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
-        if($this->entroToSended) {
-            $fSys->setPathBase($paths['chat']);
-            $fSys->dumpIn($sended);
-        }
 
         $return = $tf->getEstanqueReturn($this->cotProgress, 'bait');
         $wh->sendMy('wa-wh', 'notSave', [

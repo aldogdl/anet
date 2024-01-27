@@ -245,10 +245,6 @@ class InteractiveProcess
         $sended = $objMdl->toArray();
         $msg    = $this->tf->message->toArray();
 
-        $this->tf->fSys->setPathBase($this->paths['chat']);
-        $this->tf->fSys->dumpIn($msg);
-        $this->tf->fSys->dumpIn($sended);
-
         $this->wh->sendMy(
             'wa-wh', 'notSave', [
                 'recibido' => $msg,

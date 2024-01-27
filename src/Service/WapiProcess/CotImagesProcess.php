@@ -30,15 +30,28 @@ class CotImagesProcess
             $fotos = $this->cotProgress['track']['fotos'];
         }
 
+        $fto = [];
         if(array_key_exists('body', $message->message)) {
             if(!in_array($message->message['body']['id'], $fotos)) {
-                $fotos[] = $message->message['body']['id'];
+                $fto = [
+                    'id'  => $message->message['body']['id'],
+                    'cap' => (array_key_exists('caption', $message->message['body']))
+                        ? $message->message['body']['caption']
+                        : '',
+                ];
             }
         }else{
             if(!in_array($message->message['id'], $fotos)) {
-                $fotos[] = $message->message['id'];
+                $fto = [
+                    'id'  => $message->message['id'],
+                    'cap' => (array_key_exists('caption', $message->message))
+                        ? $message->message['caption']
+                        : '',
+                ];
             }
         }
+
+        $fotos[] = $fto;
         $this->cotProgress['track']['fotos'] = $fotos;
         
         $current = $this->cotProgress['current'];
@@ -103,16 +116,9 @@ class CotImagesProcess
             }
         }
 
-        $recibido = $message->toArray();
-        $fSys->setPathBase($paths['chat']);
-        $fSys->dumpIn($recibido);
-        if($entroToSended) {
-            $fSys->dumpIn($sended);
-        }
-        
         $result = new EstanqueReturn([], 'less', true, $this->cotProgress);
         $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => $recibido,
+            'recibido' => $message->toArray(),
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
             'estanque' => $result
         ]);

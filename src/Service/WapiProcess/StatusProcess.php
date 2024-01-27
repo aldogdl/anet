@@ -17,14 +17,9 @@ class StatusProcess
         $fSys = new FsysProcess($paths['tracking']);
         $estanque = $fSys->getEstanqueOf($message->from);
         $result = new EstanqueReturn($estanque, $paths['hasCotPro']);
-        
-        $msg = $message->toArray();
-        $fSys->setPathBase($paths['chat']);
-        $fSys->dumpIn($msg);
 
         $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => $msg,
-            'procesado'=> 'Sin Chat',
+            'recibido' => $message->toArray(),
             'estanque' => $result->toArray()
         ]);
     }
