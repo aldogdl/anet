@@ -97,8 +97,14 @@ class CotTextProcess
         // 4.- Buscar una nueva carnada
         $tf->finOfCotizacion();
         if(count($tf->cotProcess) == 0) {
+            $return = $tf->getEstanqueReturn($this->cotProgress, 'bait');
             // No se encontro carnada, no se envía ningun mensaje ya que el metodo anterior
             // es decir el __contruct envio el listo cotizada.
+            $wh->sendMy('wa-wh', 'notSave', [
+                'recibido' => ['type' => 'text', 'subEvento' => 'cotizada', 'bait' => $this->cotProgress],
+                'enviado'  => ['body' => 'none'],
+                'estanque' => $return
+            ]);
             return;
         }
         
