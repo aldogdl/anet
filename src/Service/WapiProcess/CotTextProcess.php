@@ -9,7 +9,6 @@ use App\Service\WapiProcess\WrapHttp;
 
 class CotTextProcess
 {
-    private bool $entroToSended = false;
     private array $cotProgress;
     private array $msgsNames = [
         'sdta' => ['current' => 'scto', 'next' => 'sgrx'],
@@ -28,7 +27,6 @@ class CotTextProcess
         $campo = ($current == 'sdta') ? 'detalles' : 'precio';
         $message->subEvento = $current;
         $sended = [];
-        $this->entroToSended = false;
 
         if(!array_key_exists($current, $this->msgsNames)) {
             return;
@@ -80,7 +78,6 @@ class CotTextProcess
     private function fetchBait(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, FsysProcess $fSys, array $paths
     ){
-        $this->entroToSended = false;
         $baitCotizado = $this->cotProgress;
         if(!array_key_exists('idItem', $message->message)) {
             $message->message = [
@@ -96,8 +93,8 @@ class CotTextProcess
         // 3.- Eliminar del estanque el bait que se cotizó y enviarlo a tracked
         // 4.- Buscar una nueva carnada
         $tf->finOfCotizacion();
-        if(count($tf->cotProcess) == 0) {
-            $return = $tf->getEstanqueReturn($this->cotProgress, 'bait');
+        if(count($tf->baitProgress) == 0) {
+            $return = $tf->getEstanqueReturn($this->cotProgress, 'less');
             // No se encontro carnada, no se envía ningun mensaje ya que el metodo anterior
             // es decir el __contruct envio el listo cotizada.
             $wh->sendMy('wa-wh', 'notSave', [
@@ -108,7 +105,7 @@ class CotTextProcess
             return;
         }
         
-        $this->cotProgress = $tf->cotProcess;
+        $this->cotProgress = $tf->baitProgress;
         //Buscamos para ver si existe el mensaje del item prefabricado.
         $tf->fSys->setPathBase($paths['prodTrack']);
         $template = $tf->fSys->getContent($this->cotProgress['idItem'].'_track.json');
@@ -140,7 +137,6 @@ class CotTextProcess
         $conm->setBody($typeMsgToSent, $template);
         $result = $wapiHttp->send($conm);
         if($result['statuscode'] != 200) {
-            $this->entroToSended = false;
             $wh->sendMy('wa-wh', 'notSave', $result);
             return [];
         }
@@ -162,7 +158,6 @@ class CotTextProcess
 
         $objMdl = $conm->setIdToMsgSended($message, $result);
         $conm = null;
-        $this->entroToSended = true;
         return $objMdl->toArray();
     }
 }

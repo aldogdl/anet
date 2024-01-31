@@ -83,7 +83,11 @@ class ValidarMessageOfCot {
             $this->validateInteractive($msg);
             return;
         }
-
+        
+        if(!array_key_exists('current', $this->cotProgress)) {
+            return false;
+        }
+        
         $this->code = 101;
         if($this->cotProgress['current'] == 'sfto' && !$this->message->isImage) {
             $template = $this->buildMsgSimple(
