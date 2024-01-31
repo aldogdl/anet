@@ -15,7 +15,7 @@ class TrackFileCot {
     /** */
     public array $trackFile = [];
     /** El item que se esta cotizando actualmente */
-    public array $cotProcess = [];
+    public array $baitProgress = [];
     /** Indica si hay mas carnada en el Estanque */
     public bool $hasBaits = false;
     /** El indice del item que disparo el evento */
@@ -72,7 +72,7 @@ class TrackFileCot {
         
         if(count($this->trackFile) > 0) {
             $this->versionFileTrack = $this->trackFile['version'];
-            $this->fetchCotProgress();
+            $this->fetchBaitProgress();
         }
     }
 
@@ -83,12 +83,12 @@ class TrackFileCot {
         // Eliminamos el archivo que indica que se esta cotizando
         $this->deleteFileCotProcess();
 
-        if(count($this->cotProcess) > 0) {
+        if(count($this->baitProgress) > 0) {
 
             // Se encontró el bait dentro del estanque
             $trackeds = $this->getFileContentTrackeds();
-            if(!in_array($this->cotProcess['idItem'], $trackeds)) {
-                $trackeds[] = $this->cotProcess['idItem'];
+            if(!in_array($this->baitProgress['idItem'], $trackeds)) {
+                $trackeds[] = $this->baitProgress['idItem'];
             }
             $this->updateTrackeds($trackeds, false);
 
@@ -97,10 +97,10 @@ class TrackFileCot {
             sort($this->trackFile['items']);
             $this->updateTracking();
 
-            $this->cotProcess = [];
+            $this->baitProgress = [];
             $bait = $this->lookForBait(true);
             if(count($bait) > 0) {
-                $this->cotProcess = $bait;
+                $this->baitProgress = $bait;
                 $bait = [];
             }
         }
@@ -125,9 +125,9 @@ class TrackFileCot {
             $cotProcessIsFill = false;
             // Si hay cambios en el TrackFile lo guardamos al final de este metodo
             $hasChangeFileTrack = false;
-            if(count($this->cotProcess) > 0) {
-                if($this->trackFile['items'][$this->indexItemTrigger]['idItem'] == $this->cotProcess['idItem']) {
-                    $trackeds[] = $this->cotProcess['idItem'];
+            if(count($this->baitProgress) > 0) {
+                if($this->trackFile['items'][$this->indexItemTrigger]['idItem'] == $this->baitProgress['idItem']) {
+                    $trackeds[] = $this->baitProgress['idItem'];
                     unset($this->trackFile['items'][$this->indexItemTrigger]);
                     sort($this->trackFile['items']);
                     $hasChangeFileTrack = true;
@@ -142,7 +142,7 @@ class TrackFileCot {
                 $copyFileTrack = [];
                 $rota = count($this->trackFile['items']);
                 for ($i=0; $i < $rota; $i++) {
-                    if($this->trackFile['items'][$i]['mdl'] == $this->cotProcess['mdl']) {
+                    if($this->trackFile['items'][$i]['mdl'] == $this->baitProgress['mdl']) {
                         $trackeds[] = $this->trackFile['items'][$i]['idItem'];
                     }else{
                         $copyFileTrack[] = $this->trackFile['items'][$i];
@@ -171,11 +171,15 @@ class TrackFileCot {
     }
 
     /** */
-    public function fetchCotProgress() {
+    public function fetchBaitProgress() {
 
-        $this->cotProcess = [];
+        $this->baitProgress = [];
         $this->indexItemTrigger = false;
         $this->hasBaits = false;
+        if(!array_key_exists('items', $this->trackFile)) {
+            // No hay mas items
+            return;
+        }
         if(count($this->trackFile['items']) == 0) {
             // No hay mas items
             return;
@@ -187,11 +191,11 @@ class TrackFileCot {
         $this->indexItemTrigger = array_search($this->message->message['idItem'], $idsItems);
         
         if($this->indexItemTrigger !== false) {
-            $this->cotProcess = $this->trackFile['items'][$this->indexItemTrigger];
+            $this->baitProgress = $this->trackFile['items'][$this->indexItemTrigger];
             // solo si el index del item encontrado es mayor a cero, lo colocamos al principio
             if($this->indexItemTrigger > 0) {
                 unset($this->trackFile['items'][$this->indexItemTrigger]);
-                array_unshift($this->trackFile['items'], $this->cotProcess);
+                array_unshift($this->trackFile['items'], $this->baitProgress);
                 $this->indexItemTrigger = 0;
                 $this->updateTracking();
             }
@@ -201,7 +205,7 @@ class TrackFileCot {
     /** */
     public function getEstanqueReturn(array $baitForce = [], String $type = 'less'): array
     {
-        $hasCot = (count($this->cotProcess) > 0) ? true : false;
+        $hasCot = (count($this->baitProgress) > 0) ? true : false;
         $est = new EstanqueReturn($this->trackFile, $type, $hasCot, $baitForce);
         return $est->toArray();
         return [];

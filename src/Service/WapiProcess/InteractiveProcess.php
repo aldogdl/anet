@@ -15,6 +15,7 @@ class InteractiveProcess
     private array $paths;
     private array $template = [];
     private array $returnBait = [];
+    private array $cotProgress = [];
     private bool $hasTemplate = false;
 
     /** 
@@ -27,12 +28,13 @@ class InteractiveProcess
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
         $this->tf = new TrackFileCot($message, $paths);
-        $this->wh = $wh;
-        $this->wapiHttp = $wapiHttp;
-        $this->paths = $paths;
-
-        $this->template = [];
+        $this->wh          = $wh;
+        $this->wapiHttp    = $wapiHttp;
+        $this->paths       = $paths;
+        $this->template    = [];
         $this->hasTemplate = false;
+        $this->cotProgress = $cotProgress;
+        $cotProgress       = [];
 
         if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
             $this->tratarConNtg($message);
@@ -84,7 +86,7 @@ class InteractiveProcess
             if(count($template) > 0) {
                 $this->template = $template;
                 $this->hasTemplate = true;
-                $this->returnBait = $this->tf->getEstanqueReturn($this->tf->cotProcess, 'less');
+                $this->returnBait = $this->tf->getEstanqueReturn($this->tf->baitProgress, 'less');
             }
         }
     }
@@ -93,19 +95,20 @@ class InteractiveProcess
     private function tratarCotizarAhora()
     {
         $saveCotProcess = false;
+        $createCotProgress = false;
         $this->tf->build();
 
         $hasCriticalErro = false;
-        if(count($this->tf->cotProcess) == 0) {
+        if(count($this->tf->baitProgress) == 0) {
             $hasCriticalErro = true;
         }
 
-        if($this->tf->cotProcess['idItem'] != $this->tf->message->message['idItem']) {
-            $this->tf->fetchCotProgress();
-            if(count($this->tf->cotProcess) == 0) {
+        if($this->tf->baitProgress['idItem'] != $this->tf->message->message['idItem']) {
+            $this->tf->fetchBaitProgress();
+            if(count($this->tf->baitProgress) == 0) {
                 $hasCriticalErro = true;
             }
-            if($this->tf->cotProcess['idItem'] != $this->tf->message->message['idItem']) {
+            if($this->tf->baitProgress['idItem'] != $this->tf->message->message['idItem']) {
                 $hasCriticalErro = true;
             }
         }
@@ -115,29 +118,29 @@ class InteractiveProcess
             return;
         }
         
-        if(array_key_exists('track', $this->tf->cotProcess)) {
-            if(!array_key_exists('idCot', $this->tf->cotProcess['track'])) {
+        if(array_key_exists('track', $this->tf->baitProgress)) {
+            if(!array_key_exists('idCot', $this->tf->baitProgress['track'])) {
                 $createCotProgress = true;
             }
         }else{
             $createCotProgress = true;
         }
 
-        $this->tf->cotProcess['sended'] = round(microtime(true) * 1000);
+        $this->tf->baitProgress['sended'] = round(microtime(true) * 1000);
         if($createCotProgress && $this->tf->message->subEvento == 'sfto') {
             // Si no hay ningun archivo que indica cotizacion en progreso lo creamos
-            $this->tf->cotProcess['track'] = ['idCot' => time()];
+            $this->tf->baitProgress['track'] = ['idCot' => time()];
             $saveCotProcess = true;
         }
         
-        $this->tf->cotProcess = $this->getTemplate($this->tf->cotProcess);
+        $this->cotProgress = $this->getTemplate($this->tf->baitProgress);
         // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
         if($saveCotProcess) {
             $this->tf->fSys->setPathBase($this->paths['cotProgres']);
-            $this->tf->fSys->setContent($this->tf->message->from.'.json', $this->tf->cotProcess);
+            $this->tf->fSys->setContent($this->tf->message->from.'.json', $this->cotProgress);
         }
 
-        $this->returnBait = $this->tf->getEstanqueReturn($this->tf->cotProcess, 'less');
+        $this->returnBait = $this->tf->getEstanqueReturn($this->cotProgress, 'less');
     }
     
     /** */
