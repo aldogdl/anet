@@ -23,7 +23,6 @@ class CotImagesProcess
 
         $fotos = [];
         $sended = [];
-        $entroToSended = false;
         $message->subEvento = 'sfto';
         
         if(array_key_exists('fotos', $this->cotProgress['track'])) {
@@ -112,7 +111,6 @@ class CotImagesProcess
 
                 $objMdl = $conm->setIdToMsgSended($message, $result);
                 $sended = $objMdl->toArray();
-                $entroToSended = true;
             }
         }
 
