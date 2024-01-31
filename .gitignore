@@ -10,7 +10,6 @@ _.env.local.php
 .well-known
 error_log
 
-front_door/
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
 public_html/bundles/
@@ -69,6 +68,7 @@ public_html/pnid.pni
 public_html/cotz_cata_data/
 public_html/ctc_logo/
 public_html/desc_mlm.txt
+front_door/
 front_door/front_door.txt/front_door.txt
 
 var/
