@@ -71,11 +71,11 @@ class ProcesarMessage {
             new LoginProcess($obj->get(), $paths, $this->whook, $this->wapiHttp);
             return;
         }
-        
+
         if($obj->isStt) {
             // No procesamos los status cuando se esta cotizando
             if(!$this->hasCotProgress) {
-                new StatusProcess($obj->get(), $paths, $this->whook);
+                $this->whook->sendMy('wa-wh', 'notSave', ['recibido' => $obj->get()->toArray()]);
             }
             return;
         }

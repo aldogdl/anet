@@ -158,7 +158,7 @@ class InteractiveProcess
     }
 
     /** */
-    private function getTemplate(): array
+    private function getTemplate(): void
     {
         $this->tf->fSys->setPathBase($this->paths['waTemplates']);
         // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
@@ -168,7 +168,7 @@ class InteractiveProcess
             $this->hasTemplate = true;
         }else{
             $this->hasTemplate = false;
-            return [];
+            return;
         }
 
         // Buscamos si contiene AnetLanguage para decodificar
