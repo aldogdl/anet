@@ -62,7 +62,7 @@ class CotTextProcess
         }
         $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
 
-        $result = new EstanqueReturn([], 'less', true, $this->cotProgress);
+        $result = new EstanqueReturn([], $this->cotProgress, 'less', $paths['hasCotPro']);
         $wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $message->toArray(),
             'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,

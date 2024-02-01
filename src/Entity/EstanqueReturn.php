@@ -9,6 +9,7 @@ class EstanqueReturn {
     private int $cantBait = 0;
     private String $typeBait = 'empty';
     private array $bait = [];
+    private array $baitNext = [];
 
     /** 
      * Tipos de Bait
@@ -18,20 +19,23 @@ class EstanqueReturn {
      * bait : Cuando es un nuevo item que se envio al cotizador
     */
     public function __construct(
-        array $est, String $type = 'empty', bool $hasCotPro = false, array $baitForce = []
+        array $est, array $baitProgress, bool $hasCotPro = false, String $type = 'empty',
     ) {
 
+        $this->bait = [];
+        $this->baitNext = [];
         $this->hasCotProgress = $hasCotPro;
         $this->typeBait = $type;
+
         if(count($est) > 0) {
             $this->cantBait = count($est['items']);
             $this->version = $est['version'];
+            if($this->cantBait > 1) {
+                $this->baitNext = $est['items'][1];
+            }
         }
-        if(count($baitForce) > 0) {
-            $this->bait = $baitForce;
-        }else{
-            $this->bait = ($this->cantBait > 0) ? $est['items'][0] : [];
-            $this->typeBait = ($this->cantBait > 0) ? 'first' : 'empty';
+        if(count($baitProgress) > 0) {
+            $this->bait = $baitProgress;
         }
     }
 
@@ -39,11 +43,14 @@ class EstanqueReturn {
     public function toArray() {
 
         return [
-            'version' => $this->version,
-            'hasCotProgress' => $this->hasCotProgress,
-            'cantBait' => $this->cantBait,
-            'typeBait' => $this->typeBait,
-            'bait' => $this->bait,
+            'baitProgress' => $this->bait,
+            'estData' => [
+                'typeBait' => $this->typeBait,
+                'version'  => $this->version,
+                'cantBait' => $this->cantBait,
+                'baitNext' => $this->baitNext,
+                'hasCotProgress' => $this->hasCotProgress,
+            ],
         ];
     }
 }

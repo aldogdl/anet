@@ -61,9 +61,9 @@ class ProcesarMessage {
         $paths = [
             'tkwaconm'   => $this->params->get('tkwaconm'),
             'waTemplates'=> $this->params->get('waTemplates'),
+            'prodTrack'  => $this->params->get('prodTrack'),
             'tracking'   => $this->getFolderTo('tracking'),
             'trackeds'   => $this->getFolderTo('trackeds'),
-            'prodTrack'  => $this->params->get('prodTrack'),
             'cotProgres' => $pathCotProgress,
             'hasCotPro'  => $this->hasCotProgress
         ];
@@ -80,17 +80,25 @@ class ProcesarMessage {
             return;
         }
 
+        // Todo mensaje que llega a esta altura debe ser una cotizacion en progreso
+        // Toda Cot en Progreso, debe contener el IdItem
         $code = 100;
         $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
         $validator->validate();
         if(!$validator->isValid) { return; }
+
+        if(count($cotProgress) == 0 && count($validator->cotProgress) > 0) {
+            $cotProgress = $validator->cotProgress;
+            $paths['hasCotPro'] = true;
+        }
         $code = $validator->code;
         $validator = null;
         
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
-                new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $int = new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $int->exe();
                 break;
             case 101:
                 new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);

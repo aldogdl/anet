@@ -30,14 +30,16 @@ class TrackFileCot {
      * Buscamos el item respondido y lo pasamos a itemsToTrackeds.
      * A su ves lo eliminamos de la lista de trackFile
     */
-    public function __construct(WaMsgMdl $message, array $paths, FsysProcess $fSys = null)
+    public function __construct(WaMsgMdl $message, array $paths, FsysProcess $fSys = null, bool $checkTrackeds = false)
     {
         $this->paths      = $paths;
         $this->message    = $message;
         $this->isAtendido = false;
         if($fSys == null) {
             $this->fSys = new FsysProcess($paths['trackeds']);
-            $this->getFileContentTrackeds();
+            if($checkTrackeds) {
+                $this->getFileContentTrackeds();
+            }
         }else{
             $this->fSys = $fSys;
             $this->fSys->setPathBase($paths['trackeds']);
@@ -54,7 +56,7 @@ class TrackFileCot {
             return [];
         }
 
-        $this->fSys->getContent($this->message->from.'.json');
+        $trakeds = $this->fSys->getContent($this->message->from.'.json');
         if(array_key_exists('idItem', $this->message->message)) {
             if(in_array($this->message->message['idItem'], $trakeds)) {
                 $this->isAtendido = true;
@@ -120,28 +122,30 @@ class TrackFileCot {
         if($this->hasBaits) {
             
             $trackeds = [];
-            // En caso de que el Item se halla encontrado aun dentro de FileTrack lo enviamos
-            // a trackeds y lo eliminamos del FileTrack
-            $cotProcessIsFill = false;
-            // Si hay cambios en el TrackFile lo guardamos al final de este metodo
+            $rotaItems = 0;
+            // Indica si hay cambios en el TrackFile lo guardamos al final de este metodo
             $hasChangeFileTrack = false;
+
             if(count($this->baitProgress) > 0) {
+                // En caso de que el Item se halla encontrado aun dentro de FileTrack lo enviamos
+                // a trackeds y lo eliminamos del FileTrack
                 if($this->trackFile['items'][$this->indexItemTrigger]['idItem'] == $this->baitProgress['idItem']) {
                     $trackeds[] = $this->baitProgress['idItem'];
                     unset($this->trackFile['items'][$this->indexItemTrigger]);
                     sort($this->trackFile['items']);
                     $hasChangeFileTrack = true;
                 }
-                $cotProcessIsFill = true;
+
+                // Despues de eliminar el que se esta cotizando actualmente revisamos si hay mas baits
+                $rotaItems = count($this->trackFile['items']);
             }
 
             // Si el cotizador nos esta diciendo que no tiene el auto
             // debemos eliminar todos los modelos coincidentes de la matriz.
-            if($this->message->subEvento == 'ntga' && $cotProcessIsFill) {
+            if($this->message->subEvento == 'ntga' && $rotaItems > 0) {
 
                 $copyFileTrack = [];
-                $rota = count($this->trackFile['items']);
-                for ($i=0; $i < $rota; $i++) {
+                for ($i=0; $i < $rotaItems; $i++) {
                     if($this->trackFile['items'][$i]['mdl'] == $this->baitProgress['mdl']) {
                         $trackeds[] = $this->trackFile['items'][$i]['idItem'];
                     }else{
@@ -170,7 +174,9 @@ class TrackFileCot {
         return $itemFetchToSent;
     }
 
-    /** */
+    /** 
+     * Buscamos en el estanque el bait que lanzon el evento de cotizacion
+    */
     public function fetchBaitProgress() {
 
         $this->baitProgress = [];
@@ -203,12 +209,12 @@ class TrackFileCot {
     }
 
     /** */
-    public function getEstanqueReturn(array $baitForce = [], String $type = 'less'): array
+    public function getEstanqueReturn(array $baitProg, String $type = 'less'): array
     {
-        $hasCot = (count($this->baitProgress) > 0) ? true : false;
-        $est = new EstanqueReturn($this->trackFile, $type, $hasCot, $baitForce);
+        $est = new EstanqueReturn(
+            $this->trackFile, $baitProg, $this->paths['hasCotPro'], $type
+        );
         return $est->toArray();
-        return [];
     }
 
     /** */
@@ -222,6 +228,12 @@ class TrackFileCot {
             $trackeds = $news;
         }
         $this->fSys->setContent($this->message->from.'.json', $trackeds);
+    }
+
+    /** */
+    public function saveFileTrackProcess(array $content): void {
+        $this->fSys->setPathBase($this->paths['cotProgres']);
+        $this->fSys->setContent($this->message->from.'.json', $content);    
     }
 
     /** 

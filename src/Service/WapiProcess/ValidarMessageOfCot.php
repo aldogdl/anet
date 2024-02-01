@@ -38,18 +38,27 @@ class ValidarMessageOfCot {
         $this->cotProgress = $cotProgress;
         $this->wapiHttp    = $wapi;
         $this->message     = $obj;
-        $this->filesystem  = new Filesystem();
     }
 
-    ///
+    /** */
     public function validate()
     {
+        $this->filesystem  = new Filesystem();
         $msg = $this->message->get();
+
         if(count($this->cotProgress) > 0) {
-            $msg->message = [
-                'idItem' => $this->cotProgress['idItem'],
-                'body' => $msg->message
-            ];
+            if(!array_key_exists('idItem', $msg->message)) {
+                // Si existe el campo body en el mensaje, sacamos el msg de body
+                // ya que lo vamos a colocar otra ves dentro de body, para no duplicar
+                // el campo body.
+                if(array_key_exists('body', $msg->message)) {
+                    $msg->message = $msg->message['body'];
+                }
+                $msg->message = [
+                    'idItem' => $this->cotProgress['idItem'],
+                    'body' => $msg->message
+                ];
+            }
         }else{
             if(is_array($msg->message)) {
                 if(!array_key_exists('idItem', $msg->message)) {
@@ -58,7 +67,9 @@ class ValidarMessageOfCot {
             }
         }
 
-        $trackFile = new TrackFileCot($msg, $this->paths);
+        // A esta altura es obligatorio tener el idItem que se esta o quiere cotizar
+        // Ya sea por una cotizacion en progreso o por un boton interactivo
+        $trackFile = new TrackFileCot($msg, $this->paths, null, true);
 
         if($trackFile->isAtendido) {
             $trackFile->fSys->setPathBase($this->paths['waTemplates']);
@@ -66,6 +77,7 @@ class ValidarMessageOfCot {
             $conm = new ConmutadorWa($msg->from, $this->paths['tkwaconm']);
             $conm->setBody($template['type'], $template);
             $this->wapiHttp->send($conm);
+            $this->isValid  = false;
             return;
         }
 
@@ -80,14 +92,15 @@ class ValidarMessageOfCot {
 
         $this->isValid  = true;
         if($this->message->isInteractive) {
-            $this->validateInteractive($msg);
+            $this->validateInteractive($msg, $trackFile);
             return;
         }
         
         if(!array_key_exists('current', $this->cotProgress)) {
+            $this->isValid  = false;
             return false;
         }
-        
+
         $this->code = 101;
         if($this->cotProgress['current'] == 'sfto' && !$this->message->isImage) {
             $template = $this->buildMsgSimple(
@@ -120,8 +133,27 @@ class ValidarMessageOfCot {
     }
 
     /** */
-    private function validateInteractive(WaMsgMdl $msg): void
+    private function validateInteractive(WaMsgMdl $msg, TrackFileCot $trackFile): void
     {
+        // Creamos el archivo de cotizacion en progreso si es necesario
+        if(!$this->paths['hasCotPro'] && count($this->cotProgress) == 0) {
+            if($msg->subEvento == 'sfto') {
+                $trackFile->build();
+                if(count($trackFile->baitProgress) == 0) {
+                    $template = $this->buildMsgSimple(
+                        "*LO SENTIMOS MUCHO*.\n\n📝La cotización que deseas atender ya no esta disponible, pronto te enviaremos más.😃👍"
+                    );
+                    $this->sentMsg($template, $msg->from);
+                    $this->isValid  = false;
+                    return;
+                }
+                $trackFile->saveFileTrackProcess($trackFile->baitProgress);
+                $this->cotProgress = $trackFile->baitProgress;
+                $this->isValid = true;
+                return;
+            }
+        }
+
         // El mensaje recibido es que... No agregará fotos
         if($msg->subEvento == 'nfto') {
             // Enviamos el mensaje de confirmacion de sin fotos

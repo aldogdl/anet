@@ -12,9 +12,9 @@ class InteractiveProcess
     private TrackFileCot $tf;
     private WebHook $wh;
     private WrapHttp $wapiHttp;
+    private WaMsgMdl $msg;
     private array $paths;
     private array $template = [];
-    private array $returnBait = [];
     private array $cotProgress = [];
     private bool $hasTemplate = false;
 
@@ -27,20 +27,29 @@ class InteractiveProcess
     public function __construct(
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
-        $this->tf = new TrackFileCot($message, $paths);
         $this->wh          = $wh;
         $this->wapiHttp    = $wapiHttp;
         $this->paths       = $paths;
-        $this->template    = [];
-        $this->hasTemplate = false;
+        $this->msg         = $message;
         $this->cotProgress = $cotProgress;
+        $this->hasTemplate = false;
         $cotProgress       = [];
+        $this->template    = [];
+    }
 
-        if($message->subEvento == 'ntg' || $message->subEvento == 'ntga') {
-            $this->tratarConNtg($message);
+    /** */
+    public function exe() : void
+    {
+        if(count($this->cotProgress) == 0 || !array_key_exists('idItem', $this->cotProgress)) {
+            return;
         }
 
-        if(mb_strpos($message->subEvento, '.') !== false) {
+        $this->tf = new TrackFileCot($this->msg, $this->paths);
+        if($this->msg->subEvento == 'ntg' || $this->msg->subEvento == 'ntga') {
+            $this->tratarConNtg($this->msg);
+        }
+
+        if(mb_strpos($this->msg->subEvento, '.') !== false) {
             $this->tratarConRespRapidas();
         }
 
@@ -50,15 +59,17 @@ class InteractiveProcess
 
         if($this->hasTemplate) {
             $this->sentTemplate();
-        }
+            $this->saveCotProgress();
+        }   
     }
 
     /** */
     private function tratarConNtg(): void
     {
-        // Buscamo una carnada en el estanque
+        $this->hasTemplate = false;
+        // Buscamo una carnada en el estanque a su ves, eliminamos del estanque el bait que se
+        // esta atendiendo actualmente.
         $newBait = $this->tf->lookForBait();
-        
         if(count($newBait) > 0) {
 
             // Se encontro una carnada para enviar por lo tanto, buscamos para ver si existe
@@ -69,42 +80,27 @@ class InteractiveProcess
                 if(array_key_exists('message', $template)) {
                     $this->template = $template['message'];
                     $this->hasTemplate = true;
-                    $this->returnBait = $this->tf->getEstanqueReturn($newBait, 'bait');
-                    // Si hidratamo la plantilla a ser enviada al cotizador nos regresamos
+                    // Si hidratamo la plantilla a ser enviada al cotizador no hacemos mas...
                     return;
                 }
             }
         }
 
+        // No se encotró una carnada para enviar, por lo tanto, enviar mensaje de gracias enterados
         if(!$this->hasTemplate) {
-
-            $this->returnBait = [];
-            // No se encotró una carnada para enviar, por lo tanto, enviar mensaje de gracias enterados
-            $this->tf->fSys->setPathBase($this->paths['waTemplates']);
-            // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
-            $template = $this->tf->fSys->getContent($this->tf->message->subEvento.'.json');
-            if(count($template) > 0) {
-                $this->template = $template;
-                $this->hasTemplate = true;
-                $this->returnBait = $this->tf->getEstanqueReturn($this->tf->baitProgress, 'less');
-            }
+            $this->getTemplate();
         }
     }
 
     /** */
     private function tratarCotizarAhora()
     {
-        $saveCotProcess = false;
-        $createCotProgress = false;
-        $this->tf->build();
-
+        // Este se usa para cuando se vuelve a tomar un bait que coincida con el que se esta cotizando
+        $isTackedOther = false;
         $hasCriticalErro = false;
-        if(count($this->tf->baitProgress) == 0) {
-            $hasCriticalErro = true;
-        }
-
-        if($this->tf->baitProgress['idItem'] != $this->tf->message->message['idItem']) {
+        if($this->cotProgress['idItem'] != $this->tf->message->message['idItem']) {
             $this->tf->fetchBaitProgress();
+            $isTackedOther = true;
             if(count($this->tf->baitProgress) == 0) {
                 $hasCriticalErro = true;
             }
@@ -117,81 +113,56 @@ class InteractiveProcess
             // TODO La solicitud ya no esta disponible MSG al cliente
             return;
         }
-        
-        if(array_key_exists('track', $this->tf->baitProgress)) {
-            if(!array_key_exists('idCot', $this->tf->baitProgress['track'])) {
-                $createCotProgress = true;
-            }
+        if($isTackedOther) {
+            $this->cotProgress = $this->tf->baitProgress;
+        }
+
+        if(!array_key_exists('track', $this->cotProgress)) {
+            $this->cotProgress['track'] = ['idCot' => time()];
         }else{
-            $createCotProgress = true;
+            if(!array_key_exists('idCot', $this->cotProgress['track'])) {
+                $this->cotProgress['track'] = ['idCot' => time()];
+            }
         }
-
-        $this->tf->baitProgress['sended'] = round(microtime(true) * 1000);
-        if($createCotProgress && $this->tf->message->subEvento == 'sfto') {
-            // Si no hay ningun archivo que indica cotizacion en progreso lo creamos
-            $this->tf->baitProgress['track'] = ['idCot' => time()];
-            $saveCotProcess = true;
-        }
-        
-        $this->cotProgress = $this->getTemplate($this->tf->baitProgress);
-        // Si el mensaje es el inicio de una cotizacion creamos un archivo especial
-        if($saveCotProcess) {
-            $this->tf->fSys->setPathBase($this->paths['cotProgres']);
-            $this->tf->fSys->setContent($this->tf->message->from.'.json', $this->cotProgress);
-        }
-
-        $this->returnBait = $this->tf->getEstanqueReturn($this->cotProgress, 'less');
+        $this->cotProgress['sended'] = round(microtime(true) * 1000);
+        $this->getTemplate();
     }
     
     /** */
     private function tratarConRespRapidas(): void
     {
-        $saveCotProcess = false;
         $respRapida = '';
         $partes = explode('.', $this->tf->message->subEvento);
-        $this->tf->message->subEvento = $partes[0];
+        $this->msg->subEvento = $partes[0];
         $respRapida = $partes[1];
         
-        $saveCotProcess = false;
-        if($this->tf->message->subEvento == 'sdta' && $this->cotProgress['current'] == 'sfto') {
+        if($this->msg->subEvento == 'sdta' && $this->cotProgress['current'] == 'sfto') {
             // Estamos en fotos y preciono un boton de opcion
             if($respRapida == 'fton') {
                 $this->cotProgress['current'] = 'sdta';
                 $this->cotProgress['next'] = 'scto';
                 $this->cotProgress['track']['fotos'] = [];
-                $saveCotProcess = true;
             }
         }
-        
+
         if($this->tf->message->subEvento == 'scto' && $this->cotProgress['current'] == 'sdta') {
             // Estamos en detalles y preciono un boton de opcion
             if($respRapida == 'uso') {
                 $this->cotProgress['current'] = 'scto';
                 $this->cotProgress['next']    = 'sgrx';
                 $this->cotProgress['track']['detalles'] = 'La pieza cuenta con Detalles de Uso';
-                $saveCotProcess = true;
             }
         }
 
-        $this->cotProgress = $this->getTemplate($this->cotProgress);
-
-        if($saveCotProcess) {
-            $this->tf->fSys->setPathBase($this->paths['cotProgres']);
-            $this->tf->fSys->setContent($this->tf->message->from.'.json', $this->cotProgress);
-        }
-
-        if($this->hasTemplate) {
-            $this->returnBait = $this->tf->getEstanqueReturn($this->cotProgress, 'less');
-            return;
-        }
+        $this->getTemplate();
     }
 
     /** */
-    private function getTemplate(array $cotProgress): array
+    private function getTemplate(): array
     {
         $this->tf->fSys->setPathBase($this->paths['waTemplates']);
         // Respondemos inmediatamente a este boton interativo con el mensaje adecuado
-        $template = $this->tf->fSys->getContent($this->tf->message->subEvento.'.json');
+        $template = $this->tf->fSys->getContent($this->msg->subEvento.'.json');
         
         if(count($template) > 0) {
             $this->hasTemplate = true;
@@ -201,27 +172,26 @@ class InteractiveProcess
         }
 
         // Buscamos si contiene AnetLanguage para decodificar
-        $deco = new DecodeTemplate($cotProgress);
+        $deco = new DecodeTemplate($this->cotProgress);
         $template = $deco->decode($template);
 
         $contexto = '';
-        if(array_key_exists('wamid_cot', $cotProgress)) {
-            $contexto = $cotProgress['wamid_cot'];
+        if(array_key_exists('wamid_cot', $this->cotProgress)) {
+            $contexto = $this->cotProgress['wamid_cot'];
         }else{
-            if(strlen($this->tf->message->context) > 0) {
-                $contexto = $this->tf->message->context;
+            if(strlen($this->msg->context) > 0) {
+                $contexto = $this->msg->context;
             }
         }
 
         if(strlen($contexto) > 0) {
-            $template['context']      = $contexto;
-            $cotProgress['wamid_cot'] = $contexto;
+            $template['context'] = $contexto;
+            $this->cotProgress['wamid_cot'] = $contexto;
         }
 
         if($this->hasTemplate) {
             $this->template = $template;
         }
-        return $cotProgress;
     }
 
     /** */
@@ -229,7 +199,7 @@ class InteractiveProcess
     {
         $sended = [];
         $typeMsgToSent = 'text';
-        $conm = new ConmutadorWa($this->tf->message->from, $this->paths['tkwaconm']);
+        $conm = new ConmutadorWa($this->msg->from, $this->paths['tkwaconm']);
 
         $typeMsgToSent = $this->template['type'];
         $conm->setBody($typeMsgToSent, $this->template);
@@ -240,20 +210,27 @@ class InteractiveProcess
             return;
         }
 
-        $objMdl = $conm->setIdToMsgSended($this->tf->message, $result);
-        $this->returnBait['bait']['wamid'] = $objMdl->id;
+        $objMdl = $conm->setIdToMsgSended($this->msg, $result);
+        $this->cotProgress['wamid'] = $objMdl->id;
 
         $conm->bodyRaw = $this->template[$typeMsgToSent]['body'];
         $sended = $objMdl->toArray();
-        $msg    = $this->tf->message->toArray();
 
+        $returnData = $this->tf->getEstanqueReturn($this->cotProgress);
         $this->wh->sendMy(
             'wa-wh', 'notSave', [
-                'recibido' => $msg,
+                'subEvent' => $this->msg->subEvento,
+                'recibido' => $returnData['baitProgress'],
+                'estanque' => $returnData['estData'],
                 'enviado'  => $sended,
-                'estanque' => $this->returnBait
             ]
         );
     }
 
+    /** */
+    private function saveCotProgress(): void
+    {
+        $this->tf->fSys->setPathBase($this->paths['cotProgres']);
+        $this->tf->fSys->setContent($this->msg->from.'.json', $this->cotProgress);
+    }
 }
