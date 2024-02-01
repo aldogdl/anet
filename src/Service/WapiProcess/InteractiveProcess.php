@@ -41,7 +41,7 @@ class InteractiveProcess
         }
 
         if(mb_strpos($message->subEvento, '.') !== false) {
-            $this->tratarConRespRapidas($cotProgress);
+            $this->tratarConRespRapidas();
         }
 
         if(!$this->hasTemplate) {
@@ -144,9 +144,8 @@ class InteractiveProcess
     }
     
     /** */
-    private function tratarConRespRapidas(array $cotProgress): void
+    private function tratarConRespRapidas(): void
     {
-
         $saveCotProcess = false;
         $respRapida = '';
         $partes = explode('.', $this->tf->message->subEvento);
@@ -154,35 +153,35 @@ class InteractiveProcess
         $respRapida = $partes[1];
         
         $saveCotProcess = false;
-        if($this->tf->message->subEvento == 'sdta' && $cotProgress['current'] == 'sfto') {
+        if($this->tf->message->subEvento == 'sdta' && $this->cotProgress['current'] == 'sfto') {
             // Estamos en fotos y preciono un boton de opcion
             if($respRapida == 'fton') {
-                $cotProgress['current'] = 'sdta';
-                $cotProgress['next'] = 'scto';
-                $cotProgress['track']['fotos'] = [];
+                $this->cotProgress['current'] = 'sdta';
+                $this->cotProgress['next'] = 'scto';
+                $this->cotProgress['track']['fotos'] = [];
                 $saveCotProcess = true;
             }
         }
         
-        if($this->tf->message->subEvento == 'scto' && $cotProgress['current'] == 'sdta') {
+        if($this->tf->message->subEvento == 'scto' && $this->cotProgress['current'] == 'sdta') {
             // Estamos en detalles y preciono un boton de opcion
             if($respRapida == 'uso') {
-                $cotProgress['current'] = 'scto';
-                $cotProgress['next']    = 'sgrx';
-                $cotProgress['track']['detalles'] = 'La pieza cuenta con Detalles de Uso';
+                $this->cotProgress['current'] = 'scto';
+                $this->cotProgress['next']    = 'sgrx';
+                $this->cotProgress['track']['detalles'] = 'La pieza cuenta con Detalles de Uso';
                 $saveCotProcess = true;
             }
         }
 
-        $cotProgress = $this->getTemplate($cotProgress);
+        $this->cotProgress = $this->getTemplate($this->cotProgress);
 
         if($saveCotProcess) {
             $this->tf->fSys->setPathBase($this->paths['cotProgres']);
-            $this->tf->fSys->setContent($this->tf->message->from.'.json', $cotProgress);
+            $this->tf->fSys->setContent($this->tf->message->from.'.json', $this->cotProgress);
         }
 
         if($this->hasTemplate) {
-            $this->returnBait = $this->tf->getEstanqueReturn($cotProgress, 'less');
+            $this->returnBait = $this->tf->getEstanqueReturn($this->cotProgress, 'less');
             return;
         }
     }
