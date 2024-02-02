@@ -143,7 +143,8 @@ class SentTemplate
             'wa-wh', 'notSave', [
                 'subEvent' => $this->subEvento,
                 'recibido' => $returnData['baitProgress'],
-                'estanque' => $returnData['estData']
+                'estanque' => $returnData['estData'],
+                // 'enviado'  => $sended,
             ]
         );
     }
