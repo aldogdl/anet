@@ -58,9 +58,13 @@ class InteractiveProcess
         }
 
         if($this->hasTemplate) {
-            $this->sentTemplate();
+            $sender = new SentTemplate(
+                $this->msg, $this->wh, $this->wapiHttp,
+                $this->paths, $this->cotProgress, $this->template
+            );
+            $sender->to();
             $this->saveCotProgress();
-        }   
+        }
     }
 
     /** */
@@ -192,39 +196,6 @@ class InteractiveProcess
         if($this->hasTemplate) {
             $this->template = $template;
         }
-    }
-
-    /** */
-    private function sentTemplate()
-    {
-        $sended = [];
-        $typeMsgToSent = 'text';
-        $conm = new ConmutadorWa($this->msg->from, $this->paths['tkwaconm']);
-
-        $typeMsgToSent = $this->template['type'];
-        $conm->setBody($typeMsgToSent, $this->template);
-
-        $result = $this->wapiHttp->send($conm);
-        if($result['statuscode'] != 200) {
-            $this->wh->sendMy('wa-wh', 'notSave', $result);
-            return;
-        }
-
-        $objMdl = $conm->setIdToMsgSended($this->msg, $result);
-        $this->cotProgress['wamid'] = $objMdl->id;
-
-        $conm->bodyRaw = $this->template[$typeMsgToSent]['body'];
-        $sended = $objMdl->toArray();
-
-        $returnData = $this->tf->getEstanqueReturn($this->cotProgress);
-        $this->wh->sendMy(
-            'wa-wh', 'notSave', [
-                'subEvent' => $this->msg->subEvento,
-                'recibido' => $returnData['baitProgress'],
-                'estanque' => $returnData['estData'],
-                'enviado'  => $sended,
-            ]
-        );
     }
 
     /** */
