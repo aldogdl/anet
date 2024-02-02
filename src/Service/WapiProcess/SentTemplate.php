@@ -59,7 +59,8 @@ class SentTemplate
         // Recuperamos el Estanque del cotizador que esta iniciando sesion
         $fSys = new FsysProcess($this->paths['tracking']);
         $estanque = $fSys->getEstanqueOf($this->msg->from);
-        $returnData = new EstanqueReturn($estanque, $this->cotProgress, $this->paths['hasCotPro'], 'less');
+        $est = new EstanqueReturn($estanque, $this->cotProgress, $this->paths['hasCotPro'], 'less');
+        $returnData = $est->toArray();
 
         $this->wh->sendMy(
             'wa-wh', 'notSave', [
