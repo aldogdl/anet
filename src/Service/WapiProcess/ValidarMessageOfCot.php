@@ -47,13 +47,20 @@ class ValidarMessageOfCot {
         $msg = $this->message->get();
 
         if(count($this->cotProgress) > 0) {
-            if(!array_key_exists('idItem', $msg->message)) {
-                // Si existe el campo body en el mensaje, sacamos el msg de body
-                // ya que lo vamos a colocar otra ves dentro de body, para no duplicar
-                // el campo body.
-                if(array_key_exists('body', $msg->message)) {
-                    $msg->message = $msg->message['body'];
+            if(is_array($msg->message)) {
+                if(!array_key_exists('idItem', $msg->message)) {
+                    // Si existe el campo body en el mensaje, sacamos el msg de body
+                    // ya que lo vamos a colocar otra ves dentro de body, para no duplicar
+                    // el campo body.
+                    if(array_key_exists('body', $msg->message)) {
+                        $msg->message = $msg->message['body'];
+                    }
+                    $msg->message = [
+                        'idItem' => $this->cotProgress['idItem'],
+                        'body' => $msg->message
+                    ];
                 }
+            }else{
                 $msg->message = [
                     'idItem' => $this->cotProgress['idItem'],
                     'body' => $msg->message
