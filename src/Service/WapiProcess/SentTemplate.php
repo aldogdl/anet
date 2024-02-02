@@ -112,6 +112,9 @@ class SentTemplate
             // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
             // responde con otro mensaje interactivo
             $idItem = '0';
+            
+            file_put_contents('the_template.json', json_encode($this->template));
+            
             if(array_key_exists('action', $this->template)) {
                 if(array_key_exists('buttons', $this->template['action'])) {
                     $idItem = $this->template['action']['buttons'][0]['reply']['id'];
@@ -120,7 +123,7 @@ class SentTemplate
                 }
                 $conm->bodyRaw = ['body' => $this->template['body'], 'idItem' => $idItem];
             }else{
-                $conm->bodyRaw = $this->template['body'];
+                $conm->bodyRaw = $this->template[$this->template['type']];
             }
 
             $objMdl = $conm->setIdToMsgSended($this->msg, $result);
