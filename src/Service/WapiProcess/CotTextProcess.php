@@ -55,7 +55,6 @@ class CotTextProcess
         $this->sender = new SentTemplate(
             $this->msg, $this->wh, $this->wapiHttp, $this->paths, $this->cotProgress
         );
-        $this->sender->subEvento = $current;
         
         // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
         $pathInit = ($this->cotProgress['current'] == 'sgrx') ? 'waTemplates' : 'cotProgres';
@@ -63,8 +62,9 @@ class CotTextProcess
             $this->sender->saveCotProgress();
         }
         
-        $this->sender->updateCotProgress($this->cotProgress);
         // Respondemos inmediatamente a este con el mensaje adecuado
+        $this->sender->subEvento = $this->cotProgress['current'];
+        $this->sender->updateCotProgress($this->cotProgress);
         $this->sender->getTemplate();
         $this->sender->sent();
 
@@ -99,6 +99,7 @@ class CotTextProcess
 
         $this->cotProgress = $tf->baitProgress;
         //Buscamos para ver si existe el mensaje del item prefabricado.
+        $this->sender->subEvento = 'next_bait';
         $this->sender->fSys->setPathBase($this->paths['prodTrack']);
         $template = $tf->fSys->getContent($this->cotProgress['idItem'].'_track.json');
         if(count($template) > 0) {
