@@ -63,7 +63,7 @@ class CotTextProcess
         }
         
         // Respondemos inmediatamente a este con el mensaje adecuado
-        $this->sender->subEvento = $this->cotProgress['current'];
+        $this->sender->subEvento = $current;
         $this->sender->updateCotProgress($this->cotProgress);
         $this->sender->getTemplate();
         $this->sender->sent();
