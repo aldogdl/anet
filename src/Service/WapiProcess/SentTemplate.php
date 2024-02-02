@@ -17,6 +17,7 @@ class SentTemplate
     private array $paths;
     private array $template;
     private array $cotProgress;
+    public String $subEvento;
     public bool $hasTemplate = false;
     public bool $isInitFsys = false;
 
@@ -143,7 +144,7 @@ class SentTemplate
 
         $this->wh->sendMy(
             'wa-wh', 'notSave', [
-                'subEvent' => $this->msg->subEvento,
+                'subEvent' => $this->subEvento,
                 'recibido' => $returnData['baitProgress'],
                 'estanque' => $returnData['estData'],
                 'enviado'  => $sended,

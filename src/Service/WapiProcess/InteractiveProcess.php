@@ -50,6 +50,7 @@ class InteractiveProcess
         );
 
         if($this->msg->subEvento == 'ntg' || $this->msg->subEvento == 'ntga') {
+            $this->sender->subEvento = $this->msg->subEvento;
             $this->tratarConNtg($this->msg);
         }
 
@@ -58,8 +59,10 @@ class InteractiveProcess
         }
 
         if( array_key_exists('title', $this->msg->message) ) {
-            if($this->msg->message['title'] == 'COTIZAR AHORA')
-            $this->tratarCotizarAhora();
+            if($this->msg->message['title'] == 'COTIZAR AHORA') {
+                $this->sender->subEvento = 'sfto';
+                $this->tratarCotizarAhora();
+            }
         }
 
         if($this->sender->hasTemplate) {
@@ -148,6 +151,7 @@ class InteractiveProcess
                 $this->cotProgress['current'] = 'sdta';
                 $this->cotProgress['next'] = 'scto';
                 $this->cotProgress['track']['fotos'] = [];
+                $this->sender->subEvento = 'sdta';
             }
         }
 
@@ -157,9 +161,9 @@ class InteractiveProcess
                 $this->cotProgress['current'] = 'scto';
                 $this->cotProgress['next']    = 'sgrx';
                 $this->cotProgress['track']['detalles'] = 'La pieza cuenta con Detalles de Uso';
+                $this->sender->subEvento = 'sdta';
             }
         }
-
         $this->sender->updateCotProgress($this->cotProgress);
         $this->sender->getTemplate();
     }

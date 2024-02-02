@@ -69,6 +69,7 @@ class CotImagesProcess
             $this->msg, $this->wh, $this->wapiHttp, $this->paths, $this->cotProgress
         );
         if($this->cotProgress['current'] == 'sdta') {
+            $sender->subEvento = 'sdta';
             $sender->saveCotProgress();
         }
 
@@ -78,7 +79,7 @@ class CotImagesProcess
             $this->cotProgress['next'] = 'scto';
             
             // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-            
+            $sender->subEvento = $this->cotProgress['current'];
             $sender->updateCotProgress($this->cotProgress);
             $sender->saveCotProgress();
             $sender->getTemplate();

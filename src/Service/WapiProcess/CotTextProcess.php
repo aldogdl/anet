@@ -55,7 +55,8 @@ class CotTextProcess
         $this->sender = new SentTemplate(
             $this->msg, $this->wh, $this->wapiHttp, $this->paths, $this->cotProgress
         );
-
+        $this->sender->subEvento = $current;
+        
         // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
         $pathInit = ($this->cotProgress['current'] == 'sgrx') ? 'waTemplates' : 'cotProgres';
         if($pathInit == 'cotProgres') {
