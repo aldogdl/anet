@@ -2,13 +2,16 @@
 
 namespace App\Service\WapiProcess;
 
-use App\Entity\EstanqueReturn;
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
 
 class CotImagesProcess
 {
+    private WebHook $wh;
+    private WrapHttp $wapiHttp;
+    private WaMsgMdl $msg;
+    private array $paths;
     private array $cotProgress;
 
     /** 
@@ -18,33 +21,40 @@ class CotImagesProcess
         WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, array $paths, array $cotProgress
     ){
 
+        $this->wh          = $wh;
+        $this->wapiHttp    = $wapiHttp;
+        $this->msg         = $message;
         $this->cotProgress = $cotProgress;
-        $cotProgress = [];
+        $this->paths       = $paths;
+        $cotProgress       = [];
+    }
 
+    /** */
+    public function exe(): void
+    {
         $fotos = [];
-        $sended = [];
-        $message->subEvento = 'sfto';
+        $this->msg->subEvento = 'sfto';
         
         if(array_key_exists('fotos', $this->cotProgress['track'])) {
             $fotos = $this->cotProgress['track']['fotos'];
         }
 
         $fto = [];
-        if(array_key_exists('body', $message->message)) {
-            if(!in_array($message->message['body']['id'], $fotos)) {
+        if(array_key_exists('body', $this->msg->message)) {
+            if(!in_array($this->msg->message['body']['id'], $fotos)) {
                 $fto = [
-                    'id'  => $message->message['body']['id'],
-                    'cap' => (array_key_exists('caption', $message->message['body']))
-                        ? $message->message['body']['caption']
+                    'id'  => $this->msg->message['body']['id'],
+                    'cap' => (array_key_exists('caption', $this->msg->message['body']))
+                        ? $this->msg->message['body']['caption']
                         : '',
                 ];
             }
         }else{
-            if(!in_array($message->message['id'], $fotos)) {
+            if(!in_array($this->msg->message['id'], $fotos)) {
                 $fto = [
-                    'id'  => $message->message['id'],
-                    'cap' => (array_key_exists('caption', $message->message))
-                        ? $message->message['caption']
+                    'id'  => $this->msg->message['id'],
+                    'cap' => (array_key_exists('caption', $this->msg->message))
+                        ? $this->msg->message['caption']
                         : '',
                 ];
             }
@@ -53,73 +63,27 @@ class CotImagesProcess
         $fotos[] = $fto;
         $this->cotProgress['track']['fotos'] = $fotos;
         
-        $current = $this->cotProgress['current'];
-        
-        $fSys = new FsysProcess($paths['cotProgres']);
         // Si current es sdta es que estamos solicitando los detalles y siguen llegando fotos
         // por lo tanto guardamos las fotos inmediatamente en el archivo cotProgress
-        if($current == 'sdta') {
-            $fSys->setContent($message->from.'.json', $this->cotProgress);
+        $sender = new SentTemplate(
+            $this->msg, $this->wh, $this->wapiHttp, $this->paths, $this->cotProgress
+        );
+        if($this->cotProgress['current'] == 'sdta') {
+            $sender->saveCotProgress();
         }
 
-        if($current == 'sfto') {
+        if($this->cotProgress['current'] == 'sfto') {
             
             $this->cotProgress['current'] = 'sdta';
             $this->cotProgress['next'] = 'scto';
+            
             // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
-            $fSys->setContent($message->from.'.json', $this->cotProgress);
             
-            // Respondemos inmediatamente a este boton interactivo con el mensaje adecuado
-            $fSys->setPathBase($paths['waTemplates']);
-            $template = $fSys->getContent($this->cotProgress['current'].'.json');
-            
-            // Buscamos si contiene AnetLanguage para decodificar
-            $deco = new DecodeTemplate($this->cotProgress);
-            $template = $deco->decode($template);
-
-            // Revisamos si existe el id del contexto de la cotizacion para agregarlo al msg de respuesta
-            if(array_key_exists('wamid_cot', $this->cotProgress)) {
-                $template['context'] = $this->cotProgress['wamid_cot'];
-            }
-
-            $typeMsgToSent = 'text';
-            $conm = new ConmutadorWa($message->from, $paths['tkwaconm']);
-            if(count($template) > 0) {
-                
-                $typeMsgToSent = $template['type'];
-                $conm->setBody($typeMsgToSent, $template);
-                $result = $wapiHttp->send($conm);
-                if($result['statuscode'] != 200) {
-                    $wh->sendMy('wa-wh', 'notSave', $result);
-                    return;
-                }
-                $template = $template[$typeMsgToSent];
-
-                // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
-                // responde con otro mensaje interactivo
-                $idItem = '0';
-                if(array_key_exists('action', $template)) {
-                    if(array_key_exists('buttons', $template['action'])) {
-                        $idItem = $template['action']['buttons'][0]['reply']['id'];
-                        $partes = explode('_', $idItem);
-                        $idItem = $partes[1];
-                    }
-                    $conm->bodyRaw = ['body' => $template['body'], 'idItem' => $idItem];
-                }else{
-                    $conm->bodyRaw = $template['body'];
-                }
-
-                $objMdl = $conm->setIdToMsgSended($message, $result);
-                $sended = $objMdl->toArray();
-            }
+            $sender->updateCotProgress($this->cotProgress);
+            $sender->saveCotProgress();
+            $sender->getTemplate();
+            $sender->sent();
         }
-
-        $result = new EstanqueReturn([], 'less', true, $this->cotProgress);
-        $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => $message->toArray(),
-            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'estanque' => $result
-        ]);
     }
 
 }

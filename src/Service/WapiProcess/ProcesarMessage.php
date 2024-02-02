@@ -101,10 +101,12 @@ class ProcesarMessage {
                 $int->exe();
                 break;
             case 101:
-                new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $img = new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $img->exe();
                 break;
             case 102:
-                new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $txt = new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $txt->exe();
                 break;
             default:
                 # code...

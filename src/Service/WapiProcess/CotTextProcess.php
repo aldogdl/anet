@@ -2,13 +2,17 @@
 
 namespace App\Service\WapiProcess;
 
-use App\Entity\EstanqueReturn;
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
 
 class CotTextProcess
 {
+    private WebHook $wh;
+    private WrapHttp $wapiHttp;
+    private WaMsgMdl $msg;
+    private SentTemplate $sender;
+    private array $paths;
     private array $cotProgress;
     private array $msgsNames = [
         'sdta' => ['current' => 'scto', 'next' => 'sgrx'],
@@ -21,13 +25,20 @@ class CotTextProcess
     ){
 
         $this->cotProgress = $cotProgress;
-        $cotProgress = [];
+        $this->wh          = $wh;
+        $this->wapiHttp    = $wapiHttp;
+        $this->msg         = $message;
+        $this->cotProgress = $cotProgress;
+        $this->paths       = $paths;
+        $cotProgress       = [];
+    }
 
+    /** */
+    public function exe(): void
+    {
         $current = $this->cotProgress['current'];
         $campo = ($current == 'sdta') ? 'detalles' : 'precio';
-        $message->subEvento = $current;
-        $sended = [];
-
+        $this->msg->subEvento = $current;
         if(!array_key_exists($current, $this->msgsNames)) {
             return;
         }
@@ -35,129 +46,68 @@ class CotTextProcess
         // Actualizar el trackFile para el siguiente mensaje y contenido de cotizacion
         $this->cotProgress['current'] = $this->msgsNames[$current]['current'];
         $this->cotProgress['next']    = $this->msgsNames[$current]['next'];
-        if(array_key_exists('body', $message->message)) {
-            $this->cotProgress['track'][$campo] = $message->message['body'];
+        if(array_key_exists('body', $this->msg->message)) {
+            $this->cotProgress['track'][$campo] = $this->msg->message['body'];
         }else{
-            $this->cotProgress['track'][$campo] = $message->message;
+            $this->cotProgress['track'][$campo] = $this->msg->message;
         }
+
+        $this->sender = new SentTemplate(
+            $this->msg, $this->wh, $this->wapiHttp, $this->paths, $this->cotProgress
+        );
 
         // Guardamos inmediatamente el cotProgess para evitar enviar los detalles nuevamente.
         $pathInit = ($this->cotProgress['current'] == 'sgrx') ? 'waTemplates' : 'cotProgres';
-        $fSys = new FsysProcess($paths[$pathInit]);
         if($pathInit == 'cotProgres') {
-            $fSys->setContent($message->from.'.json', $this->cotProgress);
-            $fSys->setPathBase($paths['waTemplates']);
+            $this->sender->saveCotProgress();
         }
-
+        
+        $this->sender->updateCotProgress($this->cotProgress);
         // Respondemos inmediatamente a este con el mensaje adecuado
-        $template = $fSys->getContent($this->cotProgress['current'].'.json');
-        if(count($template) == 0) {
-            return;
-        }
-        // Buscamos si contiene AnetLanguage para decodificar
-        $deco = new DecodeTemplate($cotProgress);
-        $template = $deco->decode($template);
-        if(array_key_exists('wamid_cot', $this->cotProgress)) {
-            $template['context'] = $this->cotProgress['wamid_cot'];
-        }
-        $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
-
-        $result = new EstanqueReturn([], $this->cotProgress, 'less', $paths['hasCotPro']);
-        $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => $message->toArray(),
-            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'estanque' => $result
-        ]);
+        $this->sender->getTemplate();
+        $this->sender->sent();
 
         if($this->cotProgress['current'] == 'sgrx') {
-            $this->fetchBait($message, $wh, $wapiHttp, $fSys, $paths);
+            $this->fetchBait();
         }
     }
 
-    /** */
-    private function fetchBait(
-        WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, FsysProcess $fSys, array $paths
-    ){
-        $baitCotizado = $this->cotProgress;
-        if(!array_key_exists('idItem', $message->message)) {
-            $message->message = [
+    /** 
+     * Al haber terminado de cotizar revisamos si cuenta con una carnada para enviarcela inmediatamente
+    */
+    private function fetchBait(): void
+    {
+        if(!array_key_exists('idItem', $this->msg->message)) {
+            $this->msg->message = [
                 'idItem' => $this->cotProgress['idItem'],
-                'body' => $message->message
+                'body' => $this->msg->message
             ];
         }
 
-        $tf = new TrackFileCot($message, $paths, $fSys);
-        // En el siguiente metodo se hace:
+        $tf = new TrackFileCot($this->msg, $this->paths, $this->sender->fSys);
+        // En el metodo ->finOfCotizacion se hace:
         // 1.- Recontruimos el objeto para iniclizar variables y buscar el bait en progreso
         // 2.- Eliminar el archivo que indica cotizando
         // 3.- Eliminar del estanque el bait que se cotizó y enviarlo a tracked
         // 4.- Buscar una nueva carnada
         $tf->finOfCotizacion();
         if(count($tf->baitProgress) == 0) {
-            $return = $tf->getEstanqueReturn($this->cotProgress, 'less');
-            // No se encontro carnada, no se envía ningun mensaje ya que el metodo anterior
-            // es decir el __contruct envio el listo cotizada.
-            $wh->sendMy('wa-wh', 'notSave', [
-                'recibido' => ['type' => 'text', 'subEvento' => 'cotizada', 'bait' => $this->cotProgress],
-                'enviado'  => ['body' => 'none'],
-                'estanque' => $return
-            ]);
+            $this->sender->sentToEventCore(['body' => 'none']);
             return;
         }
-        
+
         $this->cotProgress = $tf->baitProgress;
         //Buscamos para ver si existe el mensaje del item prefabricado.
-        $tf->fSys->setPathBase($paths['prodTrack']);
+        $this->sender->fSys->setPathBase($this->paths['prodTrack']);
         $template = $tf->fSys->getContent($this->cotProgress['idItem'].'_track.json');
-        if(count($template) == 0) {
-            return;
-        }
-        if(!array_key_exists('message', $template)) {
-            return;
-        }
-        
-        $template = $template['message'];
-        $sended = $this->sentMsg($template, $message, $wh, $wapiHttp, $paths['tkwaconm']);
-
-        $return = $tf->getEstanqueReturn($this->cotProgress, 'bait');
-        $wh->sendMy('wa-wh', 'notSave', [
-            'recibido' => ['type' => 'text', 'subEvento' => 'cotizada', 'bait' => $baitCotizado],
-            'enviado'  => (count($sended) == 0) ? ['body' => 'none'] : $sended,
-            'estanque' => $return
-        ]);
-    }
-
-    /** */
-    private function sentMsg(
-        array $template, WaMsgMdl $message, WebHook $wh, WrapHttp $wapiHttp, String $pathCom
-    ): array {
-
-        $typeMsgToSent = $template['type'];
-        $conm = new ConmutadorWa($message->from, $pathCom);
-        $conm->setBody($typeMsgToSent, $template);
-        $result = $wapiHttp->send($conm);
-        if($result['statuscode'] != 200) {
-            $wh->sendMy('wa-wh', 'notSave', $result);
-            return [];
-        }
-
-        $template = $template[$typeMsgToSent];
-        // Extraemos el IdItem del mensaje que se va a enviar al cotizador cuando se
-        // responde con otro mensaje interactivo
-        $idItem = '0';
-        if(array_key_exists('action', $template)) {
-            if(array_key_exists('buttons', $template['action'])) {
-                $idItem = $template['action']['buttons'][0]['reply']['id'];
-                $partes = explode('_', $idItem);
-                $idItem = $partes[1];
+        if(count($template) > 0) {
+            if(array_key_exists('message', $template)) {
+                $template = $template['message'];
+                $this->sender->updateCotProgress($this->cotProgress);
+                $this->sender->getTemplate($template);
+                $this->sender->sent();
             }
-            $conm->bodyRaw = ['body' => $template['body'], 'idItem' => $idItem];
-        }else{
-            $conm->bodyRaw = $template['body'];
         }
-
-        $objMdl = $conm->setIdToMsgSended($message, $result);
-        $conm = null;
-        return $objMdl->toArray();
     }
+
 }
