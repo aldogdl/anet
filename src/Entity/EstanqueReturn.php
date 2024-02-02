@@ -4,12 +4,12 @@ namespace App\Entity;
 
 class EstanqueReturn {
 
-    private bool $hasCotProgress = false;
-    private int $version = 0;
-    private int $cantBait = 0;
+    private int $version     = 0;
+    private int $cantBait    = 0;
+    private array $bait      = [];
+    private array $baitNext  = [];
     private String $typeBait = 'empty';
-    private array $bait = [];
-    private array $baitNext = [];
+    private bool $hasCotProgress = false;
 
     /** 
      * Tipos de Bait

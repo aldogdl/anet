@@ -114,7 +114,7 @@ class SentTemplate
             $idItem = '0';
             
             file_put_contents('the_template.json', json_encode($this->template));
-            
+
             if(array_key_exists('action', $this->template)) {
                 if(array_key_exists('buttons', $this->template['action'])) {
                     $idItem = $this->template['action']['buttons'][0]['reply']['id'];
@@ -136,7 +136,7 @@ class SentTemplate
     public function sentToEventCore(array $sended = []) {
         
         // Recuperamos el Estanque del cotizador que esta iniciando sesion
-        $this->fSys->setPathBase($this->paths['cotProgres']);
+        $this->fSys->setPathBase($this->paths['tracking']);
         $estanque = $this->fSys->getEstanqueOf($this->msg->from);
         $est = new EstanqueReturn($estanque, $this->cotProgress, $this->paths['hasCotPro'], 'less');
         $returnData = $est->toArray();
