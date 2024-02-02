@@ -5,6 +5,7 @@ namespace App\Service\WapiProcess;
 use App\Entity\WaMsgMdl;
 use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
+use App\Service\WapiProcess\SentTemplate;
 
 class InteractiveProcess
 {
