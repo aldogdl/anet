@@ -93,7 +93,6 @@ class CotTextProcess
         // 4.- Buscar una nueva carnada
         $tf->finOfCotizacion();
         if(count($tf->baitProgress) == 0) {
-            $this->sender->sentToEventCore(['body' => 'none']);
             return;
         }
 
