@@ -100,7 +100,7 @@ class ProcesarMessage {
                 $int->exe();
                 if($int->isNtgAndNotFindBait) {
                     $template = $validator->buildMsgSimple(
-                        "*Al parecer esta solicitud...*.\n\n📝 ya no esta disponible. Pronto te enviaremos más."
+                        "*Al parecer esta solicitud...*.\n\n📝 Ya no esta disponible. Pronto te enviaremos más."
                     );
                     $validator->sentMsg($template, $obj->from);
                 }
