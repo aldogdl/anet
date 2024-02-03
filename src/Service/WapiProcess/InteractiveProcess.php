@@ -38,21 +38,20 @@ class InteractiveProcess
     /** */
     public function exe() : void
     {
-        if(count($this->cotProgress) == 0 || !array_key_exists('idItem', $this->cotProgress)) {
-            return;
-        }
-        file_put_contents('seg_1.json', '');
         $this->tf = new TrackFileCot($this->msg, $this->paths);
         $this->sender = new SentTemplate(
             $this->msg, $this->wh, $this->wapiHttp, $this->paths, $this->cotProgress
         );
 
         if($this->msg->subEvento == 'ntg' || $this->msg->subEvento == 'ntga') {
-            file_put_contents('seg_2.json', '');
             $this->sender->subEvento = $this->msg->subEvento;
             $this->tratarConNtg($this->msg);
         }
 
+        // A estas alturas si es necesario tener un archivo que indique cotProgress
+        if(count($this->cotProgress) == 0 || !array_key_exists('idItem', $this->cotProgress)) {
+            return;
+        }
         if(mb_strpos($this->msg->subEvento, '.') !== false) {
             $this->tratarConRespRapidas();
         }
@@ -79,6 +78,11 @@ class InteractiveProcess
         // Buscamo una carnada en el estanque a su ves, eliminamos del estanque el bait que se
         // esta atendiendo actualmente.
         $newBait = $this->tf->lookForBait();
+        if(count($this->tf->baitProgress) == 0) {
+            return;
+        }
+        $this->sender->cotAtendida = $this->tf->baitProgress;
+        
         if(count($newBait) > 0) {
 
             // Se encontro una carnada para enviar por lo tanto, buscamos para ver si existe

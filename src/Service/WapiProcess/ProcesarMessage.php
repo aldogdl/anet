@@ -80,13 +80,11 @@ class ProcesarMessage {
             return;
         }
 
-        file_put_contents('seg_01.json', '');
         // Todo mensaje que llega a esta altura debe ser una cotizacion en progreso
         // Toda Cot en Progreso, debe contener el IdItem
         $code = 100;
         $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
         $validator->validate();
-        file_put_contents('seg_02.json', '');
         if(!$validator->isValid) { return; }
 
         if(count($cotProgress) == 0 && count($validator->cotProgress) > 0) {
@@ -95,7 +93,6 @@ class ProcesarMessage {
         }
         $code = $validator->code;
         $validator = null;
-        file_put_contents('seg_03_'.$code.'.json', '');
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
