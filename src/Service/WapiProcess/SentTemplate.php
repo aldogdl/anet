@@ -149,7 +149,9 @@ class SentTemplate
             'recibido' => $returnData['baitProgress'],
             'estanque' => $returnData['estData']
         ];
-
+        
+        // Esta opcion generalmente se usa cuando se responde a un NTG y es para almacenar en 
+        // una sola petición el bait atendido y el bait enviado por SR
         if(count($this->cotAtendida) > 0) {
             $result = [
                 'recibido' => [

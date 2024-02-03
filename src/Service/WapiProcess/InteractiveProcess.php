@@ -92,15 +92,12 @@ class InteractiveProcess
         $this->sender->cotAtendida = $this->tf->baitProgress;
 
         if(count($newBait) > 0) {
-            file_put_contents('seg_100.json', '');
             // Se encontro una carnada para enviar por lo tanto, buscamos para ver si existe
             // el mensaje prefabricado del item encontrado.
             $this->tf->fSys->setPathBase($this->paths['prodTrack']);
             $template = $this->tf->fSys->getContent($newBait['idItem'].'_track.json');
             if(count($template) > 0) {
-                file_put_contents('seg_200.json', '');
                 if(array_key_exists('message', $template)) {
-                    file_put_contents('seg_300.json', '');
                     $this->sender->getTemplate($template['message']);
                 }
             }
@@ -108,7 +105,6 @@ class InteractiveProcess
         
         // No se encotró una carnada para enviar, por lo tanto, enviar mensaje de gracias enterados
         if(!$this->sender->hasTemplate) {
-            file_put_contents('seg_400_'.$this->msg->subEvento.'.json', '');
             $this->sender->getTemplate([], $this->msg->subEvento);
         }
     }
