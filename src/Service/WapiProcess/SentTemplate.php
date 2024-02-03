@@ -137,7 +137,7 @@ class SentTemplate
     }
     
     /** */
-    public function sentToEventCore(array $sended = []) {
+    public function sentToEventCore() {
         
         // Recuperamos el Estanque del cotizador que esta iniciando sesion
         $this->fSys->setPathBase($this->paths['tracking']);
