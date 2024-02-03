@@ -45,7 +45,7 @@ class WaMsgMdl
             'recibido'  => $this->recibido,
             'type'      => $this->type,
             'message'   => $this->message,
-            'subEvento' => $this->subEvento,
+            'subEvent'  => $this->subEvento,
             'status'    => $this->status
         ];
     }
