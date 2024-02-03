@@ -58,7 +58,7 @@ class SentTemplate
     }
     
     /** */
-    public function getTemplate(array $templateOtra = []): void
+    public function getTemplate(array $templateOtra = [], String $name = '0'): void
     {
         $this->hasTemplate = false;
         if(!$this->isInitFsys){
@@ -68,7 +68,11 @@ class SentTemplate
             $this->fSys->setPathBase($this->paths['waTemplates']);
         }
         if(count($templateOtra) == 0) {
-            $this->template = $this->fSys->getContent($this->cotProgress['current'].'.json');
+            if($name != '0') {
+                $this->template = $this->fSys->getContent($name.'.json');
+            }else{
+                $this->template = $this->fSys->getContent($this->cotProgress['current'].'.json');
+            }
         }else{
             $this->template = $templateOtra;
         }

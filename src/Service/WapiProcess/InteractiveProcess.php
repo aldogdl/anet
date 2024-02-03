@@ -83,7 +83,8 @@ class InteractiveProcess
         if(count($this->tf->baitProgress) == 0) {
             return;
         }
-        file_put_contents('seg_2.json', '');
+        file_put_contents('seg_2.json', json_encode($this->tf->baitProgress));
+
         $this->sender->cotAtendida = $this->tf->baitProgress;
 
         if(count($newBait) > 0) {
@@ -103,7 +104,7 @@ class InteractiveProcess
 
         // No se encotró una carnada para enviar, por lo tanto, enviar mensaje de gracias enterados
         if(!$this->sender->hasTemplate) {
-            $this->sender->getTemplate();
+            $this->sender->getTemplate([], $this->msg->subEvento);
         }
     }
 
