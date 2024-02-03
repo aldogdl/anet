@@ -48,6 +48,10 @@ class InteractiveProcess
         if($this->msg->subEvento == 'ntg' || $this->msg->subEvento == 'ntga') {
             $this->sender->subEvento = $this->msg->subEvento;
             $this->tratarConNtg($this->msg);
+            if($this->sender->hasTemplate) {
+                $this->sender->sent();
+            }
+            return;
         }
 
         // A estas alturas si es necesario tener un archivo que indique cotProgress
