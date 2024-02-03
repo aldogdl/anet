@@ -2,13 +2,13 @@
 
 namespace App\Service\WapiProcess;
 
+use Symfony\Component\Finder\Finder;
 use App\Entity\WaMsgMdl;
 use Symfony\Component\Filesystem\Filesystem;
 use App\Service\WapiProcess\WrapHttp;
 
 class ValidarMessageOfCot {
 
-    public String $hasErr = '';
     public int $code = 100;
     public bool $isValid = false;
     public bool $isEmptyDetalles = false;
@@ -19,13 +19,17 @@ class ValidarMessageOfCot {
     private WrapHttp $wapiHttp;
     private ExtractMessage $message;
 
+    /**
+     * Palabras claves para validar los destalles
+     */
     private array $conj = [
         'así', 'asi', 'bien', 'bueno', 'como', 'con', 'cómo', 'contra', 'cuando', 'donde', 'de', 'el', 'en',
         'espero', 'está', 'esta', 'fuera', 'igual', 'foto', 'la', 'las', 'lo', 'los', 'mas', 'mientras',
         'mismo', 'ni', 'no', 'ora', 'otra', 'otro', 'pero', 'porque', 'que', 'solo', 'sino',
         'sea', 'tanto', 'también', 'tambien', 'un', 'una', 'unas', 'uno', 'unos', 'vien', 'ya'
     ];
-    
+    /** */
+    private $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
     /** 
      * Analizamos los mensajes para detectar errores, y como se condiciona cada
      * mensaje para determinar su tipo, evitamos hacerlo doble con la variable $code
@@ -47,6 +51,7 @@ class ValidarMessageOfCot {
         $msg = $this->message->get();
 
         if(count($this->cotProgress) > 0) {
+
             if(is_array($msg->message)) {
                 if(!array_key_exists('idItem', $msg->message)) {
                     // Si existe el campo body en el mensaje, sacamos el msg de body
@@ -117,13 +122,14 @@ class ValidarMessageOfCot {
             $this->isValid  = false;
             return;
         }
+
         if($this->cotProgress['current'] == 'sfto' && $this->message->isImage) {
             $this->validateImage($msg);
             return;
         }
 
         if($this->cotProgress['current'] == 'sdta' && $this->message->isImage) {
-            $this->validateImage($msg, 'deep');
+            $this->validateImage($msg);
             return;
         }
 
@@ -183,10 +189,9 @@ class ValidarMessageOfCot {
     }
 
     /** */
-    private function validateImage(WaMsgMdl $msg, String $type = 'basic'): void
+    private function validateImage(WaMsgMdl $msg): void
     {
-        $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
-        if(!in_array($msg->status, $permitidas)) {
+        if(!in_array($msg->status, $this->permitidas)) {
             $template = $this->getFile('eftoExt.json');
             $this->sentMsg($template, $msg->from);
             $this->isValid = false;
@@ -196,20 +201,52 @@ class ValidarMessageOfCot {
         // Si es deep viene de la condicion dende ya se envio el msg de detalles pero sigue
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
-        if($type == 'deep') {
-            $cant = 0;
-            if(array_key_exists('fotos', $this->cotProgress['track'])) {
-                $cant = count($this->cotProgress['track']['fotos']) + 1;
-            }
-            if($cant > 2) {
-                if (($cant % 2) != 0) {
+        $finder = new Finder();
+		$finder->files()->in($this->cotProgress['cotProgres'])->name($msg->from .'*.imgs');
+		if($finder->hasResults()) {
+            $avisar = false;
+			$files = [];
+			foreach ($finder as $file) {
+				$files[] = $file->getRelativePathname();
+			}
+            if(count($files) > 0) {
+                $partes = explode('_', $files[0]);
+                try {
+                    $last = (integer) $partes[2];
+                    $cantLast = (integer) $partes[1];
+                } catch (\Throwable $th) {
+                    $last = -1;
+                    $cantLast = 0;
+                }
+                
+                if($last > -1) {
+                    $diff = time() - $last;
+                    if($diff > 5) {
+                        $avisar = true;
+                    }
+                }
+
+                if($cantLast > 3) {
+                    if($avisar && $cantLast > 5) {
+                        $avisar = false;
+                    }
+                }else{
+                    if($avisar && $cantLast < 3) {
+                        $avisar = false;
+                    }
+                }
+
+                if($avisar) {
                     $template = $this->buildMsgSimple(
-                        '*Hemos recibido '.$cant." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
+                        '*Hemos recibido '.$cantLast." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
                     );
                     $this->sentMsg($template, $msg->from);
                     return;
                 }
             }
+		}else{
+            $filename = $msg->from.'_1_'.time().'_.imgs';
+            file_put_contents($this->cotProgress['cotProgres'].'/'.$filename, '');
         }
     }
 

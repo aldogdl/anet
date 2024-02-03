@@ -35,14 +35,9 @@ class TrackFileCot {
         $this->paths      = $paths;
         $this->message    = $message;
         $this->isAtendido = false;
-        if($fSys == null) {
-            $this->fSys = new FsysProcess($paths['trackeds']);
-            if($checkTrackeds) {
-                $this->getFileContentTrackeds();
-            }
-        }else{
-            $this->fSys = $fSys;
-            $this->fSys->setPathBase($paths['trackeds']);
+        $this->fSys = ($fSys == null) ? new FsysProcess($this->paths['trackeds']) : $fSys;
+        if($checkTrackeds) {
+            $this->getFileContentTrackeds();
         }
     }
 
@@ -52,10 +47,12 @@ class TrackFileCot {
     public function getFileContentTrackeds(): array 
     {
         $trakeds = [];
+        $this->isAtendido = false;
         if(!is_array($this->message->message)) {
             return [];
         }
 
+        $this->fSys->setPathBase($this->paths['trackeds']);
         $trakeds = $this->fSys->getContent($this->message->from.'.json');
         if(array_key_exists('idItem', $this->message->message)) {
             if(in_array($this->message->message['idItem'], $trakeds)) {

@@ -20,8 +20,15 @@ class WaController extends AbstractController
     {
         if($req->getMethod() == 'GET') {
 
-            $message = json_decode(file_get_contents('tracking/message.json'), true);
-            $processMsg->execute($message, true);
+            $time = '2024-02-03 14:07:43';
+            $echo = strtotime($time);
+            dump($echo);
+            $time1 = date('Y-m-d G:i:s');
+            dump($time1);
+            dd(time() - $echo);
+            
+            // $message = json_decode(file_get_contents('tracking/message.json'), true);
+            // $processMsg->execute($message, true);
             // $deco = new DecodeTemplate([]);
             // $final = $deco->decode($message);
             
