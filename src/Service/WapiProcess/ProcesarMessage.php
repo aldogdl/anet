@@ -92,12 +92,18 @@ class ProcesarMessage {
             $paths['hasCotPro'] = true;
         }
         $code = $validator->code;
-        $validator = null;
+
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
                 $int = new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 $int->exe();
+                if($int->isNtgAndNotFindBait) {
+                    $template = $validator->buildMsgSimple(
+                        "*Al parecer esta solicitud...*.\n\n📝 ya no esta disponible. Pronto te enviaremos más."
+                    );
+                    $validator->sentMsg($template, $obj->from);
+                }
                 break;
             case 101:
                 $img = new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);

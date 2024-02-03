@@ -17,6 +17,8 @@ class InteractiveProcess
     private array $paths;
     private SentTemplate $sender;
     private array $cotProgress = [];
+    // Cuando se presiona no tengo y no se encontró el bait atendido en el estanque
+    public $isNtgAndNotFindBait = false;
 
     /** 
      * Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
@@ -81,6 +83,7 @@ class InteractiveProcess
         // esta atendiendo actualmente.
         $newBait = $this->tf->lookForBait();
         if(count($this->tf->baitProgress) == 0) {
+            $this->isNtgAndNotFindBait = true;
             return;
         }
         file_put_contents('seg_2.json', json_encode($this->tf->baitProgress));

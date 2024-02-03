@@ -379,7 +379,7 @@ class ValidarMessageOfCot {
     }
 
     /** */
-    private function buildMsgSimple(String $text): array
+    public function buildMsgSimple(String $text): array
     {
         return [
             'type' => 'text',
@@ -391,7 +391,7 @@ class ValidarMessageOfCot {
     }
 
     /** */
-    private function sentMsg(array $template, String $to, bool $withContext = false)
+    public function sentMsg(array $template, String $to, bool $withContext = false)
     {
         if(count($template) > 0) {
 
