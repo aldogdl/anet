@@ -72,6 +72,8 @@ class InteractiveProcess
     /** */
     private function tratarConNtg(): void
     {
+        file_put_contents('seg_1.json', '');
+
         $this->sender->hasTemplate = false;
         $this->sender->cotAtendida = $this->cotProgress;
 
@@ -81,8 +83,9 @@ class InteractiveProcess
         if(count($this->tf->baitProgress) == 0) {
             return;
         }
+        file_put_contents('seg_2.json', '');
         $this->sender->cotAtendida = $this->tf->baitProgress;
-        
+
         if(count($newBait) > 0) {
 
             // Se encontro una carnada para enviar por lo tanto, buscamos para ver si existe
