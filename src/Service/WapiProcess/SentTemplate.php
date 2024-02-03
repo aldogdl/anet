@@ -36,7 +36,7 @@ class SentTemplate
         $this->cotProgress = $cotProgress;
         $this->paths       = $paths;
         $this->template    = $template;
-
+        $this->cotAtendida = [];
         $cotProgress       = [];
     }
 
