@@ -201,6 +201,7 @@ class ValidarMessageOfCot {
         // Si es deep viene de la condicion dende ya se envio el msg de detalles pero sigue
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
+        $cant = 1;
         $finder = new Finder();
 		$finder->files()->in($this->paths['cotProgres'])->name($msg->from .'*.imgs');
 		if($finder->hasResults()) {
@@ -236,17 +237,29 @@ class ValidarMessageOfCot {
                     }
                 }
 
+                $cant = $cantLast + 1;
                 if($avisar) {
                     $template = $this->buildMsgSimple(
                         '*Hemos recibido '.$cantLast." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
                     );
                     $this->sentMsg($template, $msg->from);
-                    return;
                 }
             }
-		}else{
-            $filename = $msg->from.'_1_'.time().'_.imgs';
-            file_put_contents($this->paths['cotProgres'].'/'.$filename, '');
+		}
+
+        $filename = $msg->from.'_'.$cant.'_'.time().'_.imgs';
+        file_put_contents($this->paths['cotProgres'].'/'.$filename, '');
+    }
+
+    /** */
+    public function removeFileImgs(String $waId)
+    {
+        $finder = new Finder();
+        $finder->files()->in($this->paths['cotProgres'])->name($waId.'*.imgs');
+		if($finder->hasResults()) {
+			foreach ($finder as $file) {
+				unlink($file->getRealPath());
+			}
         }
     }
 

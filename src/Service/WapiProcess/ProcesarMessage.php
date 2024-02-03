@@ -91,12 +91,13 @@ class ProcesarMessage {
             $cotProgress = $validator->cotProgress;
             $paths['hasCotPro'] = true;
         }
-        $code = $validator->code;
 
+        $code = $validator->code;
+        $msg = $obj->get();
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
-                $int = new InteractiveProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $int = new InteractiveProcess($msg, $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 $int->exe();
                 if($int->isNtgAndNotFindBait) {
                     $template = $validator->buildMsgSimple(
@@ -106,12 +107,13 @@ class ProcesarMessage {
                 }
                 break;
             case 101:
-                $img = new CotImagesProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $img = new CotImagesProcess($msg, $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 $img->exe();
                 break;
             case 102:
-                $txt = new CotTextProcess($obj->get(), $this->whook, $this->wapiHttp, $paths, $cotProgress);
+                $txt = new CotTextProcess($msg, $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 $txt->exe();
+                $validator->removeFileImgs($msg->from);
                 break;
             default:
                 # code...
