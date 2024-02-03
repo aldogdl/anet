@@ -83,7 +83,7 @@ class InteractiveProcess
 
         // Buscamo una carnada en el estanque a su ves, eliminamos del estanque el bait que se
         // esta atendiendo actualmente.
-        $newBait = $this->tf->lookForBait();
+        $this->cotProgress = $this->tf->lookForBait();
         if(count($this->tf->baitProgress) == 0) {
             $this->isNtgAndNotFindBait = true;
             return;
@@ -91,11 +91,13 @@ class InteractiveProcess
 
         $this->sender->cotAtendida = $this->tf->baitProgress;
 
-        if(count($newBait) > 0) {
+        if(count($this->cotProgress) > 0) {
+
+            $this->sender->updateCotProgress($this->cotProgress);
             // Se encontro una carnada para enviar por lo tanto, buscamos para ver si existe
             // el mensaje prefabricado del item encontrado.
             $this->tf->fSys->setPathBase($this->paths['prodTrack']);
-            $template = $this->tf->fSys->getContent($newBait['idItem'].'_track.json');
+            $template = $this->tf->fSys->getContent($this->cotProgress['idItem'].'_track.json');
             if(count($template) > 0) {
                 if(array_key_exists('message', $template)) {
                     $this->sender->getTemplate($template['message']);
