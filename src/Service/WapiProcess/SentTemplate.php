@@ -17,6 +17,8 @@ class SentTemplate
     private array $paths;
     private array $template;
     private array $cotProgress;
+    // Generalmente utilizada cuando el cotizador responde con un BTN de NTGx
+    public array $cotAtendida;
     public String $subEvento;
     public bool $hasTemplate = false;
     public bool $isInitFsys = false;
@@ -138,14 +140,23 @@ class SentTemplate
         $estanque = $this->fSys->getEstanqueOf($this->msg->from);
         $est = new EstanqueReturn($estanque, $this->cotProgress, $this->paths['hasCotPro'], 'less');
         $returnData = $est->toArray();
+        $result = [
+            'subEvent' => $this->subEvento,
+            'recibido' => $returnData['baitProgress'],
+            'estanque' => $returnData['estData']
+        ];
 
-        $this->wh->sendMy(
-            'wa-wh', 'notSave', [
+        if(count($this->cotAtendida) > 0) {
+            $result = [
                 'subEvent' => $this->subEvento,
-                'recibido' => $returnData['baitProgress'],
-                'estanque' => $returnData['estData'],
-                // 'enviado'  => $sended,
-            ]
-        );
+                'recibido' => [
+                    'sent' => $returnData['baitProgress'],
+                    'atte' => $this->cotAtendida
+                ],
+                'estanque' => $returnData['estData']
+            ];
+        }
+
+        $this->wh->sendMy('wa-wh', 'notSave', $result);
     }
 }

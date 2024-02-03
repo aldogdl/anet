@@ -75,6 +75,8 @@ class InteractiveProcess
     private function tratarConNtg(): void
     {
         $this->sender->hasTemplate = false;
+        $this->sender->cotAtendida = $this->cotProgress;
+        
         // Buscamo una carnada en el estanque a su ves, eliminamos del estanque el bait que se
         // esta atendiendo actualmente.
         $newBait = $this->tf->lookForBait();
