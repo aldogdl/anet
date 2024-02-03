@@ -152,8 +152,8 @@ class SentTemplate
 
         if(count($this->cotAtendida) > 0) {
             $result = [
-                'subEvent' => $this->subEvento,
                 'recibido' => [
+                    'subEvent' => $this->subEvento,
                     'sent' => $returnData['baitProgress'],
                     'atte' => $this->cotAtendida
                 ],
