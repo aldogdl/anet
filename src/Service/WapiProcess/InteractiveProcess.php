@@ -41,14 +41,14 @@ class InteractiveProcess
         if(count($this->cotProgress) == 0 || !array_key_exists('idItem', $this->cotProgress)) {
             return;
         }
-        file_put_contents('seg_1.txt', '');
+        file_put_contents('seg_1.json', '');
         $this->tf = new TrackFileCot($this->msg, $this->paths);
         $this->sender = new SentTemplate(
             $this->msg, $this->wh, $this->wapiHttp, $this->paths, $this->cotProgress
         );
 
         if($this->msg->subEvento == 'ntg' || $this->msg->subEvento == 'ntga') {
-            file_put_contents('seg_2.txt', '');
+            file_put_contents('seg_2.json', '');
             $this->sender->subEvento = $this->msg->subEvento;
             $this->tratarConNtg($this->msg);
         }
