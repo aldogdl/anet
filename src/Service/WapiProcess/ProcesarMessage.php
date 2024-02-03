@@ -95,7 +95,7 @@ class ProcesarMessage {
         }
         $code = $validator->code;
         $validator = null;
-        file_put_contents('seg_03.json', '');
+        file_put_contents('seg_03_'.$code.'.json', '');
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
