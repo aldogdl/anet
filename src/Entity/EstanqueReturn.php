@@ -30,7 +30,7 @@ class EstanqueReturn {
         if(count($est) > 0) {
             $this->cantBait = count($est['items']);
             $this->version = $est['version'];
-            if($this->cantBait >= 1) {
+            if($this->cantBait > 1) {
                 $this->baitNext = $est['items'][1];
             }
         }
