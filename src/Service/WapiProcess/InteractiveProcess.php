@@ -17,7 +17,6 @@ class InteractiveProcess
     private array $paths;
     private SentTemplate $sender;
     private array $cotProgress = [];
-    private bool $hasTemplate = false;
 
     /** 
      * Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
@@ -33,7 +32,6 @@ class InteractiveProcess
         $this->paths       = $paths;
         $this->msg         = $message;
         $this->cotProgress = $cotProgress;
-        $this->hasTemplate = false;
         $cotProgress       = [];
     }
 
@@ -43,13 +41,14 @@ class InteractiveProcess
         if(count($this->cotProgress) == 0 || !array_key_exists('idItem', $this->cotProgress)) {
             return;
         }
-
+        file_put_contents('seg_1.txt', '');
         $this->tf = new TrackFileCot($this->msg, $this->paths);
         $this->sender = new SentTemplate(
             $this->msg, $this->wh, $this->wapiHttp, $this->paths, $this->cotProgress
         );
 
         if($this->msg->subEvento == 'ntg' || $this->msg->subEvento == 'ntga') {
+            file_put_contents('seg_2.txt', '');
             $this->sender->subEvento = $this->msg->subEvento;
             $this->tratarConNtg($this->msg);
         }
@@ -76,7 +75,7 @@ class InteractiveProcess
     {
         $this->sender->hasTemplate = false;
         $this->sender->cotAtendida = $this->cotProgress;
-        
+
         // Buscamo una carnada en el estanque a su ves, eliminamos del estanque el bait que se
         // esta atendiendo actualmente.
         $newBait = $this->tf->lookForBait();
@@ -96,7 +95,7 @@ class InteractiveProcess
         }
 
         // No se encotró una carnada para enviar, por lo tanto, enviar mensaje de gracias enterados
-        if(!$this->hasTemplate) {
+        if(!$this->sender->hasTemplate) {
             $this->sender->getTemplate();
         }
     }
