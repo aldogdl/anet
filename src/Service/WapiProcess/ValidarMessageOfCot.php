@@ -201,7 +201,7 @@ class ValidarMessageOfCot {
         // Si es deep viene de la condicion dende ya se envio el msg de detalles pero sigue
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
-        $cant = 1;
+        $cant = 0;
         $finder = new Finder();
 		$finder->files()->in($this->paths['cotProgres'])->name($msg->from .'*.imgs');
 		if($finder->hasResults()) {
@@ -215,10 +215,10 @@ class ValidarMessageOfCot {
                 $partes = explode('_', $files[0]);
                 try {
                     $last = (integer) $partes[2];
-                    $cantLast = (integer) $partes[1];
+                    $cant = (integer) $partes[1];
                 } catch (\Throwable $th) {
                     $last = -1;
-                    $cantLast = 0;
+                    $cant = 0;
                 }
                 // Si la ultima ves que se recibió una img han pasado mas de 5 segundos
                 // quiere decir que nos esta enviando las fotos 1 a 1.
@@ -229,19 +229,19 @@ class ValidarMessageOfCot {
                     }
                 }
 
-                // Si la cantidad de fotos supera los 3 revisamos para ver si son mas de 5
-                if($cantLast > 3) {
-                    if($avisar && $cantLast > 5) {
+                $cant = $cant + 1;
+                // Si la cantidad de fotos supera los 3 revisamos para ver si son mas de 6
+                if($cant > 4) {
+                    if($avisar && $cant == 7) {
                         $avisar = false;
                     }
                 }else{
                     // Solo si son igual o 3 fotos enviamos el primer mensaje de hemos recibido fotos
-                    if($avisar && $cantLast <= 3) {
+                    if($avisar && $cant == 4) {
                         $avisar = false;
                     }
                 }
 
-                $cant = $cantLast + 1;
                 if($avisar) {
                     $template = $this->buildMsgSimple(
                         '*Hemos recibido '.$cant." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
