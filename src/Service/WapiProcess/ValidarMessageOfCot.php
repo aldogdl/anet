@@ -205,6 +205,7 @@ class ValidarMessageOfCot {
         // Si es deep viene de la condicion dende ya se envio el msg de detalles pero sigue
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
+        $save = false;
         $cant = 0;
         $finder = new Finder();
 		$finder->files()->in($this->paths['cotProgres'])->name($msg->from .'*.imgs');
@@ -255,11 +256,17 @@ class ValidarMessageOfCot {
                     // Despues de enviar el aviso de las fotos volvemos a inicial el conteo
                     $this->removeFileImgs($msg->from);
                 }else{
-                    $filename = $msg->from.'_'.$cant.'_'.time().'_.imgs';
-                    file_put_contents($this->paths['cotProgres'].'/'.$filename, '');
+                    $save = true;
                 }
             }
-		}
+		}else{
+            $save = true;
+        }
+
+        if($save) {
+            $filename = $msg->from.'_'.$cant.'_'.time().'_.imgs';
+            file_put_contents($this->paths['cotProgres'].'/'.$filename, '');
+        }
     }
 
     /** */
