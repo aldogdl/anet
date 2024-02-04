@@ -209,6 +209,7 @@ class ValidarMessageOfCot {
 			$files = [];
 			foreach ($finder as $file) {
 				$files[] = $file->getRelativePathname();
+                unlink($file->getRealPath());
 			}
             if(count($files) > 0) {
                 $partes = explode('_', $files[0]);
