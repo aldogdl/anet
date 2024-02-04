@@ -84,7 +84,7 @@ class CotImagesProcess
             $sender->saveCotProgress();
             $sender->getTemplate();
             $sender->sent();
-            $filename = $this->cotProgress['from'].'_0_'.time().'_.imgs';
+            $filename = $this->cotProgress['waId'].'_0_'.time().'_.imgs';
             file_put_contents($this->paths['cotProgres'].'/'.$filename, '');
         }
     }
