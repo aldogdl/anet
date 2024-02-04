@@ -206,42 +206,34 @@ class ValidarMessageOfCot {
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
         $cant = 0;
-        if(array_key_exists('track', $this->cotProgress)) {
-            if(array_key_exists('fotos', $this->cotProgress['track'])) {
-                $cant = count($this->cotProgress['track']['fotos']);
-            }
-        }
-
         $finder = new Finder();
 		$finder->files()->in($this->paths['cotProgres'])->name($msg->from .'*.imgs');
 		if($finder->hasResults()) {
-            $avisar = false;
-			$files = [];
+            
+            $cant = 0;
+            $last = -1;
 			foreach ($finder as $file) {
-				$files[] = $file->getRelativePathname();
-                unlink($file->getRealPath());
-			}
-
-            if(count($files) > 0) {
-
-                $partes = explode('_', $files[0]);
+				$files = $file->getRelativePathname();
+                $partes = explode('_', $files);
                 try {
                     $cantFile = (integer) $partes[1];
                     $cant = ($cant > $cantFile) ? $cant : $cantFile;
-                    $last = (integer) $partes[2];
+                    $lastFile = (integer) $partes[2];
+                    $last = ($cant > $lastFile) ? $cant : $lastFile;
                 } catch (\Throwable $th) {
                     $cant = 0;
                     $last = -1;
                 }
+                unlink($file->getRealPath());
+			}
+
+            if($last > -1) {
+
                 // Si la ultima ves que se recibió una img han pasado mas de 5 segundos
                 // quiere decir que nos esta enviando las fotos 1 a 1.
-                if($last > -1) {
-                    $diff = time() - $last;
-                    if($diff > 5) {
-                        $avisar = true;
-                    }
-                }
-
+                $diff = time() - $last;
+                $avisar = ($diff > 5) ? true : false;
+                
                 $limitForScreen = 4;
                 $cant = $cant + 1;
                 $isEvent = ($cant % 2 == 0) ? true : false;
@@ -257,15 +249,17 @@ class ValidarMessageOfCot {
 
                 if($avisar) {
                     $template = $this->buildMsgSimple(
-                        '*Hemos recibido '.$cant." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
+                        "*Hemos recibido correctamente tus fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
                     );
                     $this->sentMsg($template, $msg->from);
+                    // Despues de enviar el aviso de las fotos volvemos a inicial el conteo
+                    $this->removeFileImgs($msg->from);
+                }else{
+                    $filename = $msg->from.'_'.$cant.'_'.time().'_.imgs';
+                    file_put_contents($this->paths['cotProgres'].'/'.$filename, '');
                 }
             }
 		}
-
-        $filename = $msg->from.'_'.$cant.'_'.time().'_.imgs';
-        file_put_contents($this->paths['cotProgres'].'/'.$filename, '');
     }
 
     /** */
