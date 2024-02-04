@@ -220,7 +220,8 @@ class ValidarMessageOfCot {
                     $last = -1;
                     $cantLast = 0;
                 }
-
+                // Si la ultima ves que se recibió una img han pasado mas de 5 segundos
+                // quiere decir que nos esta enviando las fotos 1 a 1.
                 if($last > -1) {
                     $diff = time() - $last;
                     if($diff > 5) {
@@ -228,12 +229,14 @@ class ValidarMessageOfCot {
                     }
                 }
 
+                // Si la cantidad de fotos supera los 3 revisamos para ver si son mas de 5
                 if($cantLast > 3) {
                     if($avisar && $cantLast > 5) {
                         $avisar = false;
                     }
                 }else{
-                    if($avisar && $cantLast < 3) {
+                    // Solo si son igual o 3 fotos enviamos el primer mensaje de hemos recibido fotos
+                    if($avisar && $cantLast <= 3) {
                         $avisar = false;
                     }
                 }
@@ -241,7 +244,7 @@ class ValidarMessageOfCot {
                 $cant = $cantLast + 1;
                 if($avisar) {
                     $template = $this->buildMsgSimple(
-                        '*Hemos recibido '.$cantLast." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
+                        '*Hemos recibido '.$cant." fotografías*.\n\n📝Si ház finalizado de enviar fotos.\nPor favor indicanos los *DETALLES de la pieza*"
                     );
                     $this->sentMsg($template, $msg->from);
                 }
