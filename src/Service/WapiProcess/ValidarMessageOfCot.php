@@ -191,17 +191,27 @@ class ValidarMessageOfCot {
     /** */
     private function validateImage(WaMsgMdl $msg): void
     {
+        $this->isValid = true;
         if(!in_array($msg->status, $this->permitidas)) {
             $template = $this->getFile('eftoExt.json');
             $this->sentMsg($template, $msg->from);
             $this->isValid = false;
             return;
         }
-
+        
+        if($this->cotProgress['current'] == 'sfto') {
+            return;
+        }
         // Si es deep viene de la condicion dende ya se envio el msg de detalles pero sigue
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
         $cant = 0;
+        // if(array_key_exists('track', $this->cotProgress)) {
+        //     if(array_key_exists('fotos', $this->cotProgress['track'])) {
+        //         $cant = count($this->cotProgress['track']['fotos']);
+        //     }
+        // }
+
         $finder = new Finder();
 		$finder->files()->in($this->paths['cotProgres'])->name($msg->from .'*.imgs');
 		if($finder->hasResults()) {
@@ -211,10 +221,13 @@ class ValidarMessageOfCot {
 				$files[] = $file->getRelativePathname();
                 unlink($file->getRealPath());
 			}
+
             if(count($files) > 0) {
 
                 $partes = explode('_', $files[0]);
                 try {
+                    // $cantFile = (integer) $partes[1];
+                    // $cant = ($cant > $cantFile) ? $cant : $cantFile;
                     $cant = (integer) $partes[1];
                     $last = (integer) $partes[2];
                 } catch (\Throwable $th) {
