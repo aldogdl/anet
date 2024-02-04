@@ -206,11 +206,11 @@ class ValidarMessageOfCot {
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
         $cant = 0;
-        // if(array_key_exists('track', $this->cotProgress)) {
-        //     if(array_key_exists('fotos', $this->cotProgress['track'])) {
-        //         $cant = count($this->cotProgress['track']['fotos']);
-        //     }
-        // }
+        if(array_key_exists('track', $this->cotProgress)) {
+            if(array_key_exists('fotos', $this->cotProgress['track'])) {
+                $cant = count($this->cotProgress['track']['fotos']);
+            }
+        }
 
         $finder = new Finder();
 		$finder->files()->in($this->paths['cotProgres'])->name($msg->from .'*.imgs');
@@ -226,9 +226,8 @@ class ValidarMessageOfCot {
 
                 $partes = explode('_', $files[0]);
                 try {
-                    // $cantFile = (integer) $partes[1];
-                    // $cant = ($cant > $cantFile) ? $cant : $cantFile;
-                    $cant = (integer) $partes[1];
+                    $cantFile = (integer) $partes[1];
+                    $cant = ($cant > $cantFile) ? $cant : $cantFile;
                     $last = (integer) $partes[2];
                 } catch (\Throwable $th) {
                     $cant = 0;
@@ -243,14 +242,15 @@ class ValidarMessageOfCot {
                     }
                 }
 
+                $limitForScreen = 4;
                 $cant = $cant + 1;
                 $isEvent = ($cant % 2 == 0) ? true : false;
                 // Si la cantidad de fotos supera los 3 revisamos para ver si son mas de 6
                 if($avisar) {
-                    if($cant > 5 && $isEvent) {
+                    if($cant > $limitForScreen && $isEvent) {
                         $avisar = false;
                     }
-                    if($cant > 1 && $cant < 5 && $isEvent) {
+                    if($cant > 1 && $cant < $limitForScreen && $isEvent) {
                         $avisar = false;
                     }
                 }
