@@ -212,13 +212,14 @@ class ValidarMessageOfCot {
                 unlink($file->getRealPath());
 			}
             if(count($files) > 0) {
+
                 $partes = explode('_', $files[0]);
                 try {
-                    $last = (integer) $partes[2];
                     $cant = (integer) $partes[1];
+                    $last = (integer) $partes[2];
                 } catch (\Throwable $th) {
-                    $last = -1;
                     $cant = 0;
+                    $last = -1;
                 }
                 // Si la ultima ves que se recibió una img han pasado mas de 5 segundos
                 // quiere decir que nos esta enviando las fotos 1 a 1.
@@ -230,14 +231,13 @@ class ValidarMessageOfCot {
                 }
 
                 $cant = $cant + 1;
+                $isEvent = ($cant % 2 == 0) ? true : false;
                 // Si la cantidad de fotos supera los 3 revisamos para ver si son mas de 6
-                if($cant > 4) {
-                    if($avisar && $cant == 7) {
+                if($avisar) {
+                    if($cant > 5 && $isEvent) {
                         $avisar = false;
                     }
-                }else{
-                    // Solo si son igual o 3 fotos enviamos el primer mensaje de hemos recibido fotos
-                    if($avisar && $cant == 4) {
+                    if($cant > 1 && $cant < 5 && $isEvent) {
                         $avisar = false;
                     }
                 }
