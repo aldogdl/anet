@@ -206,13 +206,12 @@ class ValidarMessageOfCot {
         // enviando fotos, por lo tanto, es necesario calcular si hay que enviarle otro msg
         // para recordarle en que paso va (detalles)
         $save = false;
-        $cant = 0;
+        $cant = 1;
+        $last = -1;
         $finder = new Finder();
+        
 		$finder->files()->in($this->paths['cotProgres'])->name($msg->from .'*.imgs');
 		if($finder->hasResults()) {
-            
-            $cant = 0;
-            $last = -1;
 			foreach ($finder as $file) {
 				$files = $file->getRelativePathname();
                 $partes = explode('_', $files);
@@ -236,7 +235,6 @@ class ValidarMessageOfCot {
                 $avisar = ($diff > 5) ? true : false;
                 
                 $limitForScreen = 4;
-                $cant = $cant + 1;
                 $isEvent = ($cant % 2 == 0) ? true : false;
                 // Si la cantidad de fotos supera los 3 revisamos para ver si son mas de 6
                 if($avisar) {
@@ -264,6 +262,7 @@ class ValidarMessageOfCot {
         }
 
         if($save) {
+            $cant = $cant + 1;
             $filename = $msg->from.'_'.$cant.'_'.time().'_.imgs';
             file_put_contents($this->paths['cotProgres'].'/'.$filename, '');
         }
