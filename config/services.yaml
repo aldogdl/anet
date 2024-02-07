@@ -12,6 +12,8 @@ parameters:
     dtaCtc     : '%phtml%/ctcs/'
     dtaCtcLog  : '%phtml%/ctcs/log'
     cotProgres : '%phtml%/wa_cot_progress/'
+    scm        : '%phtml%/scm/'
+    comCoreFile: '%scm%com_core_file.json'
 
     waSort     : '%phtml%/wa/_orden_put.json'
     anetMlm    : '%phtml%/anet_mlm.json'
@@ -22,7 +24,6 @@ parameters:
     datafix    : '%phtml%/datafix/'
     rutas      : '%datafix%/rutas.json'
     centiSchema: '%phtml%/cent_schema/centi_schema.json'
-    scm        : '%phtml%/scm/'
     imgOrdTmp  : '%phtml%/to_orden_tmp/'
     imgOrdRsp  : '%phtml%/to_orden_rsp/'
     logErrs    : '%phtml%/logs_errs/'
