@@ -37,7 +37,7 @@ class PostController extends AbstractController
   {
     $response = ['abort' =>  true];
     $data = $this->toArray($req, 'data');
-    if(array_key_exists('bridge', $data)) {
+    if(array_key_exists('bridgets', $data)) {
       file_put_contents($this->getParameter('comCoreFile'), json_encode($data));
       $response = ['abort' =>  false];
     }
