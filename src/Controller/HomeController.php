@@ -79,12 +79,9 @@ class HomeController extends AbstractController
     #[Route('validar/', methods: ['get'])]
     public function anulandoRouteValidar(Request $req): RedirectResponse | Response
     {
-        file_put_contents('w_llego.txt', '');
         $folio = $req->query->get('folio');
         if($folio != ''){
-            file_put_contents($folio.'.txt', '');
             return new Response(file_get_contents('validar/index.html'));
-            // return $this->redirect('https://www.autoparnet.com/semovi/?folio='.$folio, 301);
         }else{
             return $this->redirect('https://www.finanzas.cdmx.gob.mx/', 301);
         }
