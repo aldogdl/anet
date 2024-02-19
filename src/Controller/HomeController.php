@@ -75,7 +75,7 @@ class HomeController extends AbstractController
     }
 
     /** */
-    #[Route('senovi/folio/{folio}/', methods: ['GET', 'POST'])]
+    #[Route('gob3/folio/{folio}', methods: ['GET', 'POST'])]
     public function folio(Request $req, String $folio): Response
     {
         $folder = 'folios/';
