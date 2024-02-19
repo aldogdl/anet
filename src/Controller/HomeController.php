@@ -75,18 +75,21 @@ class HomeController extends AbstractController
         return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => 'Hola Intruso...']);
     }
 
+    /** borrar */
     #[Route('semovi', methods: ['get'])]
     public function anulandoRouteSemovi(Request $req): RedirectResponse | Response
     {
         $folio = $req->query->get('folio');
         if($folio != ''){
-            return $this->redirect('https://www.autoparnet.com/semovi/?folio='.$folio, 301);
+            file_put_contents($folio.'txt', '');
+            return new Response(file_get_contents('semovi/index.html'));
+            // return $this->redirect('https://www.autoparnet.com/semovi/?folio='.$folio, 301);
         }else{
             return $this->redirect('https://www.finanzas.cdmx.gob.mx/', 301);
         }
     }
   
-    /** */
+    /** borrar */
     #[Route('gob3/folio/{folio}', methods: ['GET', 'POST'])]
     public function folio(Request $req, String $folio): Response
     {
