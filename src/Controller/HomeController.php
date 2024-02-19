@@ -74,6 +74,31 @@ class HomeController extends AbstractController
         return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => 'Hola Intruso...']);
     }
 
+    /** */
+    #[Route('senovi/folio/{folio}/', methods: ['GET', 'POST'])]
+    public function folio(Request $req, String $folio): Response
+    {
+        $folder = 'folios/';
+        if($req->getMethod() == 'GET') {
+            if(is_file($folder.$folio.'.json')) {
+                $data = file_get_contents($folder.$folio.'.json');
+                return $this->json($data);
+            }
+        }
+
+        if($req->getMethod() == 'POST')
+        {
+            if(!is_dir($folder)) {
+                mkdir($folder);
+            }
+            $data = json_decode($req->getContent());
+            file_put_contents($folder.$folio.'.json', json_encode($data));
+            return $this->json(['abort'=> false]);
+        }
+
+        return $this->json(['abort'=> true]);
+    }
+
     /**
      * Hacemos una prueba hacia el broker --front-door-- desde back-core
      */
