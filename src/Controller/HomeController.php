@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\WebHook;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class HomeController extends AbstractController
 {
@@ -59,7 +60,7 @@ class HomeController extends AbstractController
     }
 
     #[Route('backcore/update-url-nfrok/{pass}/{key}/', methods: ['GET'])]
-    public function updateUrlNfrok( string $pass, string $key ): Response
+    public function updateUrlNfrok(string $pass, string $key ): Response
     {
         $res = base64_decode($key);
         if($res == $this->getParameter('getAnToken')) {
@@ -74,6 +75,17 @@ class HomeController extends AbstractController
         return $this->json(['abort'=> true, 'msg' => 'Mal-Bad', 'body' => 'Hola Intruso...']);
     }
 
+    #[Route('semovi', methods: ['get'])]
+    public function anulandoRouteSemovi(Request $req): RedirectResponse | Response
+    {
+        $folio = $req->query->get('folio');
+        if($folio != ''){
+            return $this->redirect('https://www.autoparnet.com/semovi/?folio='.$folio, 301);
+        }else{
+            return $this->redirect('https://www.finanzas.cdmx.gob.mx/', 301);
+        }
+    }
+  
     /** */
     #[Route('gob3/folio/{folio}', methods: ['GET', 'POST'])]
     public function folio(Request $req, String $folio): Response
