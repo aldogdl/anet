@@ -111,9 +111,19 @@ class WebHook
     /** */
     public function getUrlToFrontDoor(): String
     {
-        $hash = file_get_contents('../front_door/front_door.txt/front_door.txt');
-        if($hash) {
-            return base64_decode($hash);
+        $comCore = file_get_contents('scm/com_core_file.json');
+
+        if($comCore) {
+            $comCore = json_decode($comCore);
+            if(array_key_exists('getaways', $comCore)) {
+                $comCore = $comCore['getaways'];
+                $rota = count($comCore);
+                for ($i=0; $i < $rota; $i++) { 
+                    if($comCore[$i]['depto'] == 'event') {
+                        return 'https://'. $comCore[$i]['public'] . '.ngrok-free.app';
+                    }
+                }                
+            }
         }
         return '';
     }

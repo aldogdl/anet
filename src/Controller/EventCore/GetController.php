@@ -118,31 +118,6 @@ class GetController extends AbstractController
                     $wh->sendMy('event-core\\ngrok', $data['evento'], $data);
                     return $this->json($data);
                 }
-
-                if($data['evento'] == 'backup') {
-                    $hash = file_put_contents(
-                        '../front_door/front_door.txt/front_door.txt',
-                        base64_encode($data['path'])
-                    );
-                    
-                    $res = ['abort'=> true, 'msg' => 'No se guardo el Hash'];
-                    if($hash > 0) {
-                        $data['status'] = 'salvado';
-                        $res = ['abort'=> false, 'msg' => 'ok'];
-                    }
-                    return $this->json($res);
-                }
-
-                if($data['evento'] == 'get') {
-
-                    $hash = file_get_contents('../front_door/front_door.txt/front_door.txt');
-                    $res = ['abort'=> true, 'msg' => 'No se encontró el Hash'];
-                    if($hash != '') {
-                        $data['status'] = 'recuperado';
-                        $res = ['abort'=> false, 'msg' => 'ok', 'body' => $hash];
-                    }
-                    return $this->json($res);
-                }
             }
             
             $data['status'] = 'fail';
