@@ -114,7 +114,7 @@ class WebHook
         $comCore = file_get_contents('scm/com_core_file.json');
 
         if($comCore) {
-            $comCore = json_decode($comCore);
+            $comCore = json_decode($comCore, true);
             if(array_key_exists('getaways', $comCore)) {
                 $comCore = $comCore['getaways'];
                 $rota = count($comCore);
@@ -122,7 +122,7 @@ class WebHook
                     if($comCore[$i]['depto'] == 'event') {
                         return 'https://'. $comCore[$i]['public'] . '.ngrok-free.app';
                     }
-                }                
+                }
             }
         }
         return '';
