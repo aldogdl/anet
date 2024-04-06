@@ -50,6 +50,7 @@ class ConmutadorWa
     {
         $id = '';
         $from = '';
+
         if($response['statuscode'] == 200) {
             $response = $response['body'];
             if(array_key_exists('messages', $response)) {
