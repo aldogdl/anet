@@ -32,6 +32,7 @@ class DecodeTemplate {
             $rota = count($keys);
 
             for ($i=0; $i < $rota; $i++) {
+                
                 if($keys[$i] != 'type') {
                     if(is_array($template[$tipo][$keys[$i]])) {
 

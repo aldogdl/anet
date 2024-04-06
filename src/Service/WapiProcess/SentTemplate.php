@@ -85,7 +85,8 @@ class SentTemplate
             file_put_contents('wa_el_template.json', json_encode($this->template));
 
             $this->template = $deco->decode($this->template);
-            
+            file_put_contents('wa_el_template_deco.json', json_encode($this->template));
+
             $contexto = '';
             if(array_key_exists('wamid_cot', $this->cotProgress)) {
                 $contexto = $this->cotProgress['wamid_cot'];
@@ -115,6 +116,7 @@ class SentTemplate
             $conm->setBody($typeMsgToSent, $this->template);
     
             $result = $this->wapiHttp->send($conm);
+            file_put_contents('wa_el_template_'.$result['statuscode'].'.json', json_encode($result));
             if($result['statuscode'] != 200) {
                 $this->wh->sendMy('wa-wh', 'notSave', $result);
                 return;
