@@ -27,7 +27,13 @@ class WrapHttp
         
         $body = '';
         if(count($this->bodyToSend) != 0) {
-            
+            file_put_contents('wa_el_template_m_'.$code.'.json', json_encode([
+                'headers' => [
+                    'Authorization' => 'Bearer '.$conm->token,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $this->bodyToSend
+            ]));
             try {
                 $response = $this->client->request(
                     'POST', $conm->uriBase.'/messages', [
@@ -40,13 +46,7 @@ class WrapHttp
                 );
                 $code = $response->getStatusCode();
                 $body = json_decode($response->getContent(), true);
-                file_put_contents('wa_el_template_m_'.$code.'.json', json_encode([
-                    'headers' => [
-                        'Authorization' => 'Bearer '.$conm->token,
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => $this->bodyToSend
-                ]));
+                
             } catch (\Throwable $th) {
                 $code = 401;
                 if(mb_strpos($th->getMessage(), '401') !== false) {
