@@ -67,6 +67,7 @@ class SentTemplate
         }else{
             $this->fSys->setPathBase($this->paths['waTemplates']);
         }
+
         if(count($templateOtra) == 0) {
             if($name != '0') {
                 $this->template = $this->fSys->getContent($name.'.json');
@@ -78,8 +79,11 @@ class SentTemplate
         }
 
         if(count($this->template) > 0) {
+
             // Buscamos si contiene AnetLanguage para decodificar
             $deco = new DecodeTemplate($this->cotProgress);
+            file_put_contents('wa_el_template.json', json_encode($this->template));
+
             $this->template = $deco->decode($this->template);
             
             $contexto = '';

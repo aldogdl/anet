@@ -117,6 +117,7 @@ class InteractiveProcess
         // Este se usa para cuando se vuelve a tomar un bait que coincida con el que se esta cotizando
         $isTackedOther = false;
         $hasCriticalErro = false;
+        
         if($this->cotProgress['idItem'] != $this->msg->message['idItem']) {
             $this->tf->fetchBaitProgress();
             $isTackedOther = true;
