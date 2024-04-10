@@ -27,13 +27,7 @@ class WrapHttp
         
         $body = '';
         if(count($this->bodyToSend) != 0) {
-            file_put_contents('wa_el_template_m_'.$code.'.json', json_encode([
-                'headers' => [
-                    'Authorization' => 'Bearer '.$conm->token,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => $this->bodyToSend
-            ]));
+
             try {
                 $response = $this->client->request(
                     'POST', $conm->uriBase.'/messages', [
@@ -54,7 +48,6 @@ class WrapHttp
                 }else{
                     $body = ['error' => $th->getMessage()];
                 }
-                file_put_contents('wa_el_template_'.$code.'.json', json_encode($body));
             }
         }
 

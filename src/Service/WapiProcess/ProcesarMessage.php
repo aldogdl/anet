@@ -12,7 +12,6 @@ use App\Service\WebHook;
 use App\Service\WapiProcess\WrapHttp;
 use App\Service\WapiProcess\ExtractMessage;
 use App\Service\WapiProcess\LoginProcess;
-use App\Service\WapiProcess\StatusProcess;
 use App\Service\WapiProcess\CotTextProcess;
 use App\Service\WapiProcess\CotImagesProcess;
 use App\Service\WapiProcess\InteractiveProcess;

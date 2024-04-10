@@ -28,8 +28,10 @@ class ValidarMessageOfCot {
         'mismo', 'ni', 'no', 'ora', 'otra', 'otro', 'pero', 'porque', 'que', 'solo', 'sino',
         'sea', 'tanto', 'también', 'tambien', 'un', 'una', 'unas', 'uno', 'unos', 'vien', 'ya'
     ];
+
     /** */
     private $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
+
     /** 
      * Analizamos los mensajes para detectar errores, y como se condiciona cada
      * mensaje para determinar su tipo, evitamos hacerlo doble con la variable $code
@@ -103,16 +105,16 @@ class ValidarMessageOfCot {
         }
 
         $this->isValid  = true;
-        if($this->message->isInteractive) {
-            $this->validateInteractive($msg, $trackFile);
-            return;
-        }
-        
         if(!array_key_exists('current', $this->cotProgress)) {
             $this->isValid  = false;
             return false;
         }
 
+        if($this->message->isInteractive) {
+            $this->validateInteractive($msg, $trackFile);
+            return;
+        }
+        
         $this->code = 101;
         if($this->cotProgress['current'] == 'sfto' && !$this->message->isImage) {
             $template = $this->buildMsgSimple(
@@ -136,6 +138,15 @@ class ValidarMessageOfCot {
         $this->code = 102;
         if($this->cotProgress['current'] == 'sdta' && $this->message->isText) {
             $this->validateText($msg);
+            return;
+        }
+
+        if($this->cotProgress['current'] == 'scto' && !$this->message->isText) {
+            $template = $this->buildMsgSimple(
+                "*DISCULPA pero...*.\n\n💰 El sistema está esperando *Números* para el costo de la Autoparte."
+            );
+            $this->sentMsg($template, $msg->from);
+            $this->isValid  = false;
             return;
         }
 
