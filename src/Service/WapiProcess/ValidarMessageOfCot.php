@@ -143,13 +143,13 @@ class ValidarMessageOfCot {
 
         if($this->cotProgress['current'] == 'scto' && !$this->message->isText) {
             $template = $this->buildMsgSimple(
-                "*DISCULPA pero...*.\n\n💰 El sistema está esperando *Números* para el costo de la Autoparte."
+                "*DISCULPA pero...*.\n\n💰 El sistema está esperando *Números* para el PRECIO de la Autoparte."
             );
             $this->sentMsg($template, $msg->from);
             $this->isValid  = false;
             return;
         }
-
+        
         if($this->cotProgress['current'] == 'scto' && $this->message->isText) {
             $this->validateText($msg);
             return;

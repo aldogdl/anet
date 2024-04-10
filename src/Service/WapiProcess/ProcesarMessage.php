@@ -84,6 +84,8 @@ class ProcesarMessage {
         $code = 100;
         $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
         $validator->validate();
+        file_put_contents('wa_validate_'.$validator->isValid.'_'.$validator->code.'.json', '');
+
         if(!$validator->isValid) { return; }
 
         if(count($cotProgress) == 0 && count($validator->cotProgress) > 0) {
