@@ -84,25 +84,27 @@ class ProcesarMessage {
         $code = 100;
         $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
         $validator->validate();
-        file_put_contents('wa_validate_'.$validator->isValid.'_'.$validator->code.'.json', '');
-
+        $valido = ($validator->isValid) ? '1' : '0';
+        file_put_contents('wa_validate_'.$valido.'_'.$validator->code.'.json', '');
+        
         if(!$validator->isValid) { return; }
-
+        
         if(count($cotProgress) == 0 && count($validator->cotProgress) > 0) {
             $cotProgress = $validator->cotProgress;
             $paths['hasCotPro'] = true;
         }
-
+        
         $code = $validator->code;
         $msg = $obj->get();
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
+                file_put_contents('wa_validate_si_llega.json', '');
                 $int = new InteractiveProcess($msg, $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 $int->exe();
                 if($int->isNtgAndNotFindBait) {
                     $template = $validator->buildMsgSimple(
-                        "*Al parecer esta solicitud...*.\n\n📝 Ya no esta disponible. Pronto te enviaremos más."
+                        "*Al parecer ésta solicitud...*.\n\n📝 Ya no está disponible. Pronto te enviaremos más."
                     );
                     $validator->sentMsg($template, $obj->from);
                 }
@@ -121,7 +123,7 @@ class ProcesarMessage {
                 break;
         }
 
-        // Si llega aqui es por que la conversion es libre;
+        // Si llega aqui es por que la conversacion es libre;
         return;
     }
 
