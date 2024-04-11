@@ -84,9 +84,7 @@ class ProcesarMessage {
         $code = 100;
         $validator = new ValidarMessageOfCot($obj, $this->wapiHttp, $paths, $cotProgress);
         $validator->validate();
-        $valido = ($validator->isValid) ? '1' : '0';
-        file_put_contents('wa_validate_'.$valido.'_'.$validator->code.'.json', '');
-        
+
         if(!$validator->isValid) { return; }
         
         if(count($cotProgress) == 0 && count($validator->cotProgress) > 0) {
@@ -99,7 +97,6 @@ class ProcesarMessage {
         switch ($code) {
             case 100:
                 // Si presionó COTIZAR AHORA, se creo el archivo [cotProgress]
-                file_put_contents('wa_validate_si_llega.json', '');
                 $int = new InteractiveProcess($msg, $this->whook, $this->wapiHttp, $paths, $cotProgress);
                 $int->exe();
                 if($int->isNtgAndNotFindBait) {
