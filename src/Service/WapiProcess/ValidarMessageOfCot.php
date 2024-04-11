@@ -76,7 +76,8 @@ class ValidarMessageOfCot {
         }else{
             if(is_array($msg->message)) {
                 if(!array_key_exists('idItem', $msg->message)) {
-                    return false;
+                    $this->isValid  = false;
+                    return;
                 }
             }
         }
@@ -88,9 +89,7 @@ class ValidarMessageOfCot {
         if($trackFile->isAtendido) {
             $trackFile->fSys->setPathBase($this->paths['waTemplates']);
             $template = $trackFile->fSys->getContent('eatn.json');
-            $conm = new ConmutadorWa($msg->from, $this->paths['tkwaconm']);
-            $conm->setBody($template['type'], $template);
-            $this->wapiHttp->send($conm);
+            $this->sentMsg($template, $msg->from);
             $this->isValid  = false;
             return;
         }
@@ -105,13 +104,15 @@ class ValidarMessageOfCot {
         }
 
         $this->isValid  = true;
-        if(!array_key_exists('current', $this->cotProgress)) {
-            $this->isValid  = false;
-            return false;
-        }
-
+        // Si es interactivo y no esta echo el archivo de cotProgress en validateInteractive
+        // se crea el achivo.
         if($this->message->isInteractive) {
             $this->validateInteractive($msg, $trackFile);
+            return;
+        }
+
+        if(!array_key_exists('current', $this->cotProgress)) {
+            $this->isValid  = false;
             return;
         }
         
@@ -177,6 +178,10 @@ class ValidarMessageOfCot {
                 return;
             }
         }
+        
+        // [NOTAS] En las revisiones de acontinuación, colocamos el isValid en false
+        // para que no continue con el proceso natural de envio del mensaje, en la clase
+        // de ProcesarMessage, ya que se le esta enviando ya un mensaje al usuario.
 
         // El mensaje recibido es que... No agregará fotos
         if($msg->subEvento == 'nfto') {
