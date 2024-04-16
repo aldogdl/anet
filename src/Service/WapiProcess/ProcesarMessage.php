@@ -90,6 +90,7 @@ class ProcesarMessage {
         if(count($cotProgress) == 0 && count($validator->cotProgress) > 0) {
             $cotProgress = $validator->cotProgress;
             $paths['hasCotPro'] = true;
+            $obj = $validator->message;
         }
         
         $code = $validator->code;

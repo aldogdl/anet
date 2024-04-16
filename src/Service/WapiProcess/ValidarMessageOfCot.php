@@ -12,12 +12,13 @@ class ValidarMessageOfCot {
     public int $code = 100;
     public bool $isValid = false;
     public bool $isEmptyDetalles = false;
+    public ExtractMessage $message;
     
     public array $paths = [];
     public array $cotProgress = [];
     private Filesystem $filesystem;
     private WrapHttp $wapiHttp;
-    private ExtractMessage $message;
+    private String $isValidNumero = '';
 
     /**
      * Palabras claves para validar los destalles
@@ -306,14 +307,29 @@ class ValidarMessageOfCot {
 
         $campo = $this->cotProgress['current'];
         $valor = '';
+        $isWithBody = false;
         if(array_key_exists('body', $msg->message)) {
+            $isWithBody = true;
             $valor = $msg->message['body'];
         }else{
             $valor = $msg->message;
         }
 
         $isValid = $this->isValid($campo, $valor);
-        if(!$isValid) {
+
+        if($isValid) {
+
+            if($campo == 'scto') {
+                if($this->isValidNumero != '') {
+                    if($isWithBody) {
+                        $msg->message['body'] = $this->isValidNumero;
+                    }else{
+                        $msg->message = $this->isValidNumero;
+                    }
+                    $this->message = $this->message->setMessage($msg->message);
+                }
+            }
+        } else {
 
             if($campo == 'sdta') {
                 $template = $this->getFile('edta.json');
@@ -427,7 +443,6 @@ class ValidarMessageOfCot {
 
         $str = str_replace('$', '', $str);
         $str = str_replace(',', '', $str);
-
         if(mb_strpos($str, '.') !== false) {
 
             $partes = explode('.', $str);
@@ -442,6 +457,7 @@ class ValidarMessageOfCot {
 
         $entera = $this->isDigit($str);
         if($entera != '-1') {
+            $this->isValidNumero = $str;
             return true;
         }
         return false; 

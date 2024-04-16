@@ -41,6 +41,12 @@ class ExtractMessage {
     /** */
     public function get(): WaMsgMdl { return $this->message; }
 
+    /** */
+    public function setMessage(array | String $messageNew): WaMsgMdl {
+        $this->message->message = $messageNew;
+        return $this->message;
+    }
+
     /** 
      * Analizamos si el contenido del mensaje esta comprendido de listas unicas,
      * es decir, que venga solo un nivel de anidamiento en todos sus campos
@@ -274,7 +280,12 @@ class ExtractMessage {
     public function isLoginMsg(String $txtMsg)
     {
         $palClas = [];
-        $partes = explode(' ', $txtMsg);
+        if(mb_strpos($txtMsg, '_')) {
+            $partes = explode('_', $txtMsg);
+        }else{
+            $partes = explode(' ', $txtMsg);
+        }
+
         $rota = count($partes);
         for ($i=0; $i < $rota; $i++) {
 
