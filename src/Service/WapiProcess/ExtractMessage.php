@@ -22,7 +22,7 @@ class ExtractMessage {
     public String $phoneNumberId = '';
 
     private array $tokenLogin = [
-        'Hola', 'AutoparNet,', 'atenderte.', 'piezas', 'necesitas?'
+        'Hola', 'AutoparNet', 'AutoparNet,', 'atenderte.', 'piezas', 'necesitas', 'necesitas?'
     ];
 
     /** 
@@ -285,7 +285,7 @@ class ExtractMessage {
         }else{
             $partes = explode(' ', $txtMsg);
         }
-        
+
         file_put_contents('palabras.json', json_encode($partes));
         $rota = count($partes);
         for ($i=0; $i < $rota; $i++) {
