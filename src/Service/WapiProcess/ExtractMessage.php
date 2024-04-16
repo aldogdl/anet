@@ -280,7 +280,7 @@ class ExtractMessage {
     public function isLoginMsg(String $txtMsg)
     {
         $palClas = [];
-        if(mb_strpos($txtMsg, '_')) {
+        if(mb_strpos($txtMsg, '_') !== false) {
             $partes = explode('_', $txtMsg);
         }else{
             $partes = explode(' ', $txtMsg);
