@@ -286,17 +286,17 @@ class ExtractMessage {
             $partes = explode(' ', $txtMsg);
         }
 
-        file_put_contents('palabras.json', json_encode($partes));
         $rota = count($partes);
         for ($i=0; $i < $rota; $i++) {
-
+            
             $search = trim($partes[$i]);
             if(in_array($search, $this->tokenLogin)) {
                 $palClas[] = $search;
             }
         }
         
-        if(count($this->tokenLogin) == count($palClas)) {
+        $res = (count($palClas) * 100) / count($this->tokenLogin);
+        if($res > 70) {
             $this->isLogin = true;
         }
     }
