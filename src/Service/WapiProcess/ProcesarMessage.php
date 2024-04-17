@@ -66,8 +66,13 @@ class ProcesarMessage {
             'cotProgres' => $pathCotProgress,
             'hasCotPro'  => $this->hasCotProgress
         ];
+        
         if($obj->isLogin) {
-            new LoginProcess($obj->get(), $paths, $this->whook, $this->wapiHttp);
+            $login = new LoginProcess($obj->get(), $paths, $this->whook, $this->wapiHttp);
+            if($login->isAtendido()) {
+                return;
+            }
+            $login->exe();
             return;
         }
 

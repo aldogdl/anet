@@ -26,16 +26,20 @@ class WebHook
         if($uri != '') {
 
             $proto = $this->buildProtocolo($uriCall, $pathFileServer, $event);
-
-            $response = $this->client->request(
-                'POST', $uri, [
-                    'query' => ['anet-key' => $this->anetToken],
-                    'headers' => [
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => $proto
-                ]
-            );
+            try {
+                $response = $this->client->request(
+                    'POST', $uri, [
+                        'query' => ['anet-key' => $this->anetToken],
+                        'timeout' => 120.0,
+                        'headers' => [
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => $proto
+                    ]
+                );
+            } catch (\Throwable $th) {
+                return false;
+            }
 
             $statusCode = $response->getStatusCode();
             if($statusCode != 200) {
