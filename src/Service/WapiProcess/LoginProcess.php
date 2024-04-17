@@ -17,6 +17,7 @@ class LoginProcess
     private array $paths;
     private WebHook $wh;
     private WrapHttp $wapiHttp;
+    private String $fileTmp = '';
 
     /** */
     public function __construct(
@@ -28,7 +29,7 @@ class LoginProcess
         $this->paths = $paths;
         $this->wh = $wh;
         $this->wapiHttp = $wapiHttp;
-        
+        $this->fileTmp = $this->message->from.'_'.$this->message->subEvento.'.json';
     }
 
     /** */
@@ -76,8 +77,7 @@ class LoginProcess
 
         // Guardamo un archivo temporal para evitar enviar multiples mensajes de inicio de Sesion
         // cuando el envio a Ngrok se alenta demaciado.
-        $fileTmp = $this->message->from.'_'.$this->message->subEvento.'.txt';
-        file_put_contents($fileTmp, '');
+        file_put_contents($this->fileTmp, '');
 
         $res = $this->wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $this->message->toArray(),
@@ -85,8 +85,8 @@ class LoginProcess
             'estanque' => $result->toArray()
         ]);
         if($res) {
-            if(file_exists($fileTmp) !== false) {
-                unlink($fileTmp);
+            if(file_exists($this->fileTmp) !== false) {
+                unlink($this->fileTmp);
             }
         }
     }
