@@ -42,9 +42,9 @@ class ExtractMessage {
     public function get(): WaMsgMdl { return $this->message; }
 
     /** */
-    public function setMessage(array | String $messageNew): WaMsgMdl {
+    public function setMessage(array | String $messageNew): ExtractMessage {
         $this->message->message = $messageNew;
-        return $this->message;
+        return $this;
     }
 
     /** 
