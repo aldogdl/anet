@@ -172,7 +172,7 @@ class TrackFileCot {
     }
 
     /** 
-     * Buscamos en el estanque el bait que lanzon el evento de cotizacion
+     * Buscamos en el estanque el bait que lanzo el evento de cotizacion
     */
     public function fetchBaitProgress() {
 

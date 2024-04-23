@@ -329,6 +329,7 @@ class ValidarMessageOfCot {
                     $this->message = $this->message->setMessage($msg->message);
                 }
             }
+            
         } else {
 
             if($campo == 'sdta') {
