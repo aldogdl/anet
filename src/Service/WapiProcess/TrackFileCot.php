@@ -179,30 +179,24 @@ class TrackFileCot {
         $this->baitProgress = [];
         $this->indexItemTrigger = false;
         $this->hasBaits = false;
-        file_put_contents('wa_trackfile.json', json_encode($this->trackFile));
         
         if(!array_key_exists('items', $this->trackFile)) {
             // No hay mas items
             return;
         }
-        file_put_contents('wa_seg_1.json', '');
+
         if(count($this->trackFile['items']) == 0) {
             // No hay mas items
             return;
         }
         
-        file_put_contents('wa_seg_2.json', '');
         $this->hasBaits = true;
         // 1.- Tomamos el item que disparo este evento (el respondido por un boton)
         $idsItems = array_column($this->trackFile['items'], 'idItem');
-        file_put_contents('wa_seg_3.json', json_encode($idsItems));
         $this->indexItemTrigger = array_search($this->message->message['idItem'], $idsItems);
-        file_put_contents('wa_seg_4_'.$this->indexItemTrigger.'.json', '');
         
         if($this->indexItemTrigger !== false) {
-            file_put_contents('wa_seg_5.json', '');
             $this->baitProgress = $this->trackFile['items'][$this->indexItemTrigger];
-            file_put_contents('wa_seg_6.json', json_encode($this->baitProgress));
             // solo si el index del item encontrado es mayor a cero, lo colocamos al principio
             if($this->indexItemTrigger > 0) {
                 unset($this->trackFile['items'][$this->indexItemTrigger]);

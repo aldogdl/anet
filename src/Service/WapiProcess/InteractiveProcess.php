@@ -125,8 +125,6 @@ class InteractiveProcess
                 $this->tf->fetchBaitProgress();
             }
 
-            file_put_contents('wa_prueba.json', json_encode($this->tf->baitProgress));
-
             $isTackedOther = true;
             if(count($this->tf->baitProgress) == 0) {
                 $hasCriticalErro = true;
