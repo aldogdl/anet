@@ -119,10 +119,14 @@ class InteractiveProcess
         $hasCriticalErro = false;
         
         if($this->cotProgress['idItem'] != $this->msg->message['idItem']) {
+            if(count($this->tf->trackFile) == 0) {
+                $this->tf->build();
+            }else{
+                $this->tf->fetchBaitProgress();
+            }
 
-            $this->tf->fetchBaitProgress();
             file_put_contents('wa_prueba.json', json_encode($this->tf->baitProgress));
-            
+
             $isTackedOther = true;
             if(count($this->tf->baitProgress) == 0) {
                 $hasCriticalErro = true;
