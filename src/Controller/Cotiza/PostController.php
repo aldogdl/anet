@@ -2,8 +2,6 @@
 
 namespace App\Controller\Cotiza;
 
-use App\Repository\AutosRegRepository;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -11,11 +9,7 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Repository\NG2ContactosRepository;
-use App\Repository\OrdenesRepository;
-use App\Repository\OrdenPiezasRepository;
 use App\Service\CotizaService;
-use App\Service\StatusRutas;
-use App\Service\WebHook;
 
 class PostController extends AbstractController
 {
@@ -45,17 +39,6 @@ class PostController extends AbstractController
     $data = $this->toArray($req, 'data');
     $contacsEm->safeTokenMessangings($data);
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => []]);
-  }
-
-  #[Route('api/cotiza/set-orden/', methods:['post'])]
-  public function setOrden(Request $req, OrdenesRepository $ordEm, AutosRegRepository $autoEm): Response
-  {
-    $data = $this->toArray($req, 'data');
-    $autoEm->regAuto($data);
-
-    $result = $ordEm->setOrden($data);
-
-    return $this->json($result);
   }
 
   #[Route('api/cotiza/upload-img/', methods:['post'])]
@@ -91,38 +74,6 @@ class PostController extends AbstractController
       'abort' => ($result != 'ok') ? true : false,
       'msg' => '', 'body' => $result
     ]);
-  }
-
-  #[Route('api/cotiza/set-pieza/', methods:['post'])]
-  public function setPieza(
-    Request $req, OrdenPiezasRepository $pzasEm,
-    OrdenesRepository $ordenEm, StatusRutas $rutas
-  ): Response
-  {
-    $data = $this->toArray($req, 'data');
-    $stts = $rutas->getAllRutas();
-    $sttOrd = $rutas->getEstOrdenConPiezas($stts);
-    $data['est'] = $sttOrd['est'];
-    $data['stt'] = $sttOrd['stt'];
-
-    $result = $pzasEm->setPieza($data);
-
-    if(!$result['abort']) {
-      $ids = [];
-      if(!is_array($data['orden'])) {
-        $ids = [$data['orden']];
-      }else{
-        $ids = $data['orden'];
-      }
-      $ordenEm->changeSttOrdenTo($ids, $sttOrd);
-      $idPza = $result['body'];
-      $result['body'] = [
-        'id'  => $idPza,
-        'est' => $sttOrd['est'],
-        'stt' => $sttOrd['stt'],
-      ];
-    }
-    return $this->json($result);
   }
 
 }

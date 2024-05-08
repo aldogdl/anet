@@ -13,51 +13,33 @@ error_log
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
 public_html/bundles/
-public_html/datafix/
 public_html/cotiza/
-public_html/ordenes_asigns/
-public_html/portadas/
-public_html/mrks_logos/
 public_html/to_orden_tmp/
 public_html/to_orden_rsp/
 public_html/prod_pubs/
 public_html/prod_sols/
 public_html/prod_track/
-public_html/items_process/
 public_html/wa_cot_progress/
 public_html/sendmy_fails/
-public_html/img_publik/
-public_html/validar/
-public_html/folios/
 public_html/wa_get_imgs/
 public_html/error_log
 public_html/error.log
 public_html/request.log
-public_html/harbi_connx.txt
 public_html/*.json
-# public_html/tkwaconm.json
-# public_html/filnotgo.json
-# public_html/centinela.json
-# public_html/anet_mlm.json
-# public_html/harbi_connx.json
-# public_html/anet_group.json
-# public_html/slug_intros.json
-# public_html/.well-known/assetlinks.json
+
 public_html/htacces.zip
 public_html/prod_recents/
 public_html/bgs_shop/
 public_html/mlm_*
 public_html/scm/
-public_html/chat/
 public_html/wa_templates/
 public_html/trackeds/
 public_html/tracking/
 public_html/nifi/
 public_html/nifi/fails/
-public_html/filtros/
 public_html/wa/
 public_html/td/
-public_html/shop
+public_html/shop/
 public_html/wa_cots/
 public_html/wa_backup/
 public_html/wa_analizar/
@@ -66,14 +48,11 @@ public_html/logs_errs/
 public_html/ctcs/
 public_html/inv/
 public_html/comments/
-public_html/wacmds/
 public_html/pnid.pni
-public_html/cotz_cata_data/
+public_html/wa_estanque/
 public_html/ctc_logo/
 public_html/desc_mlm.txt
 public_html/sl_index/
-front_door/
-front_door/front_door.txt/front_door.txt
 
 var/
 vendor/

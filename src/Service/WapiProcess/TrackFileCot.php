@@ -66,7 +66,7 @@ class TrackFileCot {
     public function build()
     {
         // Tomamos el archivo TrackFile
-        $this->fSys->setPathBase($this->paths['tracking']);
+        $this->fSys->setPathBase($this->paths['waEstanque']);
         $this->trackFile = $this->fSys->getEstanqueOf($this->message->from);
         
         if(count($this->trackFile) > 0) {

@@ -6,6 +6,7 @@ parameters:
     reqRadec   : '%phtml%/req_radec/'
     waTemplates: '%phtml%/wa_templates/'
     waAnalizar : '%phtml%/wa_analizar/'
+    waEstanque : '%phtml%/wa_estanque/'
     trackeds   : '%phtml%/trackeds/'
     tracking   : '%phtml%/tracking/'
     trackFlow  : '%tracking%/_track_flow.json'

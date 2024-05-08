@@ -25,7 +25,6 @@ class LoginProcess
     ) {
         
         $this->message = $message;
-        $this->message->subEvento = 'iniLogin';
         $this->paths = $paths;
         $this->wh = $wh;
         $this->wapiHttp = $wapiHttp;
@@ -64,6 +63,8 @@ class LoginProcess
 
         $result = $this->wapiHttp->send($conm);
         if($result['statuscode'] != 200) {
+            // Si ocurren un error al enviar el mesnaje por whatsapp
+            // enviamos el error a EventCore.
             $this->wh->sendMy('wa-wh', 'notSave', $result);
             return;
         }
@@ -74,10 +75,6 @@ class LoginProcess
         $fSys = new FsysProcess($this->paths['tracking']);
         $estanque = $fSys->getEstanqueOf($this->message->from);
         $result = new EstanqueReturn($estanque, [], $this->paths['hasCotPro']);
-
-        // Guardamo un archivo temporal para evitar enviar multiples mensajes de inicio de Sesion
-        // cuando el envio a Ngrok se alenta demaciado.
-        file_put_contents($this->fileTmp, '');
 
         $res = $this->wh->sendMy('wa-wh', 'notSave', [
             'recibido' => $this->message->toArray(),

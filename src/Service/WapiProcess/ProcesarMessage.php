@@ -60,6 +60,7 @@ class ProcesarMessage {
         $paths = [
             'tkwaconm'   => $this->params->get('tkwaconm'),
             'waTemplates'=> $this->params->get('waTemplates'),
+            'waEstanque' => $this->getFolderTo('waEstanque'),
             'prodTrack'  => $this->params->get('prodTrack'),
             'tracking'   => $this->getFolderTo('tracking'),
             'trackeds'   => $this->getFolderTo('trackeds'),

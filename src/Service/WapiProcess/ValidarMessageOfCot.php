@@ -75,6 +75,7 @@ class ValidarMessageOfCot {
                 ];
             }
         }else{
+
             if(is_array($msg->message)) {
                 if(!array_key_exists('idItem', $msg->message)) {
                     $this->isValid  = false;
@@ -164,6 +165,7 @@ class ValidarMessageOfCot {
         // Creamos el archivo de cotizacion en progreso si es necesario
         if(!$this->paths['hasCotPro'] && count($this->cotProgress) == 0) {
             if($msg->subEvento == 'sfto') {
+                
                 $trackFile->build();
                 if(count($trackFile->baitProgress) == 0) {
                     $template = $this->buildMsgSimple(

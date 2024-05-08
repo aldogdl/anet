@@ -2,7 +2,6 @@
 
 namespace App\Controller\Cotizo;
 
-use App\Repository\FiltrosRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,12 +9,7 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Repository\NG2ContactosRepository;
-use App\Repository\OrdenesRepository;
-use App\Repository\OrdenPiezasRepository;
-use App\Repository\OrdenRespsRepository;
 use App\Service\CotizaService;
-use App\Service\FiltrosService;
-use App\Service\ScmService;
 
 class PostController extends AbstractController
 {
@@ -59,94 +53,5 @@ class PostController extends AbstractController
     ]);
   }
 
-  /** Guardamos la respuesta del cotizador */
-  #[Route('cotizo/set-resp/', methods:['post'])]
-  public function setRespuesta(
-    Request $req, OrdenRespsRepository $rpsEm, ScmService $scm
-  ): Response
-  {
-    $data = $this->toArray($req, 'data');
-    $result = $rpsEm->setRespuesta($data);
-
-    if(!$result['abort']) {
-      if(!array_key_exists('fromLocal', $data)) {
-        $fileName = $data['idOrden'].'-'. $data['own'].'-'. $data['idPieza'];
-        $scm->setNewRegType($fileName.'-'.$result['body'].'-'.$data['id'].'.rsp', $data);
-      }
-    }
-
-    return $this->json($result);
-  }
-
-  /**
-   * Buscamos una nueva carnada para el cotizador para que no salga del estanque
-   * A su ves:
-   * B) Creamos el archivo de visto.
-  */
-  #[Route('cotizo/fetch-carnada/', methods:['post'])]
-  public function fetchCarnada(
-    Request $req, OrdenesRepository $ordEm, FiltrosService $filts
-  ): Response
-  {
-    $ansuelo = $this->toArray($req, 'data');
-    // Recuperamos las no tengo de usuario para filtrar el resultado de la carnaada
-    $ntgo = $filts->getNtnByIdCot($ansuelo['ct']);
-
-    // Buscamos una orden que conicida con el ansuelo
-    $res = $ordEm->fetchCarnadaByAnsuelo($ansuelo, $ntgo);
-    return $this->json(['abort' => false, 'body' => $res]);
-  }
-  
-  /**
-   * Buscamos las ordenes y sus piezas que el usuario halla apartado
-  */
-  #[Route('cotizo/get-piezas-apartadas/', methods:['post'])]
-  public function getPzasApartadas( Request $req, OrdenesRepository $ordEm): Response
-  {
-    $data = $this->toArray($req, 'data');
-    $res  = [];
-    if(array_key_exists('ap', $data)) {
-      $dql = $ordEm->getOrdenesAndPiezasApartadas($data['ap']);
-      $res = $dql->getArrayResult();
-    }
-    return $this->json(['abort' => false, 'body' => $res]);
-  }
-  
-  /**
-   * REVISAR NO IMPLEMENTADO
-   * C) Guardamos el filtro de que maneja esta marca.
-  */
-  #[Route('cotizo/grabar-filtro/', methods:['post'])]
-  public function grabarFiltro(
-    Request $req, FiltrosRepository $filEm, NG2ContactosRepository $contacEm
-  ): Response
-  {
-    
-    $data = $this->toArray($req, 'data');
-    $res = [];
-
-    // Grabar filtros
-    if($data['setF']) {
-      $idEmp = $contacEm->getIdEmpresaByIdContacto($data['ct']);
-      if($idEmp != 0) {
-
-        $save = true;
-        if(!array_key_exists('mk', $data['at'])) {
-          if(!array_key_exists('idOrdCurrent', $data['at'])) {
-            $save = false;
-          }
-        }
-
-        if($save) {
-          $dataFilter = [
-            'emp' => $idEmp, 'marca' => $data['at']['mk'], 'grupo' => 't'
-          ];
-          $filEm->setFiltro($dataFilter, $idEmp);
-        }
-      }
-    }
-
-    return $this->json(['abort' => false, 'body' => $res]);
-  }
 
 }
