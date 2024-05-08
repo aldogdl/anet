@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
 use App\Service\WapiProcess\ProcesarMessage;
-use App\Service\AnetTrack\WaConsumer;
+use App\Service\AnetTrack\Consumer;
 
 class WaController extends AbstractController
 {
@@ -40,7 +40,7 @@ class WaController extends AbstractController
      * Endpoint para la verificacion de conección
      */
     #[Route('wa/wh/{test}', methods: ['GET', 'POST'])]
-    public function verifyWa(Request $req, WaConsumer $consumer, String $test = ''): Response
+    public function verifyWa(Request $req, Consumer $consumer, String $test = ''): Response
     {
 
         if($req->getMethod() == 'GET') {

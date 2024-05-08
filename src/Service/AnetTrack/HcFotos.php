@@ -25,7 +25,6 @@ class HcFotos
     public function exe()
     {
         dd($this->handler->waMsg->idItem);
-
     }
 
 }

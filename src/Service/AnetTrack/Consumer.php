@@ -7,7 +7,7 @@ use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaInitSess;
 use App\Service\AnetTrack\WaSender;
 
-class WaConsumer
+class Consumer
 {
     private Fsys $fSys;
     private WaSender $waSender;
