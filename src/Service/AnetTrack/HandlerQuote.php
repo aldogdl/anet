@@ -36,13 +36,12 @@ class HandlerQuote
     {
 
         $this->bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
-        $this->seg('el_bait');
+        
         if(count($this->bait) == 0) {
             // TODO alertar que el item a cotizar no existe, o tratar de recuperarlo
             return;
         }
         
-        $this->seg('el_bait_paso');
         switch ($this->bait['current']) {
             case 'nfto':
                 $handler = new HcFotos($this);
@@ -67,6 +66,6 @@ class HandlerQuote
 
     ///
     public function seg(String $filename) {
-        $this->fSys->setContent('/', 'wa_'.$filename.'json', []);
+        $this->fSys->setContent('/', 'wa_'.$filename.'.json', []);
     }
 }
