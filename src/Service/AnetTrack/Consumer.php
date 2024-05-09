@@ -54,6 +54,13 @@ class Consumer
 
         $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
         if($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
+            $this->waSender->setConmutador($obj);
+            $this->waSender->sendText(
+                "Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
+                "TEXTO e IMÁGENES."
+            );
+            return;
+        }elseif (TypesWaMsgs::BTNCOTNOW) {
             $clase = new WaBtnCotNow($this->fSys, $this->waSender, $obj);
             $clase->exe($hasCotProgress);
             return;
@@ -64,7 +71,6 @@ class Consumer
         }
 
         if($hasCotProgress) {
-
             $handler = new HandlerQuote($this->fSys, $this->waSender, $obj);
             $handler->exe();
         }elseif ($this->fSys->existe('/', 'conv_free_'.$obj->from.'.json')) {

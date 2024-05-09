@@ -60,6 +60,7 @@ class HandlerQuote
                 # code...
                 break;
         }
+        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
     }
 
 }

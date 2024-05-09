@@ -58,14 +58,18 @@ class WaMsgDto
     }
 
     /** Envio a eventCore para el proceso de cotizacion */
-    public function toMini(): array
+    public function toMini(array $body = []): array
     {
-        return [
+        $cuerpo = [
             'eventName' => $this->eventName,
             'subEvent'  => $this->subEvento,
             'from'      => $this->from,
             'idItem'    => $this->idItem
         ];
+        if(count($body) > 0) {
+            $cuerpo['body'] = $body;
+        }
+        return $cuerpo;
     }
 
     /** Envio a eventCore para Status de Whatsapp */

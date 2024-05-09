@@ -64,20 +64,22 @@ class ParseMsg {
         return null;
     }
 
-    /** */
+    /**
+     * Cuando no es un status el mensaje lo analizamos aqui
+    */
     function extractMessageType(): WaMsgDto
     {
         if(array_key_exists('type', $this->waMsg)) {
             switch ($this->waMsg['type']) {
+                case 'interactive':
+                    return $this->extractInteractive();
+                    break;
                 case 'text':
                     return $this->extractText();
-                break;
-                    case 'interactive':
-                    return $this->extractInteractive();
-                break;
+                    break;
                 case 'image':
                     return $this->extractImage();
-                break;
+                    break;
                 default:
                     return new WaMsgDto(
                         $this->isTest,
@@ -137,7 +139,6 @@ class ParseMsg {
     ///
     function extractImage(): WaMsgDto
     {
-        $txt = 'Error, no se recibio ninguna Imágen';
         $idContext = '';
         if(array_key_exists('context', $this->waMsg)) {
             $idContext = $this->waMsg['context']['id'];
