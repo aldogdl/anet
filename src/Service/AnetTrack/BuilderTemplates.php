@@ -25,6 +25,9 @@ class BuilderTemplates {
                 case 'sfto':
                     $content = $this->forSFTO($content);
                     break;
+                case 'sdta':
+                    $content = $this->forSDTA($content);
+                    break;
                 
                 default:
                     $content = [];
@@ -33,6 +36,25 @@ class BuilderTemplates {
         }
 
         return $content;
+    }
+
+    /** */
+    private function forSDTA(array $tmp): array
+    {
+        if(array_key_exists('interactive', $tmp)) {
+
+            $btns = $tmp['interactive']['action']['buttons'];
+            $rota = count($btns);
+            if($rota > 0) {
+                for ($i=0; $i < $rota; $i++) {
+                    $id = $tmp['interactive']['action']['buttons'][$i]['reply']['id'];
+                    $id = str_replace('{:uuid}', $this->waMsg->idItem, $id);
+                    $tmp['interactive']['action']['buttons'][$i]['reply']['id'] = $id;
+                }
+            }
+            return $tmp;
+        }
+        return [];
     }
 
     /** */

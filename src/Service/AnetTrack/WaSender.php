@@ -41,7 +41,10 @@ class WaSender
         }
     }
 
-    /** */
+    /**
+     * Usado para enviar msg de rastreo, es decir, aquellas plantillas que ya
+     * estan armadas y no requieren de envoltura de otros campos.
+    */
     public function sendTemplate(String $idItem): int
     {
         $tmp = $this->fSys->getContent('prodTrack', $idItem.'_track.json');
@@ -54,7 +57,9 @@ class WaSender
         return $this->sendToWa();
     }
 
-    /** */
+    /** 
+     * Usado para enviar msg donde se enviar solo texto
+    */
     public function sendText(String $texto): int
     {
         $this->type = 'text';
@@ -63,7 +68,10 @@ class WaSender
         return $this->sendToWa();
     }
 
-    /** */
+    /** 
+     * Usado para enviar msg que bienen de las templates y este metodo atiende solo
+     * aquellas templates que son interactivas
+    */
     public function sendInteractive(array $body): int
     {
         $this->type = $body['type'];

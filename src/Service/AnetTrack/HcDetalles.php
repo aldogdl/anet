@@ -2,8 +2,6 @@
 
 namespace App\Service\AnetTrack;
 
-use Doctrine\ORM\Query\Expr\From;
-
 class HcFotos
 {
     private HandlerQuote $handler;
@@ -36,35 +34,15 @@ class HcFotos
         if($this->isAtendido('cnow')) {
             $this->handler->fSys->delete('/', $filename);
         }
+        $this->handler->waSender->setConmutador($this->handler->waMsg);
 
         if(!$this->isValid() && $this->txtValid != '') {
             $this->handler->waSender->sendText($this->txtValid);
             return;
         }
 
-        $track = $this->handler->bait['track'];
-        if(!array_key_exists('fotos', $track)) {
-            $track['fotos'] = [$this->handler->waMsg->content];
-        }else{
-            $track['fotos'][] = $this->handler->waMsg->content;
-        }
-        $this->handler->bait['track'] = $track;
-        $this->handler->bait['current'] = 'sdta';
-        $this->handler->fSys->setContent(
-            'tracking', $this->handler->waMsg->from.'.json', $this->handler->bait
-        );
-
         $builder = new BuilderTemplates($this->handler->fSys, $this->handler->waMsg);
-        $template = $builder->exe('sdta');
-        if(count($template) > 0) {
-            $this->handler->waSender->sendInteractive($template);
-        }else{
-            $this->handler->waSender->sendText(
-                "Muy bien gracias, ahora puedes describir un poco la ".
-                "condición o estado de tu autoparte."
-            );
-        }
-        return;
+        $template = $builder->exe('sfto');
     }
 
     /** */
