@@ -64,7 +64,7 @@ class Consumer
                 "TEXTO e IMÁGENES."
             );
             return;
-        }elseif (TypesWaMsgs::BTNCOTNOW) {
+        }elseif ($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
             $this->fSys->setContent('/', 'segui_2'.$obj->subEvento.'.json', []);
             $clase = new WaBtnCotNow($this->fSys, $this->waSender, $obj);
             $clase->exe($hasCotProgress);
