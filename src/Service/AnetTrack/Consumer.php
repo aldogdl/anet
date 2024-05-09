@@ -52,10 +52,12 @@ class Consumer
 
         // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario
         $this->fSys->delete('/', $obj->from.'_iniLogin.json');
-        $this->fSys->setContent('/', 'por_aqui'.$obj->subEvento.'.json', []);
         
+        $this->fSys->setContent('/', 'por_aqui'.$obj->subEvento.'.json', []);
         $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
+        $this->fSys->setContent('/', 'existe_'.$hasCotProgress.'_'.$obj->subEvento.'.json', []);
         if($obj->tipoMsg == TypesWaMsgs::DOC) {
+            $this->fSys->setContent('/', 'segui_!'.$obj->subEvento.'.json', []);
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
@@ -63,15 +65,18 @@ class Consumer
             );
             return;
         }elseif (TypesWaMsgs::BTNCOTNOW) {
+            $this->fSys->setContent('/', 'segui_2'.$obj->subEvento.'.json', []);
             $clase = new WaBtnCotNow($this->fSys, $this->waSender, $obj);
             $clase->exe($hasCotProgress);
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::NTG || $obj->tipoMsg == TypesWaMsgs::NTGA) {
+            $this->fSys->setContent('/', 'segui_3'.$obj->subEvento.'.json', []);
             $clase = new WaBtnNtgX($this->fSys, $this->waSender, $obj);
             $clase->exe($hasCotProgress);
             return;
         }
         
+        $this->fSys->setContent('/', 'segui_4'.$obj->subEvento.'.json', []);
         if($hasCotProgress) {
             $this->fSys->setContent('/', 'manejador'.$obj->subEvento.'.json', []);
             $handler = new HandlerQuote($this->fSys, $this->waSender, $obj);
