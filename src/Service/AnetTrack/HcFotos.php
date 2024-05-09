@@ -36,7 +36,6 @@ class HcFotos
         if($this->isAtendido('cnow')) {
             $this->handler->fSys->delete('/', $filename);
         }
-
         if(!$this->isValid() && $this->txtValid != '') {
             $this->handler->waSender->sendText($this->txtValid);
             return;

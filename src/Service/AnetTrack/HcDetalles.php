@@ -2,7 +2,7 @@
 
 namespace App\Service\AnetTrack;
 
-class HcFotos
+class HcDetalles
 {
     private HandlerQuote $handler;
     private String $txtValid = '';
