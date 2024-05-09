@@ -79,8 +79,10 @@ class Consumer
             return;
         }elseif ($this->fSys->existe('/', 'conv_free_'.$obj->from.'.json')) {
             
-            dd('Hay conversacion libre');
+            // dd('Hay conversacion libre');
+            $this->fSys->setContent('/', 'rev_cot_free_'.$obj->subEvento.'.json', []);
         }
+        $this->fSys->setContent('/', 'me_voy_'.$obj->subEvento.'.json', []);
         return;
     }
 
