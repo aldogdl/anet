@@ -74,7 +74,9 @@ class WaMsgDto
         return [
             'eventName' => $this->eventName,
             'from'      => $this->from,
-            'recibido'  => $this->idItem,
+            'id'        => $this->id,
+            'body'      => $this->content['stt'],
+            'expi'      => (array_key_exists('expi', $this->content)) ? $this->content['expi'] : '',
         ];
     }
 
