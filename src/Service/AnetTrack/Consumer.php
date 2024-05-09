@@ -5,6 +5,7 @@ namespace App\Service\AnetTrack;
 use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaInitSess;
+use App\Service\AnetTrack\HandlerQuote;
 use App\Service\AnetTrack\WaSender;
 
 class Consumer
@@ -53,7 +54,7 @@ class Consumer
         $this->fSys->delete('/', $obj->from.'_iniLogin.json');
 
         $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
-        if($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
+        if($obj->tipoMsg == TypesWaMsgs::DOC) {
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
