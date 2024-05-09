@@ -57,7 +57,7 @@ class WaMsgDto
         ];
     }
 
-    /** */
+    /** Envio a eventCore para el proceso de cotizacion */
     public function toMini(): array
     {
         return [
@@ -68,11 +68,12 @@ class WaMsgDto
         ];
     }
 
-    /** */
+    /** Envio a eventCore para Status de Whatsapp */
     public function toStt(): array
     {
         return [
             'eventName' => $this->eventName,
+            'subEvent'  => $this->subEvento,
             'from'      => $this->from,
             'id'        => $this->id,
             'body'      => $this->content['stt'],
@@ -80,7 +81,7 @@ class WaMsgDto
         ];
     }
 
-    /** */
+    /** Envio a eventCore para Inicio de Sesion */
     public function toInit(): array
     {
         return [
