@@ -40,6 +40,7 @@ class Consumer
         if($obj->tipoMsg == TypesWaMsgs::STT) {
             $hasCotProgress = $this->fSys->existe('cotProgres', $obj->from.'.json');
             if(!$hasCotProgress) {
+                $this->waSender->setConmutador($obj);
                 $this->waSender->sendMy($obj->toStt());
             }
             return;
