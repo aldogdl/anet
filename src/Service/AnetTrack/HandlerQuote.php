@@ -63,4 +63,8 @@ class HandlerQuote
         $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
     }
 
+    ///
+    public function seg(String $filename) {
+        $this->fSys->setContent('/', 'wa_'.$filename.'json', []);
+    }
 }

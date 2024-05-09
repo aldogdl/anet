@@ -30,23 +30,32 @@ class HcFotos
     public function exe()
     {
         $filename = 'sfto';
+        $this->handler->seg('1');
         if(!$this->isAtendido($filename)) {
             $this->handler->fSys->setContent('/', $filename, ['']);
         }
         if($this->isAtendido('cnow')) {
             $this->handler->fSys->delete('/', $filename);
         }
+
+        // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
             $this->handler->waSender->sendText($this->txtValid);
             return;
         }
 
-        $track = $this->handler->bait['track'];
+        $this->handler->seg('2');
+        
+        $track = [];
+        if(!array_key_exists('track', $this->handler->bait)) {
+            $track = $this->handler->bait['track'];
+        }
         if(!array_key_exists('fotos', $track)) {
             $track['fotos'] = [$this->handler->waMsg->content];
         }else{
             $track['fotos'][] = $this->handler->waMsg->content;
         }
+        $this->handler->seg('3');
         $this->handler->bait['track'] = $track;
         $this->handler->bait['current'] = 'sdta';
         $this->handler->fSys->setContent(
