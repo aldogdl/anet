@@ -52,7 +52,8 @@ class Consumer
 
         // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario
         $this->fSys->delete('/', $obj->from.'_iniLogin.json');
-
+        $this->fSys->setContent('/', 'por_aqui'.$obj->subEvento.'.json', []);
+        
         $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
         if($obj->tipoMsg == TypesWaMsgs::DOC) {
             $this->waSender->setConmutador($obj);
@@ -70,10 +71,12 @@ class Consumer
             $clase->exe($hasCotProgress);
             return;
         }
-
+        
         if($hasCotProgress) {
+            $this->fSys->setContent('/', 'manejador'.$obj->subEvento.'.json', []);
             $handler = new HandlerQuote($this->fSys, $this->waSender, $obj);
             $handler->exe();
+            return;
         }elseif ($this->fSys->existe('/', 'conv_free_'.$obj->from.'.json')) {
             
             dd('Hay conversacion libre');
