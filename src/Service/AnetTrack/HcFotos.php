@@ -2,8 +2,6 @@
 
 namespace App\Service\AnetTrack;
 
-use Doctrine\ORM\Query\Expr\From;
-
 class HcFotos
 {
     private HandlerQuote $handler;
@@ -15,6 +13,11 @@ class HcFotos
         $this->handler = $handler;
     }
 
+    /** */
+    private function createFilenameTmpOf(String $name): String {
+        return $this->handler->waMsg->from.'_'.$name.'.json';
+    }
+
     /** 
      * Cuando NiFi o Ngrok no responden inmediatamente por causa de latencia, whatsapp
      * considera que no llego el mensaje a este servidor, por lo tanto reenvia el mensaje
@@ -23,18 +26,20 @@ class HcFotos
      * evitamos esto.
     */
     public function isAtendido(String $filename): bool {
-        return $this->handler->fSys->existe('/', $this->handler->waMsg->from.'_'.$filename.'.json');
+        return $this->handler->fSys->existe('/', $filename);
     }
 
     /** */
     public function exe()
     {
-        $filename = 'sfto';
-
+        // Creamos el archivo indicativo del proceso actual
+        $filename = $this->createFilenameTmpOf('sfto');
         if(!$this->isAtendido($filename)) {
             $this->handler->fSys->setContent('/', $filename, ['']);
         }
-        if($this->isAtendido('cnow')) {
+        // Eliminamos el archivo indicativo del proceso anterior
+        $filename = $this->createFilenameTmpOf('cnow');
+        if($this->isAtendido($filename)) {
             $this->handler->fSys->delete('/', $filename);
         }
         $this->handler->waSender->setConmutador($this->handler->waMsg);
@@ -44,7 +49,7 @@ class HcFotos
             $this->handler->waSender->sendText($this->txtValid);
             return;
         }
-
+        $this->handler->seg('1');
         $track = [];
         if(!array_key_exists('track', $this->handler->bait)) {
             $track = $this->handler->bait['track'];
@@ -64,7 +69,7 @@ class HcFotos
         $builder = new BuilderTemplates($this->handler->fSys, $this->handler->waMsg);
         $template = $builder->exe('sdta');
         if(count($template) > 0) {
-            $this->handler->waSender->sendInteractive($template);
+            $res = $this->handler->waSender->sendInteractive($template);
         }else{
             $this->handler->waSender->sendText(
                 "Muy bien gracias, ahora puedes describir un poco la ".

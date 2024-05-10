@@ -133,6 +133,7 @@ class WaSender
             if($this->isTest) {
                 file_put_contents('test_sentToWa_error_'.$this->conm->to.'.json', json_encode($result));
             }else{
+                file_put_contents('wa_error_'.$this->conm->to.'.json', json_encode($result));
                 $this->sendMy($result);
             }
         }

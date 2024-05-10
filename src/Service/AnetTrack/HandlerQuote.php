@@ -51,7 +51,7 @@ class HandlerQuote
                 $handler = new HcFotos($this);
                 $handler->exe();
                 break;
-                case 'sdta':
+            case 'sdta':
                 $handler = new HcFotos($this);
                 $handler->exe();
                 # code...
