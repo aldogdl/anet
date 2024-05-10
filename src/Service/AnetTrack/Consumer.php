@@ -25,6 +25,7 @@ class Consumer
     /** */
     public function exe(array $message, bool $isTest = false): void
     {
+        file_put_contents('message.json', json_encode($message));
         $parser = new ParseMsg($message);
         $obj = $parser->parse($isTest);
         if($obj == null) {

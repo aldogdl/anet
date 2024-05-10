@@ -83,8 +83,8 @@ class HcFotos
             }
         }else{
             $this->waSender->sendText(
-                "Muy bien gracias, ahora puedes describir un poco la ".
-                "condición o estado de tu autoparte."
+                "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
+                "CONDICIÓN O ESTADO de tu autoparte por favor."
             );
         }
 
