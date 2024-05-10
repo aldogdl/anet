@@ -107,8 +107,14 @@ class Fsys {
                     $idsItems = array_column($cooler, 'idItem');
                     $has = array_search($waMsg->idItem, $idsItems);
                     if($has !== false) {
+                        
                         $bait = $cooler[$has];
+                        $date = new \DateTime('now');
+                        $attend = $date->format('h:i:s a');
                         $bait['wamid'] = $waMsg->id;
+                        $bait['current'] = 'sfto';
+                        $bait['attend'] = $attend;
+
                         unset($cooler[$has]);
                         $est['items'] = $cooler;
                         $this->setContent('tracking', $waMsg->from . '.json', $bait);
