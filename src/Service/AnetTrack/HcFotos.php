@@ -12,6 +12,19 @@ class HcFotos
     private array $bait;
     private String $txtValid = '';
 
+    private $opciones = array(
+        "¡Genial! 😃👍 ¿Quieres enviar *más fotos* o seguir con la *descripción* del estado general?",
+        "¡Perfecto! 😃👌 ¿Quieres enviar *más fotos* o seguir con los *detalles* sobre el estado general?",
+        "¡Estupendo! 😊👍 ¿Quieres añadir *más fotos* o avanzar con los *detalles* sobre el estado general?",
+        "¡Fantástico! 😄👍 ¿Quieres enviar *más fotos* o continuar con la información detallada sobre el estado general?",
+        "¡Excelente! 😃👌 ¿Quieres agregar *más fotos* o seguir con los *detalles* sobre el estado general?",
+        "¡Maravilloso! 😊👍 ¿Quieres incluir *más fotos* o avanzar con los *detalles* sobre el estado general?",
+        "¡Genial! 😃👌 ¿Deseas subir *más fotos* o avanzar con los *detalles* sobre el estado general?",
+        "¡Fantástico! 😄👍 ¿Quieres añadir *más fotos* o continuar con la descripción detallada sobre el estado general?",
+        "¡Increíble! 😊👌 ¿Quieres enviar *más fotos* o avanzar con los *detalles* sobre el estado general?",
+        "¡Excelente! 😃👍 ¿Listo para *más fotos* o continuar con la descripción del estado general?"
+    );
+
     /** */
     public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
     {

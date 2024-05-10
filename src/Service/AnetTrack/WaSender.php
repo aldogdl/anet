@@ -85,7 +85,7 @@ class WaSender
     {
         $error = 'No se recibió cuerpo de mensaje valido para enviar.';
         $code  = 501;
-
+        $bodyResult = [];
         if($this->conm != null) {
 
             if($this->isTest) {
@@ -105,14 +105,14 @@ class WaSender
                         ]
                     );
                     $code = $response->getStatusCode();
-                    $this->body = json_decode($response->getContent(), true);
+                    $bodyResult = json_decode($response->getContent(), true);
                     
                 } catch (\Throwable $th) {
                     $code = 401;
                     if(mb_strpos($th->getMessage(), '401') !== false) {
-                        $this->body = ['error' => 'Token de Whatsapp API caducado'];
+                        $bodyResult = ['error' => 'Token de Whatsapp API caducado'];
                     }else{
-                        $this->body = ['error' => $th->getMessage()];
+                        $bodyResult = ['error' => $th->getMessage(), 'razon' => $bodyResult];
                     }
                 }
             }
@@ -124,9 +124,7 @@ class WaSender
             $result = [
                 'evento' => 'error_sr',
                 'statuscode' => $code,
-                'payload' => [
-                    'body' => ($this->body == '') ? $error : $this->body,
-                ]
+                'payload' => $bodyResult
             ];
             // Si ocurren un error al enviar el mesnaje por whatsapp
             // enviamos el error a EventCore.
