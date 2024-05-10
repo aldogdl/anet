@@ -38,7 +38,7 @@ class HcCancelarCot
     }
 
     /** */
-    public function exe()
+    public function exe(): array
     {
         // Eliminamos el archivo indicativos
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
@@ -49,8 +49,8 @@ class HcCancelarCot
                 $this->fSys->delete('/', $filename);
             }
         }
+        $this->fSys->delete('tracking', $this->bait['waId'].'.json');
 
-        $this->fSys->delete('tracking', $this->bait['idItem'].'.json');
         // Recuperamos otro bait directamente desde el estanque
         $this->waSender->setConmutador($this->waMsg);
         
@@ -66,7 +66,9 @@ class HcCancelarCot
         }
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($this->waMsg->toMini());
+            return [];
         }
-    }
 
+        return $this->bait;
+    }
 }
