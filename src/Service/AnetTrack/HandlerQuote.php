@@ -11,7 +11,6 @@ class HandlerQuote
     public Fsys $fSys;
     public WaSender $waSender;
     public String $fileTmp = '';
-    public array $bait = [];
 
     /** */
     public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg)
@@ -35,25 +34,25 @@ class HandlerQuote
     public function exe()
     {
 
-        $this->bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
+        $bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
 
-        if(count($this->bait) == 0) {
+        if(count($bait) == 0) {
             // TODO alertar que el item a cotizar no existe, o tratar de recuperarlo
             return;
         }
         
-        switch ($this->bait['current']) {
+        switch ($bait['current']) {
             case 'nfto':
-                $handler = new HcFotos($this);
-                $handler->exe();
+                $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
+                $bait = $handler->exe();
                 break;
             case 'sfto':
-                $handler = new HcFotos($this);
-                $handler->exe();
+                $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
+                $bait = $handler->exe();
                 break;
             case 'sdta':
-                $handler = new HcFotos($this);
-                $handler->exe();
+                $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
+                $bait = $handler->exe();
                 # code...
                 break;
             case 'scto':
@@ -63,7 +62,10 @@ class HandlerQuote
                 # code...
                 break;
         }
-        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
+        
+        if(count($bait) > 0) {
+            $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $bait);
+        }
     }
 
     ///

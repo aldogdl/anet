@@ -2,20 +2,28 @@
 
 namespace App\Service\AnetTrack;
 
+use App\Dtos\WaMsgDto;
+
 class HcFotos
 {
-    private HandlerQuote $handler;
+    private Fsys $fSys;
+    private WaSender $waSender;
+    private WaMsgDto $waMsg;
+    private array $bait;
     private String $txtValid = '';
 
     /** */
-    public function __construct(HandlerQuote $handler)
+    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
     {
-        $this->handler = $handler;
+        $this->fSys = $fsys;
+        $this->waSender = $waS;
+        $this->waMsg = $msg;
+        $this->waMsg = $bait;
     }
 
     /** */
     private function createFilenameTmpOf(String $name): String {
-        return $this->handler->waMsg->from.'_'.$name.'.json';
+        return $this->waMsg->from.'_'.$name.'.json';
     }
 
     /** 
@@ -26,57 +34,61 @@ class HcFotos
      * evitamos esto.
     */
     public function isAtendido(String $filename): bool {
-        return $this->handler->fSys->existe('/', $filename);
+        return $this->fSys->existe('/', $filename);
     }
 
     /** */
-    public function exe()
+    public function exe(): array
     {
         // Creamos el archivo indicativo del proceso actual
         $filename = $this->createFilenameTmpOf('sfto');
         if(!$this->isAtendido($filename)) {
-            $this->handler->fSys->setContent('/', $filename, ['']);
+            $this->fSys->setContent('/', $filename, ['']);
         }
         // Eliminamos el archivo indicativo del proceso anterior
         $filename = $this->createFilenameTmpOf('cnow');
         if($this->isAtendido($filename)) {
-            $this->handler->fSys->delete('/', $filename);
+            $this->fSys->delete('/', $filename);
         }
-        $this->handler->waSender->setConmutador($this->handler->waMsg);
+        $this->waSender->setConmutador($this->waMsg);
 
         // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
-            $this->handler->waSender->sendText($this->txtValid);
-            return;
+            $this->waSender->sendText($this->txtValid);
+            return [];
         }
-        $this->handler->seg('1');
+        
         $track = [];
-        if(!array_key_exists('track', $this->handler->bait)) {
-            $track = $this->handler->bait['track'];
+        if(!array_key_exists('track', $this->bait)) {
+            $track = $this->bait['track'];
         }
         if(!array_key_exists('fotos', $track)) {
-            $track['fotos'] = [$this->handler->waMsg->content];
+            $track['fotos'] = [$this->waMsg->content];
         }else{
-            $track['fotos'][] = $this->handler->waMsg->content;
+            $track['fotos'][] = $this->waMsg->content;
         }
 
-        $this->handler->bait['track'] = $track;
-        $this->handler->bait['current'] = 'sdta';
-        $this->handler->fSys->setContent(
-            'tracking', $this->handler->waMsg->from.'.json', $this->handler->bait
+        $this->bait['track'] = $track;
+        $this->bait['current'] = 'sdta';
+        $this->fSys->setContent(
+            'tracking', $this->waMsg->from.'.json', $this->bait
         );
 
-        $builder = new BuilderTemplates($this->handler->fSys, $this->handler->waMsg);
+        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         $template = $builder->exe('sdta');
         if(count($template) > 0) {
-            $res = $this->handler->waSender->sendInteractive($template);
+            $res = $this->waSender->sendInteractive($template);
+            if($res >= 200 && $res <= 300) {
+                $this->waSender->sendMy($this->waMsg->toMini());
+            }
         }else{
-            $this->handler->waSender->sendText(
+            $this->waSender->sendText(
                 "Muy bien gracias, ahora puedes describir un poco la ".
                 "condición o estado de tu autoparte."
             );
         }
-        return;
+
+        return $this->bait;
     }
 
     /** */
@@ -84,21 +96,21 @@ class HcFotos
     {
         $this->txtValid = '';
         $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
-        if(!in_array($this->handler->waMsg->status, $permitidas)) {
+        if(!in_array($this->waMsg->status, $permitidas)) {
             $this->txtValid = "Lo sentimos pero el formato de imagen (".
-            $this->handler->waMsg->status.") no está entre la lista de imágenes ".
+            $this->waMsg->status.") no está entre la lista de imágenes ".
             "permididas, por el momento sólo aceptamos fotos con extención:\n".
             "[".implode(', ', $permitidas)."].";
             return false;
         }
-        if(count($this->handler->waMsg->content) == 0) {
+        if(count($this->waMsg->content) == 0) {
             $this->txtValid = "Lo sentimos pero la imagen (".
             "recibida no es valida, por favor intenta enviarla nuevamente ".
             "o evnía otra como segunda opción.";
             return false;
         }
 
-        if(!array_key_exists('id', $this->handler->waMsg->content)) {
+        if(!array_key_exists('id', $this->waMsg->content)) {
             $this->txtValid = "Lo sentimos pero la imagen (".
             "no se envio correctamente a WHATSAPP, intenta enviarla ".
             "nuevamente por favor.";
