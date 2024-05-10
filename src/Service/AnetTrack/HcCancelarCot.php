@@ -63,6 +63,7 @@ class HcCancelarCot
                 "oportunidades de venta.💰"
             );
         }
+        file_put_contents('wa_'.$code.'_'.$otroBait.'.json', '');
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($this->waMsg->toMini());
             return [];
