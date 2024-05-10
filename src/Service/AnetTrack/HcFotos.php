@@ -65,7 +65,12 @@ class HcFotos
         if(!array_key_exists('fotos', $track)) {
             $track['fotos'] = [$this->waMsg->content];
         }else{
-            array_push($track['fotos'], [$this->waMsg->content]);
+            $idsFtos = array_column($track['fotos'], 'id');
+            $has = array_search($this->waMsg->content['id'], $idsFtos);
+            if($has !== false) {
+                return [];
+            }
+            array_push($track['fotos'], $this->waMsg->content);
         }
 
         $this->bait['track'] = $track;
