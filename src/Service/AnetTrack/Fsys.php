@@ -120,6 +120,34 @@ class Fsys {
         return false;
     }
 
+    /** 
+     * Buscamos entre el estanque si existe otro bait que podamos enviar de preferencia
+     * del mismo modelo que el enviado por parametro, si no hay mismo modelo retornamos
+     * la primer opcion disponible.
+     * @return String El Id del Item encontrado
+    */
+    public function getNextBait(WaMsgDto $waMsg, String $mdlpref = ''): String
+    {    
+        $est = $this->getContent('waEstanque', $waMsg->from . '.json');
+        if(count($est) > 0) {
+            if(array_key_exists('items', $est)) {
+
+                $cooler = $est['items'];
+                if(count($cooler) > 0) {
+                    $has = 0;
+                    if($mdlpref != '') {
+                        $mdls = array_column($cooler, 'mdl');
+                        $has = array_search($mdlpref, $mdls);
+                    }
+                    if($has !== false) {
+                        return $cooler[$has]['idItem'];
+                    }
+                }
+            }
+        }
+        return '';
+    }
+
     /** */
     private function getFolderTo(String $folder): String
     {

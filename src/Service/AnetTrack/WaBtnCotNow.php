@@ -37,8 +37,8 @@ class WaBtnCotNow
 
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         if($hasCotInProgress) {
-            // TODO abisar que hay una cotizacion en progreso y dar opcion a cancelar o seguir
-            // con la que esta en progreso.
+            // Abisamos que hay una cotizacion en progreso y damos opción a cancelar o seguir
+            // con la que esta en curso.
             $bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
             if(count($bait) > 0) {
                 $template = $builder->exe('cext', $bait['idItem']);
@@ -46,6 +46,9 @@ class WaBtnCotNow
                     $this->waSender->context = $bait['wamid'];
                 }
                 $code = $this->waSender->sendInteractive($template);
+                if($code >= 200 && $code <= 300) {
+                    $this->waSender->sendMy($this->waMsg->toMini());
+                }
             }
             return;
         }
@@ -56,7 +59,6 @@ class WaBtnCotNow
         $this->fSys->setContent('/', $this->fileTmp, ['']);
         $this->fSys->putCotizando($this->waMsg);
         
-
         $template = $builder->exe('sfto');
         $code = $this->waSender->sendInteractive($template);
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
