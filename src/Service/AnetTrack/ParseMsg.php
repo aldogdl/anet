@@ -141,7 +141,7 @@ class ParseMsg {
     {
         $idContext = '';
         if(array_key_exists('context', $this->waMsg)) {
-            if(array_key_exists('id', $this->waMsg)) {
+            if(array_key_exists('id', $this->waMsg['context'])) {
                 $idContext = $this->waMsg['context']['id'];
             }
         }
