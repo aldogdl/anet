@@ -36,7 +36,7 @@ class HandlerQuote
     {
 
         $this->bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
-        
+
         if(count($this->bait) == 0) {
             // TODO alertar que el item a cotizar no existe, o tratar de recuperarlo
             return;
@@ -51,7 +51,9 @@ class HandlerQuote
                 $handler = new HcFotos($this);
                 $handler->exe();
                 break;
-            case 'sdta':
+                case 'sdta':
+                $handler = new HcFotos($this);
+                $handler->exe();
                 # code...
                 break;
             case 'scto':
