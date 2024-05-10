@@ -33,23 +33,31 @@ class WaBtnCotNow
     /** */
     public function exe(bool $hasCotInProgress)
     {
+        $this->waSender->setConmutador($this->waMsg);
+
+        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
+        if($hasCotInProgress) {
+            // TODO abisar que hay una cotizacion en progreso y dar opcion a cancelar o seguir
+            // con la que esta en progreso.
+            $bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
+            if(count($bait) > 0) {
+                $template = $builder->exe('cext', $bait['idItem']);
+                if(array_key_exists('wamid', $bait)) {
+                    $this->waSender->context = $bait['wamid'];
+                }
+                $code = $this->waSender->sendInteractive($template);
+            }
+            return;
+        }
+
         if($this->isAtendido()) {
             return;
         }
         $this->fSys->setContent('/', $this->fileTmp, ['']);
-
         $this->fSys->putCotizando($this->waMsg);
-        if($hasCotInProgress) {
-            // TODO abisar que hay una cotizacion en progreso y dar opcion a cancelar o seguir
-            // con la que esta en progreso.
-            // $this->waSender->setConmutador($this->waMsg);
-            return;
-        }
+        
 
-        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         $template = $builder->exe('sfto');
-
-        $this->waSender->setConmutador($this->waMsg);
         $code = $this->waSender->sendInteractive($template);
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($this->waMsg->toMini());

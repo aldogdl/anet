@@ -19,6 +19,7 @@ class WaSender
     private $comCoreFile;
     private Fsys $fSys;
     private bool $isTest;
+    public String $context;
 
     /** */
     public function __construct(HttpClientInterface $client, ParameterBagInterface $container, Fsys $fsys)
@@ -91,9 +92,9 @@ class WaSender
             if($this->isTest) {
                 file_put_contents('test_sentToWa_'.$this->conm->to.'.json', json_encode($this->body));
             }
-            file_put_contents('wa_template_'.$this->conm->to.'.json', json_encode($this->body));
+            
             if(count($this->body) != 0 && $this->isTest === false) {
-    
+                
                 try {
                     $response = $this->client->request(
                         'POST', $this->conm->uriBase . '/messages', [
@@ -149,9 +150,10 @@ class WaSender
             "type" => $this->type,
             $this->type  => $this->body
         ];
- 
-        if($this->conm->context != '') {
-            $this->body['context'] = ['message_id' => $this->conm->context];
+
+        $context = ($this->context == '') ? $this->conm->context : $this->context;
+        if($context != '') {
+            $this->body['context'] = ['message_id' => $context];
         }
 
     }

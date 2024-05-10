@@ -9,7 +9,49 @@ class BuilderTemplates {
 
     private Fsys $fSys;
     private WaMsgDto $waMsg;
-
+    private $opciones = array(
+        array(
+            'head' => '😃👍 ¡Genial!',
+            'body' => '¿Quieres enviar *más fotos* o seguir con la *descripción* del estado general?'
+        ),
+        array(
+            'head' => '😃👌 ¡Perfecto!',
+            'body' => '¿Quieres enviar *más fotos* o seguir con los *detalles* de la pieza?'
+        ),
+        array(
+            'head' => '😊👍 ¡Estupendo!',
+            'body' => '¿Quieres añadir *más fotos* o avanzar con los *detalles* de la autoparte?'
+        ),
+        array(
+            'head' => '😄👍 ¡Fantástico!',
+            'body' => '¿Quieres enviar *más fotos* o continuar con la información sobre los detalles?'
+        ),
+        array(
+            'head' => '😃👌 ¡Excelente!',
+            'body' => '¿Quieres agregar *más fotos* o seguir con los *detalles* del producto?'
+        ),
+        array(
+            'head' => '😊👍 ¡Maravilloso!',
+            'body' => '¿Quieres incluir *más fotos* o avanzar con los *detalles* de la pieza?'
+        ),
+        array(
+            'head' => '😃👌 ¡Genial!',
+            'body' => '¿Deseas subir *más fotos* o avanzar con los *detalles* de la autoparte?'
+        ),
+        array(
+            'head' => '😄👍 ¡Fantástico!',
+            'body' => '¿Quieres añadir *más fotos* o continuar con la descripción de los detalles?'
+        ),
+        array(
+            'head' => '😊👌 ¡Increíble!',
+            'body' => '¿Quieres enviar *más fotos* o avanzar con los *detalles* del producto?'
+        ),
+        array(
+            'head' => '😃👍 ¡Excelente!',
+            'body' => '¿Listo para *más fotos* o continuar con la descripción del estado general?'
+        )
+    );
+    
     public function __construct(Fsys $fsys, WaMsgDto $wamsg)
     {
         $this->fSys = $fsys;
@@ -17,30 +59,26 @@ class BuilderTemplates {
     }
 
     /** */
-    public function exe(String $template): array
+    public function exe(String $template, String $idItem = ''): array
     {
-        $content = $this->fSys->getContent('waTemplates', $template.'.json');
+        $content = [];
+        try {
+            $content = $this->fSys->getContent('waTemplates', $template.'.json');
+        } catch (\Throwable $th) {}
         if(count($content) > 0) {
-            switch ($template) {
-                case 'sfto':
-                    $content = $this->forSFTO($content);
-                    break;
-                case 'sdta':
-                    $content = $this->forSDTA($content);
-                    break;
-                
-                default:
-                    $content = [];
-                    break;
+            $changeOnlyBtns = ['sfto', 'sdta', 'cext'];
+            if(in_array($template, $changeOnlyBtns)) {
+                return $this->changeOnlyIdByBtns($content, $idItem);
             }
         }
-
+        
         return $content;
     }
 
     /** */
-    private function forSDTA(array $tmp): array
+    private function changeOnlyIdByBtns(array $tmp, String $idItem = ''): array
     {
+        $idItem = ($idItem == '') ? $this->waMsg->idItem : $idItem;
         if(array_key_exists('interactive', $tmp)) {
 
             $btns = $tmp['interactive']['action']['buttons'];
@@ -48,7 +86,7 @@ class BuilderTemplates {
             if($rota > 0) {
                 for ($i=0; $i < $rota; $i++) {
                     $id = $tmp['interactive']['action']['buttons'][$i]['reply']['id'];
-                    $id = str_replace('{:uuid}', $this->waMsg->idItem, $id);
+                    $id = str_replace('{:uuid}', $idItem, $id);
                     $tmp['interactive']['action']['buttons'][$i]['reply']['id'] = $id;
                 }
             }
@@ -57,15 +95,4 @@ class BuilderTemplates {
         return [];
     }
 
-    /** */
-    private function forSFTO(array $tmp): array
-    {
-        if(array_key_exists('interactive', $tmp)) {
-            $id = $tmp['interactive']['action']['buttons'][0]['reply']['id'];
-            $id = str_replace('{:uuid}', $this->waMsg->idItem, $id); 
-            $tmp['interactive']['action']['buttons'][0]['reply']['id'] = $id;
-            return $tmp;
-        }
-        return [];
-    }
 }
