@@ -38,6 +38,14 @@ class HandlerQuote
         if(count($bait) == 0) {
             // TODO alertar que el item a cotizar no existe, o tratar de recuperarlo
             return;
+        }else{
+            if($this->waMsg->idItem == '') {
+                $this->waMsg->idItem = $bait['idItem'];
+            }
+            if($this->waMsg->context == '') {
+                $this->waMsg->idItem = $bait['id'];
+            }
+            file_put_contents('message_process.json', json_encode($this->waMsg->toArray()));
         }
 
         if($this->waMsg->subEvento == 'cnc') {
