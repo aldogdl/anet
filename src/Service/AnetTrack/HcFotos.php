@@ -59,7 +59,7 @@ class HcFotos
         }
         
         $track = [];
-        if(!array_key_exists('track', $this->bait)) {
+        if(array_key_exists('track', $this->bait)) {
             $track = $this->bait['track'];
         }
         if(!array_key_exists('fotos', $track)) {
