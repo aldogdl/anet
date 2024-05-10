@@ -4,6 +4,7 @@ namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\Fsys;
+use App\Service\AnetTrack\WaSender;
 
 class HandlerQuote
 {
@@ -33,24 +34,22 @@ class HandlerQuote
     /** */
     public function exe()
     {
-
         $bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
         if(count($bait) == 0) {
             // TODO alertar que el item a cotizar no existe, o tratar de recuperarlo
             return;
         }
-        
+
+        if($this->waMsg->subEvento == 'cnc') {
+            //-> Cancelar cotizacion en curso
+            $handler = new HcCancelarCot($this->fSys, $this->waSender, $this->waMsg, $bait);
+            $bait = $handler->exe();
+            return;
+        }elseif($this->waMsg->subEvento == 'ccc') {
+
+        }
+
         switch ($bait['current']) {
-            case 'cnc':
-                //-> Cancelar cotizacion en curso
-                $handler = new HcCancelarCot($this->fSys, $this->waSender, $this->waMsg, $bait);
-                $bait = $handler->exe();
-                break;
-            case 'ccc':
-                //-> Continuar con cotizacion en curso
-                $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
-                $bait = $handler->exe();
-                break;
             case 'nfto':
                 $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
                 $bait = $handler->exe();

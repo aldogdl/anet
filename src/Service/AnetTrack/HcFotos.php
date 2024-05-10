@@ -3,6 +3,8 @@
 namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
+use App\Service\AnetTrack\Fsys;
+use App\Service\AnetTrack\WaSender;
 
 class HcFotos
 {

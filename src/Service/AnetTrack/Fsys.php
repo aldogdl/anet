@@ -148,7 +148,9 @@ class Fsys {
         return '';
     }
 
-    /** */
+    /** 
+     * Uso interno para contruir el folder de destino
+    */
     private function getFolderTo(String $folder): String
     {
         $folder = ($folder == '/') ? 'phtml' : $folder;

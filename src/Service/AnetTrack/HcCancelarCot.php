@@ -10,8 +10,7 @@ class HcCancelarCot
     private WaSender $waSender;
     private WaMsgDto $waMsg;
     private array $bait;
-    private String $txtValid = '';
-
+    
     /** */
     public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
     {
@@ -51,9 +50,9 @@ class HcCancelarCot
         }
         $this->fSys->delete('tracking', $this->bait['waId'].'.json');
 
-        // Recuperamos otro bait directamente desde el estanque
         $this->waSender->setConmutador($this->waMsg);
         
+        // Recuperamos otro bait directamente desde el estanque
         $otroBait = $this->fSys->getNextBait($this->waMsg, $this->bait['mdl']);
         if($otroBait != '') {
             $code = $this->waSender->sendTemplate($otroBait);
