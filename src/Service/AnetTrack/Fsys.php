@@ -108,6 +108,7 @@ class Fsys {
                     $has = array_search($waMsg->idItem, $idsItems);
                     if($has !== false) {
                         $bait = $cooler[$has];
+                        $bait['wamid'] = $waMsg->id;
                         unset($cooler[$has]);
                         $est['items'] = $cooler;
                         $this->setContent('tracking', $waMsg->from . '.json', $bait);
