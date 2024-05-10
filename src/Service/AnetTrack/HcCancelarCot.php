@@ -48,6 +48,7 @@ class HcCancelarCot
                 $this->fSys->delete('/', $filename);
             }
         }
+        file_put_contents('wa_borrando_'.$this->bait['waId'].'.json', '');
         $this->fSys->delete('tracking', $this->bait['waId'].'.json');
         
         $this->waSender->setConmutador($this->waMsg);
