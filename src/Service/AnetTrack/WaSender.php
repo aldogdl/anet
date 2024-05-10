@@ -29,6 +29,7 @@ class WaSender
         $this->sendMyFail = $container->get('sendMyFail');
         $this->anetToken  = $container->get('getAnToken');
         $this->comCoreFile= $container->get('comCoreFile');
+        $this->context = '';
     }
 
     /** */
