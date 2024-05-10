@@ -40,7 +40,6 @@ class HcCancelarCot
     public function exe(): array
     {
         // Eliminamos el archivo indicativos
-        file_put_contents('wa_seg_1_.json', '');
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         $rota = count($toDelete);
         for ($i=0; $i < $rota; $i++) { 
@@ -52,20 +51,16 @@ class HcCancelarCot
         $this->fSys->delete('tracking', $this->bait['waId'].'.json');
         
         $this->waSender->setConmutador($this->waMsg);
-        file_put_contents('wa_seg_2_.json', '');
-        
+
         // Recuperamos otro bait directamente desde el estanque
         $otroBait = $this->fSys->getNextBait($this->waMsg, $this->bait['mdl']);
-        file_put_contents('wa_seg_3_.json', '');
         if($otroBait != '') {
-            file_put_contents('wa_seg_4_.json', '');
             $code = $this->waSender->sendTemplate($otroBait);
         }else {
-            file_put_contents('wa_seg_5_.json', '');
             $code = $this->waSender->sendText(
-                "📵 *Solicitud CANCELADA con éxito.*\n, por el momento no se encontró ".
+                "📵 *Solicitud CANCELADA.*\n\nPor el momento no se encontró ".
                 "otra cotización para ti, pero pronto te estarán llegando nuevas ".
-                "oportunidades de venta.💰"
+                "oportunidades de venta.💰 ¡Éxito!"
             );
         }
         file_put_contents('wa_'.$code.'_'.$otroBait.'.json', '');
