@@ -43,7 +43,7 @@ class HandlerQuote
                 $this->waMsg->idItem = $bait['idItem'];
             }
             if($this->waMsg->context == '' && $bait['wamid'] != '') {
-                $this->waMsg->idItem = $bait['wamid'];
+                $this->waMsg->context = $bait['wamid'];
             }
             file_put_contents('message_process.json', json_encode($this->waMsg->toArray()));
         }

@@ -42,6 +42,37 @@ class HcFotos
     /** */
     public function exe(): array
     {
+        
+        $this->prepareStep();
+
+        // Validamos la integridad del tipo de mensaje
+        if(!$this->isValid() && $this->txtValid != '') {
+            $this->waSender->sendText($this->txtValid);
+            return [];
+        }
+
+        $this->editarBait();
+
+        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
+        $template = $builder->exe('sdta');
+        if(count($template) > 0) {
+            $res = $this->waSender->sendInteractive($template);
+            if($res >= 200 && $res <= 300) {
+                $this->waSender->sendMy($this->waMsg->toMini());
+            }
+        }else{
+            $this->waSender->sendText(
+                "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
+                "CONDICIÓN O ESTADO de tu autoparte por favor."
+            );
+        }
+
+        return $this->bait;
+    }
+
+    /** */
+    private function prepareStep()
+    {
         // Creamos el archivo indicativo del proceso actual
         $filename = $this->createFilenameTmpOf('sfto');
         if(!$this->isAtendido($filename)) {
@@ -53,13 +84,11 @@ class HcFotos
             $this->fSys->delete('/', $filename);
         }
         $this->waSender->setConmutador($this->waMsg);
+    }
 
-        // Validamos la integridad del tipo de mensaje
-        if(!$this->isValid() && $this->txtValid != '') {
-            $this->waSender->sendText($this->txtValid);
-            return [];
-        }
-        
+    /** */
+    private function editarBait()
+    {
         $track = [];
         if(array_key_exists('track', $this->bait)) {
             $track = $this->bait['track'];
@@ -77,25 +106,7 @@ class HcFotos
 
         $this->bait['track'] = $track;
         $this->bait['current'] = 'sdta';
-        $this->fSys->setContent(
-            'tracking', $this->waMsg->from.'.json', $this->bait
-        );
-
-        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
-        $template = $builder->exe('sdta');
-        if(count($template) > 0) {
-            $res = $this->waSender->sendInteractive($template);
-            if($res >= 200 && $res <= 300) {
-                $this->waSender->sendMy($this->waMsg->toMini());
-            }
-        }else{
-            $this->waSender->sendText(
-                "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
-                "CONDICIÓN O ESTADO de tu autoparte por favor."
-            );
-        }
-
-        return $this->bait;
+        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
     }
 
     /** */
