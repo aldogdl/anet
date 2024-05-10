@@ -65,7 +65,7 @@ class HcFotos
         if(!array_key_exists('fotos', $track)) {
             $track['fotos'] = [$this->waMsg->content];
         }else{
-            $track['fotos'][] = $this->waMsg->content;
+            array_push($track['fotos'], [$this->waMsg->content]);
         }
 
         $this->bait['track'] = $track;

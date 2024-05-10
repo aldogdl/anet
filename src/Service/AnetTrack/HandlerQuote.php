@@ -62,14 +62,10 @@ class HandlerQuote
                 # code...
                 break;
         }
-        
+
         if(count($bait) > 0) {
             $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $bait);
         }
     }
 
-    ///
-    public function seg(String $filename) {
-        $this->fSys->setContent('/', 'wa_'.$filename.'.json', []);
-    }
 }
