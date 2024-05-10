@@ -18,7 +18,7 @@ class HcFotos
         $this->fSys = $fsys;
         $this->waSender = $waS;
         $this->waMsg = $msg;
-        $this->waMsg = $bait;
+        $this->bait = $bait;
     }
 
     /** */
