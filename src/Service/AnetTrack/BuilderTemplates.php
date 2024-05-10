@@ -76,6 +76,21 @@ class BuilderTemplates {
     }
 
     /** */
+    public function editForDetalles(array $content): array
+    {
+        $rand = array_rand($this->opciones);
+        if(array_key_exists('type', $content)) {
+            if(array_key_exists('body', $content[$content['type']])) {
+                $content[$content['type']]['body']['text'] = $this->opciones[$rand]['body'];
+            }
+            if(array_key_exists('header', $content[$content['type']])) {
+                $content[$content['type']]['header']['text'] = $this->opciones[$rand]['head'];
+            }
+        }
+        return $content;
+    }
+
+    /** */
     private function changeOnlyIdByBtns(array $tmp, String $idItem = ''): array
     {
         $idItem = ($idItem == '') ? $this->waMsg->idItem : $idItem;

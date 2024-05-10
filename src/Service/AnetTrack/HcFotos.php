@@ -42,35 +42,22 @@ class HcFotos
     /** */
     public function exe(): array
     {
-        
         $this->prepareStep();
-
         // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
             $this->waSender->sendText($this->txtValid);
             return [];
         }
-
+        $oldCurrent = $this->bait['current'];
         $this->editarBait();
-
-        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
-        $template = $builder->exe('sdta');
-        if(count($template) > 0) {
-            $res = $this->waSender->sendInteractive($template);
-            if($res >= 200 && $res <= 300) {
-                $this->waSender->sendMy($this->waMsg->toMini());
-            }
-        }else{
-            $this->waSender->sendText(
-                "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
-                "CONDICIÓN O ESTADO de tu autoparte por favor."
-            );
-        }
-
+        $this->enviarMsg($oldCurrent);
         return $this->bait;
     }
 
-    /** */
+    /** 
+     * Tratamos con los archivos indicativos del paso en el que actualmente se
+     * encuentra la cotizacion
+    */
     private function prepareStep()
     {
         // Creamos el archivo indicativo del proceso actual
@@ -136,6 +123,30 @@ class HcFotos
         }
 
         return true;
+    }
+
+    /** */
+    private function enviarMsg(String $oldCurrent) {
+
+        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
+        $template = $builder->exe('sdta');
+        // Para esta plantilla de solicitud de detalles enviamos una
+        // serie de mensajes al azar para interactual con el usuario
+        if($oldCurrent == 'sdta') {
+            $template = $builder->editForDetalles($template);
+        }
+
+        if(count($template) > 0) {
+            $res = $this->waSender->sendInteractive($template);
+            if($res >= 200 && $res <= 300) {
+                $this->waSender->sendMy($this->waMsg->toMini());
+            }
+        }else{
+            $this->waSender->sendText(
+                "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
+                "CONDICIÓN O ESTADO de tu autoparte por favor."
+            );
+        }
     }
 
 }

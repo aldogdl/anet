@@ -3,6 +3,7 @@
 namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
+use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaSender;
 
@@ -67,8 +68,11 @@ class HandlerQuote
                 $bait = $handler->exe();
                 break;
             case 'sdta':
-                $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
-                $bait = $handler->exe();
+                if($this->waMsg->tipoMsg == TypesWaMsgs::IMAGE) {
+                    $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
+                    $bait = $handler->exe();
+                    return;
+                }
                 # code...
                 break;
             case 'scto':
