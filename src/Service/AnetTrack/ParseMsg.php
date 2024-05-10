@@ -141,7 +141,9 @@ class ParseMsg {
     {
         $idContext = '';
         if(array_key_exists('context', $this->waMsg)) {
-            $idContext = $this->waMsg['context']['id'];
+            if(array_key_exists('id', $this->waMsg)) {
+                $idContext = $this->waMsg['context']['id'];
+            }
         }
         $mime = '';
         if(array_key_exists('mime_type', $this->waMsg[$this->waMsg['type']])) {                                        
