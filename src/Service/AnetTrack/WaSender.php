@@ -91,7 +91,7 @@ class WaSender
             if($this->isTest) {
                 file_put_contents('test_sentToWa_'.$this->conm->to.'.json', json_encode($this->body));
             }
-
+            file_put_contents('wa_template_'.$this->conm->to.'.json', json_encode($this->body));
             if(count($this->body) != 0 && $this->isTest === false) {
     
                 try {
