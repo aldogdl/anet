@@ -23,19 +23,41 @@ class HcFotos
         $this->waSender = $waS;
         $this->waMsg = $msg;
         $this->bait = $bait;
+        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
     public function exe(): void
     {
-        // Solo en las imagenes es necesario primero preparar el escenario
-        // antes de validar los datos recibidos por la cuestion del envio de fotos.
-        $this->prepareStep();
-        // Validamos la integridad del tipo de mensaje
-        if(!$this->isValid() && $this->txtValid != '') {
-            $this->waSender->sendText($this->txtValid);
-            return;
+        $processValid = true;
+        if($this->waMsg->tipoMsg == TypesWaMsgs::INTERACTIVE) {
+
+            if(mb_strpos($this->waMsg->subEvento, 'nfto') !== false) {
+                $this->sendMsgDeta = true;
+                $this->enviarMsg('nfto');
+                return;
+            }elseif(mb_strpos($this->waMsg->subEvento, 'fton_') !== false) {
+                // El usuario desea continuar sin fotos
+                $processValid = false;
+                $this->waMsg->content = ['id' => 0, 'mime' => 'none'];
+            }else {
+                // El usuario se arrepintio desea continuar con fotos
+                $this->enviarMsg('sfto');
+                return;
+            }
         }
+
+        if($processValid) {
+            // Solo en las imagenes es necesario primero preparar el escenario
+            // antes de validar los datos recibidos por la cuestion del envio de fotos.
+            $this->prepareStep();
+            // Validamos la integridad del tipo de mensaje
+            if(!$this->isValid() && $this->txtValid != '') {
+                $this->waSender->sendText($this->txtValid);
+                return;
+            }
+        }
+
         $oldCurrent = $this->bait['current'];
         $this->editarBait();
         $this->enviarMsg($oldCurrent);
@@ -92,7 +114,6 @@ class HcFotos
         if($this->isAtendido($filename)) {
             $this->fSys->delete('/', $filename);
         }
-        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
@@ -105,12 +126,14 @@ class HcFotos
         if(!array_key_exists('fotos', $track)) {
             $track['fotos'] = [$this->waMsg->content];
         }else{
-            $idsFtos = array_column($track['fotos'], 'id');
-            $has = array_search($this->waMsg->content['id'], $idsFtos);
-            if($has !== false) {
-                return;
+            if(count($track['fotos']) > 0) {
+                $idsFtos = array_column($track['fotos'], 'id');
+                $has = array_search($this->waMsg->content['id'], $idsFtos);
+                if($has !== false) {
+                    return;
+                }
+                array_push($track['fotos'], $this->waMsg->content);
             }
-            array_push($track['fotos'], $this->waMsg->content);
         }
 
         $this->bait['track'] = $track;
@@ -160,24 +183,36 @@ class HcFotos
         if(!$this->sendMsgDeta) {
             return;
         }
+
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
-        $template = $builder->exe('sdta');
+
         // Para esta plantilla de solicitud de detalles enviamos una
         // serie de mensajes al azar para interactual con el usuario
+        $template = $builder->exe($oldCurrent);
         if($oldCurrent == 'sdta') {
             $template = $builder->editForDetalles($template);
         }
 
         if(count($template) > 0) {
             $res = $this->waSender->sendPreTemplate($template);
-            if($res >= 200 && $res <= 300) {
-                $this->waSender->sendMy($this->waMsg->toMini());
+            if($oldCurrent == 'sdta') {
+                if($res >= 200 && $res <= 300) {
+                    $this->waSender->sendMy($this->waMsg->toMini());
+                }
             }
         }else{
-            $this->waSender->sendText(
-                "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
-                "CONDICIÓN O ESTADO de tu autoparte por favor."
-            );
+
+            if($oldCurrent == 'sdta') {
+                $this->waSender->sendText(
+                    "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
+                    "CONDICIÓN O ESTADO de tu autoparte por favor."
+                );
+            }else{
+                $this->waSender->sendText(
+                    "⚠️ *Lo sentimos mucho*.\n\nTu solicitud no fué aceptada ".
+                    "por favor, envia por lo menos 1 fotografía."
+                );
+            }
         }
     }
 

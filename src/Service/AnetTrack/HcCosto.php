@@ -22,12 +22,12 @@ class HcCosto
         $this->waSender = $waS;
         $this->waMsg = $msg;
         $this->bait = $bait;
+        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
     public function exe(): void
     {
-        $this->waSender->setConmutador($this->waMsg);
         // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
             $this->waSender->sendText($this->txtValid);

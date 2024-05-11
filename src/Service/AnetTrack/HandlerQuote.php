@@ -63,10 +63,6 @@ class HandlerQuote
         }
 
         switch ($bait['current']) {
-            case 'nfto':
-                $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
-                $handler->exe();
-                break;
             case 'sfto':
                 $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
                 $handler->exe();

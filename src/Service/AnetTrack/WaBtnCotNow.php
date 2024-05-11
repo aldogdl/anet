@@ -19,6 +19,7 @@ class WaBtnCotNow
         $this->fSys      = $fsys;
         $this->waSender  = $waS;
         $this->fileTmp   = $this->waMsg->from.'_'.$this->waMsg->subEvento.'.json';
+        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** 
@@ -33,8 +34,6 @@ class WaBtnCotNow
     /** */
     public function exe(bool $hasCotInProgress): void
     {
-        $this->waSender->setConmutador($this->waMsg);
-
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         if($hasCotInProgress) {
             // Abisamos que hay una cotizacion en progreso y damos opción a cancelar o seguir

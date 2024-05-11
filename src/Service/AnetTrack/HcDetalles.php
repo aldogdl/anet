@@ -22,16 +22,23 @@ class HcDetalles
         $this->waSender = $waS;
         $this->waMsg = $msg;
         $this->bait = $bait;
+        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
     public function exe(): void
     {
         $this->prepareStep();
-        // Validamos la integridad del tipo de mensaje
-        if(!$this->isValid() && $this->txtValid != '') {
-            $this->waSender->sendText($this->txtValid);
-            return;
+        if($this->waMsg->tipoMsg == TypesWaMsgs::INTERACTIVE) {
+            if(mb_strpos($this->waMsg->subEvento, 'uso_') !== false) {
+                $this->waMsg->content = 'Detalles normales de uso.';
+            }
+        }else{
+            // Validamos la integridad del tipo de mensaje
+            if(!$this->isValid() && $this->txtValid != '') {
+                $this->waSender->sendText($this->txtValid);
+                return;
+            }
         }
         $this->editarBait();
         $this->enviarMsg();
@@ -71,7 +78,6 @@ class HcDetalles
         if($filename != '') {
             $this->fSys->delete('/', $filename);
         }
-        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
