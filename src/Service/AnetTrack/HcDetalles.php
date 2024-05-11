@@ -29,7 +29,6 @@ class HcDetalles
     public function exe(): void
     {
         $this->prepareStep();
-        file_put_contents('wa_dt_'.$this->waMsg->subEvento.'.json', '');
         if($this->waMsg->tipoMsg == TypesWaMsgs::INTERACTIVE) {
             if(mb_strpos($this->waMsg->subEvento, 'uso') !== false) {
                 $this->waMsg->content = 'Detalles normales de uso.';

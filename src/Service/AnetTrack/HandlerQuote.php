@@ -71,7 +71,7 @@ class HandlerQuote
                 if($this->waMsg->tipoMsg == TypesWaMsgs::IMAGE) {
                     $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
                     $handler->exe();
-                }elseif($this->waMsg->tipoMsg == TypesWaMsgs::TEXT) {
+                }else {
                     $handler = new HcDetalles($this->fSys, $this->waSender, $this->waMsg, $bait);
                     $handler->exe();
                 }
