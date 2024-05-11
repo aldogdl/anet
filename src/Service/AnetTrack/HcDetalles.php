@@ -30,7 +30,7 @@ class HcDetalles
     {
         $this->prepareStep();
         if($this->waMsg->tipoMsg == TypesWaMsgs::INTERACTIVE) {
-            if(mb_strpos($this->waMsg->subEvento, 'uso_') !== false) {
+            if(mb_strpos($this->waMsg->subEvento, 'uso') !== false) {
                 $this->waMsg->content = 'Detalles normales de uso.';
             }
         }else{

@@ -31,7 +31,7 @@ class HcFotos
     {
         $processValid = true;
         if($this->waMsg->tipoMsg == TypesWaMsgs::INTERACTIVE) {
-            file_put_contents('wa_ft_'.$this->waMsg->subEvento.'.json', '');
+            
             if(mb_strpos($this->waMsg->subEvento, 'nfto') !== false) {
                 $this->sendMsgDeta = true;
                 $this->enviarMsg('nfto');
