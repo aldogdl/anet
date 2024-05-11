@@ -72,7 +72,8 @@ class HcFinisherCot
 
         // Recuperamos otro bait directamente desde el estanque
         $otroBait = $this->fSys->getNextBait($this->waMsg, $this->bait['mdl']);
-
+        
+        $this->waSender->context = $this->bait['wamid'];
         if($otroBait != '') {
             $code = $this->waSender->sendText($head.$body);
             $code = $this->waSender->sendTemplate($otroBait);

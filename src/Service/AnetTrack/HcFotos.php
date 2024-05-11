@@ -197,6 +197,7 @@ class HcFotos
             $template = $builder->editForDetalles($template);
         }
 
+        $this->waSender->context = $this->bait['wamid'];
         if(count($template) > 0) {
             $res = $this->waSender->sendPreTemplate($template);
             if($oldCurrent == 'sdta') {

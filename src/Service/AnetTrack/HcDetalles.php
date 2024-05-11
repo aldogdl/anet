@@ -132,8 +132,11 @@ class HcDetalles
     /** */
     private function enviarMsg(): void
     {
+        $this->waSender->context = $this->bait['wamid'];
+        
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         $template = $builder->exe('scto');
+
         if(count($template) > 0) {
             $res = $this->waSender->sendPreTemplate($template);
             if($res >= 200 && $res <= 300) {

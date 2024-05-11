@@ -116,7 +116,7 @@ class HcCosto
 
         $str = str_replace('$', '', $str);
         $str = str_replace(',', '', $str);
-
+        $str = trim($str);
         if(mb_strpos($str, '.') !== false) {
 
             $partes = explode('.', $str);
@@ -130,8 +130,9 @@ class HcCosto
                 }
             }
         }
-        
+
         $str = preg_replace('/[a-zA-Z]/', '', $str);
+        $str = trim($str);
         $entera = $this->isDigit($str);
         if($entera != '-1') {
             $this->txtValid = '';
@@ -159,6 +160,7 @@ class HcCosto
     /** */
     private function enviarMsg(): void
     {
+        $this->waSender->context = $this->bait['wamid'];
         $res = $this->waSender->sendText(
             "🤩 *Finalizaste con ÉXITO!.*\n\n".
             "*RECUERDA*: Puedes vaciar este chat para mantener limpio tu dispositivo\n\n".

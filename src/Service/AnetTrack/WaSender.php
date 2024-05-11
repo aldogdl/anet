@@ -163,7 +163,6 @@ class WaSender
         if($context != '') {
             $this->body['context'] = ['message_id' => $context];
         }
-
     }
 
     /** */
