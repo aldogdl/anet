@@ -130,7 +130,8 @@ class HcCosto
                 }
             }
         }
-
+        
+        $str = preg_replace('/[a-zA-Z]/', '', $str);
         $entera = $this->isDigit($str);
         if($entera != '-1') {
             $this->txtValid = '';

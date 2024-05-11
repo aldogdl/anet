@@ -37,7 +37,7 @@ class HcFinisherCot
     }
 
     /** */
-    public function exe(String $tipoFinish = 'cancel'): array
+    public function exe(String $tipoFinish = 'cancel'): void
     {
         // Eliminamos los residuos de los archivos indicativos del proceso de Cot.
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
@@ -91,12 +91,11 @@ class HcFinisherCot
         }
 
         $retornar = ['att' => $att, 'send' => $otroBait];
+        file_put_contents('wa_result_'.$code.'_.json', json_encode($retornar));
+
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($retornar);
-            return [];
         }
-
-        return $this->bait;
     }
 
 }
