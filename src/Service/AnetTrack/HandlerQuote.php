@@ -72,8 +72,11 @@ class HandlerQuote
                     $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
                     $bait = $handler->exe();
                     return;
+                }elseif($this->waMsg->tipoMsg == TypesWaMsgs::TEXT) {
+                    $handler = new HcDetalles($this->fSys, $this->waSender, $this->waMsg, $bait);
+                    $bait = $handler->exe();
+                    return;
                 }
-                # code...
                 break;
             case 'scto':
                 # code...

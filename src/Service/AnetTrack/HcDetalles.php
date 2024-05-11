@@ -2,15 +2,47 @@
 
 namespace App\Service\AnetTrack;
 
+use App\Dtos\WaMsgDto;
+use App\Service\AnetTrack\Fsys;
+use App\Service\AnetTrack\WaSender;
+
 class HcDetalles
 {
-    private HandlerQuote $handler;
+    private Fsys $fSys;
+    private WaSender $waSender;
+    private WaMsgDto $waMsg;
+    private array $bait;
     private String $txtValid = '';
+    private bool $sendMsgDeta = true;
 
     /** */
-    public function __construct(HandlerQuote $handler)
+    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
     {
-        $this->handler = $handler;
+        $this->fSys = $fsys;
+        $this->waSender = $waS;
+        $this->waMsg = $msg;
+        $this->bait = $bait;
+    }
+
+    /** */
+    public function exe(): array
+    {
+        $this->prepareStep();
+        // Validamos la integridad del tipo de mensaje
+        if(!$this->isValid() && $this->txtValid != '') {
+            $this->waSender->sendText($this->txtValid);
+            return [];
+        }
+        $oldCurrent = $this->bait['current'];
+        $this->editarBait();
+        $this->enviarMsg($oldCurrent);
+        return $this->bait;
+    }
+
+    /** */
+    private function createFilenameTmpOf(String $name): String
+    {
+        return $this->waMsg->from.'_'.$name.'.json';
     }
 
     /** 
@@ -20,29 +52,51 @@ class HcDetalles
      * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
      * evitamos esto.
     */
-    public function isAtendido(String $filename): bool {
-        return $this->handler->fSys->existe('/', $this->handler->waMsg->from.'_'.$filename.'.json');
+    public function isAtendido(String $filename): bool
+    {
+        return $this->fSys->existe('/', $filename);
+    }
+
+    /** 
+     * Tratamos con los archivos indicativos del paso en el que actualmente se
+     * encuentra la cotizacion
+    */
+    private function prepareStep()
+    {
+        // Creamos el archivo indicativo del proceso actual con una nueva marca de tiempo
+        $filename = $this->createFilenameTmpOf('sdta', true);
+        $this->fSys->setContent('/', $filename, ['']);
+
+        // Eliminamos el archivo indicativo del proceso anterior
+        $filename = $this->fSys->startWith($this->waMsg->from.'_sfto_');
+        if($filename != '') {
+            $this->fSys->delete('/', $filename);
+        }
+        
+        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
-    public function exe()
+    private function editarBait()
     {
-        $filename = 'sfto';
-        if(!$this->isAtendido($filename)) {
-            $this->handler->fSys->setContent('/', $filename, ['']);
+        $track = [];
+        if(array_key_exists('track', $this->bait)) {
+            $track = $this->bait['track'];
         }
-        if($this->isAtendido('cnow')) {
-            $this->handler->fSys->delete('/', $filename);
+        if(!array_key_exists('fotos', $track)) {
+            $track['fotos'] = [$this->waMsg->content];
+        }else{
+            $idsFtos = array_column($track['fotos'], 'id');
+            $has = array_search($this->waMsg->content['id'], $idsFtos);
+            if($has !== false) {
+                return [];
+            }
+            array_push($track['fotos'], $this->waMsg->content);
         }
-        $this->handler->waSender->setConmutador($this->handler->waMsg);
 
-        if(!$this->isValid() && $this->txtValid != '') {
-            $this->handler->waSender->sendText($this->txtValid);
-            return;
-        }
-
-        $builder = new BuilderTemplates($this->handler->fSys, $this->handler->waMsg);
-        $template = $builder->exe('sfto');
+        $this->bait['track'] = $track;
+        $this->bait['current'] = 'sdta';
+        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
     }
 
     /** */
@@ -50,21 +104,21 @@ class HcDetalles
     {
         $this->txtValid = '';
         $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
-        if(!in_array($this->handler->waMsg->status, $permitidas)) {
+        if(!in_array($this->waMsg->status, $permitidas)) {
             $this->txtValid = "Lo sentimos pero el formato de imagen (".
-            $this->handler->waMsg->status.") no está entre la lista de imágenes ".
+            $this->waMsg->status.") no está entre la lista de imágenes ".
             "permididas, por el momento sólo aceptamos fotos con extención:\n".
             "[".implode(', ', $permitidas)."].";
             return false;
         }
-        if(count($this->handler->waMsg->content) == 0) {
+        if(count($this->waMsg->content) == 0) {
             $this->txtValid = "Lo sentimos pero la imagen (".
             "recibida no es valida, por favor intenta enviarla nuevamente ".
             "o evnía otra como segunda opción.";
             return false;
         }
 
-        if(!array_key_exists('id', $this->handler->waMsg->content)) {
+        if(!array_key_exists('id', $this->waMsg->content)) {
             $this->txtValid = "Lo sentimos pero la imagen (".
             "no se envio correctamente a WHATSAPP, intenta enviarla ".
             "nuevamente por favor.";
@@ -72,6 +126,33 @@ class HcDetalles
         }
 
         return true;
+    }
+
+    /** */
+    private function enviarMsg(String $oldCurrent)
+    {
+        if(!$this->sendMsgDeta) {
+            return;
+        }
+        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
+        $template = $builder->exe('sdta');
+        // Para esta plantilla de solicitud de detalles enviamos una
+        // serie de mensajes al azar para interactual con el usuario
+        if($oldCurrent == 'sdta') {
+            $template = $builder->editForDetalles($template);
+        }
+
+        if(count($template) > 0) {
+            $res = $this->waSender->sendInteractive($template);
+            if($res >= 200 && $res <= 300) {
+                $this->waSender->sendMy($this->waMsg->toMini());
+            }
+        }else{
+            $this->waSender->sendText(
+                "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
+                "CONDICIÓN O ESTADO de tu autoparte por favor."
+            );
+        }
     }
 
 }

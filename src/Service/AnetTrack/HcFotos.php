@@ -3,6 +3,7 @@
 namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
+use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaSender;
 
@@ -25,6 +26,22 @@ class HcFotos
     }
 
     /** */
+    public function exe(): array
+    {
+        $this->prepareStep();
+        // Validamos la integridad del tipo de mensaje
+        if(!$this->isValid() && $this->txtValid != '') {
+            $this->waSender->sendText($this->txtValid);
+            return [];
+        }
+        $oldCurrent = $this->bait['current'];
+        $this->editarBait();
+        $this->enviarMsg($oldCurrent);
+        return $this->bait;
+    }
+
+    
+    /** */
     private function createFilenameTmpOf(String $name, bool $withTime = false): String
     {
         if($withTime) {
@@ -46,21 +63,6 @@ class HcFotos
         return $this->fSys->existe('/', $filename);
     }
 
-    /** */
-    public function exe(): array
-    {
-        $this->prepareStep();
-        // Validamos la integridad del tipo de mensaje
-        if(!$this->isValid() && $this->txtValid != '') {
-            $this->waSender->sendText($this->txtValid);
-            return [];
-        }
-        $oldCurrent = $this->bait['current'];
-        $this->editarBait();
-        $this->enviarMsg($oldCurrent);
-        return $this->bait;
-    }
-
     /** 
      * Tratamos con los archivos indicativos del paso en el que actualmente se
      * encuentra la cotizacion
@@ -78,7 +80,6 @@ class HcFotos
             $tiempo_actual = (integer) microtime(true) * 1000;
             $diff = ($tiempo_actual - $lastTime)/1000;
             $this->sendMsgDeta = ($diff > 3) ? true : false;
-            file_put_contents('wa_pas_'.$diff.'_seg.json', '');
         }
         
         // Creamos el archivo indicativo del proceso actual con una nueva marca de tiempo
@@ -119,6 +120,12 @@ class HcFotos
     /** */
     private function isValid(): bool
     {
+        if($this->waMsg->tipoMsg != TypesWaMsgs::IMAGE) {
+            $this->txtValid = "¡Lo sentimos!, El sistema está preparado ".
+            'para aceptar sólo imágenes.';
+            return false;
+        }
+
         $this->txtValid = '';
         $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
         if(!in_array($this->waMsg->status, $permitidas)) {
