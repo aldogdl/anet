@@ -27,13 +27,12 @@ class HcDetalles
     /** */
     public function exe(): void
     {
-        $this->waSender->setConmutador($this->waMsg);
+        $this->prepareStep();
         // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
             $this->waSender->sendText($this->txtValid);
             return;
         }
-        $this->prepareStep();
         $this->editarBait();
         $this->enviarMsg();
         return;
@@ -72,6 +71,7 @@ class HcDetalles
         if($filename != '') {
             $this->fSys->delete('/', $filename);
         }
+        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
