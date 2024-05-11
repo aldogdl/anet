@@ -43,7 +43,6 @@ class HcFotos
                 $this->bait['current'] = 'sdta';
             }else {
                 // El usuario se arrepintio desea continuar con fotos
-                $this->bait['current'] = 'sfto';
                 $this->enviarMsg('sfto');
                 return;
             }
@@ -53,6 +52,7 @@ class HcFotos
         // antes de validar los datos recibidos por la cuestion del envio de fotos.
         if($processValid) {
             $this->prepareStep();
+            $this->bait['current'] = 'sdta';
             // Validamos la integridad del tipo de mensaje
             if(!$this->isValid() && $this->txtValid != '') {
                 $this->waSender->sendText($this->txtValid);
