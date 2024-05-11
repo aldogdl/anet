@@ -27,41 +27,46 @@ class HcFotos
     }
 
     /** */
-    public function exe(): void
+    public function exe(): bool
     {
         $processValid = true;
         if($this->waMsg->tipoMsg == TypesWaMsgs::INTERACTIVE) {
-
+            
             if(mb_strpos($this->waMsg->subEvento, 'nfto') !== false) {
                 $this->sendMsgDeta = true;
                 $this->enviarMsg('nfto');
-                return;
+                return false;
             }elseif(mb_strpos($this->waMsg->subEvento, 'fton_') !== false) {
                 // El usuario desea continuar sin fotos
                 $processValid = false;
                 $this->waMsg->content = ['id' => 0, 'mime' => 'none'];
+                $this->bait['current'] = 'sdta';
+                $this->editarBait();
+                return true;
             }else {
                 // El usuario se arrepintio desea continuar con fotos
                 $this->enviarMsg('sfto');
-                return;
+                return false;
             }
         }
 
+        // Solo en las imagenes es necesario primero preparar el escenario
+        // antes de validar los datos recibidos por la cuestion del envio de fotos.
         if($processValid) {
-            // Solo en las imagenes es necesario primero preparar el escenario
-            // antes de validar los datos recibidos por la cuestion del envio de fotos.
             $this->prepareStep();
             // Validamos la integridad del tipo de mensaje
             if(!$this->isValid() && $this->txtValid != '') {
                 $this->waSender->sendText($this->txtValid);
-                return;
+                return false;
             }
         }
 
         $oldCurrent = $this->bait['current'];
         $this->editarBait();
-        $this->enviarMsg($oldCurrent);
-        return;
+        // Si $processValid es false quiere decir que se presiono el btn de
+        // continuar sin fotos.
+        $this->enviarMsg($oldCurrent, $processValid);
+        return false;
     }
 
     /** */
@@ -178,7 +183,7 @@ class HcFotos
     }
 
     /** */
-    private function enviarMsg(String $oldCurrent): void
+    private function enviarMsg(String $oldCurrent, bool $resent = true): void
     {
         if(!$this->sendMsgDeta) {
             return;
@@ -189,7 +194,7 @@ class HcFotos
         // Para esta plantilla de solicitud de detalles enviamos una
         // serie de mensajes al azar para interactual con el usuario
         $template = $builder->exe($oldCurrent);
-        if($oldCurrent == 'sdta') {
+        if($oldCurrent == 'sdta' && $resent) {
             $template = $builder->editForDetalles($template);
         }
 

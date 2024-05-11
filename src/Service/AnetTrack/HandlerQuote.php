@@ -65,7 +65,10 @@ class HandlerQuote
         switch ($bait['current']) {
             case 'sfto':
                 $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
-                $handler->exe();
+                $pasarToDetalles = $handler->exe();
+                if($pasarToDetalles) {
+                    
+                }
                 break;
             case 'sdta':
                 if($this->waMsg->tipoMsg == TypesWaMsgs::IMAGE) {
