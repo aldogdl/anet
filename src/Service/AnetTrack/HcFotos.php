@@ -44,6 +44,8 @@ class HcFotos
             }else {
                 // El usuario se arrepintio desea continuar con fotos
                 $this->bait['current'] = 'sfto';
+                $this->enviarMsg('sfto');
+                return;
             }
         }
 
