@@ -77,6 +77,7 @@ class HcCosto
     {
         $this->bait['track']['costo'] = $this->waMsg->content;
         $this->bait['current'] = 'sgrx';
+        $this->waMsg->subEvento = 'scto';
         $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
     }
 
@@ -157,11 +158,14 @@ class HcCosto
     /** */
     private function enviarMsg(): void
     {
-        $this->waSender->sendText(
+        $res = $this->waSender->sendText(
             "🤩 *Finalizaste con ÉXITO!.*\n\n".
             "*RECUERDA*: Puedes vaciar este chat para mantener limpio tu dispositivo\n\n".
             "_NUNCA PERDERÁS ningúna OPORTUNIDAD DE VENTA_💰"
         );
+        if($res >= 200 && $res <= 300) {
+            $this->waSender->sendMy($this->waMsg->toMini());
+        }
     }
 
 }

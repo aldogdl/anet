@@ -79,6 +79,7 @@ class HcDetalles
     {
         $this->bait['track']['detalles'] = $this->waMsg->content;
         $this->bait['current'] = 'scto';
+        $this->waMsg->subEvento = 'sdta';
         $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
     }
 
