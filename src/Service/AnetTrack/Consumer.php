@@ -39,9 +39,20 @@ class Consumer
         }
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
+            // Si no hay un archivo de cotizacion enviamos los STT a EventCore
             if(!$this->fSys->existe('tracking', $obj->from.'.json')) {
                 $this->waSender->setConmutador($obj);
                 $this->waSender->sendMy($obj->toStt());
+            }else{
+                // Si es un STT y hay un archivo de Costo, es que acaba de ser
+                // finalizada una por parte del cotizador.
+                if($this->fSys->existe('/', $obj->from.'_scto.json')) {
+                    $bait = $this->fSys->getContent('tracking', $obj->from.'.json');
+                    if(count($bait) > 0) {
+                        $finicher = new HcFinisherCot($this->fSys, $this->waSender, $obj, $bait);
+                        $finicher->exe('fin');
+                    }
+                }
             }
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {

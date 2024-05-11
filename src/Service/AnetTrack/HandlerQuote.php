@@ -6,6 +6,10 @@ use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaSender;
+use App\Service\AnetTrack\HcFotos;
+use App\Service\AnetTrack\HcDetalles;
+use App\Service\AnetTrack\HcCosto;
+use App\Service\AnetTrack\HcFinisherCot;
 
 class HandlerQuote
 {
@@ -51,8 +55,8 @@ class HandlerQuote
 
         if($this->waMsg->subEvento == 'cnc') {
             //-> Cancelar cotizacion en curso
-            $handler = new HcCancelarCot($this->fSys, $this->waSender, $this->waMsg, $bait);
-            $bait = $handler->exe();
+            $handler = new HcFinisherCot($this->fSys, $this->waSender, $this->waMsg, $bait);
+            $bait = $handler->exe('cancel');
             return;
         }elseif($this->waMsg->subEvento == 'ccc') {
 

@@ -4,7 +4,7 @@ namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
 
-class HcCancelarCot
+class HcFinisherCot
 {
     private Fsys $fSys;
     private WaSender $waSender;
@@ -37,9 +37,9 @@ class HcCancelarCot
     }
 
     /** */
-    public function exe(): array
+    public function exe(String $tipoFinish = 'cancel'): array
     {
-        // Eliminamos el archivo indicativos
+        // Eliminamos los residuos de los archivos indicativos del proceso de Cot.
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         $rota = count($toDelete);
         for ($i=0; $i < $rota; $i++) { 
@@ -53,23 +53,49 @@ class HcCancelarCot
         
         $this->waSender->setConmutador($this->waMsg);
 
+        // Dependiendo de la accion realizada grabamos distintas
+        // cabeceras para la respuesta a dicha accion
+        if($tipoFinish == 'cancel') {
+            $head = "📵 *Solicitud CANCELADA.*\n\n";
+        }elseif($tipoFinish == 'ntg') {
+            $head = "🙂👍 *NO TE PREOCUPES.*\n\n";
+        }elseif($tipoFinish == 'ntga') {
+            $head = "🚗 *PERFECTO GRACIAS.*\n\n";
+        }else {
+            $head = "📵 *Sigue vendiendo MÁS!!.*\n\n";
+        }
+        $body = "Aquí tienes otra oportunidad de venta💰";
+
+        // Tomamos el mensaje que fué atendido
+        $att = ($tipoFinish == 'fin') ? $this->bait : $this->waMsg->toMini();
+
         // Recuperamos otro bait directamente desde el estanque
         $otroBait = $this->fSys->getNextBait($this->waMsg, $this->bait['mdl']);
+
         if($otroBait != '') {
+            $code = $this->waSender->sendText($head.$body);
             $code = $this->waSender->sendTemplate($otroBait);
         }else {
-            $code = $this->waSender->sendText(
-                "📵 *Solicitud CANCELADA.*\n\nPor el momento no se encontró ".
-                "otra cotización para ti, pero pronto te estarán llegando nuevas ".
-                "oportunidades de venta.💰 ¡Éxito!"
-            );
+
+            $body = "Por el momento no se encontró ".
+            "otra cotización para ti, pero pronto te estarán llegando nuevas ".
+            "oportunidades de venta.💰 ¡Éxito!";
+
+            if($tipoFinish == 'fin') {
+                $body = "📖 Mañana a primera hora ésta cotización estará ".
+                "publicada en tu catálogo digital_ *AnetShop*.";
+            }
+
+            $code = $this->waSender->sendText($head.$body);
         }
 
+        $retornar = ['att' => $att, 'send' => $otroBait];
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
-            $this->waSender->sendMy($this->waMsg->toMini());
+            $this->waSender->sendMy($retornar);
             return [];
         }
 
         return $this->bait;
     }
+
 }
