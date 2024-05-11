@@ -13,7 +13,7 @@ class HcFotos
     private WaMsgDto $waMsg;
     private array $bait;
     private String $txtValid = '';
-    private int $lastTime = 0;
+    private bool $sendMsgDeta = true;
 
     /** */
     public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
@@ -67,30 +67,23 @@ class HcFotos
     */
     private function prepareStep()
     {
-        $crear = true;
         $filename = $this->fSys->startWith($this->waMsg->from.'_sfto_');
-        file_put_contents('wa_file_finder_'.$filename, '');
         if($filename != '') {
-            if($this->isAtendido($filename)) {
-                $crear = false;
-            }
-        }
-        
-        // Creamos el archivo indicativo del proceso actual en caso de no existir
-        if($crear) {
-            $filename = $this->createFilenameTmpOf('sfto', true);
-            $this->fSys->setContent('/', $filename, ['']);
-        }else{
+            $this->fSys->delete('/', $filename);
             // Si ya existe el archivo lo partimos en sus partes para optener el momento
             // que este archivo se creo
             $partes = explode('_', $filename);
             $rota = count($partes) -1;
-            $this->lastTime = (integer) $partes[$rota - 1];
+            $lastTime = (integer) $partes[$rota - 1];
             $tiempo_actual = (integer) microtime(true) * 1000;
-            file_put_contents('wa_'.$this->lastTime.'.json', '');
-            $diff = ($tiempo_actual - $this->lastTime)/1000;
+            $diff = ($tiempo_actual - $lastTime)/1000;
+            $this->sendMsgDeta = ($diff > 3) ? true : false;
             file_put_contents('wa_pas_'.$diff.'_seg.json', '');
         }
+        
+        // Creamos el archivo indicativo del proceso actual con una nueva marca de tiempo
+        $filename = $this->createFilenameTmpOf('sfto', true);
+        $this->fSys->setContent('/', $filename, ['']);
 
         // Eliminamos el archivo indicativo del proceso anterior
         $filename = $this->createFilenameTmpOf('cnow');
@@ -155,6 +148,9 @@ class HcFotos
     /** */
     private function enviarMsg(String $oldCurrent)
     {
+        if(!$this->sendMsgDeta) {
+            return;
+        }
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         $template = $builder->exe('sdta');
         // Para esta plantilla de solicitud de detalles enviamos una
