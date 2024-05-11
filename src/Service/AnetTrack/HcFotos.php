@@ -36,7 +36,7 @@ class HcFotos
                 $this->sendMsgDeta = true;
                 $this->enviarMsg('nfto');
                 return;
-            }elseif(mb_strpos($this->waMsg->subEvento, 'fton_') !== false) {
+            }elseif(mb_strpos($this->waMsg->subEvento, 'fton') !== false) {
                 // El usuario desea continuar sin fotos
                 $processValid = false;
                 $this->waMsg->content = ['id' => 0, 'mime' => 'none'];
