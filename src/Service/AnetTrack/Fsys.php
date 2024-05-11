@@ -2,11 +2,13 @@
 
 namespace App\Service\AnetTrack;
 
-use App\Dtos\WaMsgDto;
+use Symfony\Component\Finder\Finder;
+
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use App\Dtos\WaMsgDto;
 
 class Fsys {
 
@@ -156,6 +158,24 @@ class Fsys {
     }
 
     /** 
+     * Buscamos y retornamos un archivo dentro de la carpeta indicada por parametro
+     * donde el archivo comience con...
+    */
+    public function startWith(String $filename, String $folder = 'phtml'): String
+    {
+        $public = $this->params->get($folder);
+        $finder = new Finder();
+		$finder->files()->in($public)->name($filename.'*');
+		if ($finder->hasResults()) {
+			$files = [];
+			foreach ($finder as $file) {
+				return $file->getRelativePathname();
+			}
+		}
+        return '';
+    }
+
+    /** 
      * Uso interno para contruir el folder de destino
     */
     private function getFolderTo(String $folder): String
@@ -168,4 +188,5 @@ class Fsys {
         return $path;
     }
     
+
 }

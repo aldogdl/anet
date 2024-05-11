@@ -13,6 +13,7 @@ class HcFotos
     private WaMsgDto $waMsg;
     private array $bait;
     private String $txtValid = '';
+    private int $lastTime = 0;
 
     /** */
     public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
@@ -24,7 +25,12 @@ class HcFotos
     }
 
     /** */
-    private function createFilenameTmpOf(String $name): String {
+    private function createFilenameTmpOf(String $name, bool $withTime = false): String
+    {
+        if($withTime) {
+            $tiempo_actual = microtime(true) * 1000;
+            return $this->waMsg->from.'_'.$name.'_'.$tiempo_actual.'_.json';
+        }
         return $this->waMsg->from.'_'.$name.'.json';
     }
 
@@ -35,7 +41,8 @@ class HcFotos
      * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
      * evitamos esto.
     */
-    public function isAtendido(String $filename): bool {
+    public function isAtendido(String $filename): bool
+    {
         return $this->fSys->existe('/', $filename);
     }
 
@@ -60,11 +67,28 @@ class HcFotos
     */
     private function prepareStep()
     {
-        // Creamos el archivo indicativo del proceso actual
-        $filename = $this->createFilenameTmpOf('sfto');
-        if(!$this->isAtendido($filename)) {
-            $this->fSys->setContent('/', $filename, ['']);
+        $crear = true;
+        $filename = $this->fSys->startWith($this->waMsg->from.'_sfto_');
+        file_put_contents('wa_file_finder_'.$filename, '');
+        if($filename != '') {
+            if($this->isAtendido($filename)) {
+                $crear = false;
+            }
         }
+        
+        // Creamos el archivo indicativo del proceso actual en caso de no existir
+        if($crear) {
+            $filename = $this->createFilenameTmpOf('sfto', true);
+            $this->fSys->setContent('/', $filename, ['']);
+        }else{
+            // Si ya existe el archivo lo partimos en sus partes para optener el momento
+            // que este archivo se creo
+            $partes = explode('_', $filename);
+            $rota = count($partes);
+            $this->lastTime = (integer) $partes[$rota - 1];
+            file_put_contents('wa_'.$this->lastTime.'.json', '');
+        }
+
         // Eliminamos el archivo indicativo del proceso anterior
         $filename = $this->createFilenameTmpOf('cnow');
         if($this->isAtendido($filename)) {
@@ -126,8 +150,8 @@ class HcFotos
     }
 
     /** */
-    private function enviarMsg(String $oldCurrent) {
-
+    private function enviarMsg(String $oldCurrent)
+    {
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         $template = $builder->exe('sdta');
         // Para esta plantilla de solicitud de detalles enviamos una

@@ -12,43 +12,43 @@ class BuilderTemplates {
     private $opciones = array(
         array(
             'head' => '😃👍 ¡Genial!',
-            'body' => '¿Quieres enviar *más fotos* o seguir con la *descripción* del estado general?'
+            'body' => 'Puedes enviar *más fotos* o seguir con la *descripción* del estado general.'
         ),
         array(
             'head' => '😃👌 ¡Perfecto!',
-            'body' => '¿Quieres enviar *más fotos* o seguir con los *detalles* de la pieza?'
+            'body' => 'Puedes enviar *más fotos* o seguir con los *detalles* de la pieza.'
         ),
         array(
             'head' => '😊👍 ¡Estupendo!',
-            'body' => '¿Quieres añadir *más fotos* o avanzar con los *detalles* de la autoparte?'
+            'body' => 'Puedes añadir *más fotos* o avanzar con los *detalles* de la autoparte.'
         ),
         array(
             'head' => '😄👍 ¡Fantástico!',
-            'body' => '¿Quieres enviar *más fotos* o continuar con la información sobre los detalles?'
+            'body' => 'Puedes enviar *más fotos* o continuar con la información sobre los *detalles*.'
         ),
         array(
             'head' => '😃👌 ¡Excelente!',
-            'body' => '¿Quieres agregar *más fotos* o seguir con los *detalles* del producto?'
+            'body' => 'Puedes agregar *más fotos* o seguir con los *detalles* del producto.'
         ),
         array(
             'head' => '😊👍 ¡Maravilloso!',
-            'body' => '¿Quieres incluir *más fotos* o avanzar con los *detalles* de la pieza?'
+            'body' => 'Puedes incluir *más fotos* o avanzar con los *detalles* de la pieza.'
         ),
         array(
             'head' => '😃👌 ¡Genial!',
-            'body' => '¿Deseas subir *más fotos* o avanzar con los *detalles* de la autoparte?'
+            'body' => '¿Deseas subir *más fotos*? o avanzar con los *detalles* de la autoparte.'
         ),
         array(
             'head' => '😄👍 ¡Fantástico!',
-            'body' => '¿Quieres añadir *más fotos* o continuar con la descripción de los detalles?'
+            'body' => 'Puedes añadir *más fotos* o continuar con la descripción de los *detalles*.'
         ),
         array(
             'head' => '😊👌 ¡Increíble!',
-            'body' => '¿Quieres enviar *más fotos* o avanzar con los *detalles* del producto?'
+            'body' => 'Puedes enviar *más fotos* o avanzar con los *detalles* del producto.'
         ),
         array(
             'head' => '😃👍 ¡Excelente!',
-            'body' => '¿Listo para *más fotos* o continuar con la descripción del estado general?'
+            'body' => '¿Listo para *más fotos*? o prefieres continuar con la descripción del *estado general*?.'
         )
     );
     
