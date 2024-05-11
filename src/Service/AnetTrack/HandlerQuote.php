@@ -61,34 +61,30 @@ class HandlerQuote
         switch ($bait['current']) {
             case 'nfto':
                 $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
-                $bait = $handler->exe();
+                $handler->exe();
                 break;
             case 'sfto':
                 $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
-                $bait = $handler->exe();
+                $handler->exe();
                 break;
             case 'sdta':
                 if($this->waMsg->tipoMsg == TypesWaMsgs::IMAGE) {
                     $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
-                    $bait = $handler->exe();
-                    return;
+                    $handler->exe();
                 }elseif($this->waMsg->tipoMsg == TypesWaMsgs::TEXT) {
                     $handler = new HcDetalles($this->fSys, $this->waSender, $this->waMsg, $bait);
-                    $bait = $handler->exe();
-                    return;
+                    $handler->exe();
                 }
                 break;
             case 'scto':
-                # code...
+                $handler = new HcCosto($this->fSys, $this->waSender, $this->waMsg, $bait);
+                $handler->exe();
                 break;
             default:
                 # code...
                 break;
         }
 
-        if(count($bait) > 0) {
-            $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $bait);
-        }
     }
 
 }

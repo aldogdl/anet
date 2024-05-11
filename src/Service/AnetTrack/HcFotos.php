@@ -26,21 +26,20 @@ class HcFotos
     }
 
     /** */
-    public function exe(): array
+    public function exe(): void
     {
         $this->prepareStep();
         // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
             $this->waSender->sendText($this->txtValid);
-            return [];
+            return;
         }
         $oldCurrent = $this->bait['current'];
         $this->editarBait();
         $this->enviarMsg($oldCurrent);
-        return $this->bait;
+        return;
     }
 
-    
     /** */
     private function createFilenameTmpOf(String $name, bool $withTime = false): String
     {
@@ -67,7 +66,7 @@ class HcFotos
      * Tratamos con los archivos indicativos del paso en el que actualmente se
      * encuentra la cotizacion
     */
-    private function prepareStep()
+    private function prepareStep(): void
     {
         $filename = $this->fSys->startWith($this->waMsg->from.'_sfto_');
         if($filename != '') {
@@ -95,7 +94,7 @@ class HcFotos
     }
 
     /** */
-    private function editarBait()
+    private function editarBait(): void
     {
         $track = [];
         if(array_key_exists('track', $this->bait)) {
@@ -107,7 +106,7 @@ class HcFotos
             $idsFtos = array_column($track['fotos'], 'id');
             $has = array_search($this->waMsg->content['id'], $idsFtos);
             if($has !== false) {
-                return [];
+                return;
             }
             array_push($track['fotos'], $this->waMsg->content);
         }
@@ -154,7 +153,7 @@ class HcFotos
     }
 
     /** */
-    private function enviarMsg(String $oldCurrent)
+    private function enviarMsg(String $oldCurrent): void
     {
         if(!$this->sendMsgDeta) {
             return;

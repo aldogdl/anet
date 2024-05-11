@@ -7,7 +7,7 @@ use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaSender;
 
-class HcDetalles
+class HcCosto
 {
     private Fsys $fSys;
     private WaSender $waSender;
@@ -62,83 +62,107 @@ class HcDetalles
     */
     private function prepareStep(): void
     {
-        // Creamos el archivo indicativo del proceso actual con una nueva marca de tiempo
-        $filename = $this->createFilenameTmpOf('sdta');
-        $this->fSys->setContent('/', $filename, ['']);
-
         // Eliminamos el archivo indicativo del proceso anterior
-        $filename = $this->fSys->startWith($this->waMsg->from.'_sfto_');
-        if($filename != '') {
+        $filename = $this->createFilenameTmpOf('sdta');
+        if($this->isAtendido($filename)) {
             $this->fSys->delete('/', $filename);
         }
-        
+        $filename = $this->createFilenameTmpOf('scto');
+        $this->fSys->setContent('/', $filename, ['']);
+
         $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
     private function editarBait(): void
     {
-        $this->bait['track']['detalles'] = $this->waMsg->content;
-        $this->bait['current'] = 'scto';
+        $this->bait['track']['costo'] = $this->waMsg->content;
+        $this->bait['current'] = 'sgrx';
         $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
     }
 
     /** */
     private function isValid(): bool
     {
-        $this->txtValid = '';
-        
+        $this->txtValid = "⚠️ ¡Lo sentimos!, El sistema está preparado ".
+        'para aceptar *sólo números* para el COSTO.';
+
         if($this->waMsg->tipoMsg != TypesWaMsgs::TEXT) {
-            $this->txtValid = "⚠️ ¡Lo sentimos!, El sistema está preparado ".
-            'para aceptar *sólo texto* en los detalles.';
             return false;
         }
 
-        $notFto = false;
+        $notDta = false;
         if(!array_key_exists('track', $this->bait)) {
-            $notFto = true;
+            $notDta = true;
         }else{
             $track = $this->bait['track'];
-            if(array_key_exists('fotos', $track)) {
-                $notFto = (count($track['fotos']) > 0) ? false : true;
+            if(array_key_exists('detalles', $track)) {
+                $notDta = (strlen($track['detalles']) > 0) ? false : true;
             }else{
-                $notFto = true;
+                $notDta = true;
             }
         }
-        if($notFto) {
+        if($notDta) {
             $this->txtValid = "⚠️ ¡Lo sentimos!, pero es muy importante que ".
-            "por lo menos envíes una Imagen de tu pieza.";
+            "indiques los detalles de la pieza.";
             return false;
         }
 
-        // Si eliminamos todos los numeros de la descripcion y no quedan letras
-        // es que la descripcion no esta bien
-        $value = preg_replace('/[0-9]/', '', $this->waMsg->content);
-        if(strlen($value) < 3) {
-            $this->txtValid = "⚠️ Se un poco más específico con la descripción\n".
-            "Es necesario *letras y números*, o *sólo letras*.";
+        $result = $this->waMsg->content;
+        $str = mb_strtolower($result);
+        if(mb_strpos($str, 'mil') !== false) {
             return false;
         }
 
-        return true;
+        $str = str_replace('$', '', $str);
+        $str = str_replace(',', '', $str);
+
+        if(mb_strpos($str, '.') !== false) {
+
+            $partes = explode('.', $str);
+            $entera = $this->isDigit($partes[0]);
+            if($entera != '-1') {
+                $decimal = $this->isDigit($partes[1]);
+                if($decimal != '-1') {
+                    $this->txtValid = '';
+                    $this->waMsg->content = implode('.', $partes);
+                    return true;
+                }
+            }
+        }
+
+        $entera = $this->isDigit($str);
+        if($entera != '-1') {
+            $this->txtValid = '';
+            $this->waMsg->content = implode('.', $partes);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checamos si el valor dado es un numero.
+     */
+    private function isDigit(String $value) : String
+    {
+        $value = preg_replace('/[^0-9]/', '', $value);
+        if(strlen($value) > 2) {
+            if(is_int($value) || ctype_digit($value)) {
+                return $value;
+            }
+        }
+        return '-1';
     }
 
     /** */
     private function enviarMsg(): void
     {
-        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
-        $template = $builder->exe('scto');
-        if(count($template) > 0) {
-            $res = $this->waSender->sendPreTemplate($template);
-            if($res >= 200 && $res <= 300) {
-                $this->waSender->sendMy($this->waMsg->toMini());
-            }
-        }else{
-            $this->waSender->sendText(
-                "😃👍 Perfecto!!!\n*¿Cuál sería tu mejor PRECIO?.*\n\n".
-                "_💰 Escribe solo números por favor._"
-            );
-        }
+        $this->waSender->sendText(
+            "🤩 *Finalizaste con ÉXITO!.*\n\n".
+            "*RECUERDA*: Puedes vaciar este chat para mantener limpio tu dispositivo\n\n".
+            "_NUNCA PERDERÁS ningúna OPORTUNIDAD DE VENTA_💰"
+        );
     }
 
 }

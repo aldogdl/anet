@@ -31,7 +31,7 @@ class WaBtnCotNow
     public function isAtendido(): bool { return $this->fSys->existe('/', $this->fileTmp); }
 
     /** */
-    public function exe(bool $hasCotInProgress)
+    public function exe(bool $hasCotInProgress): void
     {
         $this->waSender->setConmutador($this->waMsg);
 
