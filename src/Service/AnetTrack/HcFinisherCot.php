@@ -62,7 +62,7 @@ class HcFinisherCot
         }elseif($tipoFinish == 'ntga') {
             $head = "🚗 *PERFECTO GRACIAS.*\n\n";
         }else {
-            $head = "📵 *Sigue vendiendo MÁS!!.*\n\n";
+            $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
         }
         $body = "Aquí tienes otra oportunidad de venta💰";
 

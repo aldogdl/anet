@@ -27,12 +27,12 @@ class HcCosto
     /** */
     public function exe(): void
     {
-        $this->prepareStep();
         // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
             $this->waSender->sendText($this->txtValid);
             return;
         }
+        $this->prepareStep();
         $this->editarBait();
         $this->enviarMsg();
         return;
