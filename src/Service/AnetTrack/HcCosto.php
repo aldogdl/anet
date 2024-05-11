@@ -134,7 +134,7 @@ class HcCosto
         $entera = $this->isDigit($str);
         if($entera != '-1') {
             $this->txtValid = '';
-            $this->waMsg->content = implode('.', $partes);
+            $this->waMsg->content = $str;
             return true;
         }
 
