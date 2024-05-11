@@ -28,7 +28,7 @@ class HcFotos
     private function createFilenameTmpOf(String $name, bool $withTime = false): String
     {
         if($withTime) {
-            $tiempo_actual = microtime(true) * 1000;
+            $tiempo_actual = (integer) microtime(true) * 1000;
             return $this->waMsg->from.'_'.$name.'_'.$tiempo_actual.'_.json';
         }
         return $this->waMsg->from.'_'.$name.'.json';
@@ -84,9 +84,12 @@ class HcFotos
             // Si ya existe el archivo lo partimos en sus partes para optener el momento
             // que este archivo se creo
             $partes = explode('_', $filename);
-            $rota = count($partes);
+            $rota = count($partes) -1;
             $this->lastTime = (integer) $partes[$rota - 1];
+            $tiempo_actual = (integer) microtime(true) * 1000;
             file_put_contents('wa_'.$this->lastTime.'.json', '');
+            $diff = ($tiempo_actual - $this->lastTime)/1000;
+            file_put_contents('wa_pas_'.$diff.'_seg.json', '');
         }
 
         // Eliminamos el archivo indicativo del proceso anterior
