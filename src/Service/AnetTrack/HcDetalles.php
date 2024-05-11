@@ -27,6 +27,7 @@ class HcDetalles
     /** */
     public function exe(): void
     {
+        $this->waSender->setConmutador($this->waMsg);
         // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
             $this->waSender->sendText($this->txtValid);
@@ -71,8 +72,6 @@ class HcDetalles
         if($filename != '') {
             $this->fSys->delete('/', $filename);
         }
-        
-        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */

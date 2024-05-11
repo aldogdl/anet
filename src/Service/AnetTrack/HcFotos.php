@@ -28,12 +28,14 @@ class HcFotos
     /** */
     public function exe(): void
     {
+        // Solo en las imagenes es necesario primero preparar el escenario
+        // antes de validar los datos recibidos por la cuestion del envio de fotos.
+        $this->prepareStep();
         // Validamos la integridad del tipo de mensaje
         if(!$this->isValid() && $this->txtValid != '') {
             $this->waSender->sendText($this->txtValid);
             return;
         }
-        $this->prepareStep();
         $oldCurrent = $this->bait['current'];
         $this->editarBait();
         $this->enviarMsg($oldCurrent);
