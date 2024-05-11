@@ -27,7 +27,7 @@ class HcFotos
     }
 
     /** */
-    public function exe(): bool
+    public function exe(): void
     {
         $processValid = true;
         if($this->waMsg->tipoMsg == TypesWaMsgs::INTERACTIVE) {
@@ -35,18 +35,16 @@ class HcFotos
             if(mb_strpos($this->waMsg->subEvento, 'nfto') !== false) {
                 $this->sendMsgDeta = true;
                 $this->enviarMsg('nfto');
-                return false;
+                return;
             }elseif(mb_strpos($this->waMsg->subEvento, 'fton_') !== false) {
                 // El usuario desea continuar sin fotos
                 $processValid = false;
                 $this->waMsg->content = ['id' => 0, 'mime' => 'none'];
                 $this->bait['current'] = 'sdta';
-                $this->editarBait();
-                return true;
             }else {
                 // El usuario se arrepintio desea continuar con fotos
                 $this->enviarMsg('sfto');
-                return false;
+                return;
             }
         }
 
@@ -57,7 +55,7 @@ class HcFotos
             // Validamos la integridad del tipo de mensaje
             if(!$this->isValid() && $this->txtValid != '') {
                 $this->waSender->sendText($this->txtValid);
-                return false;
+                return;
             }
         }
 
@@ -66,7 +64,7 @@ class HcFotos
         // Si $processValid es false quiere decir que se presiono el btn de
         // continuar sin fotos.
         $this->enviarMsg($oldCurrent, $processValid);
-        return false;
+        return;
     }
 
     /** */
