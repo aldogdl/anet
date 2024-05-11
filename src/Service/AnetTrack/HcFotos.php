@@ -43,6 +43,7 @@ class HcFotos
                 $this->bait['current'] = 'sdta';
             }else {
                 // El usuario se arrepintio desea continuar con fotos
+                $this->bait['current'] = 'sfto';
                 $this->enviarMsg('sfto');
                 return;
             }
