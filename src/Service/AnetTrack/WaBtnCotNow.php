@@ -57,11 +57,14 @@ class WaBtnCotNow
             return;
         }
         $this->fSys->setContent('/', $this->fileTmp, ['']);
-        $this->fSys->putCotizando($this->waMsg);
         
         $template = $builder->exe('sfto');
         $code = $this->waSender->sendPreTemplate($template);
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
+            if($this->waSender->wamidMsg != '') {
+                $this->waMsg->context = $this->waSender->wamidMsg;
+            }
+            $this->fSys->putCotizando($this->waMsg);
             $this->waSender->sendMy($this->waMsg->toMini());
         }
     }

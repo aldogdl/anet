@@ -20,7 +20,8 @@ class WaSender
     private Fsys $fSys;
     private bool $isTest;
     public String $context;
-
+    public String $wamidMsg;
+    
     /** */
     public function __construct(HttpClientInterface $client, ParameterBagInterface $container, Fsys $fsys)
     {
@@ -121,7 +122,14 @@ class WaSender
             $error = 'El Archivo conmutador de SR. resulto nulo';
         }
 
-        if($code != 200) {
+        $this->wamidMsg = '';
+        if($code >= 200 && $code <= 300) {
+            if(array_key_exists('messages', $bodyResult)) {
+                if(array_key_exists('id', $bodyResult['messages'][0])) {
+                    $this->wamidMsg = $bodyResult['messages'][0]['id'];
+                }
+            }
+        }else {
             $result = [
                 'evento' => 'error_sr',
                 'statuscode' => $code,
