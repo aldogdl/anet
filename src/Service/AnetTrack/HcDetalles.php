@@ -3,6 +3,7 @@
 namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
+use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaSender;
 
@@ -13,7 +14,6 @@ class HcDetalles
     private WaMsgDto $waMsg;
     private array $bait;
     private String $txtValid = '';
-    private bool $sendMsgDeta = true;
 
     /** */
     public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
@@ -33,9 +33,8 @@ class HcDetalles
             $this->waSender->sendText($this->txtValid);
             return [];
         }
-        $oldCurrent = $this->bait['current'];
         $this->editarBait();
-        $this->enviarMsg($oldCurrent);
+        $this->enviarMsg();
         return $this->bait;
     }
 
@@ -79,23 +78,8 @@ class HcDetalles
     /** */
     private function editarBait()
     {
-        $track = [];
-        if(array_key_exists('track', $this->bait)) {
-            $track = $this->bait['track'];
-        }
-        if(!array_key_exists('fotos', $track)) {
-            $track['fotos'] = [$this->waMsg->content];
-        }else{
-            $idsFtos = array_column($track['fotos'], 'id');
-            $has = array_search($this->waMsg->content['id'], $idsFtos);
-            if($has !== false) {
-                return [];
-            }
-            array_push($track['fotos'], $this->waMsg->content);
-        }
-
-        $this->bait['track'] = $track;
-        $this->bait['current'] = 'sdta';
+        $this->bait['track']['detalles'] = $this->waMsg->content;
+        $this->bait['current'] = 'scto';
         $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
     }
 
@@ -103,25 +87,36 @@ class HcDetalles
     private function isValid(): bool
     {
         $this->txtValid = '';
-        $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
-        if(!in_array($this->waMsg->status, $permitidas)) {
-            $this->txtValid = "Lo sentimos pero el formato de imagen (".
-            $this->waMsg->status.") no está entre la lista de imágenes ".
-            "permididas, por el momento sólo aceptamos fotos con extención:\n".
-            "[".implode(', ', $permitidas)."].";
-            return false;
-        }
-        if(count($this->waMsg->content) == 0) {
-            $this->txtValid = "Lo sentimos pero la imagen (".
-            "recibida no es valida, por favor intenta enviarla nuevamente ".
-            "o evnía otra como segunda opción.";
+        
+        if($this->waMsg->tipoMsg != TypesWaMsgs::TEXT) {
+            $this->txtValid = "⚠️ ¡Lo sentimos!, El sistema está preparado ".
+            'para aceptar *sólo texto* en los detalles.';
             return false;
         }
 
-        if(!array_key_exists('id', $this->waMsg->content)) {
-            $this->txtValid = "Lo sentimos pero la imagen (".
-            "no se envio correctamente a WHATSAPP, intenta enviarla ".
-            "nuevamente por favor.";
+        $notFto = false;
+        if(!array_key_exists('track', $this->bait)) {
+            $notFto = true;
+        }else{
+            $track = $this->bait['track'];
+            if(array_key_exists('fotos', $track)) {
+                $notFto = (count($track['fotos']) > 0) ? false : true;
+            }else{
+                $notFto = true;
+            }
+        }
+        if($notFto) {
+            $this->txtValid = "⚠️ ¡Lo sentimos!, pero es muy importante que ".
+            "por lo menos envíes una Imagen de tu pieza.";
+            return false;
+        }
+
+        // Si eliminamos todos los numeros de la descripcion y no quedan letras
+        // es que la descripcion no esta bien
+        $value = preg_replace('/[0-9]/', '', $this->waMsg->content);
+        if(strlen($value) < 3) {
+            $this->txtValid = "⚠️ Se un poco más específico con la descripción\n".
+            "Es necesario *letras y números*, o *sólo letras*.";
             return false;
         }
 
@@ -129,28 +124,19 @@ class HcDetalles
     }
 
     /** */
-    private function enviarMsg(String $oldCurrent)
+    private function enviarMsg()
     {
-        if(!$this->sendMsgDeta) {
-            return;
-        }
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
-        $template = $builder->exe('sdta');
-        // Para esta plantilla de solicitud de detalles enviamos una
-        // serie de mensajes al azar para interactual con el usuario
-        if($oldCurrent == 'sdta') {
-            $template = $builder->editForDetalles($template);
-        }
-
+        $template = $builder->exe('scto');
         if(count($template) > 0) {
-            $res = $this->waSender->sendInteractive($template);
+            $res = $this->waSender->sendPreTemplate($template);
             if($res >= 200 && $res <= 300) {
                 $this->waSender->sendMy($this->waMsg->toMini());
             }
         }else{
             $this->waSender->sendText(
-                "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
-                "CONDICIÓN O ESTADO de tu autoparte por favor."
+                "😃👍 Perfecto!!!\n*¿Cuál sería tu mejor PRECIO?.*\n\n".
+                "_💰 Escribe solo números por favor._"
             );
         }
     }

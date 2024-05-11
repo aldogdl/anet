@@ -71,10 +71,9 @@ class WaSender
     }
 
     /** 
-     * Usado para enviar msg que bienen de las templates y este metodo atiende solo
-     * aquellas templates que son interactivas
+     * Usado para enviar msg que bienen de las templates prefabricadas
     */
-    public function sendInteractive(array $body): int
+    public function sendPreTemplate(array $body): int
     {
         $this->type = $body['type'];
         $this->body = $body[$this->type];

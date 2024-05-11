@@ -120,31 +120,32 @@ class HcFotos
     /** */
     private function isValid(): bool
     {
+        $this->txtValid = '';
+
         if($this->waMsg->tipoMsg != TypesWaMsgs::IMAGE) {
-            $this->txtValid = "¡Lo sentimos!, El sistema está preparado ".
-            'para aceptar sólo imágenes.';
+            $this->txtValid = "⚠️ ¡Lo sentimos!, El sistema está preparado ".
+            'para aceptar *sólo imágenes* para las fotos de la pieza.';
             return false;
         }
-
-        $this->txtValid = '';
+        
         $permitidas = ['jpeg', 'jpg', 'webp', 'png'];
         if(!in_array($this->waMsg->status, $permitidas)) {
-            $this->txtValid = "Lo sentimos pero el formato de imagen (".
-            $this->waMsg->status.") no está entre la lista de imágenes ".
+            $this->txtValid = "⚠️ Lo sentimos pero el formato de imagen (*".
+            $this->waMsg->status."*) no está entre la lista de imágenes ".
             "permididas, por el momento sólo aceptamos fotos con extención:\n".
-            "[".implode(', ', $permitidas)."].";
+            "[*".implode(', ', $permitidas)."]*.";
             return false;
         }
         if(count($this->waMsg->content) == 0) {
-            $this->txtValid = "Lo sentimos pero la imagen (".
-            "recibida no es valida, por favor intenta enviarla nuevamente ".
+            $this->txtValid = "⚠️ Lo sentimos pero la imagen ".
+            "recibida *no es valida*, por favor intenta enviarla nuevamente ".
             "o evnía otra como segunda opción.";
             return false;
         }
 
         if(!array_key_exists('id', $this->waMsg->content)) {
-            $this->txtValid = "Lo sentimos pero la imagen (".
-            "no se envio correctamente a WHATSAPP, intenta enviarla ".
+            $this->txtValid = "⚠️ Lo sentimos pero la imagen ".
+            "*no se envio correctamente* a WHATSAPP, intenta enviarla ".
             "nuevamente por favor.";
             return false;
         }
@@ -167,7 +168,7 @@ class HcFotos
         }
 
         if(count($template) > 0) {
-            $res = $this->waSender->sendInteractive($template);
+            $res = $this->waSender->sendPreTemplate($template);
             if($res >= 200 && $res <= 300) {
                 $this->waSender->sendMy($this->waMsg->toMini());
             }

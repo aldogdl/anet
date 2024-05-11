@@ -45,7 +45,7 @@ class WaBtnCotNow
                 if(array_key_exists('wamid', $bait)) {
                     $this->waSender->context = $bait['wamid'];
                 }
-                $code = $this->waSender->sendInteractive($template);
+                $code = $this->waSender->sendPreTemplate($template);
                 if($code >= 200 && $code <= 300) {
                     $this->waSender->sendMy($this->waMsg->toMini());
                 }
@@ -60,7 +60,7 @@ class WaBtnCotNow
         $this->fSys->putCotizando($this->waMsg);
         
         $template = $builder->exe('sfto');
-        $code = $this->waSender->sendInteractive($template);
+        $code = $this->waSender->sendPreTemplate($template);
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($this->waMsg->toMini());
         }
