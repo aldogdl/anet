@@ -68,7 +68,7 @@ class HcFinisherCot
         $body = "Aquí tienes otra oportunidad de venta💰";
 
         // Tomamos el mensaje que fué atendido
-        $att = ($tipoFinish == 'fin') ? $this->bait : $this->waMsg->toMini();
+        $att = ($tipoFinish == 'fin') ? $this->bait['track'] : $this->waMsg->toMini();
 
         // Recuperamos otro bait directamente desde el estanque
         $otroBait = $this->fSys->getNextBait($this->waMsg, $this->bait['mdl']);
