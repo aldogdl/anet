@@ -113,7 +113,7 @@ class Fsys {
                         $bait = $cooler[$has];
                         $date = new \DateTime('now');
                         $attend = $date->format('Y-m-d h:i:s');
-                        $bait['wamid'] = ($waMsg->context != '') ? $waMsg->context : $waMsg->id;
+                        $bait['wamid'] = $waMsg->id;
                         $bait['current'] = 'sfto';
                         $bait['attend'] = $attend;
 
