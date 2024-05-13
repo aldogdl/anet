@@ -2,13 +2,12 @@
 
 namespace App\Service\AnetTrack;
 
-use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\Fsys;
 
 class ResetCot
 {
     private String $idItem;
-    private WaMsgDto $waIdCot;
+    private String $waIdCot;
     private Fsys $fSys;
 
     /** */
