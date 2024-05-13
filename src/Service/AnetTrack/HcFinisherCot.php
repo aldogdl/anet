@@ -49,7 +49,7 @@ class HcFinisherCot
             }
         }
         
-        $this->fSys->setContent('trackeds', $this->bait['waId'].'.json', $this->bait);
+        $this->fSys->setContent('trackeds', $this->bait['waId']."_".$this->bait['idItem'].'.json', $this->bait);
         $this->fSys->delete('tracking', $this->bait['waId'].'.json');
         
         $this->waSender->setConmutador($this->waMsg);

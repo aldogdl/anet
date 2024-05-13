@@ -90,11 +90,11 @@ class WaBtnCotNow
                 $this->waSender->context = $exist['wamid'];
             }
             $this->waSender->sendText(
-                "😉👍 PERDON PERO...\n".
+                "😉👍 *PERDON PERO*...\n".
                 "Ya atendiste esta solicitud de cotización:\n\n".
                 "No. de Fotos: *".count($exist['track']['fotos'])."*\n".
                 "Detalles: *".$exist['track']['detalles']."*\n".
-                "Costo: $*".$exist['track']['costo']."*\n\n".
+                "Costo: \$ *".$exist['track']['costo']."*\n\n".
                 "_Pronto recibirás más oportunidades de venta_💰"
             );
         }
