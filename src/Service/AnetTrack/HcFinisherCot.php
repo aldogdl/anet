@@ -16,6 +16,7 @@ class HcFinisherCot
         $this->waSender = $waS;
         $this->waMsg = $msg;
         $this->bait = $bait;
+        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
@@ -37,18 +38,6 @@ class HcFinisherCot
     /** */
     public function exe(String $tipoFinish = 'cancel'): void
     {
-        $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
-        $rota = count($toDelete);
-        for ($i=0; $i < $rota; $i++) { 
-            $filename = $this->createFilenameTmpOf($toDelete[$i]);
-            $this->waSender->fSys->delete('/', $filename);
-        }
-
-        $this->waSender->fSys->setContent('trackeds', $this->bait['waId']."_".$this->bait['idItem'].'.json', $this->bait);
-        $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
-        
-        $this->waSender->setConmutador($this->waMsg);
-
         // Dependiendo de la accion realizada grabamos distintas
         // cabeceras para la respuesta a dicha accion
         if($tipoFinish == 'cancel') {
@@ -61,12 +50,26 @@ class HcFinisherCot
             $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
         }
         $body = "Aquí tienes otra oportunidad de venta💰";
+        $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
+        
+        $model = $this->bait['mdl'];
+        $att = $this->bait['track'];
+        
+        if($tipoFinish == 'ntg') {
+            $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
+        }else if($tipoFinish == 'ntga') {
+            $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
+            $model = '';
+        }else{
+            // Tomamos el mensaje que fué atendido
+            $att = ($tipoFinish == 'fin') ? $this->bait['track'] : $this->waMsg->toMini();
+        }
 
-        // Tomamos el mensaje que fué atendido
-        $att = ($tipoFinish == 'fin') ? $this->bait['track'] : $this->waMsg->toMini();
-
+        $this->waSender->fSys->setContent('trackeds', $this->bait['waId']."_".$this->bait['idItem'].'.json', $this->bait);
+        $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
+        
         // Recuperamos otro bait directamente desde el estanque
-        $otroBait = $this->waSender->fSys->getNextBait($this->waMsg, $this->bait['mdl']);
+        $otroBait = $this->waSender->fSys->getNextBait($this->waMsg, $model);
         
         $this->waSender->context = $this->bait['wamid'];
         if($otroBait != '') {
@@ -89,6 +92,13 @@ class HcFinisherCot
         $retornar = ['evento' => 'whatsapp_api', 'payload' => ['att' => $att, 'send' => $otroBait]];
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($retornar);
+        }
+
+        // Eliminamos los archivos que indican el paso de cotizacion actual.
+        $rota = count($toDelete);
+        for ($i=0; $i < $rota; $i++) { 
+            $filename = $this->createFilenameTmpOf($toDelete[$i]);
+            $this->waSender->fSys->delete('/', $filename);
         }
     }
 

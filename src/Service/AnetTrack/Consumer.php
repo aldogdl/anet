@@ -73,12 +73,12 @@ class Consumer
         
         $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
         if ($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
-            $clase = new WaBtnCotNow($this->fSys, $this->waSender, $obj);
+            $clase = new WaBtnCotNow($this->waSender, $obj);
             $clase->exe($hasCotProgress);
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::NTG || $obj->tipoMsg == TypesWaMsgs::NTGA) {
 
-            $clase = new WaBtnNtgX($this->fSys, $this->waSender, $obj);
+            $clase = new WaBtnNtgX($this->waSender, $obj);
             $clase->exe($hasCotProgress);
             return;
         }

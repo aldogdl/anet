@@ -3,54 +3,73 @@
 namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
-use App\Service\AnetTrack\Fsys;
 
 class WaBtnNtgX
 {
     private WaMsgDto $waMsg;
-    private Fsys $fSys;
     private WaSender $waSender;
-    private String $fileTmp = '';
 
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg)
+    public function __construct(WaSender $waS, WaMsgDto $msg)
     {
         $this->waMsg     = $msg;
-        $this->fSys      = $fsys;
         $this->waSender  = $waS;
-        $this->fileTmp   = $this->waMsg->from.'_'.$this->waMsg->subEvento.'.json';
     }
-
-    /** 
-     * Cuando NiFi o Ngrok no responden inmediatamente por causa de latencia, whatsapp
-     * considera que no llego el mensaje a este servidor, por lo tanto reenvia el mensaje
-     * causando que el usuario reciba varios mensajes de confirmación.
-     * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
-     * evitamos esto.
-    */
-    public function isAtendido(): bool { return $this->fSys->existe('/', $this->fileTmp); }
 
     /** */
     public function exe(bool $hasCotInProgress)
     {
-        if($this->isAtendido()) {
+        if($this->existeInTrackeds()) {
             return;
         }
-        $this->fSys->setContent('/', $this->fileTmp, ['']);
 
-        $this->fSys->putCotizando($this->waMsg);
+        $bait = [];
         if($hasCotInProgress) {
-            // TODO abisar que hay una cotizacion en progreso y dar opcion a cancelar o seguir
-            // con la que esta en progreso.
-            // $this->waSender->setConmutador($this->waMsg);
-            return;
+            $bait = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
+            // Si se esta cotizando actualmente una, pero la que se dijo no tengo es otra
+            // entonces no la tomamos en cuenta reiniciando la var bait
+            if($bait['idIte'] != $this->waMsg->idItem) {
+                $bait = [];
+            }
         }
         
-        $this->waSender->setConmutador($this->waMsg);
-        $code = $this->waSender->sendTemplate($this->waMsg->idItem);
-        if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
-            $this->waSender->sendMy($this->waMsg->toMini());
+        // Si no hay cotizacion en curso ponemos el bait como si estuviera cotizando
+        if(count($bait) == 0) {
+            $this->waSender->fSys->putCotizando($this->waMsg);
+            $bait = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
+        }
+
+        if(count($bait) > 0) {
+            $finicher = new HcFinisherCot($this->waSender, $this->waMsg, $bait);
+            $finicher->exe($this->waMsg->subEvento);
+            return;
         }
     }
 
+    /**
+     * Revisamos para ver si esta cotizacion ya fue cotizada por el mismo cotizador
+     */
+    private function existeInTrackeds(): bool
+    {
+        $resp = false;
+        $exist = $this->waSender->fSys->getContent(
+            'trackeds', $this->waMsg->from.'_'.$this->waMsg->idItem.'.json'
+        );
+
+        if(count($exist) > 0) {
+            $resp = true;
+            if($exist['wamid'] != '') {
+                $this->waSender->context = $exist['wamid'];
+            }
+            $this->waSender->sendText(
+                "😉👍 *SIN EMBARGO*...\n".
+                "Ya atendiste esta solicitud de cotización:\n\n".
+                "No. de Fotos: *".count($exist['track']['fotos'])."*\n".
+                "Detalles: *".$exist['track']['detalles']."*\n".
+                "Costo: \$ *".$exist['track']['costo']."*\n\n".
+                "_Aún así GRACIAS por tu atención_"
+            );
+        }
+        return $resp;
+    }
 }

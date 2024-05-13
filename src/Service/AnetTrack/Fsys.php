@@ -26,7 +26,7 @@ class Fsys {
     {
         $path = $this->getFolderTo($folder);
         $tipoReturn = 'string';
-        if( mb_strpos($filename, '.json')) {
+        if(mb_strpos($filename, '.json') !== false) {
             $tipoReturn = 'map';
         }
         if($filename != '') {

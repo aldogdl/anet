@@ -8,15 +8,13 @@ use App\Service\AnetTrack\Fsys;
 class WaBtnCotNow
 {
     private WaMsgDto $waMsg;
-    private Fsys $fSys;
     private WaSender $waSender;
     private String $fileTmp = '';
 
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg)
+    public function __construct(WaSender $waS, WaMsgDto $msg)
     {
         $this->waMsg     = $msg;
-        $this->fSys      = $fsys;
         $this->waSender  = $waS;
         $this->fileTmp   = $this->waMsg->from.'_'.$this->waMsg->subEvento.'.json';
         $this->waSender->setConmutador($this->waMsg);
@@ -29,7 +27,7 @@ class WaBtnCotNow
      * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
      * evitamos esto.
     */
-    public function isAtendido(): bool { return $this->fSys->existe('/', $this->fileTmp); }
+    public function isAtendido(): bool { return $this->waSender->fSys->existe('/', $this->fileTmp); }
 
     /** */
     public function exe(bool $hasCotInProgress): void
@@ -38,11 +36,11 @@ class WaBtnCotNow
             return;
         }
 
-        $builder = new BuilderTemplates($this->fSys, $this->waMsg);
+        $builder = new BuilderTemplates($this->waSender->fSys, $this->waMsg);
         if($hasCotInProgress) {
             // Abisamos que hay una cotizacion en progreso y damos opción a cancelar o seguir
             // con la que esta en curso.
-            $bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
+            $bait = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
             if(count($bait) > 0) {
                 $template = $builder->exe('cext', $bait['idItem']);
                 if(array_key_exists('wamid', $bait)) {
@@ -59,7 +57,7 @@ class WaBtnCotNow
         if($this->isAtendido()) {
             return;
         }
-        $this->fSys->setContent('/', $this->fileTmp, ['']);
+        $this->waSender->fSys->setContent('/', $this->fileTmp, ['']);
         
         $template = $builder->exe('sfto');
         $code = $this->waSender->sendPreTemplate($template);
@@ -69,7 +67,7 @@ class WaBtnCotNow
                 $this->waMsg->id = ($this->waMsg->context != '')
                     ? $this->waMsg->context : $this->waSender->wamidMsg;
             }
-            $this->fSys->putCotizando($this->waMsg);
+            $this->waSender->fSys->putCotizando($this->waMsg);
             $this->waSender->sendMy($this->waMsg->toMini());
         }
     }
@@ -80,7 +78,7 @@ class WaBtnCotNow
     private function existeInTrackeds(): bool
     {
         $resp = false;
-        $exist = $this->fSys->getContent(
+        $exist = $this->waSender->fSys->getContent(
             'trackeds', $this->waMsg->from.'_'.$this->waMsg->idItem.'.json'
         );
 
