@@ -79,10 +79,13 @@ class WaBtnCotNow
      */
     private function existeInTrackeds(): bool
     {
+        $resp = false;
         $exist = $this->fSys->getContent(
             'trackeds', $this->waMsg->from.'_'.$this->waMsg->idItem.'.json'
         );
+
         if(count($exist) > 0) {
+            $resp = true;
             if($exist['wamid'] != '') {
                 $this->waSender->context = $exist['wamid'];
             }
@@ -95,6 +98,6 @@ class WaBtnCotNow
                 "_Pronto recibirás más oportunidades de venta_💰"
             );
         }
-        return $exist;
+        return $resp;
     }
 }
