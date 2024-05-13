@@ -34,6 +34,10 @@ class WaBtnCotNow
     /** */
     public function exe(bool $hasCotInProgress): void
     {
+        if($this->existeInTrackeds()) {
+            return;
+        }
+
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         if($hasCotInProgress) {
             // Abisamos que hay una cotizacion en progreso y damos opción a cancelar o seguir
@@ -59,6 +63,7 @@ class WaBtnCotNow
         
         $template = $builder->exe('sfto');
         $code = $this->waSender->sendPreTemplate($template);
+
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             if($this->waSender->wamidMsg != '') {
                 $this->waMsg->id = ($this->waMsg->context != '')
@@ -69,4 +74,27 @@ class WaBtnCotNow
         }
     }
 
+    /**
+     * Revisamos para ver si esta cotizacion ya fue cotizada por el mismo cotizador
+     */
+    private function existeInTrackeds(): bool
+    {
+        $exist = $this->fSys->getContent(
+            'trackeds', $this->waMsg->from.'_'.$this->waMsg->idItem.'.json'
+        );
+        if(count($exist) > 0) {
+            if($exist['wamid'] != '') {
+                $this->waSender->context = $exist['wamid'];
+            }
+            $this->waSender->sendText(
+                "😉👍 COTIZADA...\n".
+                "Ya atendiste esta solicitud de cotización:\n\n".
+                "No. de Fotos: *".count($exist['track']['fotos']).'*\n'.
+                "Detalles: *".$exist['track']['detalles'].'*\n'.
+                "Costo: *".$exist['track']['costo'].'*\n\n'.
+                "_Pronto recibirás más oportunidades de venta_💰"
+            );
+        }
+        return $exist;
+    }
 }

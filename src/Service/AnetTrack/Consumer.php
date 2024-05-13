@@ -59,20 +59,20 @@ class Consumer
             $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
             $clase->exe();
             return;
-        }
-
-        // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario
-        $this->fSys->delete('/', $obj->from.'_iniLogin.json');
-        
-        $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
-        if($obj->tipoMsg == TypesWaMsgs::DOC) {
+        }elseif($obj->tipoMsg == TypesWaMsgs::DOC) {
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
                 "TEXTO e IMÁGENES."
             );
             return;
-        }elseif ($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
+        }
+
+        // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario
+        $this->fSys->delete('/', $obj->from.'_iniLogin.json');
+        
+        $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
+        if ($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
             $clase = new WaBtnCotNow($this->fSys, $this->waSender, $obj);
             $clase->exe($hasCotProgress);
             return;
