@@ -13,14 +13,15 @@ class GetController extends AbstractController
 {
 
   /** */
-  #[Route('anet-track/reset-cot/{tokenBasic}/{idItem}/{waidCot}', methods:['get'])]
-  public function uploadFileConn(Fsys $fSys, String $tokenBasic, String $idItem, String $waIdCot): Response
+  #[Route('anet-track/reset-cot/{tokenBasic}/{idItem}/{waIdCot}', methods:['get'])]
+  public function resetCot(Fsys $fSys, String $tokenBasic, String $idItem, String $waIdCot): Response
   {
     $response = ['abort' => true, 'body' => '¿Que haces aquí?'];
     $miTok = $this->getParameter('getAnToken');
     if($miTok == $tokenBasic) {
       $acc = new ResetCot($fSys, $idItem, $waIdCot);
       $resul = $acc->exe();
+      $response = ['abort' => true, 'body' => $resul];
     }
 
     return $this->json($response);
