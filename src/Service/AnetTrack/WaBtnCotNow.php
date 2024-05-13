@@ -92,9 +92,9 @@ class WaBtnCotNow
             $this->waSender->sendText(
                 "😉👍 COTIZADA...\n".
                 "Ya atendiste esta solicitud de cotización:\n\n".
-                "No. de Fotos: *".count($exist['track']['fotos']).'*\n'.
-                "Detalles: *".$exist['track']['detalles'].'*\n'.
-                "Costo: *".$exist['track']['costo'].'*\n\n'.
+                "No. de Fotos: *".count($exist['track']['fotos'])."*\n".
+                "Detalles: *".$exist['track']['detalles']."*\n".
+                "Costo: $*".$exist['track']['costo']."*\n\n".
                 "_Pronto recibirás más oportunidades de venta_💰"
             );
         }
