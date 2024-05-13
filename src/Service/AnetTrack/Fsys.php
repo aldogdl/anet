@@ -26,17 +26,22 @@ class Fsys {
     {
         $path = $this->getFolderTo($folder);
         $tipoReturn = 'string';
+        $content = '';
+
         if(mb_strpos($filename, '.json') !== false) {
             $tipoReturn = 'map';
+            $content = [];
         }
         if($filename != '') {
             $path = $path . '/' .$filename;
         }
 
         try {
-            $content = file_get_contents($path);
-            if($content != '' && $tipoReturn == 'map') {
-                return json_decode($content, true);
+            if($this->existe($folder, $filename)) {
+                $content = file_get_contents($path);
+                if($content != '' && $tipoReturn == 'map') {
+                    return json_decode($content, true);
+                }
             }
 		} catch (FileException $e) {}
 
