@@ -14,6 +14,7 @@ class WaBtnNtgX
     {
         $this->waMsg     = $msg;
         $this->waSender  = $waS;
+        $this->waSender->setConmutador($this->waMsg);
     }
 
     /** */
