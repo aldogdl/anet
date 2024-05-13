@@ -6,15 +6,13 @@ use App\Dtos\WaMsgDto;
 
 class HcFinisherCot
 {
-    private Fsys $fSys;
     private WaSender $waSender;
     private WaMsgDto $waMsg;
     private array $bait;
     
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
+    public function __construct(WaSender $waS, WaMsgDto $msg, array $bait)
     {
-        $this->fSys = $fsys;
         $this->waSender = $waS;
         $this->waMsg = $msg;
         $this->bait = $bait;
@@ -33,24 +31,21 @@ class HcFinisherCot
      * evitamos esto.
     */
     public function isAtendido(String $filename): bool {
-        return $this->fSys->existe('/', $filename);
+        return $this->waSender->fSys->existe('/', $filename);
     }
 
     /** */
     public function exe(String $tipoFinish = 'cancel'): void
     {
-        // Eliminamos los residuos de los archivos indicativos del proceso de Cot.
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         $rota = count($toDelete);
         for ($i=0; $i < $rota; $i++) { 
             $filename = $this->createFilenameTmpOf($toDelete[$i]);
-            if($this->isAtendido($filename)) {
-                $this->fSys->delete('/', $filename);
-            }
+            $this->waSender->fSys->delete('/', $filename);
         }
-        
-        $this->fSys->setContent('trackeds', $this->bait['waId']."_".$this->bait['idItem'].'.json', $this->bait);
-        $this->fSys->delete('tracking', $this->bait['waId'].'.json');
+
+        $this->waSender->fSys->setContent('trackeds', $this->bait['waId']."_".$this->bait['idItem'].'.json', $this->bait);
+        $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
         
         $this->waSender->setConmutador($this->waMsg);
 
@@ -71,7 +66,7 @@ class HcFinisherCot
         $att = ($tipoFinish == 'fin') ? $this->bait['track'] : $this->waMsg->toMini();
 
         // Recuperamos otro bait directamente desde el estanque
-        $otroBait = $this->fSys->getNextBait($this->waMsg, $this->bait['mdl']);
+        $otroBait = $this->waSender->fSys->getNextBait($this->waMsg, $this->bait['mdl']);
         
         $this->waSender->context = $this->bait['wamid'];
         if($otroBait != '') {

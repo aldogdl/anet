@@ -55,7 +55,7 @@ class HandlerQuote
 
         if($this->waMsg->subEvento == 'cnc') {
             //-> Cancelar cotizacion en curso
-            $handler = new HcFinisherCot($this->fSys, $this->waSender, $this->waMsg, $bait);
+            $handler = new HcFinisherCot($this->waSender, $this->waMsg, $bait);
             $handler->exe('cancel');
             return;
         }elseif($this->waMsg->subEvento == 'ccc') {

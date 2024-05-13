@@ -17,8 +17,9 @@ class WaSender
     private $anetToken;
     private $sendMyFail;
     private $comCoreFile;
-    private Fsys $fSys;
     private bool $isTest;
+    
+    public Fsys $fSys;
     public String $context;
     public String $wamidMsg;
     

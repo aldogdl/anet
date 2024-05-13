@@ -49,7 +49,7 @@ class Consumer
                 if($this->fSys->existe('/', $obj->from.'_scto.json')) {
                     $bait = $this->fSys->getContent('tracking', $obj->from.'.json');
                     if(count($bait) > 0) {
-                        $finicher = new HcFinisherCot($this->fSys, $this->waSender, $obj, $bait);
+                        $finicher = new HcFinisherCot($this->waSender, $obj, $bait);
                         $finicher->exe('fin');
                     }
                 }
