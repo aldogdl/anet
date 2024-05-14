@@ -34,7 +34,7 @@ class HandlerCMD
     /** */
     public function exe(): void
     {
-        if(array_key_exists($this->waMsg->content, $this->cmds)) {
+        if(!array_key_exists($this->waMsg->content, $this->cmds)) {
 
             $this->waSender->sendText(
                 "⚠️ El Comando [*".$this->waMsg->content."*] no existe entre los ".
