@@ -192,7 +192,7 @@ class HcFotos
 
         // Para esta plantilla de solicitud de detalles enviamos una
         // serie de mensajes al azar para interactual con el usuario
-        $template = $builder->exe($oldCurrent);
+        $template = $builder->exe($oldCurrent, $this->waMsg->idItem);
         if($oldCurrent == 'sdta' && $resent) {
             $template = $builder->editForDetalles($template);
         }
