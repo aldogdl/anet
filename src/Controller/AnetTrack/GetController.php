@@ -30,4 +30,21 @@ class GetController extends AbstractController
     return $this->json($response);
   }
 
+  /** */
+  #[Route('anet-track/liberar-stt/{tokenBasic}/{waIdCot}', methods:['get'])]
+  public function liberarStt(Fsys $fSys, String $tokenBasic, String $waIdCot): Response
+  {
+    $tok = base64_decode($tokenBasic);
+    $response = ['abort' => true, 'body' => ''];
+    $miTok = $this->getParameter('getAnToken');
+    if($miTok == $tok) {
+      $fSys->delete('/', $waIdCot."_stopstt.json");
+      $response = ['abort' => false, 'body' => 'ok'];
+    }else{
+      $response = ['abort' => true, 'body' => '¿Que haces aquí?'];
+    }
+
+    return $this->json($response);
+  }
+
 }

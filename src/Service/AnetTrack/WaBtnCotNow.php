@@ -57,6 +57,9 @@ class WaBtnCotNow
         if($this->isAtendido()) {
             return;
         }
+        
+        // Con este archivo detenemos todos los mensajes de status
+        $this->waSender->fSys->setContent('/', $this->waMsg->from."_stopstt.json", ['']);
         $this->waSender->fSys->setContent('/', $this->fileTmp, ['']);
         
         $template = $builder->exe('sfto');
