@@ -66,6 +66,7 @@ class HcFinisherCot
 
         $att = $this->waMsg->toMini();
         if($tipoFinish == 'fin') {
+            $this->waMsg->subEvento = 'sgrx';
             $att['body'] = $track;
         }
 
@@ -97,7 +98,7 @@ class HcFinisherCot
             $att['send'] = $otroBait;
         }
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
-            $this->waSender->sendMy(['evento' => 'whatsapp_api', 'payload' => $att]);
+            $this->waSender->sendMy($att);
         }
 
         // Eliminamos los archivos que indican el paso de cotizacion actual.
