@@ -16,9 +16,10 @@ class GetController extends AbstractController
   #[Route('anet-track/reset-cot/{tokenBasic}/{idItem}/{waIdCot}', methods:['get'])]
   public function resetCot(Fsys $fSys, String $tokenBasic, String $idItem, String $waIdCot): Response
   {
+    $tok = base64_decode($tokenBasic);
     $response = ['abort' => true, 'body' => ''];
     $miTok = $this->getParameter('getAnToken');
-    if($miTok == $tokenBasic) {
+    if($miTok == $tok) {
       $acc = new ResetCot($fSys, $idItem, $waIdCot);
       $resul = $acc->exe();
       $response = ['abort' => false, 'body' => $resul];

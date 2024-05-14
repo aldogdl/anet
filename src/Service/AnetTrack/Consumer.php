@@ -6,6 +6,7 @@ use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaInitSess;
 use App\Service\AnetTrack\HandlerQuote;
+use App\Service\AnetTrack\HandlerCMD;
 use App\Service\AnetTrack\WaSender;
 
 class Consumer
@@ -55,16 +56,20 @@ class Consumer
                 }
             }
             return;
-        }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
-            $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
-            $clase->exe();
-            return;
-        }elseif($obj->tipoMsg == TypesWaMsgs::DOC) {
+        }elseif ($obj->tipoMsg == TypesWaMsgs::DOC) {
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
                 "TEXTO e IMÁGENES."
             );
+            return;
+        }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
+            $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
+            $clase->exe();
+            return;
+        }elseif ($obj->tipoMsg == TypesWaMsgs::COMMAND) {
+            $clase = new HandlerCMD($this->fSys, $this->waSender, $obj);
+            $clase->exe();
             return;
         }
 

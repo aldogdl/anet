@@ -112,12 +112,19 @@ class ParseMsg {
         $subEvent = '';
         if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {                                        
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
-            if(mb_strpos($txt, '[cmd]') !== false) {
-                // Es un comando [POR HACER]
-            }
-            if($this->isLoginMsg($txt)) {
-                $tipo = TypesWaMsgs::LOGIN;
-                $subEvent = 'iniLogin';
+            $txt = mb_strtolower($txt);
+            
+            if(mb_strpos($txt, 'cmd.') !== false) {
+                $tipo = TypesWaMsgs::COMMAND;
+                $partes = explode('.', $txt);
+                if(count($partes) > 1) {
+                    $txt = $partes[1];
+                }
+            }else{
+                if($this->isLoginMsg($txt)) {
+                    $tipo = TypesWaMsgs::LOGIN;
+                    $subEvent = 'iniLogin';
+                }
             }
         }
 
