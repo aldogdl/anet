@@ -65,8 +65,9 @@ class BuilderTemplates {
         try {
             $content = $this->fSys->getContent('waTemplates', $template.'.json');
         } catch (\Throwable $th) {}
+
         if(count($content) > 0) {
-            $changeOnlyBtns = ['sfto', 'sdta', 'cext'];
+            $changeOnlyBtns = ['sfto', 'sdta', 'cext', 'nfto'];
             if(in_array($template, $changeOnlyBtns)) {
                 return $this->changeOnlyIdByBtns($content, $idItem);
             }
