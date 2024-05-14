@@ -58,11 +58,11 @@ class HcFinisherCot
         if($tipoFinish == 'ntg') {
             $this->waMsg->subEvento = 'ntg';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
-        }else if($tipoFinish == 'ntga') {
+        }elseif($tipoFinish == 'ntga') {
             $this->waMsg->subEvento = 'ntga';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
             $model = '';
-        }else {
+        }elseif($tipoFinish == 'fin') {
             $this->waMsg->subEvento = 'sgrx';
             $this->waMsg->idItem = $this->bait['idItem'];
         }
