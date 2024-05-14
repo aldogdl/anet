@@ -124,9 +124,9 @@ class Fsys {
 
                         unset($cooler[$has]);
                         $est['items'] = $cooler;
+                        $this->setContent('/', $waMsg->from."_stopstt.json", ['']);
                         $this->setContent('tracking', $waMsg->from.'.json', $bait);
                         $this->setContent('waEstanque', $waMsg->from.'.json', $est);
-                        $this->setContent('/', $waMsg->from."_stopstt.json", ['']);
                         return true;
                     }
                 }
