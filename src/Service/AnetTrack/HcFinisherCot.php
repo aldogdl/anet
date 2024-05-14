@@ -64,7 +64,7 @@ class HcFinisherCot
             $model = '';
         }else {
             $this->waMsg->subEvento = 'sgrx';
-            $this->waMsg->idItem = $track['idItem'];
+            $this->waMsg->idItem = $this->bait['idItem'];
         }
 
         $att = $this->waMsg->toMini();

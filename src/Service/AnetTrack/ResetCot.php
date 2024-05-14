@@ -31,7 +31,7 @@ class ResetCot
         $cotizada = $this->fSys->getContent($folder, $filename.'.json');
         if(count($cotizada) == 0) {
             $folder = 'tracking';
-            $filename = $$this->waIdCot;
+            $filename = $this->waIdCot;
             // Si no se encunetra en trackeds buscamos la cotizacion en curso
             $cotizada = $this->fSys->getContent($folder, $filename.'.json');
             if(count($cotizada) == 0) {
