@@ -53,16 +53,20 @@ class HcFinisherCot
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         
         $model = $this->bait['mdl'];
-        $att = $this->bait['track'];
+        $track = $this->bait['track'];
         
         if($tipoFinish == 'ntg') {
+            $this->waMsg->subEvento = 'ntg';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
         }else if($tipoFinish == 'ntga') {
+            $this->waMsg->subEvento = 'ntga';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
             $model = '';
-        }else{
-            // Tomamos el mensaje que fué atendido
-            $att = ($tipoFinish == 'fin') ? $this->bait['track'] : $this->waMsg->toMini();
+        }
+
+        $att = $this->waMsg->toMini();
+        if($tipoFinish == 'fin') {
+            $att['body'] = $track;
         }
 
         $this->waSender->fSys->setContent('trackeds', $this->bait['waId']."_".$this->bait['idItem'].'.json', $this->bait);
@@ -88,14 +92,12 @@ class HcFinisherCot
 
             $code = $this->waSender->sendText($head.$body);
         }
-        
-        $return = ['subEvent' => 'sgrx', 'att' => $att];
+
         if($otroBait != '') {
-            $return['send'] = $otroBait;
+            $att['send'] = $otroBait;
         }
-        $retornar = ['evento' => 'whatsapp_api', 'payload' => $return];
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
-            $this->waSender->sendMy($retornar);
+            $this->waSender->sendMy(['evento' => 'whatsapp_api', 'payload' => $att]);
         }
 
         // Eliminamos los archivos que indican el paso de cotizacion actual.
