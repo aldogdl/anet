@@ -88,8 +88,12 @@ class HcFinisherCot
 
             $code = $this->waSender->sendText($head.$body);
         }
-
-        $retornar = ['evento' => 'whatsapp_api', 'payload' => ['subEvent' => 'cofin', 'att' => $att, 'send' => $otroBait]];
+        
+        $return = ['subEvent' => 'sgrx', 'att' => $att];
+        if($otroBait != '') {
+            $return['send'] = $otroBait;
+        }
+        $retornar = ['evento' => 'whatsapp_api', 'payload' => $return];
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($retornar);
         }

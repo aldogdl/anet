@@ -68,11 +68,11 @@ class Consumer
             $clase->exe();
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::COMMAND) {
-            
+
             if($this->fSys->existe('tracking', $obj->from.'.json')) {
                 $this->waSender->setConmutador($obj);
                 $this->waSender->sendText(
-                    "⚠️ Lo sentimos mucho, para ejecutar cualquier *COMANDO*,".
+                    "⚠️ Lo sentimos mucho, para ejecutar cualquier *COMANDO*, ".
                     "es necesario que no tengas una COTIZACIÓN en CURSO.\n\n".
                     "Termina la cotización y después ejecuta nuevamente este comando."
                 );
