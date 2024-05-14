@@ -62,11 +62,13 @@ class HcFinisherCot
             $this->waMsg->subEvento = 'ntga';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
             $model = '';
+        }else {
+            $this->waMsg->subEvento = 'sgrx';
+            $this->waMsg->idItem = $track['idItem'];
         }
 
         $att = $this->waMsg->toMini();
         if($tipoFinish == 'fin') {
-            $this->waMsg->subEvento = 'sgrx';
             $att['body'] = $track;
         }
 
