@@ -59,7 +59,7 @@ class Consumer
         }elseif ($obj->tipoMsg == TypesWaMsgs::DOC) {
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
-                "Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
+                "⚠️ Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
                 "TEXTO e IMÁGENES."
             );
             return;
@@ -68,6 +68,16 @@ class Consumer
             $clase->exe();
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::COMMAND) {
+            
+            if($this->fSys->existe('tracking', $obj->from.'.json')) {
+                $this->waSender->setConmutador($obj);
+                $this->waSender->sendText(
+                    "⚠️ Lo sentimos mucho, para ejecutar cualquier *COMANDO*,".
+                    "es necesario que no tengas una COTIZACIÓN en CURSO.\n\n".
+                    "Termina la cotización y después ejecuta nuevamente este comando."
+                );
+                return;
+            }
             $clase = new HandlerCMD($this->fSys, $this->waSender, $obj);
             $clase->exe();
             return;
