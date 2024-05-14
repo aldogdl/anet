@@ -57,18 +57,17 @@ class WaBtnCotNow
         if($this->isAtendido()) {
             return;
         }
-        
+
         // Con este archivo detenemos todos los mensajes de status
-        $this->waSender->fSys->setContent('/', $this->waMsg->from."_stopstt.json", ['']);
         $this->waSender->fSys->setContent('/', $this->fileTmp, ['']);
         
         $template = $builder->exe('sfto');
         $code = $this->waSender->sendPreTemplate($template);
-
+        
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             if($this->waSender->wamidMsg != '') {
                 $this->waMsg->id = ($this->waMsg->context != '')
-                    ? $this->waMsg->context : $this->waSender->wamidMsg;
+                ? $this->waMsg->context : $this->waSender->wamidMsg;
             }
             $this->waSender->fSys->putCotizando($this->waMsg);
             $this->waSender->sendMy($this->waMsg->toMini());
