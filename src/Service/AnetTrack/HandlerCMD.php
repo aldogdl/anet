@@ -58,7 +58,10 @@ class HandlerCMD
                 "😃👍 *TARGETA DIGITAL*\n\n".
                 "Estamos procesando tu solicitud, un momento por favor."
             );
-            $retornar = ['evento' => 'whatsapp_api', 'payload' => ['cmd' => 'td', 'waid' => $this->waMsg->from]];
+            $retornar = [
+                'evento' => 'whatsapp_api',
+                'payload' => ['subEvent' => 'cmd', 'cmd' => 'td', 'waid' => $this->waMsg->from]
+            ];
             $this->waSender->sendMy($retornar);
             return;
         }
