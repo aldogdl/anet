@@ -68,7 +68,7 @@ class ResetCot
             $filename = $this->waIdCot.'_'.$toDelete[$i].'.json';
             $this->fSys->delete('/', $filename);
         }
-
+        $this->fSys->delete('/', $this->waIdCot."_stopstt.json");
         return 'ok';
     }
 }
