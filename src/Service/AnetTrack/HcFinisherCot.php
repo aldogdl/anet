@@ -3,6 +3,7 @@
 namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
+use App\Service\AnetTrack\WaSender;
 
 class HcFinisherCot
 {
@@ -72,7 +73,7 @@ class HcFinisherCot
             $att['body'] = $track;
         }
 
-        $this->waSender->fSys->setContent('trackeds', $this->bait['waId']."_".$this->bait['idItem'].'.json', $this->bait);
+        $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
         $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
         
         // Recuperamos otro bait directamente desde el estanque

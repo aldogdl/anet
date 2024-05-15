@@ -26,7 +26,7 @@ class ResetCot
     public function exe(): String
     {
         $folder = 'trackeds';
-        $filename = $this->waIdCot."_".$this->idItem;
+        $filename = $this->idItem."_".$this->waIdCot;
 
         $cotizada = $this->fSys->getContent($folder, $filename.'.json');
         if(count($cotizada) == 0) {

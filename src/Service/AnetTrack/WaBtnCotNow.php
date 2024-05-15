@@ -3,7 +3,7 @@
 namespace App\Service\AnetTrack;
 
 use App\Dtos\WaMsgDto;
-use App\Service\AnetTrack\Fsys;
+use App\Service\AnetTrack\WaSender;
 
 class WaBtnCotNow
 {
@@ -81,7 +81,7 @@ class WaBtnCotNow
     {
         $resp = false;
         $exist = $this->waSender->fSys->getContent(
-            'trackeds', $this->waMsg->from.'_'.$this->waMsg->idItem.'.json'
+            'trackeds', $this->waMsg->idItem.'_'.$this->waMsg->from.'.json'
         );
 
         if(count($exist) > 0) {
