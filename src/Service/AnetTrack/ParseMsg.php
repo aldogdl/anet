@@ -11,7 +11,7 @@ class ParseMsg {
     private array $waMsg;
     private String $recibido;
     private array $tokenLogin = [
-        'Hola', 'AutoparNet', 'AutoparNet,', 'atenderte.', 'piezas', 'necesitas', 'necesitas?'
+        'hola', 'autoparnet', 'autoparnet,', 'atenderte.', 'piezas', 'necesitas', 'necesitas?'
     ];
 
     /** 
@@ -111,6 +111,7 @@ class ParseMsg {
         $tipo = TypesWaMsgs::TEXT;
         $subEvent = '';
         if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {                                        
+            
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower($txt);
             
@@ -118,6 +119,7 @@ class ParseMsg {
                 $tipo = TypesWaMsgs::COMMAND;
                 $partes = explode('.', $txt);
                 if(count($partes) > 1) {
+                    $subEvent = $partes[0];
                     $txt = $partes[1];
                 }
             }else{
