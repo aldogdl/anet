@@ -141,26 +141,34 @@ class Fsys {
      * la primer opcion disponible.
      * @return String El Id del Item encontrado
     */
-    public function getNextBait(WaMsgDto $waMsg, String $mdlpref = ''): String
+    public function getNextBait(WaMsgDto $waMsg, String $mdlpref = ''): array
     {    
+        $return = ['send' => '', 'baitsInCooler' => []];
+
         $est = $this->getContent('waEstanque', $waMsg->from . '.json');
         if(count($est) > 0) {
             if(array_key_exists('items', $est)) {
 
                 $cooler = $est['items'];
                 if(count($cooler) > 0) {
+
+                    $return['baitsInCooler'] = array_column($cooler, 'idItem');
                     $has = 0;
                     if($mdlpref != '') {
                         $mdls = array_column($cooler, 'mdl');
                         $has = array_search($mdlpref, $mdls);
+                        $has = ($has === false) ? 0 : $has;
+                    }else{
+                        $has = 0;
                     }
                     if($has !== false) {
-                        return $cooler[$has]['idItem'];
+                        $return['send'] = $cooler[$has]['idItem'];
                     }
                 }
             }
         }
-        return '';
+
+        return $return;
     }
 
     /** 

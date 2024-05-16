@@ -70,6 +70,7 @@ class HcFinisherCot
 
         $att = $this->waMsg->toMini();
         if($tipoFinish == 'fin') {
+            $track['idCot'] = time();
             $att['body'] = $track;
         }
 
@@ -77,12 +78,12 @@ class HcFinisherCot
         $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
         
         // Recuperamos otro bait directamente desde el estanque
-        $otroBait = $this->waSender->fSys->getNextBait($this->waMsg, $model);
+        $baitsCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
         
         $this->waSender->context = $this->bait['wamid'];
-        if($otroBait != '') {
+        if($baitsCooler['send'] != '') {
             $code = $this->waSender->sendText($head.$body);
-            $code = $this->waSender->sendTemplate($otroBait);
+            $code = $this->waSender->sendTemplate($baitsCooler['send']);
         }else {
 
             $body = "Por el momento no se encontró ".
@@ -97,9 +98,11 @@ class HcFinisherCot
             $code = $this->waSender->sendText($head.$body);
         }
 
-        if($otroBait != '') {
-            $att['send'] = $otroBait;
+        if($baitsCooler['send'] != '') {
+            $att['send'] = $baitsCooler['send'];
         }
+        $att['baitsInCooler'] = $baitsCooler['baitsInCooler'];
+        
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($att);
         }
