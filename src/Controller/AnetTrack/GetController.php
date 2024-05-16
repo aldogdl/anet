@@ -63,7 +63,7 @@ class GetController extends AbstractController
         $cooler = $fSys->getContent('waEstanque', $waIdCot.".json");
 
       }elseif($req->getMethod() == 'POST') {
-        $data = json_decode($req->getContent());
+        $data = json_decode($req->getContent(), true);
         $fSys->setContent('waEstanque', $waIdCot.".json", $data);
       }
       $response = ['abort' => false, 'body' => $cooler];
