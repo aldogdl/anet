@@ -49,8 +49,8 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('anet-track/cooler/{tokenBasic}/{waIdCot}', methods:['get', 'post'])]
-  public function cooler(Request $req, Fsys $fSys, String $tokenBasic, String $waIdCot): Response
+  #[Route('anet-track/cooler/{tokenBasic}/{waIdCot}/{delMarkCot}', methods:['get', 'post'], defaults:['delMarkCot' => 0])]
+  public function cooler(Request $req, Fsys $fSys, String $tokenBasic, String $waIdCot, int $delMarkCot = 0): Response
   {
     $tok = base64_decode($tokenBasic);
     $response = ['abort' => true, 'body' => ''];
@@ -58,6 +58,10 @@ class GetController extends AbstractController
     $miTok = $this->getParameter('getAnToken');
     if($miTok == $tok) {
       $cooler = [];
+      // Eliminamos la marca de detencion de Status
+      if($delMarkCot) {
+        $fSys->delete('/', $waIdCot."_stopstt.json");
+      }
       if($req->getMethod() == 'GET') {
 
         $cooler = $fSys->getContent('waEstanque', $waIdCot.".json");
