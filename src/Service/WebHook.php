@@ -10,12 +10,14 @@ class WebHook
     private $client;
     private $anetToken;
     private $sendMyFail;
+    private $comCoreFile;
 
     public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
     {
         $this->client = $client;
         $this->sendMyFail = $container->get('sendMyFail');
         $this->anetToken  = $container->get('getAnToken');
+        $this->comCoreFile= $container->get('comCoreFile');
     }
 
     /** */
@@ -26,10 +28,12 @@ class WebHook
         if($uri != '') {
 
             $proto = $this->buildProtocolo($uriCall, $pathFileServer, $event);
+            $tok = base64_encode($this->anetToken);
+
             try {
                 $response = $this->client->request(
                     'POST', $uri, [
-                        'query' => ['anet-key' => $this->anetToken],
+                        'query' => ['anet-key' => $tok],
                         'timeout' => 120.0,
                         'headers' => [
                             'Content-Type' => 'application/json',
@@ -115,7 +119,7 @@ class WebHook
     /** */
     public function getUrlToFrontDoor(): String
     {
-        $comCore = file_get_contents('scm/com_core_file.json');
+        $comCore = file_get_contents($this->comCoreFile);
 
         if($comCore) {
             $comCore = json_decode($comCore, true);
