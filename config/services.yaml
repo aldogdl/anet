@@ -16,14 +16,15 @@ parameters:
     scm        : '%phtml%/scm/'
     comCoreFile: '%scm%com_core_file.json'
     anetMlm    : '%phtml%/anet_mlm.json'
-    getWaToken : '%env(resolve:WA_TOKEN)%'
-    getAnToken : '%env(resolve:ANET_TOKEN)%'
-    getShopCTk : '%env(resolve:SHOP_TOKEN)%'
     nifiFld    : '%phtml%/nifi/'
     sendMyFail : '%phtml%/sendmy_fails/'
     comments   : '%phtml%/comments/'
     tkwaconm   : '%phtml%/tkwaconm.json'
     waBackup   : '%phtml%/wa_backup'
+    getWaToken : '%env(resolve:WA_TOKEN)%'
+    sufixUri   : '%env(resolve:SUFIX_URI)%'
+    getAnToken : '%env(resolve:ANET_TOKEN)%'
+    getShopCTk : '%env(resolve:SHOP_TOKEN)%'
 
 services:
     # default configuration for services in *this* file

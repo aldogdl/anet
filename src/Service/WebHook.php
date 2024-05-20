@@ -11,13 +11,15 @@ class WebHook
     private $anetToken;
     private $sendMyFail;
     private $comCoreFile;
+    private $sufixUri;
 
     public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
     {
-        $this->client = $client;
+        $this->client     = $client;
         $this->sendMyFail = $container->get('sendMyFail');
         $this->anetToken  = $container->get('getAnToken');
         $this->comCoreFile= $container->get('comCoreFile');
+        $this->sufixUri   = $container->get('sufixUri');
     }
 
     /** */
@@ -68,9 +70,9 @@ class WebHook
         $date = new \DateTime('now');
         $protocolo = [
             'evento'    => 'unknow',
+            'creado'    => $date->format('Y-m-d h:i:s'),
             'uriCall'   => $uriCall,
             'srcServer' => $pathFileServer,
-            'creado'    => $date->format('Y-m-d h:i:s'),
             'payload'   => $data
         ];
         
@@ -91,6 +93,9 @@ class WebHook
         }
         if(mb_strpos($uriCall, 'ngrok') !== false) {
             $protocolo['evento'] = 'ngrok_event';
+        }
+        if(mb_strpos($uriCall, 'test') !== false) {
+            $protocolo['evento'] = 'test_com';
         }
 
         return $protocolo;
@@ -128,7 +133,7 @@ class WebHook
                 $rota = count($comCore);
                 for ($i=0; $i < $rota; $i++) { 
                     if($comCore[$i]['depto'] == 'event') {
-                        return 'https://'. $comCore[$i]['public'] . '.ngrok-free.app';
+                        return 'https://'. $comCore[$i]['public'] . $this->sufixUri;
                     }
                 }
             }
