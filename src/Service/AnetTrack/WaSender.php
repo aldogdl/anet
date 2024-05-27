@@ -287,7 +287,7 @@ class WaSender
                     }
 
                     $opc[] = [
-                        'url' => 'http://'.$endPoint['public'].'-'.$endPoint['id'].'.ngrok-free.app/com_core/sse',
+                        'url' => 'https://'.$endPoint['public'].'-'.$endPoint['id'].'.ngrok-free.app/com_core/sse',
                         'modo' => $modo,
                     ];
                 }
