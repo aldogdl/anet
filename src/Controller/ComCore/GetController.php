@@ -28,20 +28,18 @@ class GetController extends AbstractController
       }
       return $this->json(['abort'=>$abort, 'msg' => 'ok', 'body' => $result]);
     }
-  
+    
+    /** */
     #[Route('com-core/test-com/{tokenBasic}/{fromApp}', methods:['get'])]
     public function theTestCom(WaSender $wh, String $tokenBasic, String $fromApp): Response
     {
-      $response = ['evento' => '', 'body' => ''];
+      $evento = ($fromApp == 'anet_track') ? 'whatsapp_api' : 'anet_shop';
+      $response = ['evento' => $evento, 'subEvent' => 'test_com'];
       
       $tok = base64_decode($tokenBasic);
       $miTok = $this->getParameter('getAnToken');
       if($miTok == $tok) {
-        $evento = ($fromApp == 'anet_track') ? 'whatsapp_api' : 'anet_shop';
-        $wh->sendMy([
-          'evento' => $evento,
-          'subEvent' => 'test_com'
-        ]);
+        $wh->sendMy($response);
       }
       return $this->json($response);
     }
