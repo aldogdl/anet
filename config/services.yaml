@@ -14,7 +14,7 @@ parameters:
     dtaCtc     : '%phtml%/ctcs/'
     dtaCtcLog  : '%phtml%/ctcs/log'
     scm        : '%phtml%/scm/'
-    comCoreFile: '%scm%com_core_file.json'
+    comCoreFile: '%scm%cc_file.json'
     anetMlm    : '%phtml%/anet_mlm.json'
     nifiFld    : '%phtml%/nifi/'
     sendMyFail : '%phtml%/sendmy_fails/'

@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 use App\Repository\NG2ContactosRepository;
 use App\Service\AnetShop\AnetShopSystemFileService;
+use App\Service\AnetTrack\WaSender;
 
 class GetController extends AbstractController
 {
@@ -26,6 +27,23 @@ class GetController extends AbstractController
         $result = $contacsEm->toArray($user);
       }
       return $this->json(['abort'=>$abort, 'msg' => 'ok', 'body' => $result]);
+    }
+  
+    #[Route('com-core/test-com/{tokenBasic}/{fromApp}', methods:['get'])]
+    public function theTestCom(WaSender $wh, String $tokenBasic, String $fromApp): Response
+    {
+      $response = ['evento' => '', 'body' => ''];
+      
+      $tok = base64_decode($tokenBasic);
+      $miTok = $this->getParameter('getAnToken');
+      if($miTok == $tok) {
+        $evento = ($fromApp == 'anet_track') ? 'whatsapp_api' : 'anet_shop';
+        $wh->sendMy([
+          'evento' => $evento,
+          'subEvent' => 'test_com'
+        ]);
+      }
+      return $this->json($response);
     }
   
     /** */

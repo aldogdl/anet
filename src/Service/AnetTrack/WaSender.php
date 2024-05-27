@@ -7,6 +7,7 @@ use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\Fsys;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class WaSender
 {
@@ -169,58 +170,71 @@ class WaSender
     /** */
     public function sendMy(array $event): bool {
 
-        $uri = $this->getUrlToCC();
+        $statusCode = 500;
+        if(!array_key_exists('evento', $event)) {
+            $proto = $this->buildProtocolo($event);
+        }else{
+            $proto = $event;
+        }
 
-        if($uri != '') {
+        $uri = $this->getUrlsToCC($proto['evento']);
+        $rota = count($uri);
+        if($rota > 0) {
 
-            $statusCode = 500;
-            if(!array_key_exists('evento', $event)) {
-                $proto = $this->buildProtocolo($event);
-            }else{
-                $proto = $event;
-            }
+            for ($i=0; $i < $rota; $i++) {
 
-            if($this->isTest) {
-                file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($proto));
-            }else{
+                $proto['modo'] = $uri[$i]['modo'];
+                $proto['toCom'] = $uri[$i]['url'];
+                $response = $this->trySend($proto);
+                $statusCode = $response->getStatusCode();
 
-                try {
-                    $response = $this->client->request(
-                        'POST', $uri, [
-                            'query' => ['anet-key' => $this->anetToken],
-                            'timeout' => 120.0,
-                            'headers' => [
-                                'Content-Type' => 'application/json',
-                            ],
-                            'json' => $proto
+                if($statusCode != 200) {
+                    $result = [
+                        'evento' => 'error_sr',
+                        'statuscode' => $statusCode,
+                        'payload' => [
+                            'body' => ($this->isTest) ? 'El error del Response' : $response->getContent()
                         ]
-                    );
-                } catch (\Throwable $th) {
+                    ];
+    
+                    $filename = round(microtime(true) * 1000);
+                    if(!is_dir($this->sendMyFail)) {
+                        mkdir($this->sendMyFail);
+                    }
+                    file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
                     return false;
                 }
-                $statusCode = $response->getStatusCode();
-            }
-
-            if($statusCode != 200) {
-
-                $result = [
-                    'evento' => 'error_sr',
-                    'statuscode' => $statusCode,
-                    'payload' => [
-                        'body' => ($this->isTest) ? 'El error del Response' : $response->getContent()
-                    ]
-                ];
-
-                $filename = round(microtime(true) * 1000);
-                if(!is_dir($this->sendMyFail)) {
-                    mkdir($this->sendMyFail);
-                }
-                file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
-                return false;
             }
         }
 
         return true;
+    }
+
+    /** */
+    private function trySend(array $proto): ?ResponseInterface
+    {
+        if($this->isTest) {
+            file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($proto));
+        }else{
+
+            try {
+                $response = $this->client->request(
+                    'POST', $proto['toCom'], [
+                        'query' => ['anet-key' => $this->anetToken],
+                        'timeout' => 120.0,
+                        'headers' => [
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => $proto
+                    ]
+                );
+            } catch (\Throwable $th) {
+                return null;
+            }
+            return $response;
+        }
+
+        return null;
     }
 
     ///
@@ -238,23 +252,40 @@ class WaSender
     }
 
     /** */
-    public function getUrlToCC(): String
+    public function getUrlsToCC(String $evento): array
     {
-        $comCore = file_get_contents($this->comCoreFile);
+        $opc = [];
+        $routes = 'anet_shop';
+        $comCore = json_decode(file_get_contents($this->comCoreFile), true);
+        if(array_key_exists('event_route', $comCore)) {
 
-        if($comCore) {
-            $comCore = json_decode($comCore, true);
-            if(array_key_exists('getaways', $comCore)) {
-                $comCore = $comCore['getaways'];
-                $rota = count($comCore);
-                for ($i=0; $i < $rota; $i++) { 
-                    if($comCore[$i]['depto'] == 'event') {
-                        return 'https://'. $comCore[$i]['public'] . '.ngrok-free.app';
+            $routes = ($evento != 'anet_shop') ? 'whatsapp_api' : $routes;
+            $rutas = $comCore['event_route'][$routes];
+            $rota = count($rutas);
+
+            for ($i=0; $i < $rota; $i++) { 
+                if(array_key_exists($rutas[$i], $comCore)) {
+
+                    $modo = ($i == 0) ? 'master' : 'slave';
+                    $dest = $comCore[ $rutas[$i] ];
+                    $vueltas = count($dest);
+                    $endPoint = $dest[0];
+                    if($vueltas > 0) {
+                        $has = array_search('release', array_column($dest, 'modo'));
+                        if($has !== false) {
+                            $endPoint = $dest[$has];
+                        }
                     }
+
+                    $opc[] = [
+                        'url' => 'https://'. $endPoint['public'].'-'. $endPoint['id'].'.ngrok-free.app',
+                        'modo' => $modo,
+                    ];
                 }
             }
         }
-        return '';
+
+        return $opc;
     }
 
 }
