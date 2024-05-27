@@ -267,9 +267,12 @@ class GetController extends AbstractController
     $res = $emProd->delete($idPza);
     $result['body'] = $res;
     if($res == 'ok') {
-      $result['abort'] = false;
+      $result['abort']   = false;
+      $data['eventName'] = 'anet_shop';
+      $data['subEvent']  = 'delete';
+      $data['idPza']     = $idPza;
       try {
-        $wh->sendMy(['evento' => 'delete', 'idPza' => $idPza]);
+        $wh->sendMy($data);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }

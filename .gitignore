@@ -14,8 +14,6 @@ config/secrets/prod/prod.decrypt.private.php
 config/saf.json
 public_html/bundles/
 public_html/cotiza/
-public_html/to_orden_tmp/
-public_html/to_orden_rsp/
 public_html/prod_pubs/
 public_html/prod_sols/
 public_html/prod_track/
@@ -25,10 +23,10 @@ public_html/error_log
 public_html/error.log
 public_html/request.log
 public_html/*.json
+public_html/bgs_shop/
 
 public_html/htacces.zip
 public_html/prod_recents/
-public_html/bgs_shop/
 public_html/mlm_*
 public_html/scm/
 public_html/wa_templates/

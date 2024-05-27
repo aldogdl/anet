@@ -127,9 +127,10 @@ class PostController extends AbstractController
       }
       
       $sysFile->cleanImgToFolder($data);
-      $subEvent = ($modo == 'publik') ? 'publica' : 'solicita';
+      $data['eventName'] = 'anet_shop';
+      $data['subEvent'] = ($modo == 'publik') ? 'publica' : 'solicita';
       try {
-        $wh->sendMy(['evento' => 'anet_shop', 'subEvent' => $subEvent, 'payload' => $data]);
+        $wh->sendMy($data);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }
@@ -153,8 +154,10 @@ class PostController extends AbstractController
     $result['body'] = $res;
     if($res == 'ok') {
       $result['abort'] = false;
+      $data['eventName'] = 'anet_shop';
+      $data['subEvent']  = 'delete';
       try {
-        $wh->sendMy(['evento' => 'anet_shop', 'subEvent' => 'delete', 'payload' => $data]);
+        $wh->sendMy($data);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }
@@ -175,8 +178,10 @@ class PostController extends AbstractController
     
     if($changed == 'ok') {
       $result['abort'] = false;
+      $data['eventName'] = 'anet_shop';
+      $data['subEvent']  = 'product_stt';
       try {
-        $wh->sendMy(['evento' => 'anet_shop', 'subEvent' => 'product_stt', 'payload' => $data]);
+        $wh->sendMy($data);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }

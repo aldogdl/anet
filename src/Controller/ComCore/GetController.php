@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Repository\NG2ContactosRepository;
 use App\Service\AnetShop\AnetShopSystemFileService;
 use App\Service\AnetTrack\WaSender;
+use DateTime;
 
 class GetController extends AbstractController
 {
@@ -33,15 +34,18 @@ class GetController extends AbstractController
     #[Route('com-core/test-com/{tokenBasic}/{fromApp}', methods:['get'])]
     public function theTestCom(WaSender $wh, String $tokenBasic, String $fromApp): Response
     {
-      $evento = ($fromApp == 'anet_track') ? 'whatsapp_api' : 'anet_shop';
-      $response = ['evento' => $evento, 'subEvent' => 'test_com'];
+      $data = [
+        'eventName' => ($fromApp == 'anet_track') ? 'whatsapp_api' : 'anet_shop',
+        'subEvent' => 'test_com',
+        'date' => new \DateTime('now')
+      ];
       
       $tok = base64_decode($tokenBasic);
       $miTok = $this->getParameter('getAnToken');
       if($miTok == $tok) {
-        $wh->sendMy($response);
+        $wh->sendMy($data);
       }
-      return $this->json($response);
+      return $this->json(['abort'=> false, 'body' => 'ok']);
     }
   
     /** */

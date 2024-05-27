@@ -246,7 +246,6 @@ class WaSender
             $protocolo['evento'] = $data['eventName'];
             unset($data['eventName']);
         }
-        
         $protocolo['payload'] = $data;
         return $protocolo;
     }
