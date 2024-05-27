@@ -129,6 +129,7 @@ class PostController extends AbstractController
       $sysFile->cleanImgToFolder($data);
       $data['eventName'] = 'anet_shop';
       $data['subEvent'] = ($modo == 'publik') ? 'publica' : 'solicita';
+      
       try {
         $wh->sendMy($data);
       } catch (\Throwable $th) {
