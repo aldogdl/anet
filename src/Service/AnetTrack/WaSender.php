@@ -171,10 +171,11 @@ class WaSender
     public function sendMy(array $event): bool {
 
         $statusCode = 500;
+        $proto = $event;
+        $this->isTest = false;
+
         if(!array_key_exists('evento', $event)) {
             $proto = $this->buildProtocolo($event);
-        }else{
-            $proto = $event;
         }
 
         $uri = $this->getUrlsToCC($proto['evento']);
@@ -184,19 +185,28 @@ class WaSender
             for ($i=0; $i < $rota; $i++) {
 
                 $proto['modo'] = $uri[$i]['modo'];
-                $proto['toCom'] = $uri[$i]['url'];
-                $response = $this->trySend($proto);
-                $statusCode = $response->getStatusCode();
+                $msgResults = 'Error inesperado';
+                try {
+                    $response = $this->trySend($uri[$i]['url'], $proto);
+                    if(!is_string($response)) {
+                        $statusCode = $response->getStatusCode();
+                        $msgResults = $response->getContent();
+                    }else{
+                        $msgResults = $response;
+                    }
+                } catch (\Throwable $th) {
+                    $msgResults = $th->getMessage();
+                }
 
                 if($statusCode != 200) {
                     $result = [
-                        'evento' => 'error_sr',
-                        'statuscode' => $statusCode,
-                        'payload' => [
-                            'body' => ($this->isTest) ? 'El error del Response' : $response->getContent()
+                    'evento' => 'error_sr',
+                    'statuscode' => $statusCode,
+                    'payload' => [
+                        'body' => ($this->isTest) ? 'El error del Response' : $msgResults
                         ]
                     ];
-    
+
                     $filename = round(microtime(true) * 1000);
                     if(!is_dir($this->sendMyFail)) {
                         mkdir($this->sendMyFail);
@@ -211,7 +221,7 @@ class WaSender
     }
 
     /** */
-    private function trySend(array $proto): ?ResponseInterface
+    private function trySend(String $uri, array $proto): ResponseInterface | String
     {
         if($this->isTest) {
             file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($proto));
@@ -219,7 +229,7 @@ class WaSender
 
             try {
                 $response = $this->client->request(
-                    'POST', $proto['toCom'], [
+                    'POST', $uri, [
                         'query' => ['anet-key' => $this->anetToken],
                         'timeout' => 120.0,
                         'headers' => [
@@ -229,12 +239,12 @@ class WaSender
                     ]
                 );
             } catch (\Throwable $th) {
-                return null;
+                return $th->getMessage();
             }
             return $response;
         }
 
-        return null;
+        return 'Error no capturado';
     }
 
     ///
@@ -277,7 +287,7 @@ class WaSender
                     }
 
                     $opc[] = [
-                        'url' => 'https://'. $endPoint['public'].'-'. $endPoint['id'].'.ngrok-free.app',
+                        'url' => 'http://'.$endPoint['public'].'-'.$endPoint['id'].'.ngrok-free.app/com_core/sse',
                         'modo' => $modo,
                     ];
                 }
