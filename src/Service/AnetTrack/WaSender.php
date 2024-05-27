@@ -30,7 +30,7 @@ class WaSender
         $this->client = $client;
         $this->fSys = $fsys;
         $this->sendMyFail = $container->get('sendMyFail');
-        $this->anetToken  = $container->get('getAnToken');
+        $this->anetToken  = base64_encode($container->get('getAnToken'));
         $this->comCoreFile= $container->get('comCoreFile');
         $this->context = '';
     }
