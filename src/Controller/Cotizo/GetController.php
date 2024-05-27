@@ -2,17 +2,12 @@
 
 namespace App\Controller\Cotizo;
 
-use App\Repository\FiltrosRepository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Repository\NG2ContactosRepository;
-use App\Service\FiltrosService;
-use App\Service\OpenApp;
-use App\Service\ScmService;
-use App\Service\WebHook;
 
 class GetController extends AbstractController
 {

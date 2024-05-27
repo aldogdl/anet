@@ -8,9 +8,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-use App\Service\WebHook;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-
 class HomeController extends AbstractController
 {
     /**
@@ -37,34 +34,6 @@ class HomeController extends AbstractController
     public function index(): Response
     {
         return $this->json(['hola' => 'Bienvenido', 'en que podemos atenderte?']);
-    }
-
-    #[Route('log/', methods: ['get'])]
-    public function indexLog(): Response
-    {
-        return $this->json(['nivel' => 'AUTOPARNET', 'PRO']);
-    }
-
-    /**
-     * Hacemos una prueba hacia el broker --front-door-- desde back-core
-     */
-    #[Route('backcore/make-test/{token}/', methods:['post'])]
-    public function testToSistemNifi(Request $req, WebHook $wh, String $token): Response
-    {
-        $elToken = $this->getParameter('getAnToken');
-        $data = $this->toArray($req, 'data');
-        if($elToken == $token) {
-
-            if(array_key_exists('evento', $data)) {
-                $data['status'] = 'recibido';
-                // Enviamos el evento de nueva orden
-                $wh->sendMy('backcore\\make-test', $data['evento'], $data);
-                return $this->json($data);
-            }
-        }
-
-        $data['status'] = 'fail';
-        return $this->json($data);
     }
 
 }

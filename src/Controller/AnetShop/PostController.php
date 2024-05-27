@@ -8,11 +8,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-use App\Service\WebHook;
 use App\Service\SecurityBasic;
 use App\Repository\ProductRepository;
 use App\Service\AnetShop\AnetShopSystemFileService;
-
+use App\Service\AnetTrack\WaSender;
 
 class PostController extends AbstractController
 {
@@ -69,7 +68,7 @@ class PostController extends AbstractController
   */
   #[Route('api/anet-shop/send-product/', methods:['post'])]
 	public function sendProduct(
-    Request $req, AnetShopSystemFileService $sysFile, WebHook $wh, ProductRepository $emProd
+    Request $req, AnetShopSystemFileService $sysFile, WaSender $wh, ProductRepository $emProd
   ): Response
 	{
 
@@ -127,10 +126,10 @@ class PostController extends AbstractController
         $sysFile->reSortImage($path, $resort);
       }
       
-      $data['action'] = $modo;
       $sysFile->cleanImgToFolder($data);
+      $subEvent = ($modo == 'publik') ? 'publica' : 'solicita';
       try {
-        $wh->sendMy('api\\anet-shop\\send-product', $filePath, $data);
+        $wh->sendMy(['evento' => 'anet_shop', 'subEvent' => $subEvent, 'payload' => $data]);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }
@@ -146,7 +145,7 @@ class PostController extends AbstractController
    * Eliminamos la pieza
   */
   #[Route('api/anet-shop/delete-product/', methods:['POST'])]
-	public function deleteSolicitud(Request $req, AnetShopSystemFileService $sysFile, WebHook $wh): Response
+	public function deleteSolicitud(Request $req, AnetShopSystemFileService $sysFile, WaSender $wh): Response
 	{
     $result = ['abort' => true, 'body' => 'Error desconocido'];
     $data = $this->toArray($req, 'data');
@@ -155,7 +154,7 @@ class PostController extends AbstractController
     if($res == 'ok') {
       $result['abort'] = false;
       try {
-        $wh->sendMy('api\\anet-shop\\delete-product', '', ['evento' => 'delete', 'delete' => $data]);
+        $wh->sendMy(['evento' => 'anet_shop', 'subEvent' => 'delete', 'payload' => $data]);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }
@@ -168,7 +167,7 @@ class PostController extends AbstractController
    * Marcamos este producto como ?? desde AnetShop y enviamos aviso a BackCore
   */
   #[Route('api/anet-shop/update-stt-product/', methods:['post'])]
-	public function sendedProductToMlm(Request $req, WebHook $wh, ProductRepository $emProd): Response
+	public function sendedProductToMlm(Request $req, WaSender $wh, ProductRepository $emProd): Response
 	{
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
@@ -177,7 +176,7 @@ class PostController extends AbstractController
     if($changed == 'ok') {
       $result['abort'] = false;
       try {
-        $wh->sendMy('api\\anet-shop\\send-product-mlm', '', $data);
+        $wh->sendMy(['evento' => 'anet_shop', 'subEvent' => 'product_stt', 'payload' => $data]);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }

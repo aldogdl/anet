@@ -15,7 +15,7 @@ use App\Repository\ProductRepository;
 use App\Service\SecurityBasic;
 use App\Service\AnetShop\DataSimpleMlm;
 use App\Service\AnetShop\AnetShopSystemFileService;
-use App\Service\WebHook;
+use App\Service\AnetTrack\WaSender;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
@@ -260,7 +260,7 @@ class GetController extends AbstractController
    * Eliminamos la pieza
   */
   #[Route('api/anet-shop/delete-product/{idPza}/', methods:['get'])]
-	public function deletePza(ProductRepository $emProd, WebHook $wh, String $idPza): Response
+	public function deletePza(ProductRepository $emProd, WaSender $wh, String $idPza): Response
 	{
     $result = ['abort' => true, 'body' => 'Error desconocido'];
 
@@ -269,11 +269,12 @@ class GetController extends AbstractController
     if($res == 'ok') {
       $result['abort'] = false;
       try {
-        $wh->sendMy('api\\anet-shop\\delete-product', '', ['evento' => 'delete', 'delete' => $idPza]);
+        $wh->sendMy(['evento' => 'delete', 'idPza' => $idPza]);
       } catch (\Throwable $th) {
         $result['sin_wh'] = $th->getMessage();
       }
     }
+
     return $this->json($result);
   }
 

@@ -2,7 +2,6 @@
 
 namespace App\Controller\ComCore;
 
-use App\Service\WebHook;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -41,22 +40,6 @@ class PostController extends AbstractController
     if(array_key_exists('bridgets', $data)) {
       file_put_contents($this->getParameter('comCoreFile'), json_encode($data));
       $response = ['abort' =>  false];
-    }
-
-    return $this->json($response);
-  }
-
-  /** 
-   * Endpoint para realizar pruebas desde comCore y comprobar que el serverLocal
-   * y la puerta de enlace funcionan
-  */
-  #[Route('com-core/test-com/', methods:['post'])]
-  public function testCom(Request $req, WebHook $wh): Response
-  {
-    $response = ['abort' =>  true];
-    $data = $this->toArray($req, 'data');
-    if(count($data) > 0) {
-      $wh->sendMy('com-core/test-com/', 'no-save', $data);
     }
 
     return $this->json($response);

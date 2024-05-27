@@ -231,14 +231,6 @@ class WaSender
         if(array_key_exists('eventName', $data)) {
             $protocolo['evento'] = $data['eventName'];
             unset($data['eventName']);
-        }elseif(array_key_exists('action', $data)) {
-            
-            if($data['action'] == 'publik') {
-                $protocolo['evento'] = 'creada_publicacion';
-            }elseif($data['action'] == 'cotiza') {
-                $protocolo['evento'] = 'creada_solicitud';
-            }
-            unset($data['action']);
         }
         
         $protocolo['payload'] = $data;
