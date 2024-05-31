@@ -116,9 +116,12 @@ class PostController extends AbstractController
       $resort = $data['resort'];
       unset($data['resort']);
     }
+    $data['eventName'] = 'anet_shop';
+    $data['subEvent'] = ($modo == 'publik') ? 'publica' : 'solicita';
 
     $filename = $modo.'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
-    $filePath = $sysFile->setItemInFolderNiFi($data, $filename);
+    $filePath = $sysFile->setItemInFolderSSE($data, $filename);
+
     if(mb_strpos($filePath, 'X ') === false) {
       
       if(count($resort) > 0) {
@@ -127,8 +130,6 @@ class PostController extends AbstractController
       }
       
       $sysFile->cleanImgToFolder($data);
-      $data['eventName'] = 'anet_shop';
-      $data['subEvent'] = ($modo == 'publik') ? 'publica' : 'solicita';
       
       try {
         $wh->sendMy($data);

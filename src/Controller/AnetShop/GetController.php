@@ -127,7 +127,7 @@ class GetController extends AbstractController
   }
   
   /** 
-   * Guardamos el producto enviado desde AnetShop
+   * ...
   */
   #[Route('api/anet-shop/clean-fotos-by/{slug}/{id}/{modo}', methods:['get'])]
 	public function cleanFotos(

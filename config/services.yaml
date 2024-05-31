@@ -16,7 +16,7 @@ parameters:
     scm        : '%phtml%/scm/'
     comCoreFile: '%scm%cc_file.json'
     anetMlm    : '%phtml%/anet_mlm.json'
-    nifiFld    : '%phtml%/nifi/'
+    sse        : '%phtml%/sse/'
     sendMyFail : '%phtml%/sendmy_fails/'
     comments   : '%phtml%/comments/'
     tkwaconm   : '%phtml%/tkwaconm.json'

@@ -212,9 +212,9 @@ class AnetShopSystemFileService
 	}
 
 	/** Guardamos el json resultante del alta de productos desde AnetShop */
-	public function setItemInFolderNiFi(array $product, String $filename): String
+	public function setItemInFolderSSE(array $product, String $filename): String
 	{
-		$path = $this->params->get('nifiFld');
+		$path = $this->params->get('sse');
 		$path = Path::canonicalize($path.'/'.$filename);
 		try {
 			$this->filesystem->dumpFile($path, json_encode($product));
@@ -326,7 +326,7 @@ class AnetShopSystemFileService
 		$prefix = ($product['payload']['src'] == 'publik') ? 'vendida' : 'complete';
 		$filename = $prefix .'-'. $product['head']['slug'] . '-' . $product['head']['fecha'] . '.json';
 		
-		$path = $this->params->get('nifiFld');
+		$path = $this->params->get('sse');
 		if(!$this->filesystem->exists($path)) {
 			$this->filesystem->mkdir($path);
 		}
