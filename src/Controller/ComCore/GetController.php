@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Repository\NG2ContactosRepository;
 use App\Service\AnetShop\AnetShopSystemFileService;
 use App\Service\AnetTrack\WaSender;
-use DateTime;
 
 class GetController extends AbstractController
 {
@@ -59,6 +58,24 @@ class GetController extends AbstractController
         }
 
         return $this->json($result);
+    }
+  
+    /** */
+    #[Route('com-core/existe-sse-not-route/{whoask}/', methods: ['GET'])]
+    public function existSseNotRoute(Request $req, AnetShopSystemFileService $fSys, String $whoask): Response
+    {
+      $result = ['abort' => true, 'body' => 'Error Inesperado'];
+      if($req->getMethod() == 'GET') {
+
+        $path = $this->getParameter('sseNotRouteActive').'/'.$whoask;
+        // Obtener lista de archivos en la carpeta
+        $archivos = scandir($path);
+        // Eliminar los elementos "." y ".." que representan la carpeta actual y la carpeta padre
+        $archivos = array_diff($archivos, array('.', '..'));
+        $result = ['abort' => false, 'body' => count($archivos)];
+      }
+
+      return $this->json($result);
     }
 
 }

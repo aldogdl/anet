@@ -23,7 +23,10 @@ class WaSender
     public Fsys $fSys;
     public String $context;
     public String $wamidMsg;
+    /** La version del archivo de rutas */
     public String $routerVer = '';
+    /** La version del archivo de rutas */
+    public String $sseNotRouteActive = '';
     
     /** */
     public function __construct(HttpClientInterface $client, ParameterBagInterface $container, Fsys $fsys)
@@ -31,8 +34,9 @@ class WaSender
         $this->client = $client;
         $this->fSys = $fsys;
         $this->sendMyFail = $container->get('sendMyFail');
-        $this->anetToken  = base64_encode($container->get('getAnToken'));
         $this->comCoreFile= $container->get('comCoreFile');
+        $this->sseNotRouteActive= $container->get('sseNotRouteActive');
+        $this->anetToken  = base64_encode($container->get('getAnToken'));
         $this->context = '';
     }
 
@@ -183,44 +187,53 @@ class WaSender
         $rota = count($uri);
         $proto['routerVer'] = $this->routerVer;
 
-        if($rota > 0) {
+        if($rota == 0) {
+            $path = $this->sseNotRouteActive.'/'.$proto['evento'];
+            if(!file_exists($path)) {
+                mkdir($path, 0664, true);
+            }
+            file_put_contents(
+                $path.'/'.round(microtime(true) * 1000).'json',
+                json_encode($proto)
+            );
+            return true;
+        }
 
-            for ($i=0; $i < $rota; $i++) {
+        for ($i=0; $i < $rota; $i++) {
 
-                $proto['modo'] = $uri[$i]['modo'];
-                $msgResults = 'Error inesperado';
-                try {
-                    $response = $this->trySend($uri[$i]['url'], $proto);
-                    if(!is_string($response)) {
-                        $statusCode = $response->getStatusCode();
-                        $msgResults = $response->getContent();
-                    }else{
-                        $msgResults = $response;
-                    }
-                } catch (\Throwable $th) {
-                    $msgResults = $th->getMessage();
+            $proto['modo'] = $uri[$i]['modo'];
+            $msgResults = 'Error inesperado';
+            try {
+                $response = $this->trySend($uri[$i]['url'], $proto);
+                if(!is_string($response)) {
+                    $statusCode = $response->getStatusCode();
+                    $msgResults = $response->getContent();
+                }else{
+                    $msgResults = $response;
                 }
+            } catch (\Throwable $th) {
+                $msgResults = $th->getMessage();
+            }
 
-                if($statusCode == 200) {
-                    break;
+            if($statusCode == 200) {
+                break;
+            }
+
+            if($statusCode != 200) {
+                $result = [
+                'evento' => 'error_sr',
+                'statuscode' => $statusCode,
+                'payload' => [
+                    'body' => ($this->isTest) ? 'El error del Response' : $msgResults
+                    ]
+                ];
+
+                $filename = round(microtime(true) * 1000);
+                if(!is_dir($this->sendMyFail)) {
+                    mkdir($this->sendMyFail);
                 }
-
-                if($statusCode != 200) {
-                    $result = [
-                    'evento' => 'error_sr',
-                    'statuscode' => $statusCode,
-                    'payload' => [
-                        'body' => ($this->isTest) ? 'El error del Response' : $msgResults
-                        ]
-                    ];
-
-                    $filename = round(microtime(true) * 1000);
-                    if(!is_dir($this->sendMyFail)) {
-                        mkdir($this->sendMyFail);
-                    }
-                    $proto['code_err'] = $filename;
-                    file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
-                }
+                $proto['code_err'] = $filename;
+                file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
             }
         }
 
@@ -275,34 +288,45 @@ class WaSender
         $segmento = ($evento != $segmento) ? 'whatsapp_api' : $segmento;
         
         $comCore = json_decode(file_get_contents($this->comCoreFile), true);
+        
         if(array_key_exists('event_route', $comCore)) {
-
-            $this->routerVer = $comCore['version'];
-            $storageUrl = [];
             
+            $this->routerVer = $comCore['version'];
+            
+            $storageUrl = [];
             $rutas = $comCore['event_route'][$segmento];
             $rota = count($rutas);
             for ($i=0; $i < $rota; $i++) { 
                 
                 if(array_key_exists($rutas[$i], $comCore)) {
+
+                    // Desde la app de ComCore este orden es que todas las que sean PROD
+                    // se colocan al inicio del array, por lo tanto la primera sera master
                     $modo = ($i == 0) ? 'master' : 'slave';
-                    $dest = $comCore[ $rutas[$i] ];
-                    $vueltas = count($dest);
-                    // Por default tomamo el primer servicio
-                    $endPoint = $dest[0];
-                    // En dado caso de que halla mas servicion en la misma ruta o destino
-                    if($vueltas > 0 && $endPoint['active'] == 'none') {
-                        // Buscamos entre estos solo aquellos que sean ENV: prod
-                        $has = array_search('active', array_column($dest, 'this'));
-                        if($has !== false) {
-                            $endPoint = $dest[$has];
+
+                    $destinos = $comCore[ $rutas[$i] ];
+                    $vueltas = count($destinos);
+                    // Por default tomamo el primer destinp
+                    $endPoint = $destinos[0];
+                    // En dado caso de que halla mas destinos en el mismo segmento de rutas
+                    if($vueltas > 0) {
+                        if($endPoint['env'] != 'prod') {
+                            // Buscamos entre estos solo aquellos que sean ENV: prod
+                            $has = array_search('prod', array_column($destinos, 'env'));
+                            if($has !== false) {
+                                $endPoint = $destinos[$has];
+                            }
                         }
                     }
-                    $url = $endPoint['public'].'-'.$endPoint['id'];
-                    if(in_array($url, $storageUrl) === false) {
-                        $opc[] = ['url' => 'https://'.$url.'.ngrok-free.app/com_core/sse', 'modo' => $modo];
+
+                    // Tendrian que indicar que estan activos para tomarce como opcion
+                    if($endPoint['active'] == 'this') {
+                        $url = $endPoint['public'].'-'.$endPoint['id'];
+                        if(in_array($url, $storageUrl) === false) {
+                            $opc[] = ['url' => 'https://'.$url.'.ngrok-free.app/com_core/sse', 'modo' => $modo];
+                        }
+                        $storageUrl[] = $url;
                     }
-                    $storageUrl[] = $url;
                 }
             }
         }
