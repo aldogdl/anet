@@ -64,7 +64,7 @@ class GetController extends AbstractController
     #[Route('com-core/existe-sse-not-route/{whoask}/', methods: ['GET'])]
     public function existSseNotRoute(Request $req, AnetShopSystemFileService $fSys, String $whoask): Response
     {
-      $result = ['abort' => true, 'body' => 'Error Inesperado'];
+      $result = ['abort' => true, 'body' => 0];
       if($req->getMethod() == 'GET') {
 
         $path = $this->getParameter('sseNotRouteActive').'/'.$whoask;
