@@ -68,11 +68,12 @@ class GetController extends AbstractController
       if($req->getMethod() == 'GET') {
 
         $path = $this->getParameter('sseNotRouteActive').'/'.$whoask;
-        // Obtener lista de archivos en la carpeta
-        $archivos = scandir($path);
-        // Eliminar los elementos "." y ".." que representan la carpeta actual y la carpeta padre
-        $archivos = array_diff($archivos, array('.', '..'));
-        $result = ['abort' => false, 'body' => count($archivos)];
+        if(file_exists($path)) {
+          $archivos = scandir($path);
+          // Eliminar los elementos "." y ".." que representan la carpeta actual y la carpeta padre
+          $archivos = array_diff($archivos, array('.', '..'));
+          $result = ['abort' => false, 'body' => count($archivos)];
+        }
       }
 
       return $this->json($result);
