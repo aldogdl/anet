@@ -23,6 +23,7 @@ class WaSender
     public Fsys $fSys;
     public String $context;
     public String $wamidMsg;
+    public String $routerVer = '';
     
     /** */
     public function __construct(HttpClientInterface $client, ParameterBagInterface $container, Fsys $fsys)
@@ -180,6 +181,8 @@ class WaSender
 
         $uri = $this->getUrlsToCC($proto['evento']);
         $rota = count($uri);
+        $proto['routerVer'] = $this->routerVer;
+
         if($rota > 0) {
 
             for ($i=0; $i < $rota; $i++) {
@@ -198,6 +201,10 @@ class WaSender
                     $msgResults = $th->getMessage();
                 }
 
+                if($statusCode == 200) {
+                    break;
+                }
+
                 if($statusCode != 200) {
                     $result = [
                     'evento' => 'error_sr',
@@ -211,8 +218,8 @@ class WaSender
                     if(!is_dir($this->sendMyFail)) {
                         mkdir($this->sendMyFail);
                     }
+                    $proto['code_err'] = $filename;
                     file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
-                    return false;
                 }
             }
         }
@@ -264,32 +271,38 @@ class WaSender
     public function getUrlsToCC(String $evento): array
     {
         $opc = [];
-        $routes = 'anet_shop';
+        $segmento = 'anet_shop';
+        $segmento = ($evento != $segmento) ? 'whatsapp_api' : $segmento;
+        
         $comCore = json_decode(file_get_contents($this->comCoreFile), true);
         if(array_key_exists('event_route', $comCore)) {
 
-            $routes = ($evento != 'anet_shop') ? 'whatsapp_api' : $routes;
-            $rutas = $comCore['event_route'][$routes];
+            $this->routerVer = $comCore['version'];
+            $storageUrl = [];
+            
+            $rutas = $comCore['event_route'][$segmento];
             $rota = count($rutas);
-
             for ($i=0; $i < $rota; $i++) { 
+                
                 if(array_key_exists($rutas[$i], $comCore)) {
-
                     $modo = ($i == 0) ? 'master' : 'slave';
                     $dest = $comCore[ $rutas[$i] ];
                     $vueltas = count($dest);
+                    // Por default tomamo el primer servicio
                     $endPoint = $dest[0];
-                    if($vueltas > 0) {
-                        $has = array_search('release', array_column($dest, 'modo'));
+                    // En dado caso de que halla mas servicion en la misma ruta o destino
+                    if($vueltas > 0 && $endPoint['active'] == 'none') {
+                        // Buscamos entre estos solo aquellos que sean ENV: prod
+                        $has = array_search('active', array_column($dest, 'this'));
                         if($has !== false) {
                             $endPoint = $dest[$has];
                         }
                     }
-
-                    $opc[] = [
-                        'url' => 'https://'.$endPoint['public'].'-'.$endPoint['id'].'.ngrok-free.app/com_core/sse',
-                        'modo' => $modo,
-                    ];
+                    $url = $endPoint['public'].'-'.$endPoint['id'];
+                    if(in_array($url, $storageUrl) === false) {
+                        $opc[] = ['url' => 'https://'.$url.'.ngrok-free.app/com_core/sse', 'modo' => $modo];
+                    }
+                    $storageUrl[] = $url;
                 }
             }
         }
