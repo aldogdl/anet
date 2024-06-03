@@ -309,12 +309,19 @@ class WaSender
                     // Por default tomamo el primer destinp
                     $endPoint = $destinos[0];
                     // En dado caso de que halla mas destinos en el mismo segmento de rutas
-                    if($vueltas > 0) {
+                    if($vueltas > 1) {
                         if($endPoint['env'] != 'prod') {
                             // Buscamos entre estos solo aquellos que sean ENV: prod
                             $has = array_search('prod', array_column($destinos, 'env'));
                             if($has !== false) {
                                 $endPoint = $destinos[$has];
+                            }
+                        } else {
+                            if($endPoint['active'] == 'none') {
+                                $has = array_search('this', array_column($destinos, 'active'));
+                                if($has !== false) {
+                                    $endPoint = $destinos[$has];
+                                }
                             }
                         }
                     }
