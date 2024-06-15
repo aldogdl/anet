@@ -20,6 +20,12 @@ class HandlerCMD
         "td" => [
             "desc" => "Retornamos la tarjeta digital del usuario"
         ],
+        "pausa" => [
+            "desc" => "Solicitar poner en pausa tu cuenta para no enviarte más mensajes"
+        ],
+        "play" => [
+            "desc" => "Reanudar el envio de mensajes."
+        ],
     ];
 
     /** */
