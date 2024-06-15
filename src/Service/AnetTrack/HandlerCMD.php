@@ -23,6 +23,10 @@ class HandlerCMD
         "pausa" => [
             "desc" => "Solicitar poner en pausa tu cuenta para no enviarte más mensajes"
         ],
+        "pause" => [
+            "desc" => "Solicitar poner en pausa tu cuenta para no enviarte más mensajes",
+            "hide" => "No mastrar este cmd a los usuarios"
+        ],
         "play" => [
             "desc" => "Reanudar el envio de mensajes."
         ],
@@ -40,14 +44,6 @@ class HandlerCMD
     /** */
     public function exe(): void
     {
-        if(!array_key_exists($this->waMsg->content, $this->cmds)) {
-
-            $this->waSender->sendText(
-                "⚠️ El Comando [*".$this->waMsg->content."*] no existe entre los ".
-                "comando permitidos en Autoparnet"
-            );
-            return;
-        }
 
         if($this->waMsg->content == 'login') {
 
@@ -70,8 +66,38 @@ class HandlerCMD
             ];
             $this->waSender->sendMy($retornar);
             return;
+        }elseif($this->waMsg->content == 'pausa' || $this->waMsg->content == 'pause') {
+
+            $this->waSender->sendText(
+                "😃👍 *SOLICITUD RECIBIDA*\n\n".
+                "Cuando estés listo, ingresa el comando\n".
+                "*anet play*, para reanudar los envíos."
+            );
+            $retornar = [
+                'evento' => 'whatsapp_api',
+                'payload' => ['subEvent' => 'cmd', 'cmd' => 'pausa', 'waid' => $this->waMsg->from]
+            ];
+            $this->waSender->sendMy($retornar);
+            return;
+        }elseif($this->waMsg->content == 'play') {
+
+            $this->waSender->sendText(
+                "😃👍 *REANUDANDO ENVÍOS*\n\n".
+                "Pronto recibirás más oportunidades de Venta".
+                ""
+            );
+            $retornar = [
+                'evento' => 'whatsapp_api',
+                'payload' => ['subEvent' => 'cmd', 'cmd' => 'play', 'waid' => $this->waMsg->from]
+            ];
+            $this->waSender->sendMy($retornar);
+            return;
         }
 
+        $this->waSender->sendText(
+            "⚠️ El Comando [*".$this->waMsg->content."*] no existe entre los ".
+            "comando permitidos en Autoparnet"
+        );
         return;
     }
 
