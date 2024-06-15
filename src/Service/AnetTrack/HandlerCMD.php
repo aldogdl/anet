@@ -62,7 +62,7 @@ class HandlerCMD
             );
             $retornar = [
                 'evento' => 'whatsapp_api',
-                'payload' => ['subEvent' => 'cmd', 'cmd' => 'td', 'waid' => $this->waMsg->from]
+                'payload' => ['subEvent' => 'cmd', 'cmd' => 'td', 'waId' => $this->waMsg->from]
             ];
             $this->waSender->sendMy($retornar);
             return;
@@ -70,12 +70,12 @@ class HandlerCMD
 
             $this->waSender->sendText(
                 "😃👍 *SOLICITUD RECIBIDA*\n\n".
-                "Cuando estés listo, ingresa el comando\n".
+                "Cuando estés listo, ingresa el comando ".
                 "*anet play*, para reanudar los envíos."
             );
             $retornar = [
                 'evento' => 'whatsapp_api',
-                'payload' => ['subEvent' => 'cmd', 'cmd' => 'pausa', 'waid' => $this->waMsg->from]
+                'payload' => ['subEvent' => 'cmd', 'cmd' => 'pausa', 'waId' => $this->waMsg->from]
             ];
             $this->waSender->sendMy($retornar);
             return;
@@ -88,7 +88,7 @@ class HandlerCMD
             );
             $retornar = [
                 'evento' => 'whatsapp_api',
-                'payload' => ['subEvent' => 'cmd', 'cmd' => 'play', 'waid' => $this->waMsg->from]
+                'payload' => ['subEvent' => 'cmd', 'cmd' => 'play', 'waId' => $this->waMsg->from]
             ];
             $this->waSender->sendMy($retornar);
             return;

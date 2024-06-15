@@ -82,7 +82,7 @@ class HcFinisherCot
         // Quitamos el context para que los msg siguientes no
         // leven la cabecera de la cotizacion en curso.
         $this->waSender->context = '';
-        
+
         if($baitsCooler['send'] != '') {
             $code = $this->waSender->sendText($head.$body);
             $code = $this->waSender->sendTemplate($baitsCooler['send']);
@@ -116,6 +116,13 @@ class HcFinisherCot
             $filename = $this->createFilenameTmpOf($toDelete[$i]);
             $this->waSender->fSys->delete('/', $filename);
         }
+        
+        // Al finalizar eliminamos el archivo que detiene los status
+        // no es necesario mantenerlo ya que no sabemos si el cotizador
+        // va a continuar cotizando la siguiente solicitud.
+        $filename = $this->createFilenameTmpOf('stopstt');
+        $this->waSender->fSys->delete('/', $filename);
+
     }
 
 }
