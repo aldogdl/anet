@@ -115,12 +115,13 @@ class ParseMsg {
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower($txt);
             
-            if(mb_strpos($txt, 'cmd.') !== false) {
+            if(mb_strpos($txt, 'anet') !== false) {
+
                 $tipo = TypesWaMsgs::COMMAND;
-                $partes = explode('.', $txt);
+                $partes = explode('anet', $txt);
                 if(count($partes) > 1) {
-                    $subEvent = $partes[0];
-                    $txt = $partes[1];
+                    $subEvent = trim($partes[0]);
+                    $txt = trim($partes[1]);
                 }
             }else{
                 if($this->isLoginMsg($txt)) {
