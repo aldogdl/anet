@@ -149,20 +149,18 @@ class Fsys {
         if(count($est) > 0) {
             if(array_key_exists('items', $est)) {
 
-                $cooler = $est['items'];
-                if(count($cooler) > 0) {
+                $baits = $est['items'];
+                if(count($baits) > 0) {
 
-                    $return['baitsInCooler'] = array_column($cooler, 'idItem');
+                    $return['baitsInCooler'] = array_column($baits, 'idItem');
                     $has = 0;
                     if($mdlpref != '') {
-                        $mdls = array_column($cooler, 'mdl');
+                        $mdls = array_column($baits, 'mdl');
                         $has = array_search($mdlpref, $mdls);
                         $has = ($has === false) ? 0 : $has;
-                    }else{
-                        $has = 0;
                     }
                     if($has !== false) {
-                        $return['send'] = $cooler[$has]['idItem'];
+                        $return['send'] = $baits[$has]['idItem'];
                     }
                 }
             }

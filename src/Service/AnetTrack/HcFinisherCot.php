@@ -40,7 +40,7 @@ class HcFinisherCot
     public function exe(String $tipoFinish = 'cancel'): void
     {
         // Dependiendo de la accion realizada grabamos distintas
-        // cabeceras para la respuesta a dicha accion
+        // cabeceras para la respuesta a dicha accion.
         if($tipoFinish == 'cancel') {
             $head = "📵 *Solicitud CANCELADA.*\n\n";
         }elseif($tipoFinish == 'ntg') {
@@ -81,6 +81,8 @@ class HcFinisherCot
         $baitsCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
         
         $this->waSender->context = $this->bait['wamid'];
+        file_put_contents('wa_hallada.json', json_encode($baitsCooler));
+        
         if($baitsCooler['send'] != '') {
             $code = $this->waSender->sendText($head.$body);
             $code = $this->waSender->sendTemplate($baitsCooler['send']);

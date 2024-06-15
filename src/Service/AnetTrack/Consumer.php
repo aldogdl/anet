@@ -46,7 +46,7 @@ class Consumer
                 $this->waSender->sendMy($obj->toStt());
             }else{
                 // Si es un STT y hay un archivo de Costo, es que acaba de ser
-                // finalizada una por parte del cotizador.
+                // finalizada una cotizacion por parte del cotizador.
                 if($this->fSys->existe('/', $obj->from.'_scto.json')) {
                     $bait = $this->fSys->getContent('tracking', $obj->from.'.json');
                     if(count($bait) > 0) {

@@ -58,6 +58,8 @@ class WaSender
     public function sendTemplate(String $idItem): int
     {
         $tmp = $this->fSys->getContent('prodTrack', $idItem.'_track.json');
+        file_put_contents('wa_enviada.json', json_encode($tmp));
+        
         if(count($tmp) > 0) {
             $tmp = $tmp['message'];
             $tmp['to'] = $this->conm->to;
