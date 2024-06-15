@@ -79,9 +79,9 @@ class HcFinisherCot
         
         // Recuperamos otro bait directamente desde el estanque
         $baitsCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
-        
-        $this->waSender->context = $this->bait['wamid'];
-        file_put_contents('wa_hallada.json', json_encode($baitsCooler));
+        // Quitamos el context para que los msg siguientes no
+        // leven la cabecera de la cotizacion en curso.
+        $this->waSender->context = '';
         
         if($baitsCooler['send'] != '') {
             $code = $this->waSender->sendText($head.$body);
@@ -99,7 +99,8 @@ class HcFinisherCot
 
             $code = $this->waSender->sendText($head.$body);
         }
-
+        
+        $this->waSender->context = $this->bait['wamid'];
         if($baitsCooler['send'] != '') {
             $att['send'] = $baitsCooler['send'];
         }

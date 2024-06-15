@@ -105,28 +105,30 @@ class Fsys {
     */
     public function putCotizando(WaMsgDto $waMsg): bool
     {    
-        $est = $this->getContent('waEstanque', $waMsg->from . '.json');
-        if(count($est) > 0) {
-            if(array_key_exists('items', $est)) {
+        $cooler = $this->getContent('waEstanque', $waMsg->from . '.json');
 
-                $cooler = $est['items'];
-                if(count($cooler) > 0) {
-                    $idsItems = array_column($cooler, 'idItem');
+        if(count($cooler) > 0) {
+            if(array_key_exists('items', $cooler)) {
+
+                $baits = $cooler['items'];
+                if(count($baits) > 0) {
+
+                    $idsItems = array_column($baits, 'idItem');
                     $has = array_search($waMsg->idItem, $idsItems);
                     if($has !== false) {
                         
-                        $bait = $cooler[$has];
+                        $bait = $baits[$has];
                         $date = new \DateTime('now');
                         $attend = $date->format('Y-m-d h:i:s');
                         $bait['wamid'] = $waMsg->id;
                         $bait['current'] = 'sfto';
                         $bait['attend'] = $attend;
 
-                        unset($cooler[$has]);
-                        $est['items'] = $cooler;
+                        unset($baits[$has]);
+                        $cooler['items'] = array_values($baits);
                         $this->setContent('/', $waMsg->from."_stopstt.json", ['']);
                         $this->setContent('tracking', $waMsg->from.'.json', $bait);
-                        $this->setContent('waEstanque', $waMsg->from.'.json', $est);
+                        $this->setContent('waEstanque', $waMsg->from.'.json', $cooler);
                         return true;
                     }
                 }
