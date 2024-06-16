@@ -59,9 +59,11 @@ class HcFinisherCot
         if($tipoFinish == 'ntg') {
             $this->waMsg->subEvento = 'ntg';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
+            $track = $this->bait['track'];
         }elseif($tipoFinish == 'ntga') {
             $this->waMsg->subEvento = 'ntga';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
+            $track = $this->bait['track'];
             $model = '';
         }elseif($tipoFinish == 'fin') {
             $this->waMsg->subEvento = 'sgrx';
@@ -116,7 +118,7 @@ class HcFinisherCot
             $filename = $this->createFilenameTmpOf($toDelete[$i]);
             $this->waSender->fSys->delete('/', $filename);
         }
-        
+
         // Al finalizar eliminamos el archivo que detiene los status
         // no es necesario mantenerlo ya que no sabemos si el cotizador
         // va a continuar cotizando la siguiente solicitud.
