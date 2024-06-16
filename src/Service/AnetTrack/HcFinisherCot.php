@@ -58,12 +58,12 @@ class HcFinisherCot
         
         if($tipoFinish == 'ntg') {
             $this->waMsg->subEvento = 'ntg';
-            $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
-            $track = $this->bait['track'];
+            $track = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
+            $this->bait['track'] = $track;
         }elseif($tipoFinish == 'ntga') {
             $this->waMsg->subEvento = 'ntga';
-            $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
-            $track = $this->bait['track'];
+            $track = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
+            $this->bait['track'] = $track;
             $model = '';
         }elseif($tipoFinish == 'fin') {
             $this->waMsg->subEvento = 'sgrx';
@@ -71,10 +71,8 @@ class HcFinisherCot
         }
 
         $att = $this->waMsg->toMini();
-        if($tipoFinish == 'fin') {
-            $track['idCot'] = time();
-            $att['body'] = $track;
-        }
+        $track['idCot'] = time();
+        $att['body'] = $track;
 
         $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
         $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
