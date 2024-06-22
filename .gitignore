@@ -19,6 +19,8 @@ public_html/error.log
 public_html/request.log
 
 public_html/bundles/
+public_html/cc/
+public_html/sse/
 public_html/cotiza/
 public_html/prod_pubs/
 public_html/prod_sols/
