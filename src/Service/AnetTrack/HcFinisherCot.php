@@ -75,14 +75,14 @@ class HcFinisherCot
 
         }elseif($tipoFinish == 'checkCnow') {
 
-            $this->waMsg->subEvento = 'cleaner';
+            $this->waMsg->subEvento = 'cleanCN';
             $body = "Por el momento esta solicitud está bloqueada.\n".
             "Si más tarde se libera, te la haremos llegar.\n\n".
             "*Espera más oportunidades de Venta*💰";
 
         }elseif($tipoFinish == 'checkNt') {
 
-            $this->waMsg->subEvento = 'cleaner';
+            $this->waMsg->subEvento = 'cleanNt';
             $body = "Hemos recibido tu indicación\n\n".
             "👍 _GRACIAS por tu atención_";
 
