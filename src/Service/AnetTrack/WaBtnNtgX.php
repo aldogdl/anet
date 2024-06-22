@@ -30,9 +30,17 @@ class WaBtnNtgX
             $bait = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
             if(count($bait) > 0) {
                 // Si se esta cotizando actualmente una, pero la que se dijo no tengo es otra
-                // entonces no la tomamos en cuenta reiniciando la var bait
+                // entonces enviamos un mensaje de recordatorio que se esta en proceso de
+                // cotizacion de otra pieza.
                 if($bait['idItem'] != $this->waMsg->idItem) {
-                    $bait = [];
+                    $this->waSender->sendText(
+                        "😉 *COTIZACIÓN EN PROGRESO*...\n".
+                        "Actualmente estás cotizando otra autoparte:\n\n".
+                        "Termina de cotizar respondiendo al último mensaje\n".
+                        "y podrás continuar respondiendo a la siguiente.\n\n".
+                        "👍 _GRACIAS por tu atención_"
+                    );
+                    return;
                 }
             }
         }
@@ -43,11 +51,14 @@ class WaBtnNtgX
             $bait = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
         }
 
+        $finicher = new HcFinisherCot($this->waSender, $this->waMsg, $bait);
         if(count($bait) > 0) {
-            $finicher = new HcFinisherCot($this->waSender, $this->waMsg, $bait);
             $finicher->exe($this->waMsg->subEvento);
-            return;
+        }else{
+            // No se encontró una pieza en trackeds(cotizada) ni tampoco en el cooler
+            $finicher->exe('checkNt');
         }
+        return;
     }
 
     /**
@@ -76,4 +87,5 @@ class WaBtnNtgX
         }
         return $resp;
     }
+
 }

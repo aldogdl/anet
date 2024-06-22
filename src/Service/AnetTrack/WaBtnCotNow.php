@@ -35,10 +35,10 @@ class WaBtnCotNow
         if($this->existeInTrackeds()) {
             return;
         }
-
+        
         $builder = new BuilderTemplates($this->waSender->fSys, $this->waMsg);
         if($hasCotInProgress) {
-            // Abisamos que hay una cotizacion en progreso y damos opción a cancelar o seguir
+            // Avisamos que hay una cotizacion en progreso y damos opción a cancelar o seguir
             // con la que esta en curso.
             $bait = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
             if(count($bait) > 0) {
@@ -55,6 +55,14 @@ class WaBtnCotNow
         }
 
         if($this->isAtendido()) {
+            return;
+        }
+
+        $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idItem);
+        if(!$exite) {
+            $finicher = new HcFinisherCot($this->waSender, $this->waMsg, []);
+            // No se encontró una pieza en trackeds(cotizada) ni tampoco en el cooler
+            $finicher->exe('checkCnow');
             return;
         }
 

@@ -47,50 +47,90 @@ class HcFinisherCot
             $head = "🙂👍 *NO TE PREOCUPES.*\n\n";
         }elseif($tipoFinish == 'ntga') {
             $head = "🚗 *PERFECTO GRACIAS.*\n\n";
+        }elseif($tipoFinish == 'checkCnow') {
+            $head = "😉 *COTIZAR AHORA!!*...\n\n";
+        }elseif($tipoFinish == 'checkNt') {
+            $head = "😉 *OK, ENTERADOS*...\n\n";
         }else {
             $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
         }
         $body = "Aquí tienes otra oportunidad de venta💰";
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         
-        $model = $this->bait['mdl'];
-        $track = $this->bait['track'];
+        $model = (count($this->bait) > 0) ? $this->bait['mdl'] : '';
+        $track = (count($this->bait) > 0) ? $this->bait['track'] : [];
         
         if($tipoFinish == 'ntg') {
+
             $this->waMsg->subEvento = 'ntg';
             $track = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
             $this->bait['track'] = $track;
+
         }elseif($tipoFinish == 'ntga') {
+
             $this->waMsg->subEvento = 'ntga';
             $track = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
             $this->bait['track'] = $track;
             $model = '';
+
+        }elseif($tipoFinish == 'checkCnow') {
+
+            $this->waMsg->subEvento = 'cleaner';
+            $body = "Al parecer esta solicitud ya\n".
+            "no está disponible, pero pronto recibirás\n".
+            "*más oportunidades de Venta*\n\n".
+            "👍 _GRACIAS por tu atención_";
+
+        }elseif($tipoFinish == 'checkNt') {
+
+            $this->waMsg->subEvento = 'cleaner';
+            $body = "Hemos recibido tu indicación\n\n".
+            "👍 _GRACIAS por tu atención_";
+
         }elseif($tipoFinish == 'fin') {
+
             $this->waMsg->subEvento = 'sgrx';
             $this->waMsg->idItem = $this->bait['idItem'];
+
         }
 
         $att = $this->waMsg->toMini();
         $track['idCot'] = time();
         $att['body'] = $track;
+        $baitsCooler = ['send' => ''];
 
-        $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
-        $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
-        
-        // Recuperamos otro bait directamente desde el estanque
-        $baitsCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
+        // Si el subEvent se coloco en cleaner es que no hay un bait en el cooler del cotizador
+        // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
+        // para que limpie tambien los datos en SL en caso de inconcistencia.
+        if($this->waMsg->subEvento != 'cleaner') {
+            $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
+            $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
+            
+            // Recuperamos otro bait directamente desde el estanque
+            $baitsCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
+        }
+
         // Quitamos el context para que los msg siguientes no
-        // leven la cabecera de la cotizacion en curso.
+        // lleven la cabecera de la cotizacion en curso.
         $this->waSender->context = '';
-
+        
+        // Si se encotro un nuevo bait, el idItem esta en el campo send
+        // por ende enviamos el nuevo bait al cotizador
+        $code = 200;
         if($baitsCooler['send'] != '') {
+
             $code = $this->waSender->sendText($head.$body);
             $code = $this->waSender->sendTemplate($baitsCooler['send']);
         }else {
 
-            $body = "Por el momento no se encontró ".
-            "otra cotización para ti, pero pronto te estarán llegando nuevas ".
-            "oportunidades de venta.💰 ¡Éxito!";
+            // Si no se encontro un nuevo bait se analizan los siguiente aspecto y se
+            // actua en concecuencia.
+
+            if($this->waMsg->subEvento != 'cleaner') {
+                $body = "Por el momento no se encontró ".
+                "otra cotización para ti, pero pronto te estarán llegando nuevas ".
+                "oportunidades de venta.💰 ¡Éxito!";
+            }
 
             if($tipoFinish == 'fin') {
                 $body = "📖 Mañana a primera hora ésta cotización estará ".
@@ -99,12 +139,18 @@ class HcFinisherCot
 
             $code = $this->waSender->sendText($head.$body);
         }
-        
-        $this->waSender->context = $this->bait['wamid'];
+
+        // Volvemos a colocar el contexto para proceguir con el proceso siguiente
+        if(count($this->bait) > 0) {
+            $this->waSender->context = $this->bait['wamid'];
+        }
+
         if($baitsCooler['send'] != '') {
             $att['send'] = $baitsCooler['send'];
         }
-        $att['baitsInCooler'] = $baitsCooler['baitsInCooler'];
+
+        $att['baitsInCooler'] = (array_key_exists('baitsInCooler', $baitsCooler))
+            ? $baitsCooler['baitsInCooler'] : [];
         
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($att);

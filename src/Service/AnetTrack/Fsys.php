@@ -18,7 +18,28 @@ class Fsys {
     public function __construct(ParameterBagInterface $container)
     {
         $this->params = $container;
-        $this->filesystem= new Filesystem();
+        $this->filesystem = new Filesystem();
+    }
+    
+    /** */
+    public function existeInCooler(String $waId, String $idItem) {
+        
+        $cooler = $this->getContent(
+            $this->params->get('waEstanque'), $waId.'.json'
+        );
+
+        if(count($cooler) > 0) {
+            if(array_key_exists('items', $cooler)) {
+                $idItems = array_column($cooler['items'], 'idItem');
+                if(count($idItems) > 0) {
+                    $has = array_search($idItem, $idItems);
+                    if($has !== false) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     /** */

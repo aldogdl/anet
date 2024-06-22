@@ -62,10 +62,10 @@ class WaSender
         if(count($tmp) > 0) {
             $tmp = $tmp['message'];
             $tmp['to'] = $this->conm->to;
+            $this->type = $tmp['type'];
+            $this->body = $tmp;
+            return $this->sendToWa();
         }
-        $this->type = $tmp['type'];
-        $this->body = $tmp;
-        return $this->sendToWa();
     }
 
     /** 

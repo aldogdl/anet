@@ -57,6 +57,7 @@ class Consumer
             }
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::DOC) {
+
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "⚠️ Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
@@ -64,6 +65,7 @@ class Consumer
             );
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
+
             $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
             $clase->exe();
             return;
@@ -87,7 +89,9 @@ class Consumer
         $this->fSys->delete('/', $obj->from.'_iniLogin.json');
         
         $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
+
         if ($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
+
             $clase = new WaBtnCotNow($this->waSender, $obj);
             $clase->exe($hasCotProgress);
             return;
@@ -99,6 +103,7 @@ class Consumer
         }
         
         if($hasCotProgress) {
+            
             $handler = new HandlerQuote($this->fSys, $this->waSender, $obj);
             $handler->exe();
             return;
