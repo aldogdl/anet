@@ -24,9 +24,7 @@ class Fsys {
     /** */
     public function existeInCooler(String $waId, String $idItem) {
         
-        $cooler = $this->getContent(
-            $this->params->get('waEstanque'), $waId.'.json'
-        );
+        $cooler = $this->getContent('waEstanque', $waId.'.json');
 
         if(count($cooler) > 0) {
             if(array_key_exists('items', $cooler)) {
