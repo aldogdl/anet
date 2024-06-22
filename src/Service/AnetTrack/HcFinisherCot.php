@@ -77,7 +77,7 @@ class HcFinisherCot
 
             $this->waMsg->subEvento = 'cleaner';
             $body = "Al parecer esta solicitud ya\n".
-            "no está disponible, pero pronto recibirás\n".
+            "no está disponible, pero pronto recibirás ".
             "*más oportunidades de Venta*\n\n".
             "👍 _GRACIAS por tu atención_";
 
