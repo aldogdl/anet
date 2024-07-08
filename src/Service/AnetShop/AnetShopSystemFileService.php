@@ -136,7 +136,7 @@ class AnetShopSystemFileService
 	*/
 	public function cleanImgToFolder(array $data): String
 	{
-		if($data['action'] == 'publik') {
+		if($data['subEvent'] == 'publica') {
 			$path = $this->params->get('prodPubs');
 		}else{
 			$path = $this->params->get('prodSols');
