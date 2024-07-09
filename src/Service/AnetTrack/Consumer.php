@@ -119,6 +119,12 @@ class Consumer
             "una acción primero_ por ejemplo, presionar el botón...\n".
             "*COTIZAR AHORA*."
         );
+        $this->waSender->sendText(
+            "😱 Lo sentimos!.\n".
+            "_Para interactuar con este sistema debes seleccionar ".
+            "alguno de los botones de una solicitud, por ejemplo, presionar el botón...\n".
+            "*COTIZAR AHORA*."
+        );
         return;
     }
     
