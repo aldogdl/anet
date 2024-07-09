@@ -109,11 +109,11 @@ class HcFinisherCot
             // Si no se encontro un nuevo bait se analizan los siguiente aspecto y se
             // actua en concecuencia.
 
-            if($this->waMsg->subEvento != 'cleanCN') {
+            if($this->waMsg->subEvento == 'cleanCN') {
                 $body = "El sistema automatizado esta organizando ".
                 "tus oportunidades de venta 💰, *danos 5 segundos*".
                 "para continuar con tu solicitud. ¡Éxito!";
-            }elseif($this->waMsg->subEvento != 'cleanNt') {
+            }elseif($this->waMsg->subEvento == 'cleanNt') {
                 $body = "Hemos recibido tu indicación\n\n".
                 "👍 _GRACIAS por tu atención_";
             }else{
