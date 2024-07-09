@@ -69,7 +69,7 @@ class HcFinisherCot
         }elseif($tipoFinish == 'ntga') {
 
             $this->waMsg->subEvento = 'ntga';
-            $track = ['fotos' => [], 'detalles' => 'No Tengo Auto', 'costo' => 0];
+            $track = ['fotos' => [], 'detalles' => 'No Vendo la Marca', 'costo' => 0];
             $this->bait['track'] = $track;
             $model = '';
 
