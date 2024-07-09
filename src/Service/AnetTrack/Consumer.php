@@ -114,9 +114,9 @@ class Consumer
 
         $this->waSender->setConmutador($obj);
         $this->waSender->sendText(
-            "😱 Lo sentimos!.\n".
-            "_Para interactuar con este sistema debes seleccionar uno de los botones de alguna solicitud_.\n".
-            "Por ejemplo, presionar el botón...\n".
+            "😱 *¡LO SENTIMOS!*\n".
+            "_Para interactuar con este sistema debes seleccionar uno de los botones de alguna solicitud_.\n\n".
+            "*Por ejemplo*, presionar el botón...\n".
             "*COTIZAR AHORA*."
         );
         return;
