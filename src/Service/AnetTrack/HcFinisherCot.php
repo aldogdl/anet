@@ -48,7 +48,7 @@ class HcFinisherCot
         }elseif($tipoFinish == 'ntga') {
             $head = "🚗 *PERFECTO GRACIAS.*\n\n";
         }elseif($tipoFinish == 'checkCnow') {
-            $head = "😉 *COTIZAR AHORA!!*...\n\n";
+            $head = "😉 *SOLICITUD RECIBIDA PARA COTIZAR!!*...\n\n";
         }elseif($tipoFinish == 'checkNt') {
             $head = "😉 *OK, ENTERADOS*...\n\n";
         }else {
@@ -61,36 +61,21 @@ class HcFinisherCot
         $track = (count($this->bait) > 0) ? $this->bait['track'] : [];
         
         if($tipoFinish == 'ntg') {
-
             $this->waMsg->subEvento = 'ntg';
             $track = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
             $this->bait['track'] = $track;
-
         }elseif($tipoFinish == 'ntga') {
-
             $this->waMsg->subEvento = 'ntga';
             $track = ['fotos' => [], 'detalles' => 'No Vendo la Marca', 'costo' => 0];
             $this->bait['track'] = $track;
             $model = '';
-
         }elseif($tipoFinish == 'checkCnow') {
-
             $this->waMsg->subEvento = 'cleanCN';
-            $body = "Por el momento esta solicitud está bloqueada.\n".
-            "Si más tarde se libera, te la haremos llegar.\n\n".
-            "*Espera más oportunidades de Venta*💰";
-
         }elseif($tipoFinish == 'checkNt') {
-
             $this->waMsg->subEvento = 'cleanNt';
-            $body = "Hemos recibido tu indicación\n\n".
-            "👍 _GRACIAS por tu atención_";
-
         }elseif($tipoFinish == 'fin') {
-
             $this->waMsg->subEvento = 'sgrx';
             $this->waMsg->idItem = $this->bait['idItem'];
-
         }
 
         $att = $this->waMsg->toMini();
@@ -101,10 +86,9 @@ class HcFinisherCot
         // Si el subEvent se coloco en cleaner es que no hay un bait en el cooler del cotizador
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
-        if($this->waMsg->subEvento != 'cleaner') {
+        if(mb_strpos($this->waMsg->subEvento, 'clean') === false) {
             $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
             $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
-            
             // Recuperamos otro bait directamente desde el estanque
             $baitsCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
         }
@@ -125,15 +109,21 @@ class HcFinisherCot
             // Si no se encontro un nuevo bait se analizan los siguiente aspecto y se
             // actua en concecuencia.
 
-            if($this->waMsg->subEvento != 'cleaner') {
+            if($this->waMsg->subEvento != 'cleanCN') {
+                $body = "El sistema automatizado esta organizando ".
+                "tus oportunidades de venta 💰, *danos 5 segundos*".
+                "para continuar con tu solicitud. ¡Éxito!";
+            }elseif($this->waMsg->subEvento != 'cleanNt') {
+                $body = "Hemos recibido tu indicación\n\n".
+                "👍 _GRACIAS por tu atención_";
+            }else{
                 $body = "Por el momento no se encontró ".
                 "otra cotización para ti, pero pronto te estarán llegando nuevas ".
                 "oportunidades de venta.💰 ¡Éxito!";
             }
 
             if($tipoFinish == 'fin') {
-                $body = "📖 Mañana a primera hora ésta cotización estará ".
-                "publicada en tu catálogo digital_ *AnetShop*.";
+                $body = "";
             }
 
             $code = $this->waSender->sendText($head.$body);
@@ -150,7 +140,10 @@ class HcFinisherCot
 
         $att['baitsInCooler'] = (array_key_exists('baitsInCooler', $baitsCooler))
             ? $baitsCooler['baitsInCooler'] : [];
-        
+
+        if($this->waMsg->subEvento != 'cleanCN' || $this->waMsg->subEvento != 'cleanNt') {
+            $att['resumeCooler'] = $this->waSender->fSys->getResumeCooler($att['from']);
+        }
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($att);
         }

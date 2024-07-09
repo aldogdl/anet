@@ -111,7 +111,15 @@ class Consumer
             
             // dd('Hay conversacion libre');
         }
+
+        $this->waSender->setConmutador($obj);
+        $this->waSender->sendText(
+            "😱 No hemos detectado ningúna acción previa.\n".
+            "_Para interactual con este sistema deberás indicar ".
+            "una acción primero_ por ejemplo, presionar el botón...\n".
+            "*COTIZAR AHORA*."
+        );
         return;
     }
-
+    
 }

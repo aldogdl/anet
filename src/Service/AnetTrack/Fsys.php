@@ -191,6 +191,27 @@ class Fsys {
     }
 
     /** 
+     * Hacemos un resumen de todos los baits con los que cuenta el cotizador
+     * @return array La lista de los IdItems
+    */
+    public function getResumeCooler(String $waId): array
+    {    
+        $return = [];
+        $est = $this->getContent('waEstanque', $waId . '.json');
+        if(count($est) > 0) {
+            if(array_key_exists('items', $est)) {
+
+                $baits = $est['items'];
+                if(count($baits) > 0) {
+                    $return = array_column($baits, 'idItem');
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    /** 
      * Buscamos y retornamos un archivo dentro de la carpeta indicada por parametro
      * donde el archivo comience con...
     */

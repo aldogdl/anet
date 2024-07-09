@@ -35,7 +35,7 @@ class WaBtnCotNow
         if($this->existeInTrackeds()) {
             return;
         }
-        
+
         $builder = new BuilderTemplates($this->waSender->fSys, $this->waMsg);
         if($hasCotInProgress) {
             // Avisamos que hay una cotizacion en progreso y damos opción a cancelar o seguir
@@ -68,10 +68,10 @@ class WaBtnCotNow
 
         // Con este archivo detenemos todos los mensajes de status
         $this->waSender->fSys->setContent('/', $this->fileTmp, ['']);
-        
+
         $template = $builder->exe('sfto');
         $code = $this->waSender->sendPreTemplate($template);
-        
+
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             if($this->waSender->wamidMsg != '') {
                 $this->waMsg->id = ($this->waMsg->context != '')
@@ -108,4 +108,5 @@ class WaBtnCotNow
         }
         return $resp;
     }
+
 }
