@@ -114,15 +114,9 @@ class Consumer
 
         $this->waSender->setConmutador($obj);
         $this->waSender->sendText(
-            "😱 No hemos detectado ningúna acción previa.\n".
-            "_Para interactual con este sistema deberás indicar ".
-            "una acción primero_ por ejemplo, presionar el botón...\n".
-            "*COTIZAR AHORA*."
-        );
-        $this->waSender->sendText(
             "😱 Lo sentimos!.\n".
-            "_Para interactuar con este sistema debes seleccionar ".
-            "alguno de los botones de una solicitud, por ejemplo, presionar el botón...\n".
+            "_Para interactuar con este sistema debes seleccionar uno de los botones de alguna solicitud_.\n".
+            "Por ejemplo, presionar el botón...\n".
             "*COTIZAR AHORA*."
         );
         return;
