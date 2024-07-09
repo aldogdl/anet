@@ -116,8 +116,7 @@ class Consumer
         $this->waSender->sendText(
             "😱 *¡LO SENTIMOS!*\n".
             "_Para interactuar con este sistema debes seleccionar uno de los botones de alguna solicitud_.\n\n".
-            "*Por ejemplo*, presionar el botón...\n".
-            "*COTIZAR AHORA*."
+            "*Por ejemplo*, presionar el botón... *COTIZAR AHORA*."
         );
         return;
     }
