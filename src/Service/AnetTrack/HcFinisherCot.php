@@ -141,7 +141,7 @@ class HcFinisherCot
         $att['baitsInCooler'] = (array_key_exists('baitsInCooler', $baitsCooler))
             ? $baitsCooler['baitsInCooler'] : [];
 
-        if($this->waMsg->subEvento != 'cleanCN' || $this->waMsg->subEvento != 'cleanNt') {
+        if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
             $att['resumeCooler'] = $this->waSender->fSys->getResumeCooler($att['from']);
         }
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
