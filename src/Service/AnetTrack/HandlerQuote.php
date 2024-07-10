@@ -50,7 +50,6 @@ class HandlerQuote
             if($this->waMsg->context == '' && $bait['wamid'] != '') {
                 $this->waMsg->context = $bait['wamid'];
             }
-            file_put_contents('message_process.json', json_encode($this->waMsg->toArray()));
         }
 
         if($this->waMsg->subEvento == 'cnc') {
@@ -59,7 +58,7 @@ class HandlerQuote
             $handler->exe('cancel');
             return;
         }elseif($this->waMsg->subEvento == 'ccc') {
-            
+
         }
 
         switch ($bait['current']) {

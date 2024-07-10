@@ -33,11 +33,11 @@ class Consumer
             return;
         }
 
-        // Esto es solo para desarrollo
-        if($obj->tipoMsg != TypesWaMsgs::STT) {
-            file_put_contents('message.json', json_encode($message));
-            file_put_contents('message_process_1.json', json_encode($obj->toArray()));
-        }
+        // // Esto es solo para desarrollo
+        // if($obj->tipoMsg != TypesWaMsgs::STT) {
+        //     file_put_contents('message.json', json_encode($message));
+        //     file_put_contents('message_process_1.json', json_encode($obj->toArray()));
+        // }
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
             // Si no hay un archivo de cotizacion enviamos los STT a EventCore
