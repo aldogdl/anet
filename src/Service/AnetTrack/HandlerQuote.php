@@ -59,7 +59,7 @@ class HandlerQuote
             $handler->exe('cancel');
             return;
         }elseif($this->waMsg->subEvento == 'ccc') {
-
+            
         }
 
         switch ($bait['current']) {
