@@ -71,11 +71,11 @@ class WaSender
     /** 
      * Usado para enviar msg donde se enviar solo texto
     */
-    public function sendText(String $texto): int
+    public function sendText(String $texto, String $para = ''): int
     {
         $this->type = 'text';
         $this->body = ['body' => $texto];
-        $this->wrapBody();
+        $this->wrapBody($para);
         return $this->sendToWa();
     }
 
@@ -157,12 +157,12 @@ class WaSender
     }
 
     /** */
-    private function wrapBody(): void
+    private function wrapBody(String $para = ''): void
     {
         $this->body = [
             "messaging_product" => "whatsapp",
             "recipient_type"    => "individual",
-            "to"   => $this->conm->to,
+            "to"   => ($para == '') ? $this->conm->to : $para,
             "type" => $this->type,
             $this->type  => $this->body
         ];
@@ -189,6 +189,7 @@ class WaSender
         $proto['routerVer'] = $this->routerVer;
 
         if($rota == 0) {
+            // Si no se encuentran rutas a ComCore creamos una archivo
             $path = $this->sseNotRouteActive.'/'.$proto['evento'];
             if(!file_exists($path)) {
                 mkdir($path, 0664, true);
@@ -210,32 +211,34 @@ class WaSender
                     $statusCode = $response->getStatusCode();
                     $msgResults = $response->getContent();
                 }else{
+                    $statusCode = 502;
                     $msgResults = $response;
                 }
             } catch (\Throwable $th) {
+                $statusCode = 501;
                 $msgResults = $th->getMessage();
-            }
-
-            if($statusCode == 200) {
-                break;
             }
 
             if($statusCode != 200) {
                 $result = [
-                'evento' => 'error_sr',
-                'statuscode' => $statusCode,
-                'payload' => [
-                    'body' => ($this->isTest) ? 'El error del Response' : $msgResults
-                    ]
+                    'evento' => 'error_sr',
+                    'statuscode' => $statusCode,
+                    'reason' => ($this->isTest) ? 'El error del Response' : $msgResults,
+                    'payload' => $proto
                 ];
-
-                $filename = round(microtime(true) * 1000);
+    
+                $filename = $proto['evento'].'_'.$proto['from'];
                 if(!is_dir($this->sendMyFail)) {
                     mkdir($this->sendMyFail);
                 }
-                $proto['code_err'] = $filename;
                 file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
+                $msg = "ERROR EN SR. Código: ".$statusCode."\n".
+                "Razón: ".$msgResults."\n\n";
+                $this->sendText($msg, '5213320396725');
+                // si hay un error en lugar de tratar de enviarle el mensaje a ComCore Slave
+                // retornamos true para que whatsapp no este reeneviando el mismo mensaje.
             }
+            break;
         }
 
         return true;
@@ -260,7 +263,7 @@ class WaSender
                     ]
                 );
             } catch (\Throwable $th) {
-                return $th->getMessage();
+                return 'error::'.$th->getMessage();
             }
             return $response;
         }

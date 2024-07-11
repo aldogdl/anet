@@ -36,7 +36,9 @@ class WaInitSess
     /** */
     public function exe() {
 
+        $this->waSender->setConmutador($this->waMsg);
         if($this->isAtendido()) {
+            $code = $this->waSender->sendText("🎟️ Gracias, ya tienes una sesión en curso Activa");
             return;
         }
         $this->fSys->setContent('/', $this->fileTmp, ['']);
@@ -50,8 +52,6 @@ class WaInitSess
         }
         
         if($this->hasErr == '') {$cuando = " a las " . $timeFin;}
-
-        $this->waSender->setConmutador($this->waMsg);
         $code = $this->waSender->sendText(
             "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando
         );

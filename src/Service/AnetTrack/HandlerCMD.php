@@ -47,9 +47,8 @@ class HandlerCMD
 
         if($this->waMsg->content == 'login') {
 
-            $this->fSys->delete('/', $this->waMsg->from.'_iniLogin.json');
-            $this->waMsg->tipoMsg = TypesWaMsgs::LOGIN;
             $this->waMsg->subEvento = 'iniLogin';
+            $this->waMsg->tipoMsg = TypesWaMsgs::LOGIN;
             $clase = new WaInitSess($this->fSys, $this->waSender, $this->waMsg);
             $clase->exe();
             return;
