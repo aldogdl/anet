@@ -4,7 +4,7 @@ namespace App\Dtos;
 
 class ConmDto
 {
-    public String $uriBase = 'https://graph.facebook.com/v17.0/';
+    public String $uriBase = 'https://graph.facebook.com/v17.0';
     
     public String $token;
     public String $to;
