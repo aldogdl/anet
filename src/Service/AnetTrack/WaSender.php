@@ -120,9 +120,9 @@ class WaSender
                 } catch (\Throwable $th) {
                     $code = 504;
                     if(mb_strpos($th->getMessage(), '401') !== false) {
-                        $bodyResult = ['error' => 'Token de Whatsapp API caducado', 'razon' => $bodyResult];
+                        $bodyResult = ['razon' => 'Token de Whatsapp API caducado', 'body' => $this->body];
                     }else{
-                        $bodyResult = ['error' => $th->getMessage(), 'razon' => $bodyResult];
+                        $bodyResult = ['razon' => $th->getMessage(), 'body' => $this->body];
                     }
                 }
             }
