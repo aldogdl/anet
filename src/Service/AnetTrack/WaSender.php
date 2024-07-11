@@ -227,7 +227,7 @@ class WaSender
                     'payload' => $proto
                 ];
     
-                $filename = $proto['evento'].'_'.$proto['from'];
+                $filename = $proto['evento'].'_'.$event['from'];
                 if(!is_dir($this->sendMyFail)) {
                     mkdir($this->sendMyFail);
                 }
