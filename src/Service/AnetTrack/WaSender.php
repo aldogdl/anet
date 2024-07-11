@@ -233,12 +233,13 @@ class WaSender
                 if(!is_dir($this->sendMyFail)) {
                     mkdir($this->sendMyFail);
                 }
-                file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
-                $msg = "ERROR EN SR. Código: ".$statusCode."\n".
-                "Razón: ".$msgResults;
-                $this->sendText($msg, '523320396725');
                 // si hay un error en lugar de tratar de enviarle el mensaje a ComCore Slave
                 // retornamos true para que whatsapp no este reeneviando el mismo mensaje.
+                file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
+                $msg = "ERROR EN SR.: ". $proto['evento'] .
+                "Código: ".$statusCode."\n".
+                "Razón: ".$msgResults;
+                $this->sendText($msg, '523320396725');
             }
             break;
         }
