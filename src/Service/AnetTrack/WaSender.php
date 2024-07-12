@@ -238,7 +238,7 @@ class WaSender
                 if($proto['payload']['subEvent'] != 'stt') {
                     file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
                     $msg = "ERROR EN SR.: ". $proto['payload']['subEvent'] .
-                    "Código: ".$statusCode."\n".
+                    " Código: ".$statusCode."\n".
                     "Razón: ".$msgResults;
                     $this->sendText($msg, '523320396725');
                 }
@@ -260,7 +260,7 @@ class WaSender
                 $response = $this->client->request(
                     'POST', $uri, [
                         'query' => ['anet-key' => $this->anetToken],
-                        'timeout' => 120.0,
+                        'timeout' => 30,
                         'headers' => [
                             'Content-Type' => 'application/json',
                         ],
