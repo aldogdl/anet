@@ -260,7 +260,7 @@ class WaSender
                 $response = $this->client->request(
                     'POST', $uri, [
                         'query' => ['anet-key' => $this->anetToken],
-                        'timeout' => 30,
+                        'timeout' => 20,
                         'headers' => [
                             'Content-Type' => 'application/json',
                         ],
