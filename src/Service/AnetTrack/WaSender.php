@@ -229,7 +229,7 @@ class WaSender
     /** */
     public function sendMy(array $event): bool
     {
-        $code  = 504;
+        $code  = 505;
         $this->isTest = false;
         $error = ($this->conm == null)
             ? 'El Archivo conmutador de SR. resulto nulo'
@@ -314,6 +314,7 @@ class WaSender
             'from'       => $this->conm->to,
             'statusCode' => $code,
             'reason'     => $error,
+            'reportTo'   => $this->conm->sendReportTo,
             'payload'    => $body
         ];
 
