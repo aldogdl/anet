@@ -16,7 +16,7 @@ class WaSender
     private array $body;
     private String $type;
     private $anetToken;
-    private $sendMyFail;
+    private $sseFails;
     private $comCoreFile;
     private bool $isTest;
     
@@ -33,7 +33,7 @@ class WaSender
     {
         $this->client = $client;
         $this->fSys = $fsys;
-        $this->sendMyFail = $container->get('sendMyFail');
+        $this->sseFails = $container->get('sseFails');
         $this->comCoreFile= $container->get('comCoreFile');
         $this->sseNotRouteActive= $container->get('sseNotRouteActive');
         $this->anetToken  = base64_encode($container->get('getAnToken'));
@@ -69,18 +69,7 @@ class WaSender
     }
 
     /** 
-     * Usado para enviar msg donde se enviar solo texto
-    */
-    public function sendText(String $texto, String $para = ''): int
-    {
-        $this->type = 'text';
-        $this->body = ['body' => $texto];
-        $this->wrapBody($para);
-        return $this->sendToWa();
-    }
-
-    /** 
-     * Usado para enviar msg que bienen de las templates prefabricadas
+     * Usado para enviar msg que vienen de las templates prefabricadas
     */
     public function sendPreTemplate(array $body): int
     {
@@ -90,70 +79,15 @@ class WaSender
         return $this->sendToWa();
     }
 
-    /** */
-    private function sendToWa(): int
+    /** 
+     * Usado para enviar msg donde se enviar solo texto
+    */
+    public function sendText(String $texto, String $para = ''): int
     {
-        $error = 'No se recibió cuerpo de mensaje valido para enviar.';
-        $code  = 503;
-        $bodyResult = [];
-        if($this->conm != null) {
-
-            if($this->isTest) {
-                file_put_contents('test_sentToWa_'.$this->conm->to.'.json', json_encode($this->body));
-            }
-            
-            if(count($this->body) != 0 && $this->isTest === false) {
-                
-                try {
-                    $response = $this->client->request(
-                        'POST', $this->conm->uriBase . '/messages', [
-                            'headers' => [
-                                'Authorization' => 'Bearer ' . $this->conm->token,
-                                'Content-Type' => 'application/json',
-                            ],
-                            'json' => $this->body
-                        ]
-                    );
-                    $code = $response->getStatusCode();
-                    $bodyResult = json_decode($response->getContent(), true);
-                    
-                } catch (\Throwable $th) {
-                    $code = 504;
-                    if(mb_strpos($th->getMessage(), '401') !== false) {
-                        $bodyResult = ['razon' => 'Token de Whatsapp API caducado', 'body' => $this->body];
-                    }else{
-                        $bodyResult = ['razon' => $th->getMessage(), 'body' => $this->body];
-                    }
-                }
-            }
-        }else{
-            $error = 'El Archivo conmutador de SR. resulto nulo';
-        }
-
-        $this->wamidMsg = '';
-        if($code >= 200 && $code <= 300) {
-            if(array_key_exists('messages', $bodyResult)) {
-                if(array_key_exists('id', $bodyResult['messages'][0])) {
-                    $this->wamidMsg = $bodyResult['messages'][0]['id'];
-                }
-            }
-        }else {
-            $result = [
-                'evento' => 'error_sr',
-                'statuscode' => $code,
-                'reason' => $bodyResult
-            ];
-            // Si ocurren un error al enviar el mesnaje por whatsapp
-            // enviamos el error a EventCore.
-            if($this->isTest) {
-                file_put_contents('test_sentToWa_error_'.$this->conm->to.'.json', json_encode($result));
-            }else{
-                file_put_contents('wa_error_'.$this->conm->to.'.json', json_encode($result));
-                $this->sendMy($result);
-            }
-        }
-
-        return $code;
+        $this->type = 'text';
+        $this->body = ['body' => $texto];
+        $this->wrapBody($para);
+        return $this->sendToWa();
     }
 
     /** */
@@ -173,77 +107,167 @@ class WaSender
         }
     }
 
+    ///
+    private function buildProtocolo(array $data): array
+    {
+        $protocolo = ['evento' => 'unknow'];
+
+        if(array_key_exists('eventName', $data)) {
+            $protocolo['evento'] = $data['eventName'];
+            unset($data['eventName']);
+        }
+        $protocolo['payload'] = $data;
+        return $protocolo;
+    }
+
     /** */
-    public function sendMy(array $event): bool {
+    public function getUrlsToCC(String $evento): array
+    {
+        $modo = 'master';
+        $source = 'anet_shop';
+        // Si la fuente no es de anet_shop entonces es de Whatsapp
+        $source = ($evento != $source) ? 'whatsapp_api' : $source;
 
-        $statusCode = 500;
-        $proto = $event;
-        $this->isTest = false;
-
-        if(!array_key_exists('evento', $event)) {
-            $proto = $this->buildProtocolo($event);
-        }else{
-            file_put_contents('si_existe_evento'.'.json', json_encode($event));
+        $comCore = json_decode(file_get_contents($this->comCoreFile), true);
+        
+        if(!array_key_exists('event_route', $comCore)) {
+            return [];
+        }
+        $this->routerVer = $comCore['version'];
+            
+        $rutas = $comCore['event_route'][$source];
+        if(!array_key_exists($rutas[0], $comCore)) {
+            return [];
         }
 
-        $uri = $this->getUrlsToCC($proto['evento']);
-        $rota = count($uri);
-        $proto['routerVer'] = $this->routerVer;
+        $this->conm->setEventAndSegRoute($source, $rutas[0]);
 
-        if($rota == 0) {
-            // Si no se encuentran rutas a ComCore creamos una archivo
-            $path = $this->sseNotRouteActive.'/'.$proto['evento'];
-            if(!file_exists($path)) {
-                mkdir($path, 0664, true);
-            }
-            file_put_contents(
-                $path.'/'.round(microtime(true) * 1000).'json',
-                json_encode($proto)
-            );
-            return true;
+        // Por default tomamo el primer destino
+        $destinos = $comCore[$rutas[0]];
+        $endPoint = [];
+        // Tendrian que indicar que estan activos para tomarce como opcion
+        if($destinos[0]['active'] == 'this') {
+            $url = $destinos[0]['public'].'-'.$destinos[0]['id'];
+            $endPoint = ['url' => 'https://'.$url.'.ngrok-free.app/com_core/sse', 'modo' => $modo];
         }
+        
+        return $endPoint;
+    }
 
-        for ($i=0; $i < $rota; $i++) {
+    /** 
+     * Enviamos un mensaje a whatsapp para que le llegue a un Contacto.
+     * NOTA: Este mensaje retorna hasta 3 mensajes de status.
+     * POSIBLES ERRORES:
+     * a) Token caducado 401
+     * b) Mal Número de teléfono 400
+    */
+    private function sendToWa(): int
+    {
+        $code  = 504;
+        $bodyResult = [];
+        $this->wamidMsg = '';
+        $error = ($this->conm == null)
+            ? 'El Archivo conmutador de SR. resulto nulo'
+            : '';
+        if(count($this->body) == 0) {
+            $error = 'El cuerpo del mensaje resulto bacio, nada para enviar';
+        }
+        
+        $url = $this->conm->uriBase.'/messages';
 
-            $proto['modo'] = $uri[$i]['modo'];
-            $msgResults = 'Error inesperado';
-            try {
-                $response = $this->trySend($uri[$i]['url'], $proto);
-                if(!is_string($response)) {
-                    $statusCode = $response->getStatusCode();
-                    $msgResults = $response->getContent();
-                }else{
-                    $statusCode = 502;
-                    $msgResults = $response;
-                }
-            } catch (\Throwable $th) {
-                $statusCode = 501;
-                $msgResults = $th->getMessage();
-            }
+        if($error != '') {
 
-            if($statusCode != 200) {
-                $result = [
-                    'evento' => 'error_sr',
-                    'statuscode' => $statusCode,
-                    'reason' => ($this->isTest) ? 'El error del Response' : $msgResults,
-                    'payload' => $proto
-                ];
+            if($this->isTest) {
+                file_put_contents('test_sentToWa_'.$this->conm->to.'.json', json_encode($this->body));
+            }else{
+                try {
+                    $response = $this->client->request(
+                        'POST', $url, [
+                            'headers' => [
+                                'Authorization' => 'Bearer ' . $this->conm->token,
+                                'Content-Type' => 'application/json',
+                            ],
+                            'json' => $this->body
+                        ]
+                    );
     
-                $filename = $proto['evento'].'_'.$event['from'];
-                if(!is_dir($this->sendMyFail)) {
-                    mkdir($this->sendMyFail);
-                }
-                // si hay un error en lugar de tratar de enviarle el mensaje a ComCore Slave
-                // retornamos true para que whatsapp no este reeneviando el mismo mensaje.
-                if($proto['payload']['subEvent'] != 'stt') {
-                    file_put_contents($this->sendMyFail.$filename.'.json', json_encode($result));
-                    $msg = "ERROR EN SR.: ". $proto['payload']['subEvent'] .
-                    " Código: ".$statusCode."\n".
-                    "Razón: ".$msgResults;
-                    $this->sendText($msg, '523320396725');
+                    $code = $response->getStatusCode();
+                    if($code >= 200 && $code <= 300) {
+                        $code = 200;
+                        $bodyResult = json_decode($response->getContent(), true);
+                        if(array_key_exists('messages', $bodyResult)) {
+                            if(array_key_exists('id', $bodyResult['messages'][0])) {
+                                $this->wamidMsg = $bodyResult['messages'][0]['id'];
+                            }
+                        }
+                    }else {
+                        $error = $response->getContent();
+                    }
+    
+                } catch (\Throwable $th) {
+    
+                    $error = $th->getMessage();
+                    if(mb_strpos($error, '401') !== false) {
+                        $error = 'Token de Whatsapp API caducado';
+                    }else if(mb_strpos($error, '400') !== false) {
+                        $error = 'Mensaje mal formado';
+                    }else if(mb_strpos($error, 'timeout') !== false) {
+                        $error = 'Se superó el tiempo de espera';
+                    }
                 }
             }
-            break;
+        }
+
+        if($code > 200) {
+            $this->prepareError($url, $code, $error, $this->body);
+        }
+
+        return $code;
+    }
+
+    /** */
+    public function sendMy(array $event): bool
+    {
+        $code  = 504;
+        $this->isTest = false;
+        $error = ($this->conm == null)
+            ? 'El Archivo conmutador de SR. resulto nulo'
+            : '';
+        if(count($event) == 0) {
+            $error = 'El cuerpo del mensaje resulto bacio, nada para enviar';
+        }
+
+        if($error != '') {
+
+            if(!array_key_exists('evento', $event)) {
+                $proto = $this->buildProtocolo($event);
+            }else{
+                $proto = $event;
+            }
+            $proto['routerVer'] = $this->routerVer;
+    
+            $uri = $this->getUrlsToCC($proto['evento']);
+            $rota = count($uri);
+    
+            if($rota == 0) {
+                $this->prepareError('http://desconocida.info', 506, 'No hay ruta activa hacia ComCore', $proto);
+                return true;
+            }
+    
+            $proto['modo'] = $uri['modo'];
+            $error = 'Error inesperado al enviar mensaje a ComCore';
+            $response = $this->trySend($uri['url'], $proto);
+            // Si no es un string es que se realizó la solicitud
+            if(!is_string($response)) {
+                $code = $response->getStatusCode();
+            }else{
+                $code = 502;
+                $error = $response;
+            }
+
+            if($code != 200) {
+                $this->prepareError($uri['url'], $code, $error, $proto);
+            }
         }
 
         return true;
@@ -268,7 +292,7 @@ class WaSender
                     ]
                 );
             } catch (\Throwable $th) {
-                return 'error::'.$th->getMessage();
+                return $th->getMessage();
             }
             return $response;
         }
@@ -276,78 +300,49 @@ class WaSender
         return 'Error no capturado';
     }
 
-    ///
-    private function buildProtocolo(array $data): array
-    {
-        $protocolo = ['evento' => 'unknow'];
-
-        if(array_key_exists('eventName', $data)) {
-            $protocolo['evento'] = $data['eventName'];
-            unset($data['eventName']);
-        }
-        $protocolo['payload'] = $data;
-        return $protocolo;
-    }
-
     /** */
-    public function getUrlsToCC(String $evento): array
-    {
-        $opc = [];
-        $segmento = 'anet_shop';
-        $segmento = ($evento != $segmento) ? 'whatsapp_api' : $segmento;
-        
-        $comCore = json_decode(file_get_contents($this->comCoreFile), true);
-        
-        if(array_key_exists('event_route', $comCore)) {
-            
-            $this->routerVer = $comCore['version'];
-            
-            $storageUrl = [];
-            $rutas = $comCore['event_route'][$segmento];
-            $rota = count($rutas);
-            for ($i=0; $i < $rota; $i++) { 
-                
-                if(array_key_exists($rutas[$i], $comCore)) {
+    private function prepareError(String $url, String $code, String $error, array $body) {
 
-                    // Desde la app de ComCore este orden es que todas las que sean PROD
-                    // se colocan al inicio del array, por lo tanto la primera sera master
-                    $modo = ($i == 0) ? 'master' : 'slave';
-
-                    $destinos = $comCore[ $rutas[$i] ];
-                    $vueltas = count($destinos);
-                    // Por default tomamo el primer destinp
-                    $endPoint = $destinos[0];
-                    // En dado caso de que halla mas destinos en el mismo segmento de rutas
-                    if($vueltas > 1) {
-                        if($endPoint['env'] != 'prod') {
-                            // Buscamos entre estos solo aquellos que sean ENV: prod
-                            $has = array_search('prod', array_column($destinos, 'env'));
-                            if($has !== false) {
-                                $endPoint = $destinos[$has];
-                            }
-                        } else {
-                            if($endPoint['active'] == 'none') {
-                                $has = array_search('this', array_column($destinos, 'active'));
-                                if($has !== false) {
-                                    $endPoint = $destinos[$has];
-                                }
-                            }
-                        }
-                    }
-
-                    // Tendrian que indicar que estan activos para tomarce como opcion
-                    if($endPoint['active'] == 'this') {
-                        $url = $endPoint['public'].'-'.$endPoint['id'];
-                        if(in_array($url, $storageUrl) === false) {
-                            $opc[] = ['url' => 'https://'.$url.'.ngrok-free.app/com_core/sse', 'modo' => $modo];
-                        }
-                        $storageUrl[] = $url;
-                    }
-                }
-            }
+        if($this->conm->subEvento == 'stt') {
+            return;
         }
 
-        return $opc;
+        $result = [
+            'evento'     => $this->conm->evento,
+            'subEvento'  => $this->conm->subEvento,
+            'from'       => $this->conm->to,
+            'statusCode' => $code,
+            'reason'     => $error,
+            'payload'    => $body
+        ];
+
+        if(!is_dir($this->sseFails)) {
+            mkdir($this->sseFails);
+        }
+
+        $filename = $this->conm->subEvento.'_'.$this->conm->to;
+        if($this->isTest) {
+            file_put_contents($this->sseFails.'/test_sentToWa_error_'.$this->conm->to.'.json', json_encode($result));
+        }else{
+            file_put_contents($this->sseFails.'/'.$filename.'.json', json_encode($result));
+        }
+
+        // Si el error es por latencia hacia ngrok, no intentamos enviar el reporte del error a ComCore
+        // ya que por esta razon misma se produjo el error.
+        if(mb_strpos($error, 'tiempo') === false) {
+            $this->sendMy($result);
+        }
+
+        $msg = "ERROR SENDER EN SR.: \n".
+        "Evento: ".$this->conm->evento."\n".
+        "SubEvento: ".$this->conm->subEvento."\n".
+        "Contacto: ".$this->conm->to."\n".
+        "Código: ".$code . "\n".
+        "Razón: ".$error."\n".
+        "Path:\n\n".
+        $url;
+
+        $this->sendText($msg, $this->conm->sendReportTo);
     }
 
 }

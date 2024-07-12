@@ -38,7 +38,7 @@ class WaInitSess
 
         $this->waSender->setConmutador($this->waMsg);
         if($this->isAtendido()) {
-            $code = $this->waSender->sendText("🎟️ Gracias, ya tienes una sesión en curso Activa");
+            $this->waSender->sendText("🎟️ Gracias, ya tienes una sesión en curso Activa");
             return;
         }
         $this->fSys->setContent('/', $this->fileTmp, ['']);
@@ -59,4 +59,5 @@ class WaInitSess
             $this->waSender->sendMy($this->waMsg->toInit());
         }
     }
+
 }

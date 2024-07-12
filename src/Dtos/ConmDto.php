@@ -10,12 +10,19 @@ class ConmDto
     public String $to;
     public String $waId;
     public String $context;
+    public String $evento;
+    public String $subEvento;
+    public String $sendReportTo;
+    public array $reporTo = [
+        'anet_track' => '523320396725', 'event_core' => '523322060352'
+    ];
 
     /** */
     public function __construct(WaMsgDto $waMsg, array $content)
     {
         $this->waId = $waMsg->from;
         $this->context = $waMsg->context;
+        $this->subEvento = $waMsg->subEvento;
         $this->token = $content[$content['modo']]['tk'];
         if(mb_strpos($this->token, 'aldo_') !== false) {
             $this->token = str_replace('aldo_', '', $this->token);
@@ -26,6 +33,13 @@ class ConmDto
         }
 
         $this->uriBase = $this->uriBase . '/' . $content[$content['modo']]['id'];
+    }
+
+    /** */
+    public function setEventAndSegRoute(String $event, String $segmento)
+    {
+        $this->evento = $event;
+        $this->sendReportTo = $this->reporTo[$segmento];
     }
 
     /** */

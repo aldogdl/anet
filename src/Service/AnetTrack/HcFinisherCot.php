@@ -158,8 +158,7 @@ class HcFinisherCot
         // Al finalizar eliminamos el archivo que detiene los status
         // no es necesario mantenerlo ya que no sabemos si el cotizador
         // va a continuar cotizando la siguiente solicitud.
-        $filename = $this->createFilenameTmpOf('stopstt');
-        $this->waSender->fSys->delete('/', $filename);
+        $this->waSender->fSys->delete('/', $this->createFilenameTmpOf('stopstt'));
 
     }
 

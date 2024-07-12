@@ -16,7 +16,7 @@ parameters:
     anetMlm    : '%phtml%/anet_mlm.json'
     sse        : '%phtml%/sse/'
     sseNotRouteActive: '%phtml%/sse_not_route/'
-    sendMyFail : '%phtml%/sendmy_fails/'
+    sseFails   : '%phtml%/sse_fails/'
     comments   : '%phtml%/comments/'
     tkwaconm   : '%phtml%/tkwaconm.json'
     getWaToken : '%env(resolve:WA_TOKEN)%'
