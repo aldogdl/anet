@@ -174,6 +174,7 @@ class WaSender
         }
         
         $url = $this->conm->uriBase.'/messages';
+        $this->conm->setEventAndSegRoute('whatsapp_api', 'anet_track');
 
         if($error != '') {
 

@@ -22,6 +22,7 @@ class ConmDto
     {
         $this->waId = $waMsg->from;
         $this->context = $waMsg->context;
+        $this->evento = '';
         $this->subEvento = $waMsg->subEvento;
         $this->token = $content[$content['modo']]['tk'];
         if(mb_strpos($this->token, 'aldo_') !== false) {
