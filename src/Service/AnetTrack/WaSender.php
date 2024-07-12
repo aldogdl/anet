@@ -333,7 +333,7 @@ class WaSender
             $this->sendMy($result);
         }
 
-        $msg = "ERROR SENDER EN SR.: \n".
+        $msg = "ERROR SENDER EN SR.:\n".
         "Evento: ".$this->conm->evento."\n".
         "SubEvento: ".$this->conm->subEvento."\n".
         "Contacto: ".$this->conm->to."\n".
