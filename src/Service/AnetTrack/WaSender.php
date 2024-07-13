@@ -320,13 +320,13 @@ class WaSender
             $this->sendMy($result);
         }
 
-        $msg = "ERROR SENDER EN SR.:\n".
-        "Evento: ".$this->conm->evento."\n".
-        "SubEvento: ".$this->conm->subEvento."\n".
-        "Contacto: ".$this->conm->to."\n".
-        "Código: ".$code . "\n".
-        "Razón: ".$error."\n".
-        "Path:\n\n".
+        $msg = "*ERROR SENDER EN SR.*:\n\n".
+        "*Evento*: ".$this->conm->evento."\n".
+        "*SubEvento*: ".$this->conm->subEvento."\n".
+        "*Contacto*: ".$this->conm->to."\n".
+        "*Código*: ".$code . "\n".
+        "*Razón*: ".$error."\n".
+        "*Path*:\n\n".
         $url;
 
         $this->sendText($msg, $this->conm->sendReportTo);
