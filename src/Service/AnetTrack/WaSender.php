@@ -319,6 +319,11 @@ class WaSender
         if(mb_strpos($error, 'tiempo') === false && $method != 'sendMy') {
             $this->sendMy($result);
         }
+        
+        $subMsg = "Se intentó enviar evento de SR hacia Whatsapp";
+        if($method == 'sendMy') {
+            $subMsg = "Se intentó enviar evento de SR hacia Ngrok";
+        }
 
         $msg = "*ERROR SENDER EN SR.*:\n\n".
         "*Evento*: ".$this->conm->evento."\n".
@@ -327,7 +332,8 @@ class WaSender
         "*Código*: ".$code . "\n".
         "*Razón*: ".$error."\n".
         "*Path*:\n\n".
-        $url;
+        $url."\n\n".
+        "_".$subMsg."_";
 
         $this->sendText($msg, $this->conm->sendReportTo);
     }
