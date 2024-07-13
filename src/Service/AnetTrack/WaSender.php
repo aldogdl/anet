@@ -220,7 +220,7 @@ class WaSender
         }
 
         if($code > 200) {
-            $this->prepareError($url, $code, $error, $this->body);
+            $this->prepareError('sendToWa', $url, $code, $error, $this->body);
         }
 
         return $code;
@@ -251,7 +251,7 @@ class WaSender
             $rota = count($uri);
     
             if($rota == 0) {
-                $this->prepareError('http://desconocida.info', 506, 'No hay ruta activa hacia ComCore', $proto);
+                $this->prepareError('sendMy', 'http://desconocida.info', 506, 'No hay ruta activa hacia ComCore', $proto);
                 return true;
             }
     
@@ -267,7 +267,7 @@ class WaSender
             }
 
             if($code != 200) {
-                $this->prepareError($uri['url'], $code, $error, $proto);
+                $this->prepareError('sendMy', $uri['url'], $code, $error, $proto);
             }
         }
 
@@ -302,7 +302,7 @@ class WaSender
     }
 
     /** */
-    private function prepareError(String $url, String $code, String $error, array $body) {
+    private function prepareError(String $method, String $url, String $code, String $error, array $body) {
 
         if($this->conm->subEvento == 'stt') {
             return;
@@ -312,6 +312,7 @@ class WaSender
             'evento'     => $this->conm->evento,
             'subEvento'  => $this->conm->subEvento,
             'from'       => $this->conm->to,
+            'method'     => $method,
             'statusCode' => $code,
             'reason'     => $error,
             'reportTo'   => $this->conm->sendReportTo,
@@ -331,7 +332,7 @@ class WaSender
 
         // Si el error es por latencia hacia ngrok, no intentamos enviar el reporte del error a ComCore
         // ya que por esta razon misma se produjo el error.
-        if(mb_strpos($error, 'tiempo') === false) {
+        if(mb_strpos($error, 'tiempo') === false && $method != 'sendMy') {
             $this->sendMy($result);
         }
 
