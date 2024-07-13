@@ -248,57 +248,41 @@ class WaSender
             $proto['routerVer'] = $this->routerVer;
     
             $uri = $this->getUrlsToCC($proto['evento']);
-            $rota = count($uri);
-    
-            if($rota == 0) {
+            if(count($uri) == 0) {
                 $this->prepareError('sendMy', 'http://desconocida.info', 506, 'No hay ruta activa hacia ComCore', $proto);
                 return true;
             }
     
             $proto['modo'] = $uri['modo'];
             $error = 'Error inesperado al enviar mensaje a ComCore';
-            $response = $this->trySend($uri['url'], $proto);
-            // Si no es un string es que se realizó la solicitud
-            if(!is_string($response)) {
-                $code = $response->getStatusCode();
-            }else{
-                $code = 502;
-                $error = $response;
-            }
 
+            if($this->isTest) {
+                file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($proto));
+            }else{
+    
+                try {
+                    $response = $this->client->request(
+                        'POST', $uri['url'], [
+                            'query' => ['anet-key' => $this->anetToken],
+                            'timeout' => 21,
+                            'headers' => [
+                                'Content-Type' => 'application/json',
+                            ],
+                            'json' => $proto
+                        ]
+                    );
+                    $code = $response->getStatusCode();
+                } catch (\Throwable $th) {
+                    $error = $th->getMessage();
+                }
+            }
+    
             if($code != 200) {
                 $this->prepareError('sendMy', $uri['url'], $code, $error, $proto);
             }
         }
 
         return true;
-    }
-
-    /** */
-    private function trySend(String $uri, array $proto): ResponseInterface | String
-    {
-        if($this->isTest) {
-            file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($proto));
-        }else{
-
-            try {
-                $response = $this->client->request(
-                    'POST', $uri, [
-                        'query' => ['anet-key' => $this->anetToken],
-                        'timeout' => 21,
-                        'headers' => [
-                            'Content-Type' => 'application/json',
-                        ],
-                        'json' => $proto
-                    ]
-                );
-            } catch (\Throwable $th) {
-                return $th->getMessage();
-            }
-            return $response;
-        }
-
-        return 'Error no capturado';
     }
 
     /** */
