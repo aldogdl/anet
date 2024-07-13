@@ -4,7 +4,7 @@ namespace App\Dtos;
 
 class ConmDto
 {
-    public String $uriBase = 'https://graph.facebook.com/v17.0';
+    public String $uriBase = 'https://graph.facebook.com/v17.0/';
     
     public String $token;
     public String $to;
@@ -33,7 +33,7 @@ class ConmDto
             $this->to = str_replace('521', '52', $waMsg->from);
         }
 
-        $this->uriBase = $this->uriBase . '/' . $content[$content['modo']]['id'];
+        $this->uriBase = $this->uriBase . $content[$content['modo']]['id'];
     }
 
     /** */

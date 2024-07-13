@@ -176,7 +176,7 @@ class WaSender
         $url = $this->conm->uriBase.'/messages';
         $this->conm->setEventAndSegRoute('whatsapp_api', 'anet_track');
 
-        if($error != '') {
+        if($error == '') {
 
             if($this->isTest) {
                 file_put_contents('test_sentToWa_'.$this->conm->to.'.json', json_encode($this->body));
@@ -238,7 +238,7 @@ class WaSender
             $error = 'El cuerpo del mensaje resulto bacio, nada para enviar';
         }
 
-        if($error != '') {
+        if($error == '') {
 
             if(!array_key_exists('evento', $event)) {
                 $proto = $this->buildProtocolo($event);
