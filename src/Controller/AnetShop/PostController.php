@@ -2,6 +2,7 @@
 
 namespace App\Controller\AnetShop;
 
+use App\Dtos\HeaderDto;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -75,10 +76,11 @@ class PostController extends AbstractController
     $result = ['abort' => true];
     $data = $this->toArray($req, 'data');
     
-    $modo = 'cotiza';
+    $modo = 'solicita';
     if(array_key_exists('meta', $data)) {
       if(array_key_exists('modo', $data['meta'])) {
         $modo = $data['meta']['modo'];
+        $modo = ($modo == 'publik') ? 'publica' : $modo;
       }
     }
 
@@ -89,7 +91,7 @@ class PostController extends AbstractController
     }
 
     $id = 0;
-    if(array_key_exists('product', $data) && $modo == 'publik') {
+    if(array_key_exists('product', $data) && $modo == 'publica') {
       $id = $emProd->setProduct($data['product']);
       if($id == 0) {
         $result['msg']  = 'X No se logró guardar el producto';
@@ -100,7 +102,8 @@ class PostController extends AbstractController
       }
     }
     
-    if(array_key_exists('product', $data) && $modo == 'cotiza') {
+    if(array_key_exists('product', $data) && $modo == 'solicita') {
+
       $id = $sysFile->setSolicitudInFile($data['product']);
       if(mb_strpos($id, 'X ') !== false) {
         $result['msg']  = $id;
@@ -116,26 +119,25 @@ class PostController extends AbstractController
       $resort = $data['resort'];
       unset($data['resort']);
     }
-    $data['eventName'] = 'anet_shop';
-    $data['subEvent'] = ($modo == 'publik') ? 'publica' : 'solicita';
 
     $filename = $modo.'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
     $filePath = $sysFile->setItemInFolderSSE($data, $filename);
 
-    if(mb_strpos($filePath, 'X ') === false) {
+    if(mb_strpos($filePath['product'], 'X ') === false) {
       
       if(count($resort) > 0) {
         $path = $sysFile->buildPathToImages($modo, $data['meta']['slug']);
         $sysFile->reSortImage($path, $resort);
       }
       
-      $sysFile->cleanImgToFolder($data);
+      $sysFile->cleanImgToFolder($data, $modo);
+      unset($data['meta']);
+      $data['meta_path'] = $filePath['meta'];
       
-      try {
-        $wh->sendMy($data);
-      } catch (\Throwable $th) {
-        $result['sin_wh'] = $th->getMessage();
-      }
+      $data['header'] = HeaderDto::event([], $modo);
+      $data['header'] = HeaderDto::ssePath($data['header'], $filePath['product']);
+      $data['header'] = HeaderDto::metaPath($data['header'], $filePath['meta']);
+      $wh->sendMy($data);
       $result['abort'] = false;
       return $this->json($result);
     }
@@ -156,13 +158,10 @@ class PostController extends AbstractController
     $result['body'] = $res;
     if($res == 'ok') {
       $result['abort'] = false;
-      $data['eventName'] = 'anet_shop';
-      $data['subEvent']  = 'delete';
-      try {
-        $wh->sendMy($data);
-      } catch (\Throwable $th) {
-        $result['sin_wh'] = $th->getMessage();
-      }
+      
+      $data['header'] = HeaderDto::event([], 'delete_pza');
+      $data['header'] = HeaderDto::idItem($data['header'], $data['uuid']);
+      $wh->sendMy($data);
     }
 
     return $this->json($result);
@@ -179,14 +178,11 @@ class PostController extends AbstractController
     $changed = $emProd->updateStatusProduct($data);
     
     if($changed == 'ok') {
+
       $result['abort'] = false;
-      $data['eventName'] = 'anet_shop';
-      $data['subEvent']  = 'product_stt';
-      try {
-        $wh->sendMy($data);
-      } catch (\Throwable $th) {
-        $result['sin_wh'] = $th->getMessage();
-      }
+      $data['header'] = HeaderDto::event([], 'product_stt');
+      $wh->sendMy($data);
+      
     }else{
       $result['msg'] = 'Error';
       $result['body'] = $changed;

@@ -134,13 +134,9 @@ class AnetShopSystemFileService
 	/** 
 	 * Limpiamos las imagenes que no esten incluidas en el registro
 	*/
-	public function cleanImgToFolder(array $data): String
+	public function cleanImgToFolder(array $data, String $event): String
 	{
-		if($data['subEvent'] == 'publica') {
-			$path = $this->params->get('prodPubs');
-		}else{
-			$path = $this->params->get('prodSols');
-		}
+		$path = $this->params->get(($event == 'publica') ? 'prodPubs' : 'prodSols');
 
 		$id = $data['product']['uuid'];
 		$slug = $data['meta']['slug'];
@@ -212,17 +208,42 @@ class AnetShopSystemFileService
 	}
 
 	/** Guardamos el json resultante del alta de productos desde AnetShop */
-	public function setItemInFolderSSE(array $product, String $filename): String
+	public function setItemInFolderSSE(array $data, String $filename): array
 	{
-		$path = $this->params->get('sse');
-		$path = Path::canonicalize($path.'/'.$filename);
-		try {
-			$this->filesystem->dumpFile($path, json_encode($product));
-		} catch (FileException $e) {
-			$path = 'X ' . $e->getMessage();
+		$product = (array_key_exists('product', $data)) ? $data['product'] : [];
+		$meta = (array_key_exists('meta', $data)) ? $data['meta'] : [];
+
+		$path = "";
+		$pathMetas = "";
+		if(count($product) > 0) {
+			
+			$path = $this->params->get('sse');
+			$path = Path::canonicalize($path.'/'.$filename);
+			if(!$this->filesystem->exists($path)) {
+				$this->filesystem->mkdir($path);
+			}
+			try {
+				$this->filesystem->dumpFile($path, json_encode($product));
+			} catch (FileException $e) {
+				$path = 'X ' . $e->getMessage();
+			}
+		}
+
+		if(count($meta) > 0) {
+			
+			$pathMetas = $this->params->get('sse_metas');
+			$pathMetas = Path::canonicalize($pathMetas.'/'.$filename);
+			if(!$this->filesystem->exists($pathMetas)) {
+				$this->filesystem->mkdir($pathMetas);
+			}
+			try {
+				$this->filesystem->dumpFile($pathMetas, json_encode($meta));
+			} catch (FileException $e) {
+				$pathMetas = "";
+			}
 		}
 		
-		return $path;
+		return ["product" => $path, "meta" => $pathMetas];
 	}
 
 	/** Guardamos el json resultante del alta de solicitud desde AnetShop */

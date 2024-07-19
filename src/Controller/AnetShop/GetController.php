@@ -2,6 +2,7 @@
 
 namespace App\Controller\AnetShop;
 
+use App\Dtos\HeaderDto;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -268,14 +269,9 @@ class GetController extends AbstractController
     $result['body'] = $res;
     if($res == 'ok') {
       $result['abort']   = false;
-      $data['eventName'] = 'anet_shop';
-      $data['subEvent']  = 'delete';
-      $data['idPza']     = $idPza;
-      try {
-        $wh->sendMy($data);
-      } catch (\Throwable $th) {
-        $result['sin_wh'] = $th->getMessage();
-      }
+      $data['header'] = HeaderDto::event([], 'delete_pza');
+      $data['header'] = HeaderDto::idItem($data['header'], $idPza);
+      $wh->sendMy($data);
     }
 
     return $this->json($result);

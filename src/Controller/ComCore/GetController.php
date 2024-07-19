@@ -2,6 +2,7 @@
 
 namespace App\Controller\ComCore;
 
+use App\Dtos\HeaderDto;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,15 +34,10 @@ class GetController extends AbstractController
     #[Route('com-core/test-com/{tokenBasic}/{fromApp}', methods:['get'])]
     public function theTestCom(WaSender $wh, String $tokenBasic, String $fromApp): Response
     {
-      $data = [
-        'eventName' => ($fromApp == 'anet_track') ? 'whatsapp_api' : 'anet_shop',
-        'subEvent' => 'test_com',
-        'date' => new \DateTime('now')
-      ];
-      
       $tok = base64_decode($tokenBasic);
       $miTok = $this->getParameter('getAnToken');
       if($miTok == $tok) {
+        $data['header'] = HeaderDto::event([], 'test_com');
         $wh->sendMy($data);
       }
       return $this->json(['abort'=> false, 'body' => 'ok']);

@@ -3,11 +3,11 @@
 namespace App\Service\AnetTrack;
 
 use App\Dtos\ConmDto;
+use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\Fsys;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class WaSender
 {
@@ -17,27 +17,26 @@ class WaSender
     private String $type;
     private $anetToken;
     private $sseFails;
-    private $comCoreFile;
+    private $cnxFile;
     private bool $isTest;
-    
+    private String $reporTo = '523320396725';
+
     public Fsys $fSys;
     public String $context;
     public String $wamidMsg;
-    /** La version del archivo de rutas */
-    public String $routerVer = '';
     /** La version del archivo de rutas */
     public String $sseNotRouteActive = '';
     
     /** */
     public function __construct(HttpClientInterface $client, ParameterBagInterface $container, Fsys $fsys)
     {
-        $this->client = $client;
-        $this->fSys = $fsys;
+        $this->client   = $client;
+        $this->fSys     = $fsys;
         $this->sseFails = $container->get('sseFails');
-        $this->comCoreFile= $container->get('comCoreFile');
+        $this->cnxFile  = $container->get('cnxFile');
+        $this->context  = '';
+        $this->anetToken= base64_encode($container->get('getAnToken'));
         $this->sseNotRouteActive= $container->get('sseNotRouteActive');
-        $this->anetToken  = base64_encode($container->get('getAnToken'));
-        $this->context = '';
     }
 
     /** */
@@ -45,7 +44,8 @@ class WaSender
     {
         $this->isTest = $waMsg->isTest;
         try {
-            $this->conm = new ConmDto($waMsg, $this->fSys->getConmuta());
+            $this->conm = new ConmDto($this->fSys->getConmuta());
+            $this->conm->setMetaData($waMsg);
         } catch (\Throwable $th) {
             $this->conm = null;
         }
@@ -107,53 +107,6 @@ class WaSender
         }
     }
 
-    ///
-    private function buildProtocolo(array $data): array
-    {
-        $protocolo = ['evento' => 'unknow'];
-
-        if(array_key_exists('eventName', $data)) {
-            $protocolo['evento'] = $data['eventName'];
-            unset($data['eventName']);
-        }
-        $protocolo['payload'] = $data;
-        return $protocolo;
-    }
-
-    /** */
-    public function getUrlsToCC(String $evento): array
-    {
-        $modo = 'master';
-        $source = 'anet_shop';
-        // Si la fuente no es de anet_shop entonces es de Whatsapp
-        $source = ($evento != $source) ? 'whatsapp_api' : $source;
-
-        $comCore = json_decode(file_get_contents($this->comCoreFile), true);
-        
-        if(!array_key_exists('event_route', $comCore)) {
-            return [];
-        }
-        $this->routerVer = $comCore['version'];
-            
-        $rutas = $comCore['event_route'][$source];
-        if(!array_key_exists($rutas[0], $comCore)) {
-            return [];
-        }
-
-        $this->conm->setEventAndSegRoute($source, $rutas[0]);
-
-        // Por default tomamo el primer destino
-        $destinos = $comCore[$rutas[0]];
-        $endPoint = [];
-        // Tendrian que indicar que estan activos para tomarce como opcion
-        if($destinos[0]['active'] == 'this') {
-            $url = $destinos[0]['public'].'-'.$destinos[0]['id'];
-            $endPoint = ['url' => 'https://'.$url.'.ngrok-free.app/com_core/sse', 'modo' => $modo];
-        }
-        
-        return $endPoint;
-    }
-
     /** 
      * Enviamos un mensaje a whatsapp para que le llegue a un Contacto.
      * NOTA: Este mensaje retorna hasta 3 mensajes de status.
@@ -172,10 +125,11 @@ class WaSender
         if(count($this->body) == 0) {
             $error = 'El cuerpo del mensaje resulto bacio, nada para enviar';
         }
-        
-        $url = $this->conm->uriBase.'/messages';
-        $this->conm->setEventAndSegRoute('whatsapp_api', 'anet_track');
+        if($error != '') {
+            return $code;
+        }
 
+        $url = $this->conm->uriToWhatsapp.'/messages';
         if($error == '') {
 
             if($this->isTest) {
@@ -220,7 +174,7 @@ class WaSender
         }
 
         if($code > 200) {
-            $this->prepareError('sendToWa', $url, $code, $error, $this->body);
+            $this->sendReporErrorBySendToWa($url, $code, $error, $this->body);
         }
 
         return $code;
@@ -230,76 +184,163 @@ class WaSender
     public function sendMy(array $event): bool
     {
         $code  = 505;
+        $toUrl = 'http://to-comcore.info';
         $this->isTest = false;
-        $error = ($this->conm == null)
-            ? 'El Archivo conmutador de SR. resulto nulo'
-            : '';
-        if(count($event) == 0) {
-            $error = 'El cuerpo del mensaje resulto bacio, nada para enviar';
+
+        $headers = [];
+        if(array_key_exists('header', $event)) {
+            $headers = $event['header'];
         }
 
-        if($error == '') {
+        if(count($event) == 0) {
+            $this->sendReporErrorBySendMy(
+                $headers, $toUrl, $code, 'El cuerpo del mensaje resulto bacio, nada para enviar'
+            );
+            return false;
+        }
 
-            if(!array_key_exists('evento', $event)) {
-                $proto = $this->buildProtocolo($event);
-            }else{
-                $proto = $event;
-            }
-            $proto['routerVer'] = $this->routerVer;
-    
-            $uri = $this->getUrlsToCC($proto['evento']);
-            if(count($uri) == 0) {
-                $this->prepareError('sendMy', 'http://desconocida.info', 506, 'No hay ruta activa hacia ComCore', $proto);
-                return true;
-            }
-    
-            $proto['modo'] = $uri['modo'];
-            $error = 'Error inesperado al enviar mensaje a ComCore';
+        $error = "";
+        $rutas = [];
+        $error = 'No hay ruta activa hacia ComCore';
+        $cnxFile = $this->getCnxFile();
+        if(array_key_exists('routes', $cnxFile)) {
+            $rutas = $cnxFile['routes'];
+        }
+        if(array_key_exists('version', $cnxFile)) {
+            $headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
+            $cnxFile['version'];
+        }
+        $cant = count($rutas);
+        if($cant == 0) {
+            $this->sendReporErrorBySendMy($headers, $toUrl, 506, $error);
+            return false;
+        }
+        
+        $timeOut = 20;
+        if($cant > 1) {
+            $timeOut = $timeOut / $cant;
+            $timeOut = floor($timeOut);
+            $timeOut = max($timeOut, 3);
+        }
 
-            if($this->isTest) {
-                file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($proto));
-            }else{
-    
+        $headers['Content-Type'] = 'application/json';
+        
+        $error = 'Error inesperado al enviar mensaje a ComCore';
+        $erroresSend = [];
+        $rutaSend = [];
+        if($this->isTest) {
+            file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($event));
+        }else{
+
+            for ($i=0; $i < $cant; $i++) {
                 try {
                     $response = $this->client->request(
-                        'POST', $uri['url'], [
-                            'query' => ['anet-key' => $this->anetToken],
-                            'timeout' => 21,
-                            'headers' => [
-                                'Content-Type' => 'application/json',
-                            ],
-                            'json' => $proto
+                        'POST', $rutas[$i]['url'], [
+                            'query'   => ['anet-key' => $this->anetToken],
+                            'timeout' => $timeOut,
+                            'headers' => $headers,
+                            'json'    => $event
                         ]
                     );
                     $code = $response->getStatusCode();
                 } catch (\Throwable $th) {
-                    $error = $th->getMessage();
+                    $toUrl = $rutas[$i]['url'];
+                    $erroresSend[] = [
+                        'ruta' => $rutas[$i],
+                        'error'=> $th->getMessage()
+                    ];
                 }
-            }
-    
-            if($code != 200) {
-                $this->prepareError('sendMy', $uri['url'], $code, $error, $proto);
+                if($code == 200) {
+                    $rutaSend = $rutas[$i];
+                    break;
+                }
             }
         }
 
+        if($code != 200) {
+            $this->sendReporErrorBySendMy($headers, $toUrl, $code, $error, $erroresSend);
+        }
+
+        // la ruta exitosa la colocamos en el balance
+        $this->setCnxFile($rutaSend);
         return true;
     }
 
     /** */
-    private function prepareError(String $method, String $url, String $code, String $error, array $body) {
-
-        if($this->conm->subEvento == 'stt') {
+    public function setCnxFile(array $rutaSend): void
+    {
+        $rota = count($rutaSend);
+        if(count($rutaSend) == 0) {
             return;
         }
+        if(!array_key_exists('host', $rutaSend)) {
+            return;
+        }
+        
+        $cnxFile = json_decode(file_get_contents($this->cnxFile), true);
+        $cnxFile['balance'][] = $rutaSend['host'];
+        $cnxFile['balance'] = array_values(array_unique($cnxFile['balance']));
+        file_put_contents($this->cnxFile, json_encode($cnxFile));
+    }
+
+    /** */
+    public function getCnxFile(): array
+    {
+        $cnxFile = json_decode(file_get_contents($this->cnxFile), true);
+        if(!array_key_exists('routes', $cnxFile)) {
+            return [];
+        }
+        $rota = count($cnxFile['routes']);
+        if($rota == 0) {
+            return [];
+        }
+        
+        // Para el balance de carga
+        $hosts = array_column($cnxFile['routes'], 'host');
+        $hosts = array_values(array_unique($hosts));
+        $notUse = array_diff($hosts, $cnxFile['balance']);
+        if(count($notUse) == 0) {
+            // Si notUse es igual a cero es que ya use todos por lo tanto 
+            // reiniciamos el conteo.
+            $cnxFile['balance'] = [];
+            $notUse = $hosts;
+        }
+
+        $tunnels = [];
+
+        for ($r=0; $r < $rota; $r++) {
+
+            // Tendrian que indicar que estan activos para tomarce como opcion
+            if($cnxFile['routes'][$r]['active']) {
+                if(in_array($cnxFile['routes'][$r]['host'], $notUse)) {
+
+                    $url = $cnxFile['routes'][$r]['public'].'-'.$cnxFile['routes'][$r]['id'];
+                    $tunnels = [
+                        'url'  => 'https://'.$url.'.ngrok-free.app/com_core/sse',
+                        'isPay'=> $cnxFile['routes'][$r]['isPay'],
+                        'user' => $cnxFile['routes'][$r]['user'],
+                        'host' => $cnxFile['routes'][$r]['host'],
+                    ];
+                }
+            }
+        }
+
+
+        $cnxFile['routes'] = $tunnels;
+        return $cnxFile;
+    }
+
+    /** */
+    private function sendReporErrorBySendToWa(String $url, String $code, String $error, array $body) {
+
+        // TODO evitar los reportes de error con los status
 
         $result = [
-            'evento'     => $this->conm->evento,
-            'subEvento'  => $this->conm->subEvento,
+            'evento'     => 'POR HACER',
             'from'       => $this->conm->to,
-            'method'     => $method,
+            'method'     => 'sendToWa',
             'statusCode' => $code,
             'reason'     => $error,
-            'reportTo'   => $this->conm->sendReportTo,
             'payload'    => $body
         ];
 
@@ -307,27 +348,17 @@ class WaSender
             mkdir($this->sseFails);
         }
 
-        $filename = $this->conm->subEvento.'_'.$this->conm->to;
+        $filename = 'evento'.'_'.'waId';
         if($this->isTest) {
             file_put_contents($this->sseFails.'/test_sentToWa_error_'.$this->conm->to.'.json', json_encode($result));
         }else{
             file_put_contents($this->sseFails.'/'.$filename.'.json', json_encode($result));
         }
 
-        // Si el error es por latencia hacia ngrok, no intentamos enviar el reporte del error a ComCore
-        // ya que por esta razon misma se produjo el error.
-        if(mb_strpos($error, 'tiempo') === false && $method != 'sendMy') {
-            $this->sendMy($result);
-        }
-        
         $subMsg = "Se intentó enviar evento de SR hacia Whatsapp";
-        if($method == 'sendMy') {
-            $subMsg = "Se intentó enviar evento de SR hacia Ngrok";
-        }
 
-        $msg = "*ERROR SENDER EN SR.*:\n\n".
-        "*Evento*: ".$this->conm->evento."\n".
-        "*SubEvento*: ".$this->conm->subEvento."\n".
+        $msg = "*ERROR SendToWa EN SR.*:\n\n".
+        "*Evento*: "."Por HACER"."\n".
         "*Contacto*: ".$this->conm->to."\n".
         "*Código*: ".$code . "\n".
         "*Razón*: ".$error."\n".
@@ -335,7 +366,40 @@ class WaSender
         $url."\n\n".
         "_".$subMsg."_";
 
-        $this->sendText($msg, $this->conm->sendReportTo);
+        $this->sendText($msg, $this->reporTo);
+    }
+
+    /** */
+    private function sendReporErrorBySendMy(array $headers, String $url, String $code, String $error, array $body = []) {
+
+        $result = [
+            'statusCode' => $code,
+            'reason'     => $error,
+            'headers'    => $headers
+        ];
+        if(count($body) > 0) {
+            $result['payload'] = $body;
+        }
+
+        if(!is_dir($this->sseFails)) {
+            mkdir($this->sseFails);
+        }
+        
+        $filename = microtime(true) * 1000;
+        if($this->isTest) {
+            file_put_contents($this->sseFails.'/test_sentToWa_error_'.$filename.'.json', json_encode($result));
+        }else{
+            file_put_contents($this->sseFails.'/'.$filename.'.json', json_encode($result));
+        }
+        
+        $msg = "*ERROR SendMy EN SR.*:\n\n".
+        "*Código*: ".$code . "\n".
+        "*Razón*: ".$error."\n".
+        "*Path*:\n\n".
+        $url."\n\n";
+        
+        $this->conm = new ConmDto($this->fSys->getConmuta());
+        $this->sendText($msg, $this->reporTo);
     }
 
 }

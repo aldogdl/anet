@@ -32,13 +32,13 @@ class PostController extends AbstractController
   }
 
   /** */
-  #[Route('com-core/upload-file-conn/', methods:['post'])]
-  public function uploadFileConn(Request $req): Response
+  #[Route('com-core/upload-cnx-file/', methods:['post'])]
+  public function uploadCnxFile(Request $req): Response
   {
     $response = ['abort' =>  true];
     $data = $this->toArray($req, 'data');
-    if(array_key_exists('event_route', $data)) {
-      file_put_contents($this->getParameter('comCoreFile'), json_encode($data));
+    if(array_key_exists('routes', $data)) {
+      file_put_contents($this->getParameter('cnxFile'), json_encode($data));
       $response = ['abort' =>  false];
     }
 
