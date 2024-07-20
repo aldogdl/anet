@@ -231,7 +231,7 @@ class AnetShopSystemFileService
 
 		if(count($meta) > 0) {
 			
-			$pathMetas = $this->params->get('sse_metas');
+			$pathMetas = $this->params->get('sseMetas');
 			$pathMetas = Path::canonicalize($pathMetas.'/'.$filename);
 			if(!$this->filesystem->exists($pathMetas)) {
 				$this->filesystem->mkdir($pathMetas);
