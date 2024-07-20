@@ -243,7 +243,7 @@ class AnetShopSystemFileService
 			}
 		}
 		
-		return ["product" => $path, "meta" => $pathMetas];
+		return ["product" => $path.'/'.$filename, "meta" => $pathMetas.'/'.$filename];
 	}
 
 	/** Guardamos el json resultante del alta de solicitud desde AnetShop */

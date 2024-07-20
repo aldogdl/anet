@@ -88,6 +88,7 @@ class PostController extends AbstractController
       if(array_key_exists('modo', $data['meta'])) {
         $modo = $data['meta']['modo'];
         $modo = ($modo == 'publik') ? 'publica' : $modo;
+        $modo = ($modo == 'cotiza') ? 'solicita' : $modo;
       }
     }
 
@@ -127,7 +128,9 @@ class PostController extends AbstractController
       unset($data['resort']);
     }
 
-    $filename = $modo.'_'.$data['meta']['slug'].'_'.$data['meta']['id'].'.json';
+    $ownSlug = $data['meta']['slug'];
+    $idItem = $data['meta']['id'];
+    $filename = $modo.'_'.$ownSlug.'_'.$idItem.'.json';
     $filePath = $sysFile->setItemInFolderSSE($data, $filename);
 
     if(mb_strpos($filePath['product'], 'X ') === false) {
@@ -139,11 +142,13 @@ class PostController extends AbstractController
       
       $sysFile->cleanImgToFolder($data, $modo);
       unset($data['meta']);
-      $data['meta_path'] = $filePath['meta'];
-      
+
       $data['header'] = HeaderDto::event([], $modo);
       $data['header'] = HeaderDto::ssePath($data['header'], $filePath['product']);
       $data['header'] = HeaderDto::metaPath($data['header'], $filePath['meta']);
+      $data['header'] = HeaderDto::idItem($data['header'], $idItem);
+      $data['header'] = HeaderDto::ownSlug($data['header'], $ownSlug);
+      
       $wh->sendMy($data);
       $result['abort'] = false;
       return $this->json($result);

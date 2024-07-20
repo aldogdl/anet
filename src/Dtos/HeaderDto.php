@@ -29,6 +29,12 @@ class HeaderDto {
         return $header;
     }
     /** */
+    static function ownSlug(array $header, String $ownSlug): array
+    {
+        $header["Anet-OwnSlug"] = $ownSlug;
+        return $header;
+    }
+    /** */
     static function cnxVer(array $header, String $cnxVer): array
     {
         $header["Anet-Router-Version"] = $cnxVer;

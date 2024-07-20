@@ -8,6 +8,7 @@ use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\Fsys;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Contracts\EventDispatcher\Event;
 
 class WaSender
 {
@@ -190,6 +191,7 @@ class WaSender
         $headers = [];
         if(array_key_exists('header', $event)) {
             $headers = $event['header'];
+            unset($event['header']);
         }
 
         if(count($event) == 0) {
