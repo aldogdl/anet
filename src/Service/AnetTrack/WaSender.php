@@ -333,7 +333,7 @@ class WaSender
                 if(in_array($cnxFile['routes'][$r]['host'], $notUse)) {
 
                     $url = $cnxFile['routes'][$r]['public'].'-'.$cnxFile['routes'][$r]['id'];
-                    $tunnels = [
+                    $tunnels[] = [
                         'url'  => 'https://'.$url.'.ngrok-free.app/com_core/sse',
                         'isPay'=> $cnxFile['routes'][$r]['isPay'],
                         'user' => $cnxFile['routes'][$r]['user'],
