@@ -78,6 +78,9 @@ class PostController extends AbstractController
       $data = $this->toArray($req, 'data');
     } catch (\Throwable $th) {
       $data = $req->getContent();
+      if($data) {
+        $data = json_decode($data);
+      }
     }
     
     $modo = 'solicita';
