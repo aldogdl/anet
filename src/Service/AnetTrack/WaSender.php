@@ -231,8 +231,26 @@ class WaSender
         if($this->isTest) {
             file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($event));
         }else{
-
+            
             for ($i=0; $i < $cant; $i++) {
+                
+                // El dato de quien esta conectado a FTP
+                $filename = $rutas[$i]['host'].'_'.$rutas[$i]['user'].'.json';
+                $sessFtp = file_get_contents($filename);
+                if($sessFtp) {
+                    $sessFtp = json_decode($sessFtp, true);
+                    $initTime = $sessFtp['init'];
+                    $duration = $sessFtp['duration'] * 1000;
+                    $expirationTime = $initTime + $duration;
+                    $currentTime = microtime(true) * 1000;
+                    // Calcular el tiempo restante para la caducidad
+                    $timeRemaining = $expirationTime - $currentTime;
+                    if ($timeRemaining < 0) {
+                        $timeRemaining = 0;
+                    }
+                    $headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
+                }
+                
                 try {
                     $response = $this->client->request(
                         'POST', $rutas[$i]['url'], [

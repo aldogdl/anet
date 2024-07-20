@@ -34,4 +34,10 @@ class HeaderDto {
         $header["Anet-Router-Version"] = $cnxVer;
         return $header;
     }
+    /** */
+    static function sessFtp(array $header, String $cnxVer): array
+    {
+        $header["Anet-ftp-open"] = $cnxVer;
+        return $header;
+    }
 }
