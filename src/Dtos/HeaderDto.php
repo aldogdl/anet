@@ -5,9 +5,9 @@ namespace App\Dtos;
 class HeaderDto {
 
     /** */
-    static function down(array $header, bool $down): array
+    static function includeBody(array $header, bool $includeBody): array
     {
-        $header["Anet-Down"] = $down;
+        $header["Anet-Down"] = !$includeBody;
         return $header;
     }
     /** */

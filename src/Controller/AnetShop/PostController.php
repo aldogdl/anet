@@ -144,7 +144,7 @@ class PostController extends AbstractController
       unset($data['meta']);
 
       $data['header'] = HeaderDto::event([], $modo);
-      $data['header'] = HeaderDto::down($data['header'], true);
+      $data['header'] = HeaderDto::includeBody($data['header'], false);
       $data['header'] = HeaderDto::fileName($data['header'], $filename);
       $data['header'] = HeaderDto::idItem($data['header'], $idItem);
       $data['header'] = HeaderDto::ownSlug($data['header'], $ownSlug);
@@ -172,7 +172,9 @@ class PostController extends AbstractController
       $result['abort'] = false;
       
       $data['header'] = HeaderDto::event([], 'delete_pza');
+      $data['header'] = HeaderDto::includeBody($data['header'], false);
       $data['header'] = HeaderDto::idItem($data['header'], $data['uuid']);
+      $data['header'] = HeaderDto::ownSlug($data['header'], $data['slug']);
       $wh->sendMy($data);
     }
 
