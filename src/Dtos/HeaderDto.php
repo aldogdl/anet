@@ -17,6 +17,12 @@ class HeaderDto {
         return $header;
     }
     /** */
+    static function fileName(array $header, String $fileName): array
+    {
+        $header["Anet-Name"] = $fileName;
+        return $header;
+    }
+    /** */
     static function idItem(array $header, String $idItem): array
     {
         $header["Anet-IdItem"] = $idItem;
