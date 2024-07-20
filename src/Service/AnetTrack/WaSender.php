@@ -194,7 +194,7 @@ class WaSender
             $headers = $event['header'];
             unset($event['header']);
             if(array_key_exists('Anet-Down', $headers)) {
-                $forDown = true;
+                $forDown = $headers['Anet-Down'];
             }
         }
         
