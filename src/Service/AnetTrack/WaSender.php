@@ -188,22 +188,24 @@ class WaSender
         $toUrl = 'http://to-comcore.info';
         $this->isTest = false;
 
+        if(count($event) == 0) {
+            $this->sendReporErrorBySendMy(
+                [], $toUrl, $code, 'El cuerpo del mensaje resulto bacio, nada para enviar'
+            );
+            return false;
+        }
+
+        // Extraemos las cabeceras para el request del evento
         $headers = [];
-        $forDown = false;
+        $isForDownload = 0;
         if(array_key_exists('header', $event)) {
             $headers = $event['header'];
             unset($event['header']);
             if(array_key_exists('Anet-Down', $headers)) {
-                $forDown = $headers['Anet-Down'];
+                $isForDownload = $headers['Anet-Down'];
             }
         }
         
-        if(count($event) == 0) {
-            $this->sendReporErrorBySendMy(
-                $headers, $toUrl, $code, 'El cuerpo del mensaje resulto bacio, nada para enviar'
-            );
-            return false;
-        }
 
         $error = "";
         $rutas = [];
@@ -265,8 +267,10 @@ class WaSender
                     'headers' => $headers,
                 ];
 
-                // Si forDown (para bajar) es false incluimos los datos en el body
-                if(!$forDown) {
+                // Si isForDownload (para descargar el body) es 0 incluimos los datos en el body
+                // ya que se esta diciendo que no es para descarga por lo tanto el body debe
+                // traer los ya los datos para eveitar tenerlos que descargar.
+                if($isForDownload == 0) {
                     $dataReq['json'] = $event;
                 }
 

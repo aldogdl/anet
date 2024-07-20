@@ -7,7 +7,7 @@ class HeaderDto {
     /** */
     static function includeBody(array $header, bool $includeBody): array
     {
-        $header["Anet-Down"] = !$includeBody;
+        $header["Anet-Down"] = ($includeBody) ? 0 : 1;
         return $header;
     }
     /** */
