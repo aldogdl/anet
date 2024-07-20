@@ -79,7 +79,7 @@ class PostController extends AbstractController
     } catch (\Throwable $th) {
       $data = $req->getContent();
       if($data) {
-        $data = json_decode($data);
+        $data = json_decode($data, true);
       }
     }
     
