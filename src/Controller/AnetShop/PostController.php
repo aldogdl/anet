@@ -133,7 +133,7 @@ class PostController extends AbstractController
     $filename = $modo.'_'.$ownSlug.'_'.$idItem.'.json';
     $filePath = $sysFile->setItemInFolderSSE($data, $filename);
 
-    if(mb_strpos($filePath['product'], 'X ') === false) {
+    if(mb_strpos($filePath, 'X ') === false) {
       
       if(count($resort) > 0) {
         $path = $sysFile->buildPathToImages($modo, $data['meta']['slug']);
