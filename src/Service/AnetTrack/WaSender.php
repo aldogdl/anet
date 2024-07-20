@@ -189,11 +189,15 @@ class WaSender
         $this->isTest = false;
 
         $headers = [];
+        $forDown = false;
         if(array_key_exists('header', $event)) {
             $headers = $event['header'];
             unset($event['header']);
+            if(array_key_exists('Anet-Down', $headers)) {
+                $forDown = true;
+            }
         }
-
+        
         if(count($event) == 0) {
             $this->sendReporErrorBySendMy(
                 $headers, $toUrl, $code, 'El cuerpo del mensaje resulto bacio, nada para enviar'
@@ -253,15 +257,19 @@ class WaSender
                     $headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
                 }
                 
+                $dataReq = [
+                    'query'   => ['anet-key' => $this->anetToken],
+                    'timeout' => $timeOut,
+                    'headers' => $headers,
+                ];
+
+                // Si forDown (para bajar) es false incluimos los datos en el body
+                if(!$forDown) {
+                    $dataReq['json'] = $event;
+                }
+                
                 try {
-                    $response = $this->client->request(
-                        'POST', $rutas[$i]['url'], [
-                            'query'   => ['anet-key' => $this->anetToken],
-                            'timeout' => $timeOut,
-                            'headers' => $headers,
-                            'json'    => $event
-                        ]
-                    );
+                    $response = $this->client->request('POST', $rutas[$i]['url'], $dataReq);
                     $code = $response->getStatusCode();
                 } catch (\Throwable $th) {
                     $toUrl = $rutas[$i]['url'];

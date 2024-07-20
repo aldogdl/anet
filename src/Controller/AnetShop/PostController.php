@@ -144,8 +144,7 @@ class PostController extends AbstractController
       unset($data['meta']);
 
       $data['header'] = HeaderDto::event([], $modo);
-      $data['header'] = HeaderDto::ssePath($data['header'], $filePath['product']);
-      $data['header'] = HeaderDto::metaPath($data['header'], $filePath['meta']);
+      $data['header'] = HeaderDto::down($data['header'], true);
       $data['header'] = HeaderDto::idItem($data['header'], $idItem);
       $data['header'] = HeaderDto::ownSlug($data['header'], $ownSlug);
       

@@ -5,21 +5,15 @@ namespace App\Dtos;
 class HeaderDto {
 
     /** */
+    static function down(array $header, bool $down): array
+    {
+        $header["Anet-Down"] = $down;
+        return $header;
+    }
+    /** */
     static function event(array $header, String $eventName): array
     {
         $header["Anet-Event"] = $eventName;
-        return $header;
-    }
-    /** */
-    static function ssePath(array $header, String $ssePath): array
-    {
-        $header["Anet-Sse"] = $ssePath;
-        return $header;
-    }
-    /** */
-    static function metaPath(array $header, String $metaPath): array
-    {
-        $header["Anet-Meta"] = $metaPath;
         return $header;
     }
     /** */

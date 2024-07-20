@@ -208,13 +208,12 @@ class AnetShopSystemFileService
 	}
 
 	/** Guardamos el json resultante del alta de productos desde AnetShop */
-	public function setItemInFolderSSE(array $data, String $filename): array
+	public function setItemInFolderSSE(array $data, String $filename): String
 	{
 		$product = (array_key_exists('product', $data)) ? $data['product'] : [];
 		$meta = (array_key_exists('meta', $data)) ? $data['meta'] : [];
 
 		$path = "";
-		$pathMetas = "";
 		if(count($product) > 0) {
 			
 			$path = $this->params->get('sse');
@@ -231,19 +230,19 @@ class AnetShopSystemFileService
 
 		if(count($meta) > 0) {
 			
-			$pathMetas = $this->params->get('sseMetas');
-			$pathMetas = Path::canonicalize($pathMetas);
-			if(!$this->filesystem->exists($pathMetas)) {
-				$this->filesystem->mkdir($pathMetas);
+			$path = $this->params->get('sseMetas');
+			$path = Path::canonicalize($path);
+			if(!$this->filesystem->exists($path)) {
+				$this->filesystem->mkdir($path);
 			}
 			try {
-				$this->filesystem->dumpFile($pathMetas.'/'.$filename, json_encode($meta));
+				$this->filesystem->dumpFile($path.'/'.$filename, json_encode($meta));
 			} catch (FileException $e) {
-				$pathMetas = "";
+				$path = "X No se guardaron los datos meta";
 			}
 		}
 		
-		return ["product" => $path.'/'.$filename, "meta" => $pathMetas.'/'.$filename];
+		return '';
 	}
 
 	/** Guardamos el json resultante del alta de solicitud desde AnetShop */
