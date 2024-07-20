@@ -218,12 +218,12 @@ class AnetShopSystemFileService
 		if(count($product) > 0) {
 			
 			$path = $this->params->get('sse');
-			$path = Path::canonicalize($path.'/'.$filename);
+			$path = Path::canonicalize($path);
 			if(!$this->filesystem->exists($path)) {
 				$this->filesystem->mkdir($path);
 			}
 			try {
-				$this->filesystem->dumpFile($path, json_encode($product));
+				$this->filesystem->dumpFile($path.'/'.$filename, json_encode($product));
 			} catch (FileException $e) {
 				$path = 'X ' . $e->getMessage();
 			}
@@ -232,12 +232,12 @@ class AnetShopSystemFileService
 		if(count($meta) > 0) {
 			
 			$pathMetas = $this->params->get('sseMetas');
-			$pathMetas = Path::canonicalize($pathMetas.'/'.$filename);
+			$pathMetas = Path::canonicalize($pathMetas);
 			if(!$this->filesystem->exists($pathMetas)) {
 				$this->filesystem->mkdir($pathMetas);
 			}
 			try {
-				$this->filesystem->dumpFile($pathMetas, json_encode($meta));
+				$this->filesystem->dumpFile($pathMetas.'/'.$filename, json_encode($meta));
 			} catch (FileException $e) {
 				$pathMetas = "";
 			}
