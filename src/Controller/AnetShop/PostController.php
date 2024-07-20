@@ -74,7 +74,11 @@ class PostController extends AbstractController
 	{
 
     $result = ['abort' => true];
-    $data = $this->toArray($req, 'data');
+    try {
+      $data = $this->toArray($req, 'data');
+    } catch (\Throwable $th) {
+      $data = $req->getContent();
+    }
     
     $modo = 'solicita';
     if(array_key_exists('meta', $data)) {
