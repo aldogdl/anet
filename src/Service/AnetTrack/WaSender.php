@@ -206,7 +206,6 @@ class WaSender
             }
         }
         
-
         $error = "";
         $rutas = [];
         $error = 'No hay ruta activa hacia ComCore';
@@ -257,12 +256,12 @@ class WaSender
                         if ($timeRemaining < 0) {
                             $timeRemaining = 0;
                         }
-                        $headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
+                        $headers = HeaderDto::sessFtp($headers, $timeRemaining."");
                     }
                 }
                 
+                $headers = HeaderDto::anetKey($headers, $this->anetToken);
                 $dataReq = [
-                    'query'   => ['anet-key' => $this->anetToken],
                     'timeout' => $timeOut,
                     'headers' => $headers,
                 ];
@@ -279,6 +278,7 @@ class WaSender
                     $code = $response->getStatusCode();
                 } catch (\Throwable $th) {
                     $toUrl = $rutas[$i]['url'];
+                    $error = $th->getMessage();
                     $erroresSend[] = [
                         'ruta' => $rutas[$i],
                         'error'=> $th->getMessage()
@@ -293,6 +293,7 @@ class WaSender
 
         if($code != 200) {
             $this->sendReporErrorBySendMy($headers, $toUrl, $code, $error, $erroresSend);
+            return true;
         }
 
         // la ruta exitosa la colocamos en el balance
@@ -409,6 +410,7 @@ class WaSender
         $result = [
             'statusCode' => $code,
             'reason'     => $error,
+            'toUrl'      => $url,
             'headers'    => $headers
         ];
         if(count($body) > 0) {

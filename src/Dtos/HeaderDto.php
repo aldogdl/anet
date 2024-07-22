@@ -46,4 +46,10 @@ class HeaderDto {
         $header["Anet-ftp-open"] = $cnxVer;
         return $header;
     }
+    /** */
+    static function anetKey(array $header, String $anetKey): array
+    {
+        $header["Anet-Key"] = $anetKey;
+        return $header;
+    }
 }
