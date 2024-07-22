@@ -309,15 +309,19 @@ class WaSender
         if(!array_key_exists('host', $rutaSend)) {
             return;
         }
-        
-        file_put_contents('ahora.json', json_encode([
-            'body' => $rutaSend,
-            'file' => $this->cnxFile
-        ]));
+
         $cnxFile = json_decode(file_get_contents($this->cnxFile), true);
+        $existentes = $cnxFile['balance'];
+
         $cnxFile['balance'][] = $rutaSend['host'];
         $cnxFile['balance'] = array_values(array_unique($cnxFile['balance']));
-        file_put_contents($this->cnxFile, json_encode($cnxFile));
+        
+        $resultante = $cnxFile['balance'];
+        sort($existentes);
+        sort($resultante);
+        if($existentes != $resultante) {
+            file_put_contents($this->cnxFile, json_encode($cnxFile));
+        }
     }
 
     /** */
