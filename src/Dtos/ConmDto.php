@@ -18,6 +18,9 @@ class ConmDto
         if(mb_strpos($this->token, 'aldo_') !== false) {
             $this->token = str_replace('aldo_', '', $this->token);
         }
+        $this->to = '';
+        $this->waId = '';
+        $this->context = '';
         $this->uriToWhatsapp = $this->uriToWhatsapp . $content[$content['modo']]['id'];
     }
 
