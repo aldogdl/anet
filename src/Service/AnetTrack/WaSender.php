@@ -130,6 +130,7 @@ class WaSender
             return $code;
         }
 
+        // TODO agregar whatsapp_api en la cabecera
         $url = $this->conm->uriToWhatsapp.'/messages';
         if($error == '') {
 
@@ -401,6 +402,11 @@ class WaSender
             file_put_contents($this->sseFails.'/'.$filename.'.json', json_encode($result));
         }
 
+        // Si el error es por que el token de whats caduco no se puede enviar el mensaje de reporte
+        if(mb_strpos($error, 'caducado') !== false) {
+            return;
+        }
+
         $subMsg = "Se intentó enviar evento de SR hacia Whatsapp";
 
         $msg = "*ERROR SendToWa EN SR.*:\n\n".
@@ -445,8 +451,8 @@ class WaSender
         "*Path*:\n\n".
         $url."\n\n";
         
-        // $this->conm = new ConmDto($this->fSys->getConmuta());
-        // $this->sendText($msg, $this->reporTo);
+        $this->conm = new ConmDto($this->fSys->getConmuta());
+        $this->sendText($msg, $this->reporTo);
     }
 
 }
