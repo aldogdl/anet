@@ -303,7 +303,6 @@ class WaSender
     /** */
     public function setCnxFile(array $rutaSend): void
     {
-        $rota = count($rutaSend);
         if(count($rutaSend) == 0) {
             return;
         }
@@ -311,6 +310,10 @@ class WaSender
             return;
         }
         
+        file_put_contents('ahora.json', json_encode([
+            'body' => $rutaSend,
+            'file' => $this->cnxFile
+        ]));
         $cnxFile = json_decode(file_get_contents($this->cnxFile), true);
         $cnxFile['balance'][] = $rutaSend['host'];
         $cnxFile['balance'] = array_values(array_unique($cnxFile['balance']));
@@ -366,7 +369,6 @@ class WaSender
         }
 
         $cnxFile['routes'] = array_merge($tunnels, $tunnelsAlt);
-        file_put_contents('tuneles.json', json_encode($cnxFile));
         return $cnxFile;
     }
 
