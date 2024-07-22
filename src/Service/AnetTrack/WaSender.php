@@ -130,7 +130,6 @@ class WaSender
             return $code;
         }
 
-        // TODO agregar whatsapp_api en la cabecera
         $url = $this->conm->uriToWhatsapp.'/messages';
         if($error == '') {
 
@@ -182,7 +181,7 @@ class WaSender
         return $code;
     }
 
-    /** */
+    /** // TODO agregar whatsapp_api en la cabecera */
     public function sendMy(array $event): bool
     {
         $code  = 505;

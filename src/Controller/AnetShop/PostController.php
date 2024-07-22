@@ -148,6 +148,7 @@ class PostController extends AbstractController
       $data['header'] = HeaderDto::fileName($data['header'], $filename);
       $data['header'] = HeaderDto::idItem($data['header'], $idItem);
       $data['header'] = HeaderDto::ownSlug($data['header'], $ownSlug);
+      $data['header'] = HeaderDto::source($data['header'], 'anet_shop');
       
       $wh->sendMy($data);
       $result['abort'] = false;

@@ -47,6 +47,12 @@ class HeaderDto {
         return $header;
     }
     /** */
+    static function source(array $header, String $source): array
+    {
+        $header["Anet-Source"] = $source;
+        return $header;
+    }
+    /** */
     static function anetKey(array $header, String $anetKey): array
     {
         $header["Anet-Key"] = $anetKey;
