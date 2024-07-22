@@ -230,8 +230,6 @@ class WaSender
             $timeOut = max($timeOut, 3);
         }
 
-        $headers['Content-Type'] = 'application/json';
-        
         $error = 'Error inesperado al enviar mensaje a ComCore';
         $erroresSend = [];
         $rutaSend = [];
@@ -261,6 +259,7 @@ class WaSender
                 }
                 
                 $headers = HeaderDto::anetKey($headers, $this->anetToken);
+                $headers['Content-Type'] = 'application/json';
                 $dataReq = [
                     'timeout' => $timeOut,
                     'headers' => $headers,
@@ -341,27 +340,33 @@ class WaSender
             $notUse = $hosts;
         }
 
+        // Los tuneles que no se les ha enviado un mensaje
         $tunnels = [];
+        // Los tuneles que ya fueron usados
+        // [NOTA] aun asi se agregan por si los anteriores no responden
+        $tunnelsAlt = [];
 
         for ($r=0; $r < $rota; $r++) {
 
             // Tendrian que indicar que estan activos para tomarce como opcion
             if($cnxFile['routes'][$r]['active']) {
+                $url = $cnxFile['routes'][$r]['public'].'-'.$cnxFile['routes'][$r]['id'];
+                $tunel = [
+                    'url'  => 'https://'.$url.'.ngrok-free.app/com_core/sse',
+                    'isPay'=> $cnxFile['routes'][$r]['isPay'],
+                    'user' => $cnxFile['routes'][$r]['user'],
+                    'host' => $cnxFile['routes'][$r]['host'],
+                ];
                 if(in_array($cnxFile['routes'][$r]['host'], $notUse)) {
-
-                    $url = $cnxFile['routes'][$r]['public'].'-'.$cnxFile['routes'][$r]['id'];
-                    $tunnels[] = [
-                        'url'  => 'https://'.$url.'.ngrok-free.app/com_core/sse',
-                        'isPay'=> $cnxFile['routes'][$r]['isPay'],
-                        'user' => $cnxFile['routes'][$r]['user'],
-                        'host' => $cnxFile['routes'][$r]['host'],
-                    ];
+                    $tunnels[] = $tunel;
+                }else{
+                    $tunnelsAlt[] = $tunel;
                 }
             }
         }
 
-
-        $cnxFile['routes'] = $tunnels;
+        $cnxFile['routes'] = array_merge($tunnels, $tunnelsAlt);
+        file_put_contents('tuneles.json', json_encode($cnxFile));
         return $cnxFile;
     }
 
@@ -434,8 +439,8 @@ class WaSender
         "*Path*:\n\n".
         $url."\n\n";
         
-        $this->conm = new ConmDto($this->fSys->getConmuta());
-        $this->sendText($msg, $this->reporTo);
+        // $this->conm = new ConmDto($this->fSys->getConmuta());
+        // $this->sendText($msg, $this->reporTo);
     }
 
 }
