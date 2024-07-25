@@ -265,15 +265,17 @@ class WaSender
                     'headers' => $headers,
                 ];
 
+                $byMetodo = 'HEAD';
                 // Si isForDownload (para descargar el body) es 0 incluimos los datos en el body
                 // ya que se esta diciendo que no es para descarga por lo tanto el body debe
                 // traer los ya los datos para eveitar tenerlos que descargar.
                 if($isForDownload == 0) {
                     $dataReq['json'] = $event;
+                    $byMetodo = 'POST';
                 }
 
                 try {
-                    $response = $this->client->request('POST', $rutas[$i]['url'], $dataReq);
+                    $response = $this->client->request($byMetodo, $rutas[$i]['url'], $dataReq);
                     $code = $response->getStatusCode();
                 } catch (\Throwable $th) {
                     $toUrl = $rutas[$i]['url'];
@@ -359,7 +361,7 @@ class WaSender
             if($cnxFile['routes'][$r]['active']) {
                 $url = $cnxFile['routes'][$r]['public'].'-'.$cnxFile['routes'][$r]['id'];
                 $tunel = [
-                    'url'  => 'https://'.$url.'.ngrok-free.app/com_core/sse',
+                    'url'  => 'https://'.$url.'.ngrok-free.app/api/sse',
                     'isPay'=> $cnxFile['routes'][$r]['isPay'],
                     'user' => $cnxFile['routes'][$r]['user'],
                     'host' => $cnxFile['routes'][$r]['host'],
