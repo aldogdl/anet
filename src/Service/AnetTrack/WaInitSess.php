@@ -56,7 +56,7 @@ class WaInitSess
             "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando
         );
 
-        if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
+        if($code >= 200 && $code <= 300) {
             $this->waSender->sendMy($this->waMsg->toInit());
         }
     }
