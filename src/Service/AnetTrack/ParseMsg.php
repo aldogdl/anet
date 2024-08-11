@@ -5,6 +5,9 @@ namespace App\Service\AnetTrack;
 use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
 
+/** 
+ * Extraemos la esencia real del mensaje recibido por Whatsapp.
+*/
 class ParseMsg {
 
     private bool $isTest;
@@ -14,14 +17,12 @@ class ParseMsg {
         'hola', 'autoparnet', 'autoparnet,', 'atenderte.', 'piezas', 'necesitas', 'necesitas?'
     ];
 
-    /** 
-     * Extraemos la esencia real del mensaje recibido por Whatsapp.
-    */
+    /** */
     public function __construct(array $message)
     {
         $this->waMsg = $message;
-        $date = new \DateTime('now');
-        $this->recibido = $date->format('d-m-Y');
+        $date = round(microtime(true) * 1000);
+        $this->recibido = $date."";
     }
 
     /** 
@@ -70,6 +71,7 @@ class ParseMsg {
     function extractMessageType(): WaMsgDto
     {
         if(array_key_exists('type', $this->waMsg)) {
+
             switch ($this->waMsg['type']) {
                 case 'interactive':
                     return $this->extractInteractive();
@@ -99,10 +101,10 @@ class ParseMsg {
         }
     }
 
-    ///
+    /** */
     function extractText(): WaMsgDto
     {
-        $txt = 'Error, no se recibio ningun texto';
+        $txt = 'Error, no se recibió ningún texto';
         $idContext = '';
         if(array_key_exists('context', $this->waMsg)) {
             $idContext = $this->waMsg['context']['id'];
@@ -146,7 +148,7 @@ class ParseMsg {
         );
     }
 
-    ///
+    /** */
     function extractImage(): WaMsgDto
     {
         $idContext = '';
@@ -176,10 +178,10 @@ class ParseMsg {
         );
     }
 
-    ///
+    /** */
     function extractInteractive(): WaMsgDto
     {
-        $btnAction = 'Error, no se recibio ningun Interactivo';
+        $btnAction = 'Error, no se recibió ningún Interactivo';
         $idContext = '';
         $idItem = '';
         if(array_key_exists('context', $this->waMsg)) {
@@ -303,7 +305,7 @@ class ParseMsg {
                 $palClas[] = $search;
             }
         }
-        
+
         $res = (count($palClas) * 100) / count($this->tokenLogin);
         return ($res > 70) ? true : false;
     }

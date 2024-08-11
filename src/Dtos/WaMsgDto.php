@@ -85,14 +85,13 @@ class WaMsgDto
         ];
     }
 
-    /** Envio a eventCore para Inicio de Sesion */
+    /** Envio a comCore para Inicio de Sesion */
     public function toInit(): array
     {
-        return [
-            'eventName' => $this->eventName,
-            'subEvent'  => $this->subEvento,
-            'from'      => $this->from,
-            'recibido'  => $this->recibido
-        ];
+        $headers = HeaderDto::event([], $this->subEvento);
+        $headers = HeaderDto::source($headers, $this->eventName);
+        $headers = HeaderDto::waId($headers, $this->from);
+        $headers = HeaderDto::recived($headers, $this->recibido);
+        return ['header' => $headers];
     }
 }

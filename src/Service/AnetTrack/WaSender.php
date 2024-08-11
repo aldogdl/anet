@@ -206,16 +206,14 @@ class WaSender
             }
         }
         
-        $error = "";
-        $rutas = [];
-        $error = 'No hay ruta activa hacia ComCore';
         $cnxFile = $this->getCnxFile();
-        if(array_key_exists('routes', $cnxFile)) {
-            $rutas = $cnxFile['routes'];
-        }
         if(array_key_exists('version', $cnxFile)) {
             $headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
-            $cnxFile['version'];
+        }
+        $rutas = [];
+        $error = 'No hay ruta activa hacia ComCore';
+        if(array_key_exists('routes', $cnxFile)) {
+            $rutas = $cnxFile['routes'];
         }
         $cant = count($rutas);
         if($cant == 0) {
@@ -223,6 +221,8 @@ class WaSender
             return false;
         }
         
+        // Dividimos el tiempo(timeout) de espera entre la cantidad de rutas
+        // existente dejando un mínimo de 3 segundos por cada ruta
         $timeOut = 20;
         if($cant > 1) {
             $timeOut = $timeOut / $cant;
@@ -230,49 +230,31 @@ class WaSender
             $timeOut = max($timeOut, 3);
         }
 
-        $error = 'Error inesperado al enviar mensaje a ComCore';
-        $erroresSend = [];
         $rutaSend = [];
+        $erroresSend = [];
+        $error = 'Error inesperado al enviar mensaje a ComCore';
+
         if($this->isTest) {
             file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($event));
         }else{
             
-            for ($i=0; $i < $cant; $i++) {
-                
-                // El dato de quien esta conectado a FTP
-                $filename = $rutas[$i]['host'].'_'.$rutas[$i]['user'].'.json';
-                if(file_exists($filename)) {
-                    $sessFtp = file_get_contents($filename);
-                    if($sessFtp) {
-                        $sessFtp = json_decode($sessFtp, true);
-                        $initTime = $sessFtp['init'];
-                        $duration = $sessFtp['duration'] * 1000;
-                        $expirationTime = $initTime + $duration;
-                        $currentTime = microtime(true) * 1000;
-                        // Calcular el tiempo restante para la caducidad
-                        $timeRemaining = $expirationTime - $currentTime;
-                        if ($timeRemaining < 0) {
-                            $timeRemaining = 0;
-                        }
-                        $headers = HeaderDto::sessFtp($headers, $timeRemaining."");
-                    }
-                }
-                
-                $headers = HeaderDto::anetKey($headers, $this->anetToken);
-                $headers['Content-Type'] = 'application/json';
-                $dataReq = [
-                    'timeout' => $timeOut,
-                    'headers' => $headers,
-                ];
+            $headers = HeaderDto::anetKey($headers, $this->anetToken);
+            $headers['Content-Type'] = 'application/json';
+            $dataReq = [
+                'timeout' => $timeOut,
+                'headers' => $headers,
+            ];
 
-                $byMetodo = 'HEAD';
-                // Si isForDownload (para descargar el body) es 0 incluimos los datos en el body
-                // ya que se esta diciendo que no es para descarga por lo tanto el body debe
-                // traer los ya los datos para eveitar tenerlos que descargar.
-                if($isForDownload == 0) {
-                    $dataReq['json'] = $event;
-                    $byMetodo = 'POST';
-                }
+            $byMetodo = 'HEAD';
+            // Si isForDownload (para descargar el body) es 0 incluimos los datos en el body
+            // ya que se esta diciendo que no es para descarga por lo tanto el body debe
+            // traer los ya los datos para eveitar tenerlos que descargar.
+            if($isForDownload == 0) {
+                $dataReq['json'] = $event;
+                $byMetodo = 'POST';
+            }
+
+            for ($i=0; $i < $cant; $i++) {
 
                 try {
                     $response = $this->client->request($byMetodo, $rutas[$i]['url'], $dataReq);

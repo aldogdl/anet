@@ -50,11 +50,12 @@ class WaInitSess
         } catch (\Throwable $th) {
             $this->hasErr = $th->getMessage();
         }
-        
+
         if($this->hasErr == '') {$cuando = " a las " . $timeFin;}
         $code = $this->waSender->sendText(
             "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando
         );
+
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
             $this->waSender->sendMy($this->waMsg->toInit());
         }

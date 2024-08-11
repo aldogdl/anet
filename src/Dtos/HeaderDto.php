@@ -23,6 +23,18 @@ class HeaderDto {
         return $header;
     }
     /** */
+    static function recived(array $header, String $recived): array
+    {
+        $header["Anet-Recived"] = $recived;
+        return $header;
+    }
+    /** */
+    static function waId(array $header, String $waId): array
+    {
+        $header["Anet-WaId"] = $waId;
+        return $header;
+    }
+    /** */
     static function idItem(array $header, String $idItem): array
     {
         $header["Anet-IdItem"] = $idItem;
@@ -40,12 +52,7 @@ class HeaderDto {
         $header["Anet-Router-Version"] = $cnxVer;
         return $header;
     }
-    /** */
-    static function sessFtp(array $header, String $cnxVer): array
-    {
-        $header["Anet-ftp-open"] = $cnxVer;
-        return $header;
-    }
+
     /** */
     static function source(array $header, String $source): array
     {
