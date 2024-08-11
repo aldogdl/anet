@@ -91,6 +91,7 @@ class WaMsgDto
         $headers = HeaderDto::event([], $this->subEvento);
         $headers = HeaderDto::source($headers, $this->eventName);
         $headers = HeaderDto::waId($headers, $this->from);
+        $headers = HeaderDto::includeBody($headers, false);
         $headers = HeaderDto::recived($headers, $this->recibido);
         return ['header' => $headers];
     }
