@@ -267,7 +267,9 @@ class WaSender
                         'error'=> $th->getMessage()
                     ];
                 }
+                
                 if($code == 200) {
+                    $error = '';
                     $rutaSend = $rutas[$i];
                     break;
                 }

@@ -130,7 +130,7 @@ class PostController extends AbstractController
 
     $ownSlug = $data['meta']['slug'];
     $idItem = $data['meta']['id'];
-    $filename = $modo.'_'.$ownSlug.'_'.$idItem.'.json';
+    $filename = $idItem.'.json';
     $filePath = $sysFile->setItemInFolderSSE($data, $filename);
 
     if(mb_strpos($filePath, 'X ') === false) {
