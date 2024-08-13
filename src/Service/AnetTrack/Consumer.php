@@ -40,7 +40,7 @@ class Consumer
         // }
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
-            // Si no hay un archivo de cotizacion enviamos los STT a EventCore
+            // Si no hay un archivo de Stop STT enviamos los STT a EventCore
             if(!$this->fSys->existe('/', $obj->from.'_stopstt.json')) {
                 $this->waSender->setConmutador($obj);
                 $this->waSender->sendMy($obj->toStt());

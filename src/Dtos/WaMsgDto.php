@@ -75,14 +75,20 @@ class WaMsgDto
     /** Envio a eventCore para Status de Whatsapp */
     public function toStt(): array
     {
-        return [
-            'eventName' => $this->eventName,
-            'subEvent'  => $this->subEvento,
-            'from'      => $this->from,
-            'id'        => $this->id,
-            'body'      => $this->content['stt'],
-            'expi'      => (array_key_exists('expi', $this->content)) ? $this->content['expi'] : '',
-        ];
+        $headers = HeaderDto::event([], $this->subEvento);
+        $headers = HeaderDto::source($headers, $this->eventName);
+        $headers = HeaderDto::waId($headers, $this->from);
+        $headers = HeaderDto::includeBody($headers, false);
+        $headers = HeaderDto::recived($headers, $this->recibido);
+        $headers = HeaderDto::setValue($headers, $this->content['stt']);
+        if(count($this->content) > 1) {
+            if(array_key_exists('expi', $this->content)) {
+                $headers = HeaderDto::campoValor($headers, '', 'Conv', $this->content['conv']);
+                $headers = HeaderDto::campoValor($headers, '', 'Expi', $this->content['expi']);
+                $headers = HeaderDto::campoValor($headers, '', 'Type', $this->content['type']);
+            }
+        }
+        return ['header' => $headers];
     }
 
     /** Envio a comCore para Inicio de Sesion */

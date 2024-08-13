@@ -260,9 +260,9 @@ class ParseMsg {
                     if(array_key_exists('error_data', $this->waMsg['errors'][$i])) {
                         if(mb_strpos($this->waMsg['errors'][$i]['error_data']['details'], '24 hours')) {
                             $conv = [
-                                'code' => $this->waMsg['errors'][$i]['code'],
-                                'title'=> 'Mensaje de reintegración',
-                                'body' => 'Sesion Caducada del Destinatario.',
+                                'conv' => $this->waMsg['errors'][$i]['code'],
+                                'expi' => 'Mensaje de reintegración',
+                                'type' => 'Sesion Caducada del Destinatario.',
                                 'stt'  => $this->waMsg['status']
                             ];
                             break;
