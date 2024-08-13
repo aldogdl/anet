@@ -336,6 +336,9 @@ class WaSender
             $cnxFile['balance'] = [];
             $notUse = $hosts;
         }
+        
+        $priorys = ["polite", "cosmic"];
+        $cantPriory = count($priorys);
 
         // Los tuneles que no se les ha enviado un mensaje
         $tunnels = [];
@@ -354,10 +357,26 @@ class WaSender
                     'user' => $cnxFile['routes'][$r]['user'],
                     'host' => $cnxFile['routes'][$r]['host'],
                 ];
+
+                $isPriory = false;
+                // Recorremos las url prioritarias para ver si la ruta a guardar lo es.
+                for ($i=0; $i < $cantPriory; $i++) { 
+                    if(mb_strpos($tunel['url'], $priorys[$i]) !== false) {
+                        $isPriory = true;
+                    }
+                }
                 if(in_array($cnxFile['routes'][$r]['host'], $notUse)) {
-                    $tunnels[] = $tunel;
+                    if($isPriory) {
+                        array_unshift($tunnels, $tunel);
+                    }else{
+                        $tunnels[] = $tunel;
+                    }
                 }else{
-                    $tunnelsAlt[] = $tunel;
+                    if($isPriory) {
+                        array_unshift($tunnelsAlt, $tunel);
+                    }else{
+                        $tunnelsAlt[] = $tunel;
+                    }
                 }
             }
         }
