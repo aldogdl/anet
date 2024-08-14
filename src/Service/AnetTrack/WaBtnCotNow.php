@@ -48,7 +48,7 @@ class WaBtnCotNow
                 }
                 $code = $this->waSender->sendPreTemplate($template);
                 if($code >= 200 && $code <= 300) {
-                    $this->waSender->sendMy($this->waMsg->toMini());
+                    // $this->waSender->sendMy($this->waMsg->toMini());
                 }
             }
             return;
@@ -78,7 +78,7 @@ class WaBtnCotNow
                 ? $this->waMsg->context : $this->waSender->wamidMsg;
             }
             $this->waSender->fSys->putCotizando($this->waMsg);
-            $this->waSender->sendMy($this->waMsg->toMini());
+            // $this->waSender->sendMy($this->waMsg->toMini());
         }
     }
 

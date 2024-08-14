@@ -57,30 +57,25 @@ class WaMsgDto
         ];
     }
 
-    /** Envio a eventCore para el proceso de cotizacion */
-    public function toMini(array $body = []): array
+    /** Envio a comCore para el proceso de cotizacion */
+    public function toQuote(array $body = []): array
     {
-        $cuerpo = [
-            'eventName' => $this->eventName,
-            'subEvent'  => $this->subEvento,
-            'from'      => $this->from,
-            'idItem'    => $this->idItem
-        ];
+        $headers = $this->toStt(true);
+        $headers = HeaderDto::setValue($headers, $this->subEvento);
         if(count($body) > 0) {
             $cuerpo['body'] = $body;
         }
         return $cuerpo;
     }
 
-    /** Envio a eventCore para Status de Whatsapp */
-    public function toStt(): array
+    /** Envio a comCore para Status de Whatsapp */
+    public function toStt($get = false): array
     {
         $headers = HeaderDto::event([], $this->subEvento);
         $headers = HeaderDto::source($headers, $this->eventName);
         $headers = HeaderDto::waId($headers, $this->from);
         $headers = HeaderDto::includeBody($headers, false);
         $headers = HeaderDto::recived($headers, $this->recibido);
-        $headers = HeaderDto::setValue($headers, $this->content['stt']);
         $headers = HeaderDto::wamid($headers, $this->id);
         if($this->idItem != '') {
             $headers = HeaderDto::idItem($headers, $this->idItem);
@@ -88,6 +83,14 @@ class WaMsgDto
         if($this->context != '') {
             $headers = HeaderDto::context($headers, $this->context);
         }
+        // Para evitar duplicar codigo, se usa $get para retornar las cabeceras
+        // que son repetitivas en la mayoria de los casos donde whatsapp esta
+        // involucrado, la mayoria de los req. llevan los valores anteriores
+        if($get) {
+            return $headers;
+        }
+
+        $headers = HeaderDto::setValue($headers, $this->content['stt']);
 
         if(count($this->content) > 1) {
             if(array_key_exists('expi', $this->content)) {
