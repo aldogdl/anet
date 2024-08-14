@@ -2,6 +2,7 @@
 
 namespace App\Service\AnetTrack;
 
+use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
@@ -79,7 +80,7 @@ class HcFotos
     }
 
     /** 
-     * Cuando NiFi o Ngrok no responden inmediatamente por causa de latencia, whatsapp
+     * Cuando Ngrok no responden inmediatamente por causa de latencia, whatsapp
      * considera que no llego el mensaje a este servidor, por lo tanto reenvia el mensaje
      * causando que el usuario reciba varios mensajes de confirmación.
      * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
@@ -202,7 +203,12 @@ class HcFotos
             $res = $this->waSender->sendPreTemplate($template);
             if($oldCurrent == 'sdta') {
                 if($res >= 200 && $res <= 300) {
-                    $this->waSender->sendMy($this->waMsg->toMini());
+                    $headers = $this->waMsg->toStt(true);
+                    $headers = HeaderDto::setValue($headers, $this->waMsg->content['id']);
+                    if(array_key_exists('caption', $this->waMsg->content)) {
+                        $headers = HeaderDto::campoValor($headers, 'caption', $this->waMsg->content['caption']);
+                    }
+                    $this->waSender->sendMy(['header' => $headers]);
                 }
             }
         }else{
