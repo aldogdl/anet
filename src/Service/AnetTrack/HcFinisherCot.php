@@ -153,7 +153,7 @@ class HcFinisherCot
             $headerd['resumeCooler'] = $this->waSender->fSys->getResumeCooler($headerd['from']);
         }
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
-            $this->waSender->sendMy($headerd);
+            $this->waSender->sendMy(['header' => $headerd]);
         }
 
         // Eliminamos los archivos que indican el paso de cotizacion actual.

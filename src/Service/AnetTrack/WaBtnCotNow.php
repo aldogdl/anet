@@ -83,7 +83,7 @@ class WaBtnCotNow
             $headers = $this->waMsg->toStt(true);
             // Grabamos el valor de la accion
             $headers = HeaderDto::setValue($headers, 'sfto');
-            $this->waSender->sendMy($headers);
+            $this->waSender->sendMy(['header' => $headers]);
         }
     }
 
