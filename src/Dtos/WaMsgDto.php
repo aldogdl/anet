@@ -81,6 +81,14 @@ class WaMsgDto
         $headers = HeaderDto::includeBody($headers, false);
         $headers = HeaderDto::recived($headers, $this->recibido);
         $headers = HeaderDto::setValue($headers, $this->content['stt']);
+        $headers = HeaderDto::wamid($headers, $this->id);
+        if($this->idItem != '') {
+            $headers = HeaderDto::idItem($headers, $this->idItem);
+        }
+        if($this->context != '') {
+            $headers = HeaderDto::context($headers, $this->context);
+        }
+
         if(count($this->content) > 1) {
             if(array_key_exists('expi', $this->content)) {
                 $headers = HeaderDto::campoValor($headers, '', 'Conv', $this->content['conv']);

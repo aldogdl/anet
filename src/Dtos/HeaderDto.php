@@ -43,6 +43,12 @@ class HeaderDto {
         return $header;
     }
     /** */
+    static function context(array $header, String $context): array
+    {
+        $header[HeaderDto::$PREF."Context"] = $context;
+        return $header;
+    }
+    /** */
     static function ownSlug(array $header, String $ownSlug): array
     {
         $header[HeaderDto::$PREF."OwnSlug"] = $ownSlug;
@@ -54,28 +60,30 @@ class HeaderDto {
         $header[HeaderDto::$PREF."Router-Version"] = $cnxVer;
         return $header;
     }
-
     /** */
     static function source(array $header, String $source): array
     {
         $header[HeaderDto::$PREF."Source"] = $source;
         return $header;
     }
-
+    /** */
+    static function wamid(array $header, String $wamid): array
+    {
+        $header[HeaderDto::$PREF."Wamid"] = $wamid;
+        return $header;
+    }
     /** */
     static function setValue(array $header, String $value): array
     {
         $header[HeaderDto::$PREF."Value"] = $value;
         return $header;
     }
-
     /** */
     static function campoValor(array $header, String $campo, String $value): array
     {
         $header[HeaderDto::$PREF.$campo] = $value;
         return $header;
     }
-
     /** */
     static function anetKey(array $header, String $anetKey): array
     {
