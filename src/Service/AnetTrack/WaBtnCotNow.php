@@ -68,12 +68,12 @@ class WaBtnCotNow
         }
 
         // Con este archivo detenemos todos los mensajes de status
-        $this->waSender->fSys->setContent('/', $this->fileTmp, ['']);
+        $this->waSender->fSys->setStopStt($this->waMsg->from);
 
         $template = $builder->exe('sfto');
         $code = $this->waSender->sendPreTemplate($template);
 
-        if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
+        if($code >= 200 && $code <= 300) {
             if($this->waSender->wamidMsg != '') {
                 $this->waMsg->id = ($this->waMsg->context != '')
                 ? $this->waMsg->context : $this->waSender->wamidMsg;
@@ -83,7 +83,9 @@ class WaBtnCotNow
             $headers = $this->waMsg->toStt(true);
             // Grabamos el valor de la accion
             $headers = HeaderDto::setValue($headers, 'sfto');
-            $this->waSender->sendMy(['header' => $headers]);
+            if(!$this->waMsg->isTest) {
+                $this->waSender->sendMy(['header' => $headers]);
+            }
         }
     }
 

@@ -41,6 +41,14 @@ class Fsys {
     }
     
     /** */
+    public function setStopStt(String $waIdCot): void
+    {
+        try {
+			$this->filesystem->dumpFile($waIdCot.'_stopstt.json', '');
+		} catch (FileException $e) {}
+    }
+
+    /** */
     public function getContent(String $folder, String $filename = ''): array | String
     {
         $path = $this->getFolderTo($folder);
@@ -127,12 +135,12 @@ class Fsys {
         $cooler = $this->getContent('waEstanque', $waMsg->from . '.json');
 
         if(count($cooler) > 0) {
-            if(array_key_exists('items', $cooler)) {
+            if(array_key_exists('baits', $cooler)) {
 
-                $baits = $cooler['items'];
+                $baits = $cooler['baits'];
                 if(count($baits) > 0) {
 
-                    $idsItems = array_column($baits, 'idItem');
+                    $idsItems = array_column($baits, 'baits');
                     $has = array_search($waMsg->idItem, $idsItems);
                     if($has !== false) {
                         
@@ -144,8 +152,7 @@ class Fsys {
                         $bait['attend'] = $attend;
 
                         unset($baits[$has]);
-                        $cooler['items'] = array_values($baits);
-                        $this->setContent('/', $waMsg->from."_stopstt.json", ['']);
+                        $cooler['baits'] = array_values($baits);
                         $this->setContent('tracking', $waMsg->from.'.json', $bait);
                         $this->setContent('waEstanque', $waMsg->from.'.json', $cooler);
                         return true;
