@@ -70,7 +70,9 @@ class WaMsgDto
             $headers = HeaderDto::idItem($headers, $this->idItem);
         }
         if($this->context != '') {
-            $headers = HeaderDto::context($headers, $this->context);
+            if($this->id != $this->context) {
+                $headers = HeaderDto::context($headers, $this->context);
+            }
         }
         // Para evitar duplicar codigo, se usa $get para retornar las cabeceras
         // que son repetitivas en la mayoria de los casos donde whatsapp esta

@@ -253,11 +253,15 @@ class WaSender
                 $dataReq['json'] = $event;
                 $byMetodo = 'POST';
             }
-            file_put_contents('message_process_3.json', json_encode([
-                'method' => $byMetodo,
-                'rutas'  => $rutas,
-                'header' => $dataReq
-            ]));
+            if(array_key_exists('Anet-Event', $headers)) {
+                if($headers['Anet-Event'] != 'stt') {
+                    file_put_contents('message_sendmy_'.time().'.json', json_encode([
+                        'method' => $byMetodo,
+                        'rutas'  => $rutas,
+                        'header' => $dataReq
+                    ]));
+                }
+            }
             for ($i=0; $i < $cant; $i++) {
 
                 try {

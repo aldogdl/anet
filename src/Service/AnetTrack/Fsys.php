@@ -140,7 +140,7 @@ class Fsys {
                 $baits = $cooler['baits'];
                 if(count($baits) > 0) {
 
-                    $idsItems = array_column($baits, 'baits');
+                    $idsItems = array_column($baits, 'idItem');
                     $has = array_search($waMsg->idItem, $idsItems);
                     if($has !== false) {
                         
