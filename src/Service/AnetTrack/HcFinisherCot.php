@@ -57,9 +57,18 @@ class HcFinisherCot
         $body = "Aquí tienes otra oportunidad de venta💰";
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         
+        $putIdCot = false;
         $model = (count($this->bait) > 0) ? $this->bait['mdl'] : '';
         $track = (count($this->bait) > 0) ? $this->bait['track'] : [];
-        
+        if(!array_key_exists('idCot', $track)) {
+            $putIdCot = true;
+        }else if($track['idCot'] == '') {
+            $putIdCot = true;
+        }
+        if($putIdCot) {
+            $track['idCot'] = time();
+        }
+
         if($tipoFinish == 'ntg') {
             $this->waMsg->subEvento = 'ntg';
             $track = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
@@ -78,19 +87,15 @@ class HcFinisherCot
             $this->waMsg->idItem = $this->bait['idItem'];
         }
 
-        $att = $this->waMsg->toMini();
-        $track['idCot'] = time();
-        $att['body'] = $track;
-        $baitsCooler = ['send' => ''];
-
         // Si el subEvent se coloco en cleaner es que no hay un bait en el cooler del cotizador
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
+        $baitFromCooler = ['send' => ''];
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false) {
             $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
             $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
             // Recuperamos otro bait directamente desde el estanque
-            $baitsCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
+            $baitFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
         }
 
         // Quitamos el context para que los msg siguientes no
@@ -100,15 +105,13 @@ class HcFinisherCot
         // Si se encotro un nuevo bait, el idItem esta en el campo send
         // por ende enviamos el nuevo bait al cotizador
         $code = 200;
-        if($baitsCooler['send'] != '') {
-
+        if($baitFromCooler['send'] != '') {
             $code = $this->waSender->sendText($head.$body);
-            $code = $this->waSender->sendTemplate($baitsCooler['send']);
+            $code = $this->waSender->sendTemplate($baitFromCooler['send']);
         }else {
 
             // Si no se encontro un nuevo bait se analizan los siguiente aspecto y se
             // actua en concecuencia.
-
             if($this->waMsg->subEvento == 'cleanCN') {
                 $body = "El sistema automatizado esta organizando ".
                 "tus oportunidades de venta 💰, *danos 5 segundos*".
@@ -134,18 +137,23 @@ class HcFinisherCot
             $this->waSender->context = $this->bait['wamid'];
         }
 
-        if($baitsCooler['send'] != '') {
-            $att['send'] = $baitsCooler['send'];
+        // --> RESPONSE TO ComCore
+        // A partir de aquí se arman las cabeceras para enviarlas a ComCore
+        // -->
+        $headerd = $this->waMsg->toStt(true);
+        $headerd['body'] = $track;
+        if($baitFromCooler['send'] != '') {
+            $headerd['send'] = $baitFromCooler['send'];
         }
 
-        $att['baitsInCooler'] = (array_key_exists('baitsInCooler', $baitsCooler))
-            ? $baitsCooler['baitsInCooler'] : [];
+        $headerd['baitsInCooler'] = (array_key_exists('baitsInCooler', $baitFromCooler))
+            ? $baitFromCooler['baitsInCooler'] : [];
 
         if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
-            $att['resumeCooler'] = $this->waSender->fSys->getResumeCooler($att['from']);
+            $headerd['resumeCooler'] = $this->waSender->fSys->getResumeCooler($headerd['from']);
         }
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
-            $this->waSender->sendMy($att);
+            $this->waSender->sendMy($headerd);
         }
 
         // Eliminamos los archivos que indican el paso de cotizacion actual.

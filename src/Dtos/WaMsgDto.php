@@ -57,17 +57,6 @@ class WaMsgDto
         ];
     }
 
-    /** Envio a comCore para el proceso de cotizacion */
-    public function toQuote(array $body = []): array
-    {
-        $headers = $this->toStt(true);
-        $headers = HeaderDto::setValue($headers, $this->subEvento);
-        if(count($body) > 0) {
-            $cuerpo['body'] = $body;
-        }
-        return $cuerpo;
-    }
-
     /** Envio a comCore para Status de Whatsapp */
     public function toStt($get = false): array
     {

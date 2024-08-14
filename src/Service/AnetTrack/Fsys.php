@@ -28,9 +28,9 @@ class Fsys {
 
         if(count($cooler) > 0) {
             if(array_key_exists('items', $cooler)) {
-                $idItems = array_column($cooler['items'], 'idItem');
-                if(count($idItems) > 0) {
-                    $has = array_search($idItem, $idItems);
+                $baits = array_column($cooler['baits'], 'idItem');
+                if(count($baits) > 0) {
+                    $has = array_search($idItem, $baits);
                     if($has !== false) {
                         return true;
                     }
