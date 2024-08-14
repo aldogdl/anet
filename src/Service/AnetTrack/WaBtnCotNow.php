@@ -2,6 +2,7 @@
 
 namespace App\Service\AnetTrack;
 
+use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\WaSender;
 
@@ -78,7 +79,11 @@ class WaBtnCotNow
                 ? $this->waMsg->context : $this->waSender->wamidMsg;
             }
             $this->waSender->fSys->putCotizando($this->waMsg);
-            // $this->waSender->sendMy($this->waMsg->toMini());
+            // Tomamos las cabeceras básicas para enviar a ComCore
+            $headers = $this->waMsg->toStt(true);
+            // Grabamos el valor de la accion
+            $headers = HeaderDto::setValue($headers, 'sfto');
+            $this->waSender->sendMy($headers);
         }
     }
 
