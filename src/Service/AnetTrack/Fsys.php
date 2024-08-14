@@ -27,7 +27,7 @@ class Fsys {
         $cooler = $this->getContent('waEstanque', $waId.'.json');
 
         if(count($cooler) > 0) {
-            if(array_key_exists('items', $cooler)) {
+            if(array_key_exists('baits', $cooler)) {
                 $baits = array_column($cooler['baits'], 'idItem');
                 if(count($baits) > 0) {
                     $has = array_search($idItem, $baits);
