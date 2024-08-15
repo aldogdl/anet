@@ -1,7 +1,6 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
     default_locale: es
-    charset: UTF-8
     secret: '%env(APP_SECRET)%'
     #csrf_protection: true
     http_client:
