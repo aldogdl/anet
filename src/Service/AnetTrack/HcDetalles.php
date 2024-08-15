@@ -148,8 +148,10 @@ class HcDetalles
             );
         }
         if($res >= 200 && $res <= 300) {
+
             $headers = $this->waMsg->toStt(true);
-            $headers = HeaderDto::setValue($headers, $this->waMsg->content);
+            $valorCabecera = mb_convert_encoding($this->waMsg->content, 'UTF-8', 'auto');
+            $headers = HeaderDto::setValue($headers, $valorCabecera);
             $this->waSender->sendMy(['header' => $headers]);
         }
     }

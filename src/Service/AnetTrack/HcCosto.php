@@ -2,6 +2,7 @@
 
 namespace App\Service\AnetTrack;
 
+use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
@@ -118,6 +119,7 @@ class HcCosto
                 $notDta = true;
             }
         }
+
         if($notDta) {
             $this->txtValid = "⚠️ ¡Lo sentimos!, pero es muy importante que ".
             "indiques los detalles de la pieza.";
@@ -185,7 +187,9 @@ class HcCosto
             "_NUNCA PERDERÁS ningúna OPORTUNIDAD DE VENTA_💰"
         );
         if($res >= 200 && $res <= 300) {
-            $this->waSender->sendMy($this->waMsg->toMini());
+            $headers = $this->waMsg->toStt(true);
+            $headers = HeaderDto::setValue($headers, $this->waMsg->content);
+            $this->waSender->sendMy(['header' => $headers]);
         }
     }
 

@@ -262,6 +262,8 @@ class WaSender
                     ]));
                 }
             }
+            
+            $dataReq['Content-Type'] = 'application/json; charset=UTF-8';
             for ($i=0; $i < $cant; $i++) {
 
                 try {
