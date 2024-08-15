@@ -72,6 +72,22 @@ class HcCosto
         $this->fSys->setContent('/', $filename, ['']);
     }
 
+    /** 
+     * Cuando los detalles no se pusieron por algun error regresarmos todos
+     * los valores del bait a detalles para solicitarlos nuevamente.
+    */
+    private function changeToDetalles(): void
+    {
+        $this->waMsg->subEvento = 'sdta';
+        $this->bait['current'] = $this->waMsg->subEvento;
+        // Eliminamos el archivo indicativo del proceso anterior
+        $filename = $this->createFilenameTmpOf('scto');
+        $this->fSys->delete('/', $filename);
+        $filename = $this->createFilenameTmpOf($this->waMsg->subEvento);
+        $this->fSys->setContent('/', $filename, ['']);
+        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
+    }
+
     /** */
     private function editarBait(): void
     {
@@ -105,6 +121,8 @@ class HcCosto
         if($notDta) {
             $this->txtValid = "⚠️ ¡Lo sentimos!, pero es muy importante que ".
             "indiques los detalles de la pieza.";
+            // Se necesita cambiar el bait en el campo current a sdta
+            $this->changeToDetalles();
             return false;
         }
 
