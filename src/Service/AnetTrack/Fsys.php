@@ -175,9 +175,9 @@ class Fsys {
 
         $est = $this->getContent('waEstanque', $waMsg->from . '.json');
         if(count($est) > 0) {
-            if(array_key_exists('items', $est)) {
+            if(array_key_exists('baits', $est)) {
 
-                $baits = $est['items'];
+                $baits = $est['baits'];
                 if(count($baits) > 0) {
 
                     $return['baitsInCooler'] = array_column($baits, 'idItem');

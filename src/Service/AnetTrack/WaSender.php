@@ -206,12 +206,9 @@ class WaSender
             }
         }
         
-        $cnxFile = $this->getCnxFile();
-        if(array_key_exists('version', $cnxFile)) {
-            $headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
-        }
         $rutas = [];
         $error = 'No hay ruta activa hacia ComCore';
+        $cnxFile = $this->getCnxFile();
         if(array_key_exists('routes', $cnxFile)) {
             $rutas = $cnxFile['routes'];
         }
@@ -238,8 +235,11 @@ class WaSender
             file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($event));
         }else{
             
+            if(array_key_exists('version', $cnxFile)) {
+                $headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
+            }
             $headers = HeaderDto::anetKey($headers, $this->anetToken);
-            $headers['Content-Type'] = 'application/json';
+            $headers['Content-Type'] = 'application/json; charset=UTF-8';
             $dataReq = [
                 'timeout' => $timeOut,
                 'headers' => $headers,
@@ -253,6 +253,8 @@ class WaSender
                 $dataReq['json'] = $event;
                 $byMetodo = 'POST';
             }
+
+            // Guardamos un historial de los envios
             if(array_key_exists('Anet-Event', $headers)) {
                 if($headers['Anet-Event'] != 'stt') {
                     file_put_contents('message_sendmy_'.time().'.json', json_encode([
@@ -263,7 +265,6 @@ class WaSender
                 }
             }
             
-            $dataReq['Content-Type'] = 'application/json; charset=UTF-8';
             for ($i=0; $i < $cant; $i++) {
 
                 try {

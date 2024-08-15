@@ -2,6 +2,7 @@
 
 namespace App\Service\AnetTrack;
 
+use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\WaSender;
 
@@ -57,26 +58,25 @@ class HcFinisherCot
         $body = "Aquí tienes otra oportunidad de venta💰";
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         
-        $putIdCot = false;
-        $model = (count($this->bait) > 0) ? $this->bait['mdl'] : '';
-        $track = (count($this->bait) > 0) ? $this->bait['track'] : [];
-        if(!array_key_exists('idCot', $track)) {
-            $putIdCot = true;
-        }else if($track['idCot'] == '') {
-            $putIdCot = true;
-        }
-        if($putIdCot) {
-            $track['idCot'] = time();
-        }
+        $hasContent = count($this->bait);
+        $model = ($hasContent > 0) ? $this->bait['mdl'] : '';
+        // $track = ($hasContent > 0) ? $this->bait['track'] : [];
+        // $putIdCot = false;
+        // if(!array_key_exists('idCot', $track)) {
+        //     $putIdCot = true;
+        // }else if($track['idCot'] == '') {
+        //     $putIdCot = true;
+        // }
+        // if($putIdCot) {
+        //     $track['idCot'] = time();
+        // }
 
         if($tipoFinish == 'ntg') {
             $this->waMsg->subEvento = 'ntg';
-            $track = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
-            $this->bait['track'] = $track;
+            $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
         }elseif($tipoFinish == 'ntga') {
             $this->waMsg->subEvento = 'ntga';
-            $track = ['fotos' => [], 'detalles' => 'No Vendo la Marca', 'costo' => 0];
-            $this->bait['track'] = $track;
+            $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Vendo la Marca', 'costo' => 0];
             $model = '';
         }elseif($tipoFinish == 'checkCnow') {
             $this->waMsg->subEvento = 'cleanCN';
@@ -140,20 +140,23 @@ class HcFinisherCot
         // --> RESPONSE TO ComCore
         // A partir de aquí se arman las cabeceras para enviarlas a ComCore
         // -->
-        $headerd = $this->waMsg->toStt(true);
-        $headerd['body'] = $track;
+        $headers = $this->waMsg->toStt(true);
         if($baitFromCooler['send'] != '') {
-            $headerd['send'] = $baitFromCooler['send'];
+            $headers = HeaderDto::campoValor($headers, 'sended', $baitFromCooler['send']);
         }
-
-        $headerd['baitsInCooler'] = (array_key_exists('baitsInCooler', $baitFromCooler))
-            ? $baitFromCooler['baitsInCooler'] : [];
-
-        if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
-            $headerd['resumeCooler'] = $this->waSender->fSys->getResumeCooler($headerd['from']);
+        $cant = count($baitFromCooler['baitsInCooler']);
+        if($cant > 0) {
+            $headers = HeaderDto::campoValor($headers, 'baits', $cant);
         }
+        
         if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
-            $this->waSender->sendMy(['header' => $headerd]);
+            $response = ['header' => $headers];
+            if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
+                $resumen = $this->waSender->fSys->getResumeCooler($this->waMsg->from);
+                $response = [$resumen, 'header' => $headers];
+                $headers = HeaderDto::includeBody($headers, true);
+            }
+            $this->waSender->sendMy($response);
         }
 
         // Eliminamos los archivos que indican el paso de cotizacion actual.
