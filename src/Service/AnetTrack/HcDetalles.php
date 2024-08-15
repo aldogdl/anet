@@ -2,6 +2,7 @@
 
 namespace App\Service\AnetTrack;
 
+use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
@@ -137,16 +138,19 @@ class HcDetalles
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         $template = $builder->exe('scto');
 
+        $res = 500;
         if(count($template) > 0) {
             $res = $this->waSender->sendPreTemplate($template);
-            if($res >= 200 && $res <= 300) {
-                $this->waSender->sendMy($this->waMsg->toMini());
-            }
         }else{
-            $this->waSender->sendText(
+            $res = $this->waSender->sendText(
                 "😃👍 Perfecto!!!\n*¿Cuál sería tu mejor PRECIO?.*\n\n".
                 "_💰 Escribe solo números por favor._"
             );
+        }
+        if($res >= 200 && $res <= 300) {
+            $headers = $this->waMsg->toStt(true);
+            $headers = HeaderDto::setValue($headers, $this->waMsg->content);
+            $this->waSender->sendMy(['header' => $headers]);
         }
     }
 
