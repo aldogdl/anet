@@ -260,7 +260,7 @@ class WaSender
                     file_put_contents('message_sendmy_'.time().'.json', json_encode([
                         'method' => $byMetodo,
                         'rutas'  => $rutas,
-                        'header' => $dataReq
+                        'headers' => $dataReq
                     ]));
                 }
             }

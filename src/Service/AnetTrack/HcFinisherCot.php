@@ -60,17 +60,6 @@ class HcFinisherCot
         
         $hasContent = count($this->bait);
         $model = ($hasContent > 0) ? $this->bait['mdl'] : '';
-        // $track = ($hasContent > 0) ? $this->bait['track'] : [];
-        // $putIdCot = false;
-        // if(!array_key_exists('idCot', $track)) {
-        //     $putIdCot = true;
-        // }else if($track['idCot'] == '') {
-        //     $putIdCot = true;
-        // }
-        // if($putIdCot) {
-        //     $track['idCot'] = time();
-        // }
-
         if($tipoFinish == 'ntg') {
             $this->waMsg->subEvento = 'ntg';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
@@ -109,7 +98,6 @@ class HcFinisherCot
             $code = $this->waSender->sendText($head.$body);
             $code = $this->waSender->sendTemplate($baitFromCooler['send']);
         }else {
-
             // Si no se encontro un nuevo bait se analizan los siguiente aspecto y se
             // actua en concecuencia.
             if($this->waMsg->subEvento == 'cleanCN') {
