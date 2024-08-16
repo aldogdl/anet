@@ -204,13 +204,13 @@ class HcFotos
                     $headers = $this->waMsg->toStt(true);
                     $headers = HeaderDto::setValue($headers, $this->waMsg->content['id']);
                     if(array_key_exists('caption', $this->waMsg->content)) {
-                        
-                        $encoding = mb_detect_encoding($this->waMsg->content['caption'], ['UTF-8', 'ISO-8859-1', 'ASCII']);
+
+                        $valorCabecera = $this->waMsg->content['caption'];
+                        $encoding = mb_detect_encoding($valorCabecera, ['UTF-8', 'ISO-8859-1', 'ASCII']);
                         if ($encoding !== 'UTF-8') {
-                            $valorCabecera = mb_convert_encoding($this->waMsg->content['caption'], 'UTF-8', $encoding);
-                        } else {
-                            $valorCabecera = $this->waMsg->content['caption'];
+                            $valorCabecera = mb_convert_encoding($valorCabecera, 'UTF-8', $encoding);
                         }
+                        $valorCabecera = rawurlencode($valorCabecera);
                         $headers = HeaderDto::campoValor($headers, 'caption', $valorCabecera);
                     }
                     $this->waSender->sendMy(['header' => $headers]);
