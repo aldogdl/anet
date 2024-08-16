@@ -30,7 +30,7 @@ class HcFotos
     /** */
     public function exe(): void
     {
-        $processValid = true;
+        $continuarSinFotos = false;
         if($this->waMsg->tipoMsg == TypesWaMsgs::INTERACTIVE) {
             
             if(mb_strpos($this->waMsg->subEvento, 'nfto') !== false) {
@@ -39,7 +39,7 @@ class HcFotos
                 return;
             }elseif(mb_strpos($this->waMsg->subEvento, 'fton') !== false) {
                 // El usuario desea continuar sin fotos
-                $processValid = false;
+                $continuarSinFotos = true;
                 $this->waMsg->content = ['id' => 0, 'mime_type' => 'none'];
                 $this->bait['current'] = 'sdta';
             }else {
@@ -51,7 +51,7 @@ class HcFotos
 
         // Solo en las imagenes es necesario primero preparar el escenario
         // antes de validar los datos recibidos por la cuestion del envio de fotos.
-        if($processValid) {
+        if(!$continuarSinFotos) {
             $this->prepareStep();
             $this->bait['current'] = 'sdta';
             // Validamos la integridad del tipo de mensaje
@@ -61,11 +61,8 @@ class HcFotos
             }
         }
 
-        $oldCurrent = $this->bait['current'];
         $this->editarBait();
-        // Si $processValid es false quiere decir que se presiono el btn de
-        // continuar sin fotos.
-        $this->enviarMsg($oldCurrent, $processValid);
+        $this->enviarMsg($this->bait['current'], $continuarSinFotos);
         return;
     }
 
@@ -128,6 +125,7 @@ class HcFotos
         if(array_key_exists('track', $this->bait)) {
             $track = $this->bait['track'];
         }
+
         if(!array_key_exists('fotos', $track)) {
             $track['fotos'] = [$this->waMsg->content];
         }else{
@@ -206,7 +204,12 @@ class HcFotos
                     $headers = $this->waMsg->toStt(true);
                     $headers = HeaderDto::setValue($headers, $this->waMsg->content['id']);
                     if(array_key_exists('caption', $this->waMsg->content)) {
-                        $valorCabecera = mb_convert_encoding($this->waMsg->content['caption'], 'UTF-8', 'auto');
+                        $encoding = mb_detect_encoding($this->waMsg->content['caption'], ['UTF-8', 'ISO-8859-1', 'ASCII']);
+                        if ($encoding !== 'UTF-8') {
+                            $valorCabecera = mb_convert_encoding($this->waMsg->content['caption'], 'UTF-8', $encoding);
+                        } else {
+                            $valorCabecera = $this->waMsg->content['caption'];
+                        }
                         $headers = HeaderDto::campoValor($headers, 'caption', $valorCabecera);
                     }
                     $this->waSender->sendMy(['header' => $headers]);
@@ -216,8 +219,8 @@ class HcFotos
 
             if($oldCurrent == 'sdta') {
                 $this->waSender->sendText(
-                    "*Muy bien gracias*.\n\n📝Ahora puedes describir un poco la ".
-                    "CONDICIÓN O ESTADO de tu autoparte por favor."
+                    "*Muy bien gracias*.\n\n📝Por favor, describe un poco la ".
+                    "CONDICIÓN O ESTADO de tu autoparte."
                 );
             }else{
                 $this->waSender->sendText(

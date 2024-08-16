@@ -150,7 +150,12 @@ class HcDetalles
         if($res >= 200 && $res <= 300) {
 
             $headers = $this->waMsg->toStt(true);
-            $valorCabecera = mb_convert_encoding($this->waMsg->content, 'UTF-8', 'auto');
+            $encoding = mb_detect_encoding($this->waMsg->content, ['UTF-8', 'ISO-8859-1', 'ASCII']);
+            if ($encoding !== 'UTF-8') {
+                $valorCabecera = mb_convert_encoding($this->waMsg->content, 'UTF-8', $encoding);
+            } else {
+                $valorCabecera = $this->waMsg->content;
+            }
             $headers = HeaderDto::setValue($headers, $valorCabecera);
             $this->waSender->sendMy(['header' => $headers]);
         }
