@@ -149,6 +149,7 @@ class HcDetalles
         }
         if($res >= 200 && $res <= 300) {
 
+            $prueba = $this->waMsg->content;
             $headers = $this->waMsg->toStt(true);
             $encoding = mb_detect_encoding($this->waMsg->content, ['UTF-8', 'ISO-8859-1', 'ASCII']);
             if ($encoding !== 'UTF-8') {
@@ -156,6 +157,7 @@ class HcDetalles
             } else {
                 $valorCabecera = $this->waMsg->content;
             }
+            file_put_contents('wa_encoding.json', json_encode(['coding'=> $encoding, 'encode' => $prueba, 'body' => $valorCabecera]));
             $headers = HeaderDto::setValue($headers, $valorCabecera);
             $this->waSender->sendMy(['header' => $headers]);
         }

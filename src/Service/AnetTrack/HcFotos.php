@@ -204,6 +204,7 @@ class HcFotos
                     $headers = $this->waMsg->toStt(true);
                     $headers = HeaderDto::setValue($headers, $this->waMsg->content['id']);
                     if(array_key_exists('caption', $this->waMsg->content)) {
+                        
                         $encoding = mb_detect_encoding($this->waMsg->content['caption'], ['UTF-8', 'ISO-8859-1', 'ASCII']);
                         if ($encoding !== 'UTF-8') {
                             $valorCabecera = mb_convert_encoding($this->waMsg->content['caption'], 'UTF-8', $encoding);
