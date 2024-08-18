@@ -40,6 +40,56 @@ class HcFinisherCot
     /** */
     public function exe(String $tipoFinish = 'cancel'): void
     {
+        $result = $this->responseToAction($tipoFinish);
+
+        // --> RESPONSE TO ComCore
+        // A partir de aquí se arman las cabeceras para enviarlas a ComCore
+        // -->
+        $headers = $this->waMsg->toStt(true);
+        if($result['send'] != '') {
+            $headers = HeaderDto::campoValor($headers, 'sended', $result['send']);
+        }
+        $cant = count($result['baitsInCooler']);
+        if($cant > 0) {
+            $headers = HeaderDto::campoValor($headers, 'baits', $cant);
+        }
+        
+        if($result['code'] >= 200 && $result['code'] <= 300 || $this->waMsg->isTest) {
+            
+            $response = ['header' => $headers];
+            if($tipoFinish = 'fin') {
+                // Incluimos todos los datos resultantes de la cotizacion y sus cabecesaras
+                $response = [$this->bait['track'], 'header' => $headers];
+                $headers = HeaderDto::includeBody($headers, true);
+            }
+            
+            if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
+                $resumen = $this->waSender->fSys->getResumeCooler($this->waMsg->from);
+                $response = [$resumen, 'header' => $headers];
+                $headers = HeaderDto::includeBody($headers, true);
+            }
+            $this->waSender->sendMy($response);
+        }
+
+        // Eliminamos los archivos que indican el paso de cotizacion actual.
+        $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
+        $rota = count($toDelete);
+        for ($i=0; $i < $rota; $i++) { 
+            $filename = $this->createFilenameTmpOf($toDelete[$i]);
+            $this->waSender->fSys->delete('/', $filename);
+        }
+
+        // Al finalizar eliminamos el archivo que detiene los status
+        // no es necesario mantenerlo ya que no sabemos si el cotizador
+        // va a continuar cotizando la siguiente solicitud.
+        $this->waSender->fSys->delete('/', $this->createFilenameTmpOf('stopstt'));
+
+    }
+
+    /** */
+    private function responseToAction(String $tipoFinish): array
+    {
+
         // Dependiendo de la accion realizada grabamos distintas
         // cabeceras para la respuesta a dicha accion.
         if($tipoFinish == 'cancel') {
@@ -55,11 +105,11 @@ class HcFinisherCot
         }else {
             $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
         }
-        $body = "Aquí tienes otra oportunidad de venta💰";
-        $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
-        
+
+        $body = "Aquí tienes otra oportunidad de venta💰";        
         $hasContent = count($this->bait);
         $model = ($hasContent > 0) ? $this->bait['mdl'] : '';
+
         if($tipoFinish == 'ntg') {
             $this->waMsg->subEvento = 'ntg';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
@@ -125,40 +175,7 @@ class HcFinisherCot
             $this->waSender->context = $this->bait['wamid'];
         }
 
-        // --> RESPONSE TO ComCore
-        // A partir de aquí se arman las cabeceras para enviarlas a ComCore
-        // -->
-        $headers = $this->waMsg->toStt(true);
-        if($baitFromCooler['send'] != '') {
-            $headers = HeaderDto::campoValor($headers, 'sended', $baitFromCooler['send']);
-        }
-        $cant = count($baitFromCooler['baitsInCooler']);
-        if($cant > 0) {
-            $headers = HeaderDto::campoValor($headers, 'baits', $cant);
-        }
-        
-        if($code >= 200 && $code <= 300 || $this->waMsg->isTest) {
-            $response = ['header' => $headers];
-            if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
-                $resumen = $this->waSender->fSys->getResumeCooler($this->waMsg->from);
-                $response = [$resumen, 'header' => $headers];
-                $headers = HeaderDto::includeBody($headers, true);
-            }
-            $this->waSender->sendMy($response);
-        }
-
-        // Eliminamos los archivos que indican el paso de cotizacion actual.
-        $rota = count($toDelete);
-        for ($i=0; $i < $rota; $i++) { 
-            $filename = $this->createFilenameTmpOf($toDelete[$i]);
-            $this->waSender->fSys->delete('/', $filename);
-        }
-
-        // Al finalizar eliminamos el archivo que detiene los status
-        // no es necesario mantenerlo ya que no sabemos si el cotizador
-        // va a continuar cotizando la siguiente solicitud.
-        $this->waSender->fSys->delete('/', $this->createFilenameTmpOf('stopstt'));
-
+        $baitFromCooler['code'] = $code;
+        return $baitFromCooler;
     }
-
 }
