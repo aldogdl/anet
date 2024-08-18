@@ -49,18 +49,19 @@ class HcFinisherCot
         if($result['send'] != '') {
             $headers = HeaderDto::campoValor($headers, 'sended', $result['send']);
         }
+
         $cant = count($result['baitsInCooler']);
         if($cant > 0) {
             $headers = HeaderDto::campoValor($headers, 'baits', $cant);
         }
-        
+
         if($result['code'] >= 200 && $result['code'] <= 300 || $this->waMsg->isTest) {
-            
+
             $response = ['header' => $headers];
             if($tipoFinish == 'fin') {
                 // Incluimos todos los datos resultantes de la cotizacion y sus cabecesaras
-                $response = [$this->bait['track'], 'header' => $headers];
                 $headers = HeaderDto::includeBody($headers, true);
+                $response = [$this->bait['track'], 'header' => $headers];
             }
 
             if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
