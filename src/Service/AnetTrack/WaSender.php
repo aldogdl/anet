@@ -257,7 +257,9 @@ class WaSender
             // Guardamos un historial de los envios
             if(array_key_exists('Anet-Event', $headers)) {
                 if($headers['Anet-Event'] != 'stt') {
-                    file_put_contents('message_sendmy_'.time().'.json', json_encode([
+
+                    $pathSendmy = $this->fSys->getFolderTo('waSendmy');
+                    file_put_contents($pathSendmy.'/message_sendmy_'.time().'.json', json_encode([
                         'method' => $byMetodo,
                         'rutas'  => $rutas,
                         'headers' => $dataReq

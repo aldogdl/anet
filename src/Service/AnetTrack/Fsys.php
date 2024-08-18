@@ -239,7 +239,7 @@ class Fsys {
     /** 
      * Uso interno para contruir el folder de destino
     */
-    private function getFolderTo(String $folder): String
+    public function getFolderTo(String $folder): String
     {
         $folder = ($folder == '/') ? 'phtml' : $folder;
         $path = Path::canonicalize($this->params->get($folder));

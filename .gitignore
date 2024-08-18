@@ -47,6 +47,7 @@ public_html/tracking/
 public_html/wa_templates/
 public_html/wa_estanque/
 public_html/wa_analizar/
+public_html/wa_sendmy/
 
 var/
 vendor/
