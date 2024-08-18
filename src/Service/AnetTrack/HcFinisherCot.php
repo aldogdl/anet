@@ -57,12 +57,12 @@ class HcFinisherCot
         if($result['code'] >= 200 && $result['code'] <= 300 || $this->waMsg->isTest) {
             
             $response = ['header' => $headers];
-            if($tipoFinish = 'fin') {
+            if($tipoFinish == 'fin') {
                 // Incluimos todos los datos resultantes de la cotizacion y sus cabecesaras
                 $response = [$this->bait['track'], 'header' => $headers];
                 $headers = HeaderDto::includeBody($headers, true);
             }
-            
+
             if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
                 $resumen = $this->waSender->fSys->getResumeCooler($this->waMsg->from);
                 $response = [$resumen, 'header' => $headers];
