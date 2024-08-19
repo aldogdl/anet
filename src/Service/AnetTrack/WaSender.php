@@ -349,7 +349,6 @@ class WaSender
         
         $priorys = ["polite", "cosmic"];
         $cantPriory = count($priorys);
-        $forceTo = (array_key_exists('force_to', $cnxFile)) ? $cnxFile['force_to'] : '';
         // Los tuneles que no se les ha enviado un mensaje
         $tunnels = [];
         // Los tuneles que ya fueron usados
@@ -359,60 +358,49 @@ class WaSender
         for ($r=0; $r < $rota; $r++) {
 
             // Tendrian que indicar que estan activos para tomarce como opcion
-            if($cnxFile['routes'][$r]['active']) {
-                $url = $cnxFile['routes'][$r]['public'].'-'.$cnxFile['routes'][$r]['id'];
-                $tunel = [
-                    'url'  => 'https://'.$url.'.ngrok-free.app/api/sse',
-                    'isPay'=> $cnxFile['routes'][$r]['isPay'],
-                    'user' => $cnxFile['routes'][$r]['user'],
-                    'host' => $cnxFile['routes'][$r]['host'],
-                ];
+            if(!$cnxFile['routes'][$r]['active']) {
+                continue;
+            }
 
-                $isPriory = false;
-                $morePriory = [];
-                // Recorremos las url prioritarias para ver si la ruta a guardar lo es.
-                for ($i=0; $i < $cantPriory; $i++) {
-                    if(mb_strpos($tunel['url'], $priorys[$i]) !== false) {
-                        $isPriory = true;
-                    }
+            $url = $cnxFile['routes'][$r]['public'].'-'.$cnxFile['routes'][$r]['id'];
+            $tunel = [
+                'url'  => 'https://'.$url.'.ngrok-free.app/api/sse',
+                'isPay'=> $cnxFile['routes'][$r]['isPay'],
+                'user' => $cnxFile['routes'][$r]['user'],
+                'host' => $cnxFile['routes'][$r]['host'],
+            ];
+
+            $isPriory = false;
+            $morePriory = [];
+            // Recorremos las url prioritarias para ver si la ruta a guardar lo es.
+            for ($i=0; $i < $cantPriory; $i++) {
+                if(mb_strpos($tunel['url'], $priorys[$i]) !== false) {
+                    $isPriory = true;
                 }
+            }
 
-                if(in_array($cnxFile['routes'][$r]['host'], $notUsed)) {
+            if(in_array($cnxFile['routes'][$r]['host'], $notUsed)) {
 
-                    if($forceTo != '') {
-                        if($cnxFile['routes'][$r]['user'] == $forceTo) {
-                            $morePriory[] = $tunel;
-                        }
+                if($isPriory) {
+                    if($cnxFile['routes'][$r]['user'] == '5213316195698') {
+                        $morePriory[] = $tunel;
                     }else{
-
-                        if($isPriory) {
-                            if($cnxFile['routes'][$r]['user'] == '5213316195698') {
-                                $morePriory[] = $tunel;
-                            }else{
-                                array_unshift($tunnels, $tunel);
-                            }
-                        }else{
-                            $tunnels[] = $tunel;
-                        }
+                        array_unshift($tunnels, $tunel);
                     }
                 }else{
+                    $tunnels[] = $tunel;
+                }
 
-                    if($forceTo != '') {
-                        if($cnxFile['routes'][$r]['user'] == $forceTo) {
-                            $morePriory[] = $tunel;
-                        }
+            }else{
+
+                if($isPriory) {
+                    if($cnxFile['routes'][$r]['user'] == '5213316195698') {
+                        $morePriory[] = $tunel;
                     }else{
-
-                        if($isPriory) {
-                            if($cnxFile['routes'][$r]['user'] == '5213316195698') {
-                                $morePriory[] = $tunel;
-                            }else{
-                                array_unshift($tunnelsAlt, $tunel);
-                            }
-                        }else{
-                            $tunnelsAlt[] = $tunel;
-                        }
+                        array_unshift($tunnelsAlt, $tunel);
                     }
+                }else{
+                    $tunnelsAlt[] = $tunel;
                 }
             }
         }
