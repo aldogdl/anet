@@ -343,12 +343,12 @@ class WaSender
             // Si notUse es igual a cero es que ya use todos por lo tanto 
             // reiniciamos el conteo.
             $cnxFile['balance'] = [];
-            $notUse = $hosts;
+            $notUse = [];
         }
         
         $priorys = ["polite", "cosmic"];
         $cantPriory = count($priorys);
-
+        $forceTo = (array_key_exists('force_to', $cnxFile)) ? $cnxFile['force_to'] : '';
         // Los tuneles que no se les ha enviado un mensaje
         $tunnels = [];
         // Los tuneles que ya fueron usados
@@ -375,25 +375,42 @@ class WaSender
                         $isPriory = true;
                     }
                 }
+
                 if(in_array($cnxFile['routes'][$r]['host'], $notUse)) {
-                    if($isPriory) {
-                        if($cnxFile['routes'][$r]['user'] == '5213316195698') {
+
+                    if($forceTo != '') {
+                        if($cnxFile['routes'][$r]['user'] == $forceTo) {
                             $morePriory[] = $tunel;
-                        }else{
-                            array_unshift($tunnels, $tunel);
                         }
                     }else{
-                        $tunnels[] = $tunel;
+
+                        if($isPriory) {
+                            if($cnxFile['routes'][$r]['user'] == '5213316195698') {
+                                $morePriory[] = $tunel;
+                            }else{
+                                array_unshift($tunnels, $tunel);
+                            }
+                        }else{
+                            $tunnels[] = $tunel;
+                        }
                     }
                 }else{
-                    if($isPriory) {
-                        if($cnxFile['routes'][$r]['user'] == '5213316195698') {
+
+                    if($forceTo != '') {
+                        if($cnxFile['routes'][$r]['user'] == $forceTo) {
                             $morePriory[] = $tunel;
-                        }else{
-                            array_unshift($tunnelsAlt, $tunel);
                         }
                     }else{
-                        $tunnelsAlt[] = $tunel;
+
+                        if($isPriory) {
+                            if($cnxFile['routes'][$r]['user'] == '5213316195698') {
+                                $morePriory[] = $tunel;
+                            }else{
+                                array_unshift($tunnelsAlt, $tunel);
+                            }
+                        }else{
+                            $tunnelsAlt[] = $tunel;
+                        }
                     }
                 }
             }
