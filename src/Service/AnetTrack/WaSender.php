@@ -368,21 +368,30 @@ class WaSender
                 ];
 
                 $isPriory = false;
+                $morePriory = [];
                 // Recorremos las url prioritarias para ver si la ruta a guardar lo es.
-                for ($i=0; $i < $cantPriory; $i++) { 
+                for ($i=0; $i < $cantPriory; $i++) {
                     if(mb_strpos($tunel['url'], $priorys[$i]) !== false) {
                         $isPriory = true;
                     }
                 }
                 if(in_array($cnxFile['routes'][$r]['host'], $notUse)) {
                     if($isPriory) {
-                        array_unshift($tunnels, $tunel);
+                        if($cnxFile['routes'][$r]['user'] == '5213316195698') {
+                            $morePriory[] = $tunel;
+                        }else{
+                            array_unshift($tunnels, $tunel);
+                        }
                     }else{
                         $tunnels[] = $tunel;
                     }
                 }else{
                     if($isPriory) {
-                        array_unshift($tunnelsAlt, $tunel);
+                        if($cnxFile['routes'][$r]['user'] == '5213316195698') {
+                            $morePriory[] = $tunel;
+                        }else{
+                            array_unshift($tunnelsAlt, $tunel);
+                        }
                     }else{
                         $tunnelsAlt[] = $tunel;
                     }
@@ -390,7 +399,7 @@ class WaSender
             }
         }
 
-        $cnxFile['routes'] = array_merge($tunnels, $tunnelsAlt);
+        $cnxFile['routes'] = array_merge($morePriory, $tunnels, $tunnelsAlt);
         return $cnxFile;
     }
 
