@@ -338,12 +338,13 @@ class WaSender
         // Para el balance de carga
         $hosts = array_column($cnxFile['routes'], 'host');
         $hosts = array_values(array_unique($hosts));
-        $notUse = array_diff($hosts, $cnxFile['balance']);
-        if(count($notUse) == 0) {
+        // Tomamos los que no esten en los usados
+        $notUsed = array_diff($hosts, $cnxFile['balance']);
+        if(count($notUsed) == 0) {
             // Si notUse es igual a cero es que ya use todos por lo tanto 
             // reiniciamos el conteo.
             $cnxFile['balance'] = [];
-            $notUse = [];
+            $notUsed = $hosts;
         }
         
         $priorys = ["polite", "cosmic"];
@@ -376,7 +377,7 @@ class WaSender
                     }
                 }
 
-                if(in_array($cnxFile['routes'][$r]['host'], $notUse)) {
+                if(in_array($cnxFile['routes'][$r]['host'], $notUsed)) {
 
                     if($forceTo != '') {
                         if($cnxFile['routes'][$r]['user'] == $forceTo) {
