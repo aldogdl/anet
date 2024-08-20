@@ -41,13 +41,13 @@ class HcFinisherCot
     public function exe(String $tipoFinish = 'cancel'): void
     {
         $headers = $this->waMsg->toStt(true);
-        
+
         $result = $this->responseToAction($tipoFinish);
         $headers = HeaderDto::campoValor($headers, 'baits', $result['baitsInCooler']);
         if($result['send'] != '') {
             $headers = HeaderDto::campoValor($headers, 'sended', $result['send']);
         }
-
+        $headers = HeaderDto::event($headers, $this->waMsg->subEvento);
         if($result['code'] >= 200 && $result['code'] <= 300 || $this->waMsg->isTest) {
 
             $response = ['header' => $headers];
