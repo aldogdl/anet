@@ -40,19 +40,12 @@ class HcFinisherCot
     /** */
     public function exe(String $tipoFinish = 'cancel'): void
     {
-        $result = $this->responseToAction($tipoFinish);
-
-        // --> RESPONSE TO ComCore
-        // A partir de aquí se arman las cabeceras para enviarlas a ComCore
-        // -->
         $headers = $this->waMsg->toStt(true);
+        
+        $result = $this->responseToAction($tipoFinish);
+        $headers = HeaderDto::campoValor($headers, 'baits', $result['baitsInCooler']);
         if($result['send'] != '') {
             $headers = HeaderDto::campoValor($headers, 'sended', $result['send']);
-        }
-
-        $cant = count($result['baitsInCooler']);
-        if($cant > 0) {
-            $headers = HeaderDto::campoValor($headers, 'baits', $cant);
         }
 
         if($result['code'] >= 200 && $result['code'] <= 300 || $this->waMsg->isTest) {
@@ -90,43 +83,33 @@ class HcFinisherCot
     /** */
     private function responseToAction(String $tipoFinish): array
     {
-
+        $model = (count($this->bait) > 0) ? $this->bait['mdl'] : '';
         // Dependiendo de la accion realizada grabamos distintas
         // cabeceras para la respuesta a dicha accion.
         if($tipoFinish == 'cancel') {
             $head = "📵 *Solicitud CANCELADA.*\n\n";
         }elseif($tipoFinish == 'ntg') {
             $head = "🙂👍 *NO TE PREOCUPES.*\n\n";
-        }elseif($tipoFinish == 'ntga') {
-            $head = "🚗 *PERFECTO GRACIAS.*\n\n";
-        }elseif($tipoFinish == 'checkCnow') {
-            $head = "😉 *SOLICITUD RECIBIDA PARA COTIZAR!!*...\n\n";
-        }elseif($tipoFinish == 'checkNt') {
-            $head = "😉 *OK, ENTERADOS*...\n\n";
-        }else {
-            $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
-        }
-
-        $body = "Aquí tienes otra oportunidad de venta💰";        
-        $hasContent = count($this->bait);
-        $model = ($hasContent > 0) ? $this->bait['mdl'] : '';
-
-        if($tipoFinish == 'ntg') {
             $this->waMsg->subEvento = 'ntg';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
         }elseif($tipoFinish == 'ntga') {
+            $head = "🚗 *PERFECTO GRACIAS.*\n\n";
             $this->waMsg->subEvento = 'ntga';
             $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Vendo la Marca', 'costo' => 0];
-            $model = '';
         }elseif($tipoFinish == 'checkCnow') {
+            $head = "😉 *SOLICITUD RECIBIDA PARA COTIZAR!!*...\n\n";
             $this->waMsg->subEvento = 'cleanCN';
         }elseif($tipoFinish == 'checkNt') {
+            $head = "😉 *OK, ENTERADOS*...\n\n";
             $this->waMsg->subEvento = 'cleanNt';
-        }elseif($tipoFinish == 'fin') {
+        }else {
+            $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
             $this->waMsg->subEvento = 'sgrx';
             $this->waMsg->idItem = $this->bait['idItem'];
         }
 
+        $body = "Aquí tienes otra oportunidad de venta💰";
+        
         // Si el subEvent se coloco en cleaner es que no hay un bait en el cooler del cotizador
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
@@ -140,8 +123,8 @@ class HcFinisherCot
 
         // Quitamos el context para que los msg siguientes no
         // lleven la cabecera de la cotizacion en curso.
+        $contextOld = $this->waSender->context;
         $this->waSender->context = '';
-        
         // Si se encotro un nuevo bait, el idItem esta en el campo send
         // por ende enviamos el nuevo bait al cotizador
         $code = 200;
@@ -172,10 +155,7 @@ class HcFinisherCot
         }
 
         // Volvemos a colocar el contexto para proceguir con el proceso siguiente
-        if(count($this->bait) > 0) {
-            $this->waSender->context = $this->bait['wamid'];
-        }
-
+        $this->waSender->context = $contextOld;
         $baitFromCooler['code'] = $code;
         return $baitFromCooler;
     }

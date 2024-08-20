@@ -169,27 +169,32 @@ class Fsys {
      * la primer opcion disponible.
      * @return String El Id del Item encontrado
     */
-    public function getNextBait(WaMsgDto $waMsg, String $mdlpref = ''): array
+    public function getNextBait(WaMsgDto $waMsg, String $mdlpref): array
     {    
         $return = ['send' => '', 'baitsInCooler' => []];
 
-        $est = $this->getContent('waEstanque', $waMsg->from . '.json');
+        $est = $this->getContent('waEstanque', $waMsg->from.'.json');
         if(count($est) > 0) {
             if(array_key_exists('baits', $est)) {
 
-                $baits = $est['baits'];
-                if(count($baits) > 0) {
+                if($waMsg->subEvento == 'ntga') {
+                    $rota = count($est['baits']);
+                    // Si el cotizador dijo no tengo la marca eliminamos todas las
+                    // autopartes de esa misma marca.
+                    for ($i=0; $i < $rota; $i++) { 
+                        if($est['baits'][$i]['mdl'] == $mdlpref) {
+                            unset($est['baits'][$i]);
+                        }
+                    }
+                    $this->setContent('waEstanque', $waMsg->from.'.json', $est);
+                }
 
-                    $return['baitsInCooler'] = array_column($baits, 'idItem');
-                    $has = 0;
-                    if($mdlpref != '') {
-                        $mdls = array_column($baits, 'mdl');
-                        $has = array_search($mdlpref, $mdls);
-                        $has = ($has === false) ? 0 : $has;
-                    }
-                    if($has !== false) {
-                        $return['send'] = $baits[$has]['idItem'];
-                    }
+                $baits = $est['baits'];
+                $return['baitsInCooler'] = count($baits);
+                if($return['baitsInCooler'] > 0) {
+                    $has = array_search($mdlpref, array_column($baits, 'mdl'));
+                    $has = ($has === false) ? 0 : $has;
+                    $return['send'] = $baits[$has]['idItem'];
                 }
             }
         }

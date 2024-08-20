@@ -27,6 +27,7 @@ class WaBtnNtgX
 
         $bait = [];
         if($hasCotInProgress) {
+            
             $bait = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
             if(count($bait) > 0) {
                 // Si se esta cotizando actualmente una, pero la que se dijo no tengo es otra
