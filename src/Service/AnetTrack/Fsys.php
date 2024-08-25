@@ -169,7 +169,7 @@ class Fsys {
      * la primer opcion disponible.
      * @return String El Id del Item encontrado
     */
-    public function getNextBait(WaMsgDto $waMsg, String $mdlpref): array
+    public function getNextBait(WaMsgDto $waMsg, String $mrkpref): array
     {    
         $return = ['send' => '', 'baitsInCooler' => []];
 
@@ -182,7 +182,7 @@ class Fsys {
                     // Si el cotizador dijo no tengo la marca eliminamos todas las
                     // autopartes de esa misma marca.
                     for ($i=0; $i < $rota; $i++) { 
-                        if($est['baits'][$i]['mdl'] == $mdlpref) {
+                        if($est['baits'][$i]['mrk'] == $mrkpref) {
                             unset($est['baits'][$i]);
                         }
                     }
@@ -192,7 +192,7 @@ class Fsys {
                 $baits = $est['baits'];
                 $return['baitsInCooler'] = count($baits);
                 if($return['baitsInCooler'] > 0) {
-                    $has = array_search($mdlpref, array_column($baits, 'mdl'));
+                    $has = array_search($mrkpref, array_column($baits, 'mrk'));
                     $has = ($has === false) ? 0 : $has;
                     $return['send'] = $baits[$has]['idItem'];
                 }

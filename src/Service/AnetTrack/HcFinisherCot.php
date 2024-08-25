@@ -85,7 +85,7 @@ class HcFinisherCot
     /** */
     private function responseToAction(String $tipoFinish): array
     {
-        $model = (count($this->bait) > 0) ? $this->bait['mdl'] : '';
+        $mrk = (count($this->bait) > 0) ? $this->bait['mrk'] : '';
         // Dependiendo de la accion realizada grabamos distintas
         // cabeceras para la respuesta a dicha accion.
         if($tipoFinish == 'cancel') {
@@ -120,7 +120,7 @@ class HcFinisherCot
             $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
             $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
             // Recuperamos otro bait directamente desde el estanque
-            $baitFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $model);
+            $baitFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $mrk);
         }
 
         // Quitamos el context para que los msg siguientes no
