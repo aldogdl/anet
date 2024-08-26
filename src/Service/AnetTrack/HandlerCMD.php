@@ -7,6 +7,7 @@ use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaSender;
 use App\Service\AnetTrack\WaInitSess;
+use App\Service\DemoSol\DemoSol;
 
 class HandlerCMD
 {
@@ -90,6 +91,12 @@ class HandlerCMD
                 'payload' => ['subEvent' => 'cmd', 'cmd' => 'play', 'waId' => $this->waMsg->from]
             ];
             $this->waSender->sendMy($retornar);
+            return;
+        }elseif(mb_strpos($this->waMsg->content, 'demo') !== false) {
+            
+            $demoSol = new DemoSol($this->fSys);
+            $msgTrack = $demoSol->exe();
+            $this->waSender->sendPreTemplate($msgTrack);
             return;
         }
 
