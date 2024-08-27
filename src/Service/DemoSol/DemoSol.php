@@ -35,7 +35,7 @@ class DemoSol {
             $rota = count($btns);
             for ($i=0; $i < $rota; $i++) { 
                 $btns[$i][ $btns[$i]['type'] ]['id'] = str_replace(
-                    '{:uuid}', 'demo_'.$to, $btns[$i][ $btns[$i]['type'] ]['id']
+                    '{:uuid}', 'demo-'.$to, $btns[$i][ $btns[$i]['type'] ]['id']
                 );
             }
 
