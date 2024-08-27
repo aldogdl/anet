@@ -64,7 +64,10 @@ class HcFinisherCot
                 $response = [$resumen, 'header' => $headers];
                 $headers = HeaderDto::includeBody($headers, true);
             }
-            $this->waSender->sendMy($response);
+
+            if(mb_strpos($this->waMsg->idItem, 'demo') === false) {
+                $this->waSender->sendMy($response);
+            }
         }
 
         // Eliminamos los archivos que indican el paso de cotizacion actual.
@@ -116,11 +119,15 @@ class HcFinisherCot
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
         $baitFromCooler = ['send' => ''];
-        if(mb_strpos($this->waMsg->subEvento, 'clean') === false) {
+        $idDemo = (mb_strpos($this->waMsg->idItem, 'demo') === false) ? false : true;
+
+        if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
             $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
             $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
             // Recuperamos otro bait directamente desde el estanque
             $baitFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $mrk);
+        }else if($idDemo) {
+            $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
         }
 
         // Quitamos el context para que los msg siguientes no
