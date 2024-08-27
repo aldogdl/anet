@@ -86,14 +86,14 @@ class WaBtnCotNow
                 ? $this->waMsg->context : $this->waSender->wamidMsg;
             }
 
-            if(!$isDemo) {
-                $this->waSender->fSys->putCotizando($this->waMsg);
-            }else{
+            if($isDemo) {
                 $demo = new DemoSol($this->waSender->fSys);
                 $baitDemo = $demo->buildBaitDemo($this->waMsg);
                 $this->waSender->fSys->setContent('demo', $this->waMsg->from.'json', $baitDemo);
+                return;
             }
-
+            
+            $this->waSender->fSys->putCotizando($this->waMsg);
             // Tomamos las cabeceras básicas para enviar a ComCore
             $headers = $this->waMsg->toStt(true);
             // Grabamos el valor de la accion
