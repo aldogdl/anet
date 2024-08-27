@@ -5,6 +5,7 @@ namespace App\Service\AnetTrack;
 use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\WaSender;
+use App\Service\DemoSol\DemoSol;
 
 class WaBtnCotNow
 {
@@ -59,7 +60,12 @@ class WaBtnCotNow
             return;
         }
 
-        $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idItem);
+        $exite = true;
+        $isDemo = (mb_strpos($this->waMsg->idItem, 'demo_') === false) ? false : true;
+        if(!$isDemo) {
+            $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idItem);
+        }
+
         if(!$exite) {
             $finicher = new HcFinisherCot($this->waSender, $this->waMsg, []);
             // No se encontró una pieza en trackeds(cotizada) ni tampoco en el cooler
@@ -74,11 +80,20 @@ class WaBtnCotNow
         $code = $this->waSender->sendPreTemplate($template);
 
         if($code >= 200 && $code <= 300) {
+
             if($this->waSender->wamidMsg != '') {
                 $this->waMsg->id = ($this->waMsg->context != '')
                 ? $this->waMsg->context : $this->waSender->wamidMsg;
             }
-            $this->waSender->fSys->putCotizando($this->waMsg);
+
+            if(!$isDemo) {
+                $this->waSender->fSys->putCotizando($this->waMsg);
+            }else{
+                $demo = new DemoSol($this->waSender->fSys);
+                $baitDemo = $demo->buildBait($this->waMsg);
+                $this->waSender->fSys->setContent('demo', $this->waMsg->from.'json', $baitDemo);
+            }
+
             // Tomamos las cabeceras básicas para enviar a ComCore
             $headers = $this->waMsg->toStt(true);
             // Grabamos el valor de la accion

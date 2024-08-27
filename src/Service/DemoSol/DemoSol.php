@@ -2,12 +2,12 @@
 
 namespace App\Service\DemoSol;
 
+use App\Dtos\WaMsgDto;
 use App\Service\AnetTrack\Fsys;
 
 class DemoSol {
 
     private Fsys $fSys;
-    private String $waIdTo;
 
     public function __construct(Fsys $fsys)
     {
@@ -15,14 +15,7 @@ class DemoSol {
     }
 
     /** */
-    public function exe(String $to): array
-    {    
-        $this->waIdTo = $to;
-        return $this->buildMsgTrackDemo();
-    }
-
-    /** */
-    private function buildMsgTrackDemo(): array
+    private function buildMsgTrackDemo(String $to): array
     {
         $demojson = $this->fSys->getContent('demos', 'demo_1.json');
         $trackjson = $this->fSys->getContent('waTemplates', '_track.json');
@@ -42,7 +35,7 @@ class DemoSol {
             $rota = count($btns);
             for ($i=0; $i < $rota; $i++) { 
                 $btns[$i][ $btns[$i]['type'] ]['id'] = str_replace(
-                    '{:uuid}', 'demo_'.$this->waIdTo, $btns[$i][ $btns[$i]['type'] ]['id']
+                    '{:uuid}', 'demo_'.$to, $btns[$i][ $btns[$i]['type'] ]['id']
                 );
             }
 
@@ -50,5 +43,24 @@ class DemoSol {
         }
 
         return $trackjson;
+    }
+
+    ///
+    public function buildBait(WaMsgDto $waMsg): array
+    {
+        $demojson = $this->fSys->getContent('demos', 'demo_1.json');
+        return [
+            "waId"    => $waMsg->from,
+            "idItem"  => $demojson['uuid'],
+            "ownSlug" => $demojson['own']['slug'],
+            "wamid"   => $waMsg->context,
+            "sended"  => (integer) microtime(true) * 1000,
+            "attend"  => 0,
+            "stt"     => 2,
+            "current" => 'sfto',
+            "next"    => 'sfto',
+            "mrk"     => $demojson['attrs']['marca'],
+            "track"   => [],
+        ];
     }
 }
