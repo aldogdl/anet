@@ -200,8 +200,10 @@ class HcFotos
         if(count($template) > 0) {
             $res = $this->waSender->sendPreTemplate($template);
             if($oldCurrent == 'sdta') {
-                if($res >= 200 && $res <= 300) {
-                    $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
+                if(mb_strpos($this->waMsg->idItem, 'demo') === false) {
+                    if($res >= 200 && $res <= 300) {
+                        $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
+                    }
                 }
             }
         }else{
