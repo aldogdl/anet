@@ -43,6 +43,7 @@ class HcFinisherCot
         $headers = $this->waMsg->toStt(true);
 
         $result = $this->responseToAction($tipoFinish);
+
         $headers = HeaderDto::campoValor($headers, 'baits', $result['baitsInCooler']);
         if($result['send'] != '') {
             $headers = HeaderDto::campoValor($headers, 'sended', $result['send']);
@@ -120,7 +121,7 @@ class HcFinisherCot
         // para que limpie tambien los datos en SL en caso de inconcistencia.
         $baitFromCooler = ['send' => ''];
         $idDemo = (mb_strpos($this->waMsg->idItem, 'demo') === false) ? false : true;
-
+        
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
             $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
             $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
@@ -128,6 +129,7 @@ class HcFinisherCot
             $baitFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $mrk);
         }else if($idDemo) {
             $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
+            $baitFromCooler = ['send' => '', 'baitsInCooler' => 0];
         }
 
         // Quitamos el context para que los msg siguientes no
