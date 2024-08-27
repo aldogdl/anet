@@ -15,8 +15,9 @@ class DemoSol {
     }
 
     /** */
-    public function exe(): array
+    public function exe(String $to): array
     {    
+        $this->waIdTo = $to;
         return $this->buildMsgTrackDemo();
     }
 

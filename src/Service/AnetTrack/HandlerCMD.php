@@ -95,8 +95,15 @@ class HandlerCMD
         }elseif(mb_strpos($this->waMsg->content, 'demo') !== false) {
             
             $demoSol = new DemoSol($this->fSys);
-            $msgTrack = $demoSol->exe();
-            $this->waSender->sendPreTemplate($msgTrack);
+            $msgTrack = $demoSol->exe($this->waMsg->from);
+            if(count($msgTrack) > 0) {
+                $this->waSender->sendPreTemplate($msgTrack);
+            }else{
+                $this->waSender->sendText(
+                    "⚠️ El Comando [*".$this->waMsg->content."*] no se completo ".
+                    "correctamente debido a una insidencia en la creación del mensaje."
+                );
+            }
             return;
         }
 
