@@ -1,8 +1,8 @@
 parameters:
     phtml      : '%kernel.project_dir%/public_html'
     prodPubs   : '%phtml%/prod_pubs/'
+    demos      : '%phtml%/prod_pubs/demo_anet'
     prodSols   : '%phtml%/prod_sols/'
-    demos      : '%phtml%/prod_sols/demo_anet'
     prodTrack  : '%phtml%/prod_track/'
     reqRadec   : '%phtml%/req_radec/'
     waTemplates: '%phtml%/wa_templates/'

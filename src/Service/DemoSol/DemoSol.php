@@ -36,7 +36,7 @@ class DemoSol {
                 "type" => "image",
                 "image" => ["link" => "https://autoparnet.com/prod_pubs/demo_anet/demo_1.jpg"]
             ];
-                
+
             $btns = $trackjson[$trackjson['type']]['action']['buttons'];
             $rota = count($btns);
             for ($i=0; $i < $rota; $i++) { 

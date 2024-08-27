@@ -108,7 +108,7 @@ class WaSender
         }
     }
 
-    /** 
+    /**
      * Enviamos un mensaje a whatsapp para que le llegue a un Contacto.
      * NOTA: Este mensaje retorna hasta 3 mensajes de status.
      * POSIBLES ERRORES:
