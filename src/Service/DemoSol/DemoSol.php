@@ -51,7 +51,7 @@ class DemoSol {
         $demojson = $this->fSys->getContent('demos', 'demo_1.json');
         return [
             "waId"    => $waMsg->from,
-            "idItem"  => 'demo_'.$waMsg->idItem,
+            "idItem"  => $waMsg->idItem,
             "ownSlug" => $demojson['own']['slug'],
             "wamid"   => $waMsg->context,
             "sended"  => (integer) microtime(true) * 1000,

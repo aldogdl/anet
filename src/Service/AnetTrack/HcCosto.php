@@ -187,9 +187,9 @@ class HcCosto
             "_NUNCA PERDERÁS ningúna OPORTUNIDAD DE VENTA_💰"
         );
         if($res >= 200 && $res <= 300) {
-            $headers = $this->waMsg->toStt(true);
-            $headers = HeaderDto::setValue($headers, $this->waMsg->content);
-            $this->waSender->sendMy(['header' => $headers]);
+            if(mb_strpos($this->waMsg->idItem, 'demo') === false) {
+                $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
+            }
         }
     }
 

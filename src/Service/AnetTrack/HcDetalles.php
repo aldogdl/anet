@@ -147,17 +147,11 @@ class HcDetalles
                 "_💰 Escribe solo números por favor._"
             );
         }
+        
         if($res >= 200 && $res <= 300) {
-
-            $headers = $this->waMsg->toStt(true);
-            $valorCabecera = $this->waMsg->content;
-            $encoding = mb_detect_encoding($valorCabecera, ['UTF-8', 'ISO-8859-1', 'ASCII']);
-            if ($encoding !== 'UTF-8') {
-                $valorCabecera = mb_convert_encoding($valorCabecera, 'UTF-8', $encoding);
+            if(mb_strpos($this->waMsg->idItem, 'demo') === false) {
+                $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
             }
-            $valorCabecera = rawurlencode($valorCabecera);
-            $headers = HeaderDto::setValue($headers, $valorCabecera);
-            $this->waSender->sendMy(['header' => $headers]);
         }
     }
 
