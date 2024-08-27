@@ -61,7 +61,7 @@ class WaBtnCotNow
         }
 
         $exite = true;
-        $isDemo = (mb_strpos($this->waMsg->idItem, 'demo_') === false) ? false : true;
+        $isDemo = (mb_strpos($this->waMsg->idItem, 'demo') === false) ? false : true;
         if(!$isDemo) {
             $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idItem);
         }
