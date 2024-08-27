@@ -23,7 +23,7 @@ class DemoSol {
 
             $body = $trackjson[$trackjson['type']]['body']['text'];
             $body = str_replace('{:token}', $demojson['title'], $body);
-            $body = str_replace('{:detalles}', $demojson['detalles'], $body);
+            $body = str_replace('{:detalles}', $demojson['detalles'].'. Demostración', $body);
             $trackjson[$trackjson['type']]['body']['text'] = $body;
             
             $trackjson[$trackjson['type']]['header'] = [
