@@ -34,11 +34,11 @@ class Consumer
         }
 
         // Esto es solo para desarrollo
-        if($obj->tipoMsg != TypesWaMsgs::STT) {
-            $t = time();
-            file_put_contents('message_'.$t.'.json', json_encode($message));
-            file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
-        }
+        // if($obj->tipoMsg != TypesWaMsgs::STT) {
+        //     $t = time();
+        //     file_put_contents('message_'.$t.'.json', json_encode($message));
+        //     file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
+        // }
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
             // Si no hay un archivo de Stop STT enviamos los STT a EventCore

@@ -89,7 +89,7 @@ class WaBtnCotNow
             if($isDemo) {
                 $demo = new DemoSol($this->waSender->fSys);
                 $baitDemo = $demo->buildBaitDemo($this->waMsg);
-                $this->waSender->fSys->setContent('demos', $this->waMsg->from.'json', $baitDemo);
+                $this->waSender->fSys->setContent('tracking', $this->waMsg->from.'json', $baitDemo);
                 return;
             }
             
