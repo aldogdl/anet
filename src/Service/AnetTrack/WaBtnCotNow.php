@@ -90,7 +90,7 @@ class WaBtnCotNow
                 $this->waSender->fSys->putCotizando($this->waMsg);
             }else{
                 $demo = new DemoSol($this->waSender->fSys);
-                $baitDemo = $demo->buildBait($this->waMsg);
+                $baitDemo = $demo->buildBaitDemo($this->waMsg);
                 $this->waSender->fSys->setContent('demo', $this->waMsg->from.'json', $baitDemo);
             }
 

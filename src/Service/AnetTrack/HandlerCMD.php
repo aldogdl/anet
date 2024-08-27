@@ -95,7 +95,7 @@ class HandlerCMD
         }elseif(mb_strpos($this->waMsg->content, 'demo') !== false) {
             
             $demoSol = new DemoSol($this->fSys);
-            $msgTrack = $demoSol->exe($this->waMsg->from);
+            $msgTrack = $demoSol->buildMsgTrackDemo($this->waMsg->from);
             if(count($msgTrack) > 0) {
                 $this->waSender->sendPreTemplate($msgTrack);
             }else{

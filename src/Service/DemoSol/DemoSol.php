@@ -15,7 +15,7 @@ class DemoSol {
     }
 
     /** */
-    private function buildMsgTrackDemo(String $to): array
+    public function buildMsgTrackDemo(String $to): array
     {
         $demojson = $this->fSys->getContent('demos', 'demo_1.json');
         $trackjson = $this->fSys->getContent('waTemplates', '_track.json');
@@ -46,7 +46,7 @@ class DemoSol {
     }
 
     ///
-    public function buildBait(WaMsgDto $waMsg): array
+    public function buildBaitDemo(WaMsgDto $waMsg): array
     {
         $demojson = $this->fSys->getContent('demos', 'demo_1.json');
         return [
