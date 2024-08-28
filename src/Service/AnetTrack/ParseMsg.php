@@ -116,6 +116,10 @@ class ParseMsg {
             
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower($txt);
+
+            if(mb_strpos($txt, '/anet_') !== false) {
+                $txt = str_replace('/anet_', 'anet ', $txt);
+            }
             
             if(mb_strpos($txt, 'anet') !== false) {
 
