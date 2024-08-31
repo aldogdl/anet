@@ -129,14 +129,13 @@ class HcCosto
         }
 
         $result = $this->waMsg->content;
-        $str = mb_strtolower($result);
+        $str = trim(mb_strtolower($result));
         if(mb_strpos($str, 'mil') !== false) {
             return false;
         }
-
-        $str = str_replace('$', '', $str);
-        $str = str_replace(',', '', $str);
+        $str = preg_replace('/[\s,\$]+/', '', $str);
         $str = trim($str);
+
         if(mb_strpos($str, '.') !== false) {
 
             $partes = explode('.', $str);
