@@ -77,10 +77,17 @@ class WaBtnNtgX
             if($exist['wamid'] != '') {
                 $this->waSender->context = $exist['wamid'];
             }
+            if(!array_key_exists('track', $exist)) {
+                return $resp;
+            }
+            $fotosCant = 0;
+            if(array_key_exists('fotos', $exist['track'])) {
+                $fotosCant = count($exist['track']['fotos']);
+            }
             $this->waSender->sendText(
                 "😉👍 *SIN EMBARGO*...\n".
                 "Ya atendiste esta solicitud de cotización:\n\n".
-                "No. de Fotos: *".count($exist['track']['fotos'])."*\n".
+                "No. de Fotos: *".$fotosCant."*\n".
                 "Detalles: *".$exist['track']['detalles']."*\n".
                 "Costo: \$ *".$exist['track']['costo']."*\n\n".
                 "_Aún así GRACIAS por tu atención_"

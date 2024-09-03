@@ -140,22 +140,26 @@ class Fsys {
                 $baits = $cooler['baits'];
                 if(count($baits) > 0) {
 
-                    $idsItems = array_column($baits, 'idItem');
-                    $has = array_search($waMsg->idItem, $idsItems);
+                    $has = array_search($waMsg->idItem, array_column($baits, 'idItem'));
                     if($has !== false) {
-                        
-                        $bait = $baits[$has];
-                        $date = new \DateTime('now');
-                        $attend = $date->format('Y-m-d h:i:s');
-                        $bait['wamid'] = $waMsg->id;
-                        $bait['current'] = 'sfto';
-                        $bait['attend'] = $attend;
 
-                        unset($baits[$has]);
-                        $cooler['baits'] = array_values($baits);
-                        $this->setContent('tracking', $waMsg->from.'.json', $bait);
-                        $this->setContent('waEstanque', $waMsg->from.'.json', $cooler);
-                        return true;
+                        try {
+                            $bait = $baits[$has];
+                            unset($baits[$has]);
+                            $cooler['baits'] = array_values($baits);
+                            $this->setContent('waEstanque', $waMsg->from.'.json', $cooler);
+                        } catch (\Throwable $th) {
+                            return false;
+                        }
+
+                        if(array_key_exists('idItem', $bait)) {
+                            $date = new \DateTime('now');
+                            $bait['wamid']   = $waMsg->id;
+                            $bait['current'] = 'sfto';
+                            $bait['attend']  = $date->format('Y-m-d h:i:s');
+                            $this->setContent('tracking', $waMsg->from.'.json', $bait);
+                            return true;
+                        }
                     }
                 }
             }
