@@ -43,8 +43,12 @@ class HcFinisherCot
         $headers = $this->waMsg->toStt(true);
 
         $result = $this->responseToAction($tipoFinish);
-
-        $headers = HeaderDto::campoValor($headers, 'baits', $result['baitsInCooler']);
+        $cant = 0;
+        if(array_key_exists('baitsInCooler', $result)) {
+            $cant = $result['baitsInCooler'];
+        }
+        
+        $headers = HeaderDto::campoValor($headers, 'baits', $cant);
         if($result['send'] != '') {
             $headers = HeaderDto::campoValor($headers, 'sended', $result['send']);
         }
