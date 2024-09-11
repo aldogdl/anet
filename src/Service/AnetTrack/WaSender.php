@@ -175,7 +175,7 @@ class WaSender
         }
 
         if($code > 200) {
-            $this->sendReporErrorBySendToWa($url, $code, $error, $this->body);
+            // $this->sendReporErrorBySendToWa($url, $code, $error, $this->body);
         }
 
         return $code;
