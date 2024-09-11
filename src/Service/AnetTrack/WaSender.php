@@ -175,7 +175,7 @@ class WaSender
         }
 
         if($code > 200) {
-            // $this->sendReporErrorBySendToWa($url, $code, $error, $this->body);
+            $this->sendReporErrorBySendToWa($url, $code, $error, $this->body);
         }
 
         return $code;
@@ -439,18 +439,18 @@ class WaSender
             return;
         }
 
-        $subMsg = "Se intentó enviar evento de SR hacia Whatsapp";
+        // $subMsg = "Se intentó enviar evento de SR hacia Whatsapp";
 
-        $msg = "*ERROR SendToWa EN SR.*:\n\n".
-        "*Evento*: "."Por HACER"."\n".
-        "*Contacto*: ".$this->conm->to."\n".
-        "*Código*: ".$code . "\n".
-        "*Razón*: ".$error."\n".
-        "*Path*:\n\n".
-        $url."\n\n".
-        "_".$subMsg."_";
+        // $msg = "*ERROR SendToWa EN SR.*:\n\n".
+        // "*Evento*: "."Por HACER"."\n".
+        // "*Contacto*: ".$this->conm->to."\n".
+        // "*Código*: ".$code . "\n".
+        // "*Razón*: ".$error."\n".
+        // "*Path*:\n\n".
+        // $url."\n\n".
+        // "_".$subMsg."_";
 
-        $this->sendText($msg, $this->reporTo);
+        // $this->sendText($msg, $this->reporTo);
     }
 
     /** */
