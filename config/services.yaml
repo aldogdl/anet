@@ -15,6 +15,7 @@ parameters:
     dtaCtcLog  : '%dtaCtc%/log'
     scm        : '%phtml%/scm/'
     cnxFile    : '%scm%cnx_file.json'
+    verapps    : '%scm%versions.json'
     tkwaconm   : '%scm%tkwaconm.json'
     anetMlm    : '%phtml%/anet_mlm.json'
     sse        : '%phtml%/sse/'
@@ -26,6 +27,7 @@ parameters:
     sufixUri   : '%env(resolve:SUFIX_URI)%'
     getAnToken : '%env(resolve:ANET_TOKEN)%'
     getShopCTk : '%env(resolve:SHOP_TOKEN)%'
+    anetCnx    : '%env(resolve:ANET_CNX)%'
 
 services:
     # default configuration for services in *this* file
