@@ -37,6 +37,7 @@ class SecurityBasic
         $verAppCraw = '';
         if($version != '') {
             $version = json_decode($version, true);
+            file_put_contents('versiones.json', json_encode($version));
             $verAppShop (array_key_exists('anet_shop', $version)) ? $version['anet_shop'] : '';
             $verAppCraw (array_key_exists('anet_craw', $version)) ? $version['anet_craw'] : '';
         }
