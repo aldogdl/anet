@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Items;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Google\Auth\Cache\Item;
 
 /**
  * @extends ServiceEntityRepository<Items>
@@ -19,6 +20,31 @@ class ItemsRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Items::class);
+    }
+
+    /**
+     * @throws ORMException
+     * @throws OptimisticLockException
+     */
+    public function add(Items $entity, bool $flush = true): void
+    {
+        $this->_em->persist($entity);
+        if ($flush) {
+            $this->_em->flush();
+        }
+    }
+
+    /** */
+    public function setProduct(array $product): ?int
+    {
+        $item = new Items();
+        $item->fromMap($product);
+        try {
+            $this->add($item, true);
+            return $item->getId();
+        } catch (\Throwable $th) {
+            return 0;
+        }
     }
 
 //    /**

@@ -2,7 +2,6 @@
 
 namespace App\Controller\AnetShop;
 
-use App\Dtos\HeaderDto;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,6 +9,8 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\SecurityBasic;
+use App\Dtos\HeaderDto;
+use App\Repository\ItemsRepository;
 use App\Repository\ProductRepository;
 use App\Service\AnetShop\AnetShopSystemFileService;
 use App\Service\AnetTrack\WaSender;
@@ -69,7 +70,7 @@ class PostController extends AbstractController
   */
   #[Route('api/anet-shop/send-product/', methods:['post'])]
 	public function sendProduct(
-    Request $req, AnetShopSystemFileService $sysFile, WaSender $wh, ProductRepository $emProd
+    Request $req, AnetShopSystemFileService $sysFile, WaSender $wh, ItemsRepository $itemEm
   ): Response
 	{
 
@@ -84,7 +85,11 @@ class PostController extends AbstractController
     }
     
     $modo = 'solicita';
+    $waId = '';
     if(array_key_exists('meta', $data)) {
+      if(array_key_exists('waId', $data['meta'])) {
+        $waId = $data['meta']['waId'];
+      }
       if(array_key_exists('modo', $data['meta'])) {
         $modo = $data['meta']['modo'];
         $modo = ($modo == 'publik') ? 'publica' : $modo;
@@ -92,30 +97,19 @@ class PostController extends AbstractController
       }
     }
 
-    // Este es el nuevo camino para AnetCraw
+    // --------- Este es el nuevo camino para AnetCraw
     $id = 0;
-    if(array_key_exists('idItem', $data)) {
-      $id = $emProd->setProduct($data['product']);
+    if(array_key_exists('product', $data)) {
+      $data['product']['waId'] = $waId;
+      $id = $itemEm->setProduct($data['product']);
       if($id == 0) {
         $result['msg']  = 'X No se logró guardar el producto';
       }else{
         $result['anet_id'] = $id;
       }
-      return $this->json($result);
     }
-    
-    $id = 0;
-    if(array_key_exists('product', $data) && $modo == 'publica') {
-      $id = $emProd->setProduct($data['product']);
-      if($id == 0) {
-        $result['msg']  = 'X No se logró guardar el producto';
-        return $this->json($result);
-      }else{
-        $result['add_product'] = $id;
-        $data['product']['id'] = $id;
-      }
-    }
-    
+    // --------- Fin del nuevo camino
+
     if(array_key_exists('product', $data) && $modo == 'solicita') {
 
       $id = $sysFile->setSolicitudInFile($data['product']);

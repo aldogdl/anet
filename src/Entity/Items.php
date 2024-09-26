@@ -32,7 +32,7 @@ class Items
     #[ORM\Column(length: 25)]
     private ?string $model = null;
 
-    #[ORM\Column(type: Types::ARRAY)]
+    #[ORM\Column(type: Types::SIMPLE_ARRAY)]
     private array $anios = [];
 
     #[ORM\Column(length: 100)]
@@ -73,6 +73,36 @@ class Items
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+
+    public function fromMap(array $item): static
+    {   
+        $hoy = new \DateTimeImmutable('now');
+        $att = $item['attrs'];
+
+        $this->type      = 'solicitud';
+        $this->condicion = $item['detalles'];
+        $this->idItem    = $item['uuid'];
+        $this->fotos     = $item['fotos'];
+        $this->ownWaId   = $item['waId'];
+        $this->ownSlug   = $item['sellerSlug'];
+        $this->price     = $item['price'];
+        $this->costo     = $item['originalPrice'];
+        $this->pieza     = $att['pieza'];
+        $this->lado      = $att['lado'];
+        $this->poss      = $att['poss'];
+        $this->marca     = $att['marca'];
+        $this->model     = $att['modelo'];
+        $this->anios     = $att['anios'];
+        $this->origen    = $att['origen'];
+        $this->idCot     = '';
+        $this->place     = '';
+        $this->stt       = 0;
+        $this->imgWa     = [];
+        $this->createdAt = $hoy;
+
+        return $this;
+    }
 
     public function getId(): ?int
     {
