@@ -51,7 +51,7 @@ class ItemsRepository extends ServiceEntityRepository
     public function getLastItems(int $lastTime): \Doctrine\ORM\Query
     {
 
-        $dql = 'SELECT it FORM ' . Items::class . ' it '.
+        $dql = 'SELECT it FROM ' . Items::class . ' it '.
         'WHERE it.createdAt > :fecha';
 
         return $this->_em->createQuery($dql)->setParameter(
