@@ -3,9 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Items;
+use Doctrine\ORM\Query;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Google\Auth\Cache\Item;
 
 /**
  * @extends ServiceEntityRepository<Items>
@@ -47,28 +47,15 @@ class ItemsRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Items[] Returns an array of Items objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('i')
-//            ->andWhere('i.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('i.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /** */
+    public function getLastItems(int $lastTime): \Doctrine\ORM\Query
+    {
 
-//    public function findOneBySomeField($value): ?Items
-//    {
-//        return $this->createQueryBuilder('i')
-//            ->andWhere('i.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        $dql = 'SELECT it FORM ' . Items::class . ' it '.
+        'WHERE it.createdAt > :fecha';
+
+        return $this->_em->createQuery($dql)->setParameter(
+            'fecha', \DateTimeImmutable::createFromFormat('U', $lastTime)
+        );
+    }
 }

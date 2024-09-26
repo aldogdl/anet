@@ -289,18 +289,4 @@ class GetController extends AbstractController
     return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $dta]);
   }
 
-  /** ---------------------SECCION DE PARA LA VERSION 6--------------------- */
-
-
-  /** */
-  #[Route('security-basic/{token}/data-cnx/', methods:['get'])]
-  public function recoveryDataCnx(SecurityBasic $lock, String $token): Response
-  {
-    $dta = [];
-    if($lock->isValid($token)) {
-      $dta = $lock->getDtCnx();
-    }
-    return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $dta]);
-  }
-
 }

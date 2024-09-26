@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\Product;
-use DateTimeImmutable;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
