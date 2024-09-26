@@ -25,16 +25,11 @@ class GetController extends AbstractController
     $lastTime = $req->query->get('last');
     $dql = $itemEm->getLastItems( $lastTime );
     $items = $dql->getArrayResult();
-    // Comienza el buffer de salida con Gzip
-    ob_start('ob_gzhandler');
-
-    // Crea la respuesta JSON
+    // Crear la respuesta JSON
     $response = $this->json(['isOk' => true, 'msg' => 'ok', 'body' => $items]);
 
-    // Finaliza el buffer y devuelve la respuesta comprimida
-    $content = ob_get_clean(); // Obtiene el contenido del buffer
-    $response->setContent($content); // Establece el contenido comprimido
-    $response->headers->set('Content-Encoding', 'gzip'); // Establece el encabezado de compresión
+    // Establecer el encabezado de compresión
+    $response->headers->set('Content-Encoding', 'gzip');
 
     return $response;
   }
