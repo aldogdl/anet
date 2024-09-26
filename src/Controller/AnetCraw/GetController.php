@@ -32,29 +32,20 @@ class GetController extends AbstractController
     // // Establecer el encabezado de compresión
     // $response->headers->set('Content-Encoding', 'gzip');
 
-    // Verifica que $items no esté vacío o nulo
-    if (is_null($items)) {
-        return new JsonResponse(['isOk' => false, 'msg' => 'No items found'], 404);
+    if (empty($items)) {
+      return new JsonResponse(['isOk' => false, 'msg' => 'No items found'], 404);
     }
 
-    // Crea la respuesta JSON
     $responseData = ['isOk' => true, 'msg' => 'ok', 'body' => $items];
-    $jsonContent = json_encode($responseData);
+    $jsonContent = json_encode($responseData, JSON_THROW_ON_ERROR);
 
-    // Maneja errores de json_encode
-    if ($jsonContent === false) {
-        return new JsonResponse(['isOk' => false, 'msg' => 'Error encoding JSON'], 500);
-    }
-
-    // Comienza el buffer de salida con Gzip
-    ob_start('ob_gzhandler');
-    echo $jsonContent; // Imprime el contenido JSON
-    $content = ob_get_clean(); // Obtiene el contenido comprimido
-
-    // Crea la respuesta
-    $response = new Response($content);
+    $response = new Response($jsonContent);
+    $response->headers->set('Content-Type', 'application/json');
     $response->headers->set('Content-Encoding', 'gzip');
-    $response->headers->set('Content-Type', 'application/json'); // Establece el tipo de contenido
+
+    // Comprime la respuesta
+    $gzipContent = gzencode($jsonContent, 9);
+    $response->setContent($gzipContent);
 
     return $response;
   }
