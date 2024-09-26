@@ -25,13 +25,7 @@ class GetController extends AbstractController
     $lastTime = $req->query->get('last');
     $dql = $itemEm->getLastItems( $lastTime );
     $items = $dql->getArrayResult();
-    // Crear la respuesta JSON
-    $response = $this->json(['isOk' => true, 'msg' => 'ok', 'body' => $items]);
-
-    // Establecer el encabezado de compresión
-    $response->headers->set('Content-Encoding', 'gzip');
-
-    return $response;
+    return $this->json(['isOk' => true, 'msg' => 'ok', 'body' => $items]);
   }
 
   /** */
