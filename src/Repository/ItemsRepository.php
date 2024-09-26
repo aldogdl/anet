@@ -50,7 +50,7 @@ class ItemsRepository extends ServiceEntityRepository
     /** */
     public function getLastItems(int $lastTime): \Doctrine\ORM\Query
     {
-
+        $lastTime = (int) ($lastTime / 1000);
         $dql = 'SELECT it FROM ' . Items::class . ' it '.
         'WHERE it.createdAt > :fecha';
 
