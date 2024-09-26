@@ -9,8 +9,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 
-use App\Repository\AO1MarcasRepository;
-use App\Repository\AO2ModelosRepository;
 use App\Repository\NG2ContactosRepository;
 use App\Repository\ProductRepository;
 use App\Service\SecurityBasic;
@@ -275,32 +273,6 @@ class GetController extends AbstractController
     }
 
     return $this->json($result);
-  }
-
-  /** */
-  #[Route('security-basic/get-all-marcas/{token}/', methods:['get'])]
-  public function getAllMarcas(SecurityBasic $lock, AO1MarcasRepository $marcasEm, String $token): Response
-  {
-    $data = [];
-    if($lock->isValid($token)) {
-      $data = $marcasEm->getAllNameAsArray();
-    }
-    return $this->json([
-      'abort'=>false, 'msg' => 'ok', 'body' => $data
-    ]);
-  }
-
-  /** */
-  #[Route('security-basic/get-modelos-by-marca/{token}/{idMarca}/', methods:['get'])]
-  public function getModelosByMarca(
-    SecurityBasic $lock, AO2ModelosRepository $modsEm, String $token, String $idMarca
-  ): Response
-  {
-    $data = [];
-    if($lock->isValid($token)) {
-      $data = $modsEm->getAllModelsNameByIdMarca($idMarca);
-    }
-    return $this->json(['abort'=>false, 'msg' => 'ok', 'body' => $data]);
   }
 
   /** */

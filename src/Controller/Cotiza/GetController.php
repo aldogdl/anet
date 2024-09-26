@@ -7,29 +7,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-use App\Repository\AO1MarcasRepository;
-use App\Repository\AO2ModelosRepository;
 use App\Repository\NG2ContactosRepository;
 
 class GetController extends AbstractController
 {
-
-  #[Route('cotiza/get-all-marcas/', methods:['get'])]
-  public function getAllMarcas(AO1MarcasRepository $marcasEm): Response
-  {
-    return $this->json([
-      'abort'=>false, 'msg' => 'ok', 'body' => $marcasEm->getAllAsArray()
-    ]);
-  }
-
-  #[Route('cotiza/get-modelos-by-marca/{idMarca}/', methods:['get'])]
-  public function getModelosByMarca(AO2ModelosRepository $modsEm, $idMarca): Response
-  {
-    $dql = $modsEm->getAllModelosByIdMarca($idMarca);
-    return $this->json([
-      'abort'=>false, 'msg' => 'ok', 'body' => $dql->getScalarResult()
-    ]);
-  }
 
   #[Route('api/cotiza/get-user-by-campo/', methods:['get'])]
   public function getUserByCampo(NG2ContactosRepository $contacsEm, Request $req): Response

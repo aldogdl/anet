@@ -137,7 +137,6 @@ class NG2ContactosRepository extends ServiceEntityRepository implements Password
     $dql = $dql . 'f, partial mk.{id, logo, grupo}, partial md.{id}, partial pz.{id} ';
     $dql = $dql . 'FROM '. NG2Contactos::class . ' c '.
     'JOIN c.empresa e '.
-    'LEFT JOIN e.filtros f WITH f.emp = e.id '.
     'LEFT JOIN f.marca mk '.
     'LEFT JOIN f.modelo md '.
     'LEFT JOIN f.pza pz '.

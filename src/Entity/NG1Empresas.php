@@ -36,13 +36,9 @@ class NG1Empresas
     #[ORM\OneToMany(mappedBy: 'empresa', targetEntity: NG2Contactos::class, orphanRemoval: true)]
     private $contactos;
 
-    #[ORM\OneToMany(mappedBy: 'emp', targetEntity: Filtros::class)]
-    private $filtros;
-
     public function __construct()
     {
         $this->contactos = new ArrayCollection();
-        $this->filtros = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -152,44 +148,9 @@ class NG1Empresas
         return $this;
     }
 
-    /**
-     * @return Collection<int, Filtros>
-     */
-    public function getFiltros(): Collection
-    {
-        return $this->filtros;
-    }
-
-    public function addFiltro(Filtros $filtro): self
-    {
-        if (!$this->filtros->contains($filtro)) {
-            $this->filtros[] = $filtro;
-            $filtro->setEmp($this);
-        }
-
-        return $this;
-    }
-
-    public function removeFiltro(Filtros $filtro): self
-    {
-        if ($this->filtros->removeElement($filtro)) {
-            // set the owning side to null (unless already changed)
-            if ($filtro->getEmp() === $this) {
-                $filtro->setEmp(null);
-            }
-        }
-
-        return $this;
-    }
-
     ///
     public function toArray(): Array
     {
-        $filts = [];
-        $rota = count($this->filtros);
-        for ($i=0; $i < $rota; $i++) { 
-            $filts[] = $this->filtros[$i]->toArray();
-        }
         return [
             'id' => $this->id,
             'nombre' => $this->nombre,
@@ -198,7 +159,6 @@ class NG1Empresas
             'isLocal' => $this->isLocal,
             'telFijo' => $this->telFijo,
             'latLng' => $this->latLng,
-            'filtros' => $filts,
         ];
     }
 }

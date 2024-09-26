@@ -92,12 +92,18 @@ class PostController extends AbstractController
       }
     }
 
-    if($modo == 'publik_mlm') {
-      // TODO enviar notificacion a BackCore de que una publicacion fue
-      // enviada a MLM
+    // Este es el nuevo camino para AnetCraw
+    $id = 0;
+    if(array_key_exists('idItem', $data)) {
+      $id = $emProd->setProduct($data['product']);
+      if($id == 0) {
+        $result['msg']  = 'X No se logró guardar el producto';
+      }else{
+        $result['anet_id'] = $id;
+      }
       return $this->json($result);
     }
-
+    
     $id = 0;
     if(array_key_exists('product', $data) && $modo == 'publica') {
       $id = $emProd->setProduct($data['product']);
