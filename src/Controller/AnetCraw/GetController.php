@@ -25,6 +25,11 @@ class GetController extends AbstractController
   {
     $lastTime = $req->query->get('last-time');
     $lastId = $req->query->get('last-id');
+
+    if($lastTime == null && $lastId == null) {
+      return new JsonResponse(['isOk' => false, 'msg' => 'No hay items por el momento'], 500);
+    }
+
     $dql = $itemEm->getLastItems( $lastTime, $lastId );
     $items = $dql->getArrayResult();
 
