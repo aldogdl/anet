@@ -23,8 +23,9 @@ class GetController extends AbstractController
   #[Route('items', methods:['GET'])]
   public function items(Request $req, ItemsRepository $itemEm): Response
   {
-    $lastTime = $req->query->get('last');
-    $dql = $itemEm->getLastItems( $lastTime );
+    $lastTime = $req->query->get('last-time');
+    $lastId = $req->query->get('last-id');
+    $dql = $itemEm->getLastItems( $lastTime, $lastId );
     $items = $dql->getArrayResult();
 
     if (empty($items)) {

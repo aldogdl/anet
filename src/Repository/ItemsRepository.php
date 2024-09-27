@@ -48,14 +48,20 @@ class ItemsRepository extends ServiceEntityRepository
     }
 
     /** */
-    public function getLastItems(int $lastTime): \Doctrine\ORM\Query
-    {
-        $lastTime = (int) ($lastTime / 1000);
-        $dql = 'SELECT it FROM ' . Items::class . ' it '.
-        'WHERE it.createdAt > :fecha';
-
-        return $this->_em->createQuery($dql)->setParameter(
-            'fecha', \DateTimeImmutable::createFromFormat('U', $lastTime)
-        );
+    public function getLastItems(?int $lastTime, ?int $lasId): \Doctrine\ORM\Query
+    {   
+        $data = 1;
+        $dql = 'SELECT it FROM ' . Items::class . ' it ';
+        if($lastTime != null) {
+            $lastTime = (int) ($lastTime / 1000);
+            $data = \DateTimeImmutable::createFromFormat('U', $lastTime);
+            $dql = $dql . 'WHERE it.createdAt > :data ';
+        }
+        if($lasId != null) {
+            $data = $lasId;
+            $dql = $dql . 'WHERE it.id > :data ';
+        }
+        $dql = $dql . 'ORDER BY it.createdAt DESC';
+        return $this->_em->createQuery($dql)->setParameter('data', $data);
     }
 }
