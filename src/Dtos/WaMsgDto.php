@@ -81,7 +81,9 @@ class WaMsgDto
             return $headers;
         }
 
-        $headers = HeaderDto::setValue($headers, $this->content['stt']);
+        if(array_key_exists('stt', $this->content)) {
+            $headers = HeaderDto::setValue($headers, $this->content['stt']);
+        }
 
         if(count($this->content) > 1) {
             if(array_key_exists('expi', $this->content)) {
