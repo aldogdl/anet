@@ -11,7 +11,7 @@ class HcFinisherCot
     private WaSender $waSender;
     private WaMsgDto $waMsg;
     private array $bait;
-    
+
     /** */
     public function __construct(WaSender $waS, WaMsgDto $msg, array $bait)
     {

@@ -74,7 +74,7 @@ class Items
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-
+    /** */
     public function fromMap(array $item): static
     {   
         $hoy = new \DateTimeImmutable('now');

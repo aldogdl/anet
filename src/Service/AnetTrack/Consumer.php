@@ -8,19 +8,22 @@ use App\Service\AnetTrack\WaInitSess;
 use App\Service\AnetTrack\HandlerQuote;
 use App\Service\AnetTrack\HandlerCMD;
 use App\Service\AnetTrack\WaSender;
+use App\Repository\ItemsRepository;
 
 class Consumer
 {
     private Fsys $fSys;
     private WaSender $waSender;
+    private ItemsRepository $itemEm;
 
     /** 
      * Analizamos si el mensaje es parte de una cotizacion
     */
-    public function __construct(Fsys $fsys, WaSender $waS)
+    public function __construct(ItemsRepository $itemsRepository, Fsys $fsys, WaSender $waS)
     {
         $this->fSys = $fsys;
         $this->waSender = $waS;
+        $this->itemEm = $itemsRepository;
     }
 
     /** */
@@ -34,18 +37,20 @@ class Consumer
         }
 
         // Esto es solo para desarrollo
-        // if($obj->tipoMsg != TypesWaMsgs::STT) {
-        //     $t = time();
-        //     file_put_contents('message_'.$t.'.json', json_encode($message));
-        //     file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
-        // }
+        if($obj->tipoMsg != TypesWaMsgs::STT) {
+            $t = time();
+            file_put_contents('message_'.$t.'.json', json_encode($message));
+            file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
+        }
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
+
             // Si no hay un archivo de Stop STT enviamos los STT a EventCore
             if(!$this->fSys->existe('/', $obj->from.'_stopstt.json')) {
                 $this->waSender->setConmutador($obj);
                 $this->waSender->sendMy($obj->toStt());
             }else{
+
                 // Si es un STT y hay un archivo de Costo, es que acaba de ser
                 // finalizada una cotizacion por parte del cotizador.
                 if($this->fSys->existe('/', $obj->from.'_scto.json')) {
@@ -53,6 +58,8 @@ class Consumer
                     if(count($bait) > 0) {
                         $finicher = new HcFinisherCot($this->waSender, $obj, $bait);
                         $finicher->exe('fin');
+                        $convert = new ConvertCotToItem($this->itemEm, $this->waSender, $obj, $bait);
+                        $convert->parse();
                     }
                 }
             }

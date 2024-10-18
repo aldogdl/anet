@@ -64,4 +64,11 @@ class ItemsRepository extends ServiceEntityRepository
         $dql = $dql . 'ORDER BY it.createdAt DESC';
         return $this->_em->createQuery($dql)->setParameter('data', $data);
     }
+
+    /** */
+    public function convertCotToItem(array $waMsg, array $bait) :void
+    {
+        file_put_contents('convert_waMsg.json', json_encode($waMsg));
+        file_put_contents('convert_bait.json', json_encode($bait));
+    }
 }
