@@ -65,10 +65,20 @@ class ItemsRepository extends ServiceEntityRepository
         return $this->_em->createQuery($dql)->setParameter('data', $data);
     }
 
-    /** */
-    public function convertCotToItem(array $waMsg, array $bait) :void
+    /** 
+     * Cuando un proveedor cotiza una solicitud, aqui guardamos esa cotizacion convertida
+     * a inventario, este proceso se realiza en ComCore y desde ahi se envia a la ruta
+     * com-core/cotizacion/
+    */
+    public function setItemOfCotizacion(array $itemMap) :int
     {
-        file_put_contents('convert_waMsg.json', json_encode($waMsg));
-        file_put_contents('convert_bait.json', json_encode($bait));
+        $item = new Items();
+        $item->fromMapItem($itemMap);
+        try {
+            $this->add($item, true);
+            return $item->getId();
+        } catch (\Throwable $th) {
+            return 0;
+        }
     }
 }

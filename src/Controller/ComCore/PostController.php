@@ -2,6 +2,7 @@
 
 namespace App\Controller\ComCore;
 
+use App\Repository\ItemsRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -41,6 +42,17 @@ class PostController extends AbstractController
       file_put_contents($this->getParameter('cnxFile'), json_encode($data));
       $response = ['abort' =>  false];
     }
+
+    return $this->json($response);
+  }
+
+  /** */
+  #[Route('com-core/cotizacion/', methods:['post'])]
+  public function setCotizacion(Request $req, ItemsRepository $itemEm): Response
+  {
+    $response = ['abort' =>  true];
+    $data = $this->toArray($req, 'data');
+    $itemEm->convertCotToItem($data);
 
     return $this->json($response);
   }

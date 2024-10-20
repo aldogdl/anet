@@ -104,6 +104,34 @@ class Items
         return $this;
     }
 
+    /** */
+    public function fromMapItem(array $item): static
+    {   
+        $hoy = new \DateTimeImmutable('now');
+        $this->type      = $item['type'];
+        $this->condicion = $item['condicion'];
+        $this->idItem    = $item['idItem'];
+        $this->fotos     = $item['fotos'];
+        $this->ownWaId   = $item['ownWaId'];
+        $this->ownSlug   = $item['ownSlug'];
+        $this->price     = $item['price'];
+        $this->costo     = $item['costo'];
+        $this->pieza     = $item['pieza'];
+        $this->lado      = $item['lado'];
+        $this->poss      = $item['poss'];
+        $this->marca     = $item['marca'];
+        $this->model     = $item['modelo'];
+        $this->anios     = $item['anios'];
+        $this->origen    = $item['origen'];
+        $this->idCot     = $item['idCot'];
+        $this->place     = $item['place'];
+        $this->stt       = $item['stt'];
+        $this->imgWa     = [];
+        $this->createdAt = $hoy;
+
+        return $this;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
