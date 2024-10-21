@@ -53,7 +53,7 @@ class Items
     #[ORM\Column(length: 25)]
     private ?string $origen = null;
 
-    #[ORM\Column(type: Types::SIMPLE_ARRAY, nullable: true)]
+    #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $fotos = null;
 
     #[ORM\Column(length: 20)]
@@ -73,6 +73,54 @@ class Items
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(length: 15)]
+    private ?string $ownMlId = null;
+
+    #[ORM\Column]
+    private ?int $idAnet = null;
+
+    #[ORM\Column]
+    private ?int $pzaId = null;
+
+    #[ORM\Column]
+    private ?int $mrkId = null;
+
+    #[ORM\Column]
+    private ?int $mdlId = null;
+
+    #[ORM\Column(length: 155)]
+    private ?string $thumbnail = null;
+
+    #[ORM\Column(length: 155)]
+    private ?string $permalink = null;
+
+    #[ORM\Column(length: 10)]
+    private ?string $source = null;
+
+    #[ORM\Column(type: Types::JSON)]
+    private array $generik = [];
+
+    #[ORM\Column(type: Types::JSON)]
+    private array $matchs = [];
+
+    #[ORM\Column]
+    private ?int $calif = null;
+
+    private function __construct()
+    {
+        $this->ownMlId = "";
+        $this->idAnet = -1;
+        $this->pzaId = "";
+        $this->mrkId = 0;
+        $this->mdlId = 0;
+        $this->thumbnail = "";
+        $this->permalink = "";
+        $this->source = "anet";
+        $this->generik = [];
+        $this->matchs = [];
+        $this->calif = 5;
+    }
 
     /** */
     public function fromMap(array $item): static
@@ -126,6 +174,17 @@ class Items
         $this->idCot     = $item['idCot'];
         $this->place     = $item['place'];
         $this->stt       = $item['stt'];
+        $this->ownMlId   = $item['ownMlId'];
+        $this->idAnet    = $item['idAnet'];
+        $this->pzaId     = $item['pzaId'];
+        $this->mrkId     = $item['mrkId'];
+        $this->mdlId     = $item['mdlId'];
+        $this->thumbnail = $item['thumbnail'];
+        $this->permalink = $item['permalink'];
+        $this->source    = $item['source'];
+        $this->generik   = $item['generik'];
+        $this->matchs    = $item['matchs'];
+        $this->calif     = $item['calif'];
         $this->imgWa     = [];
         $this->createdAt = $hoy;
 
@@ -373,6 +432,138 @@ class Items
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getOwnMlId(): ?string
+    {
+        return $this->ownMlId;
+    }
+
+    public function setOwnMlId(string $ownMlId): static
+    {
+        $this->ownMlId = $ownMlId;
+
+        return $this;
+    }
+
+    public function getIdAnet(): ?int
+    {
+        return $this->idAnet;
+    }
+
+    public function setIdAnet(int $idAnet): static
+    {
+        $this->idAnet = $idAnet;
+
+        return $this;
+    }
+
+    public function getPzaId(): ?int
+    {
+        return $this->pzaId;
+    }
+
+    public function setPzaId(int $pzaId): static
+    {
+        $this->pzaId = $pzaId;
+
+        return $this;
+    }
+
+    public function getMrkId(): ?int
+    {
+        return $this->mrkId;
+    }
+
+    public function setMrkId(int $mrkId): static
+    {
+        $this->mrkId = $mrkId;
+
+        return $this;
+    }
+
+    public function getMdlId(): ?int
+    {
+        return $this->mdlId;
+    }
+
+    public function setMdlId(int $mdlId): static
+    {
+        $this->mdlId = $mdlId;
+
+        return $this;
+    }
+
+    public function getThumbnail(): ?string
+    {
+        return $this->thumbnail;
+    }
+
+    public function setThumbnail(string $thumbnail): static
+    {
+        $this->thumbnail = $thumbnail;
+
+        return $this;
+    }
+
+    public function getPermalink(): ?string
+    {
+        return $this->permalink;
+    }
+
+    public function setPermalink(string $permalink): static
+    {
+        $this->permalink = $permalink;
+
+        return $this;
+    }
+
+    public function getSource(): ?string
+    {
+        return $this->source;
+    }
+
+    public function setSource(string $source): static
+    {
+        $this->source = $source;
+
+        return $this;
+    }
+
+    public function getGenerik(): array
+    {
+        return $this->generik;
+    }
+
+    public function setGenerik(array $generik): static
+    {
+        $this->generik = $generik;
+
+        return $this;
+    }
+
+    public function getMatchs(): array
+    {
+        return $this->matchs;
+    }
+
+    public function setMatchs(array $matchs): static
+    {
+        $this->matchs = $matchs;
+
+        return $this;
+    }
+
+    public function getCalif(): ?int
+    {
+        return $this->calif;
+    }
+
+    public function setCalif(int $calif): static
+    {
+        $this->calif = $calif;
 
         return $this;
     }

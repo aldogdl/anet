@@ -22,7 +22,6 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
  */
 class GetController extends AbstractController
 {
-
   /**
 	 * Obtenemos el request contenido decodificado como array
 	 *
@@ -42,23 +41,23 @@ class GetController extends AbstractController
 		return $content;
 	}
 
-  #[Route('shop/{slug}/_ft/{uuid}', methods: ['get'])]
-  public function anulandoRouteFt(String $slug, String $uuid): RedirectResponse | Response
-  {
-    if($slug == '') {
-      return $this->json(['hola' => 'Bienvenido...']);
-    }
-    return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug.'&ft='.$uuid, 301);
-  }
+  // #[Route('shop/{slug}/_ft/{uuid}', methods: ['get'])]
+  // public function anulandoRouteFt(String $slug, String $uuid): RedirectResponse | Response
+  // {
+  //   if($slug == '') {
+  //     return $this->json(['hola' => 'Bienvenido...']);
+  //   }
+  //   return $this->redirect('https://www.autoparnet.com/shop/?emp='.$slug.'&ft='.$uuid, 301);
+  // }
 
-  /**
-   * Entrada principal para shop slug
-   */
-  #[Route('shop/{slug}', name:"anetShop", methods: ['get'], defaults:['slug' => ''])]
-  public function anulandoRoute(): RedirectResponse | Response
-  {
-    return new Response(file_get_contents('shop/index.html'));
-  }
+  // /**
+  //  * Entrada principal para shop slug
+  //  */
+  // #[Route('shop/{slug}', name:"anetShop", methods: ['get'], defaults:['slug' => ''])]
+  // public function anulandoRoute(): RedirectResponse | Response
+  // {
+  //   return new Response(file_get_contents('shop/index.html'));
+  // }
 
   /** 
    * Buscamos productos de otros cotizadores 

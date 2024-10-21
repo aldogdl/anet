@@ -73,12 +73,16 @@ class ItemsRepository extends ServiceEntityRepository
     public function setItemOfCotizacion(array $itemMap) :int
     {
         $item = new Items();
-        $item->fromMapItem($itemMap);
+
+        file_put_contents('error.log_1.txt', '');
         try {
+            $item->fromMapItem($itemMap);
             $this->add($item, true);
             return $item->getId();
         } catch (\Throwable $th) {
+            file_put_contents('error.log.txt', $th->getMessage());
             return 0;
         }
     }
+
 }

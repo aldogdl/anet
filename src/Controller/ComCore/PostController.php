@@ -52,7 +52,7 @@ class PostController extends AbstractController
   {
     $response = ['abort' =>  true];
     $data = $this->toArray($req, 'data');
-    $itemEm->convertCotToItem($data);
+    $itemEm->setItemOfCotizacion($data);
 
     return $this->json($response);
   }
