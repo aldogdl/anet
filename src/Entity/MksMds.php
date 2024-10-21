@@ -90,6 +90,20 @@ class MksMds
         return $name;
     }
 
+    /** 
+    * Los nombres que vengan con letras y numeros o numeros y letras las separamos cn un guion
+    */
+    public function toVariEspetial(String $name): String
+    {
+        $name = mb_strtolower($name);
+        $name = trim($name);
+        if(preg_match('/[a-zA-Z]/', $name) && preg_match('/\d/', $name)) {
+            return trim(preg_replace('/(\d+)/', '-$1-', $name), '-');
+        } else {
+            return $name;
+        }
+    }
+
     /** */
     public function fromFileMrk(array $mrk): static
     {
@@ -122,6 +136,7 @@ class MksMds
         $slug = $this->toVariBasic($name, ' ', '_');
         $slug = $this->toVariBasic($slug, '-', '_');
         $this->vars[] = $slug;
+        $this->vars[] = $this->toVariEspetial($name);
 
         $this->vars[] = $this->toVariBasic($slug, '_', '-');
         $this->vars[] = $this->toVariBasic($slug, '_', ' ');

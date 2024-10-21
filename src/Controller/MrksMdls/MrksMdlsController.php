@@ -20,6 +20,10 @@ class MrksMdlsController extends AbstractController
                 $mmEm->createMarcasFromFile();
                 return $this->json(['marcas' => 'Marcas creadas con éxito']);
             }
+            if(array_key_exists('createfile', $query)) {
+                $mmEm->buildFileMarcasAndModelos();
+                return $this->json(['file' => 'Archivo de Marcas y Modelos creado con éxito']);
+            }
         }else if($metodo == 'DELETE') {
             if(count($query) == 0) {
                 return new Response('Se esperaba parametro mrkid', 501);
@@ -40,7 +44,7 @@ class MrksMdlsController extends AbstractController
         $query = $req->query->all();
         $metodo = $req->getMethod();
         if($metodo == 'GET') {
-            
+
             if(array_key_exists('create', $query)) {
                 $mmEm->createModelosFromFile();
                 return $this->json(['modelos' => 'modelos creados con éxito']);

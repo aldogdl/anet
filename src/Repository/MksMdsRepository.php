@@ -49,15 +49,22 @@ class MksMdsRepository extends ServiceEntityRepository
         return $this->_em->createQuery($dql)->setParameter('idMrk', 0);
     }
 
+    /** */
+    public function buildFileMarcasAndModelos(): void
+    {
+        $dql = 'SELECT mm FROM ' . MksMds::class . ' mm ';
+        $mm = $this->_em->createQuery($dql)->getArrayResult();
+        file_put_contents('scm/brands_anet.json', json_encode($mm));
+    }
+
     /** 
      * Creamos la lista de marcas y modelos a partir del archivo json
     */
     public function createMarcasFromFile(): void
     {
-        $mms = json_decode(file_get_contents('scm/brands_anet.json'), true);
-        $rota = count($mms);
-        var_dump($rota);
         $hasFlush = false;
+        $mms = json_decode(file_get_contents('scm/brands_anet_builder.json'), true);
+        $rota = count($mms);
         for ($i=0; $i < $rota; $i++) {
             if(!array_key_exists('idMrk', $mms[$i])) {
                 $item = new MksMds();
@@ -85,11 +92,9 @@ class MksMdsRepository extends ServiceEntityRepository
             return;
         }
 
-        $mms = json_decode(file_get_contents('scm/brands_anet.json'), true);
+        $mms = json_decode(file_get_contents('scm/brands_anet_builder.json'), true);
         $idsMeli = array_column($marcas, 'idMlb');
-        $idsMrks = array_column($mms, 'idMrk');
-        sort($idsMeli);
-        sort($idsMrks);
+        $idsMrks = array_column($mms, 'id');
 
         $mrk = [];
         $hasFlush = false;
@@ -97,21 +102,15 @@ class MksMdsRepository extends ServiceEntityRepository
         for ($i=0; $i < $rota; $i++) { 
 
             if(array_key_exists('idMrk', $mms[$i])) {
-                $item = new MksMds();
-                // Se trata de un modelo, por lo tanto buscamos la marca correspondiente
-                $buscar = true;
-                if(count($mrk) > 0) {
-                    if($mrk['idMlb'] == $mms[$i]['idMl']) {
-                        $buscar = false;
-                    }
-                }
-                if($buscar) {
 
-                    $index = array_search($mms[$i]['idMl'], $idsMeli);
-                    dd($index, $mms[$i]['idMl'], $idsMeli);
+                // Se trata de un modelo, por lo tanto buscamos la marca correspondiente
+                $item = new MksMds();
+                $index = array_search($mms[$i]['idMrk'], $idsMrks);
+                if($index !== false) {
+                    $index = array_search($mms[$index]['idMl'], $idsMeli);
                     $mrk = ($index !== false) ? $marcas[$index] : [];
                 }
-                if($mrk) {
+                if(count($mrk) > 0) {
                     $item->fromFileMdl($mrk['id'], $mms[$i]);
                     $this->add($item, false);
                     $hasFlush = true;

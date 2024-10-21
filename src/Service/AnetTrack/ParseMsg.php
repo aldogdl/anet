@@ -107,7 +107,9 @@ class ParseMsg {
         $txt = 'Error, no se recibió ningún texto';
         $idContext = '';
         if(array_key_exists('context', $this->waMsg)) {
-            $idContext = $this->waMsg['context']['id'];
+            if(array_key_exists('id', $this->waMsg['context'])) {
+                $idContext = $this->waMsg['context']['id'];
+            }
         }
 
         $tipo = TypesWaMsgs::TEXT;
