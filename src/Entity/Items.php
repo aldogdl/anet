@@ -107,11 +107,11 @@ class Items
     #[ORM\Column]
     private ?int $calif = null;
 
-    private function __construct()
+    public function __construct()
     {
         $this->ownMlId = "";
         $this->idAnet = -1;
-        $this->pzaId = "";
+        $this->pzaId = 0;
         $this->mrkId = 0;
         $this->mdlId = 0;
         $this->thumbnail = "";
@@ -155,6 +155,10 @@ class Items
     /** */
     public function fromMapItem(array $item): static
     {   
+        if(array_key_exists('id', $item)) {
+            $this->id = $item['id'];
+        }
+
         $hoy = new \DateTimeImmutable('now');
         $this->type      = $item['type'];
         $this->condicion = $item['condicion'];
@@ -168,7 +172,7 @@ class Items
         $this->lado      = $item['lado'];
         $this->poss      = $item['poss'];
         $this->marca     = $item['marca'];
-        $this->model     = $item['modelo'];
+        $this->model     = (array_key_exists('model', $item)) ? $item['model'] : $item['modelo'];
         $this->anios     = $item['anios'];
         $this->origen    = $item['origen'];
         $this->idCot     = $item['idCot'];

@@ -38,7 +38,11 @@ class ItemsRepository extends ServiceEntityRepository
     public function setProduct(array $product): ?int
     {
         $item = new Items();
-        $item->fromMap($product);
+        if(array_key_exists('attrs', $product)) {
+            $item->fromMap($product);
+        }else{
+            $item->fromMapItem($product);
+        }
         try {
             $this->add($item, true);
             return $item->getId();
@@ -65,6 +69,14 @@ class ItemsRepository extends ServiceEntityRepository
         return $this->_em->createQuery($dql)->setParameter('data', $data);
     }
 
+    /** */
+    public function getItemByIdCot(String $idCot): \Doctrine\ORM\Query
+    {   
+        $dql = 'SELECT it FROM ' . Items::class . ' it '.
+        $dql = 'WHERE it.idCot = :idCot';
+        return $this->_em->createQuery($dql)->setParameter('idCot', $idCot);
+    }
+
     /** 
      * Cuando un proveedor cotiza una solicitud, aqui guardamos esa cotizacion convertida
      * a inventario, este proceso se realiza en ComCore y desde ahi se envia a la ruta
@@ -72,17 +84,90 @@ class ItemsRepository extends ServiceEntityRepository
     */
     public function setItemOfCotizacion(array $itemMap) :int
     {
-        $item = new Items();
-
-        file_put_contents('error.log_1.txt', '');
+        $item = $this->getItemByIdCot($itemMap['idCot'])->getResult();
+        if(!$item) {
+            $item = new Items();
+        }
+        
         try {
-            $item->fromMapItem($itemMap);
+            $item = $item->fromMapItem($itemMap);
             $this->add($item, true);
             return $item->getId();
         } catch (\Throwable $th) {
-            file_put_contents('error.log.txt', $th->getMessage());
             return 0;
         }
     }
 
+    /**
+     * Uso temporal, el objetico es convertir el nuevo map de un ITEM a viejo
+     * json, esto con la finalidad de no reprogramar ComCore
+    */
+    public function parseItem(array $item): array
+    {
+
+        $title = $item['pieza'];
+        $token = $item['pieza'];
+        if($item['lado'] != '') {
+            $title = $title . ' ' . $item['lado'];
+            $token = $title;
+        }
+        if($item['poss'] != '') {
+            $title = $title . ' ' . $item['poss'];
+            $token = $title;
+        }
+        if($item['marca'] != '') {
+            $title = $title . ' PARA ' . $item['marca'];
+            $token = $token . ' ' . $item['marca'];
+        }
+        if($item['modelo'] != '') {
+            $title = $title . ' ' . $item['modelo'];
+            $token = $token . ' ' . $item['modelo'];
+        }
+        $anios = count($item['anios']);
+        if($anios > 0) {
+            $title = $title . ' APLICA A ' . $item['anios'][0];
+            $token = $token . ' ' . $item['anios'][0];
+        }
+        if($anios > 1) {
+            $title = $title . '-' . $item['anios'][1];
+            $token = $token . '-' . $item['anios'][1];
+        }
+
+        return [
+            'product' => [
+                'id' => $item['id'],
+                'uuid' => $item['idItem'],
+                'src' => $item['source'],
+                'title' => strtoupper($title),
+                'token' => strtolower($token),
+                'permalink' => $item['permalink'],
+                'thumbnail' => $item['thumbnail'],
+                'fotos' => $item['fotos'],
+                'detalles' => $item['condicion'],
+                'price' => $item['costo'],
+                'originalPrice' => $item['price'],
+                'sellerId' => $item['ownMlId'],
+                'sellerSlug' => $item['ownSlug'],
+                'attrs' => [
+                    'pieza' => $item['pieza'],
+                    'lado' => $item['lado'],
+                    'poss' => $item['poss'],
+                    'marcaId' => $item['mrkId'],
+                    'marca' => $item['marca'],
+                    'modeloId' => $item['mdlId'],
+                    'modelo' => $item['modelo'],
+                    'anios' => $item['anios'],
+                    'origen' => $item['origen'],
+                    'slug' => $item['ownSlug'],
+                    'waId' => $item['ownWaId'],
+                    'sku' => $item['idItem'],
+                    'isVip' => true,
+                ],
+                'isVendida' => false,
+                'isFav' => false,
+            ],
+            'eventName' => "anet_shop",
+            'subEvent' => $item['type']
+        ];
+    }
 }
