@@ -12,6 +12,7 @@ error_log
 
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
+public_html/.well-known/
 public_html/wa_get_imgs/
 public_html/error_log
 public_html/error.log
