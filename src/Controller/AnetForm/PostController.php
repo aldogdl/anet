@@ -11,8 +11,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\SecurityBasic;
 use App\Dtos\HeaderDto;
 use App\Repository\ItemsRepository;
-use App\Repository\ProductRepository;
-use App\Service\AnetShop\AnetShopSystemFileService;
 use App\Service\AnetTrack\WaSender;
 
 class PostController extends AbstractController
@@ -73,8 +71,10 @@ class PostController extends AbstractController
       $type = $data['type'];
       $slug = $data['ownSlug'];
       $idItem = $data['idItem'];
+
       // Solucion temporal, convertidor del Item nuevo a un Json para el sistema ComCore
       $data = $itemEm->parseItem($data);
+      
       $data['header'] = HeaderDto::event([], $type);
       $data['header'] = HeaderDto::includeBody($data['header'], false);
       $data['header'] = HeaderDto::idItem($data['header'], $idItem);

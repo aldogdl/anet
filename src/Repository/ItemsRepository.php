@@ -41,6 +41,11 @@ class ItemsRepository extends ServiceEntityRepository
         if(array_key_exists('attrs', $product)) {
             $item->fromMap($product);
         }else{
+            $query = $this->getItemByIdItemAndWaId($product['idItem'], $product['ownWaId']);
+            $result = $query->getResult();
+            if($result) {
+                $item = $result[0];
+            }
             $item->fromMapItem($product);
         }
         try {
@@ -75,6 +80,14 @@ class ItemsRepository extends ServiceEntityRepository
         $dql = 'SELECT it FROM ' . Items::class . ' it '.
         $dql = 'WHERE it.idCot = :idCot';
         return $this->_em->createQuery($dql)->setParameter('idCot', $idCot);
+    }
+
+    /** */
+    public function getItemByIdItemAndWaId(String $idItem, String $waId): \Doctrine\ORM\Query
+    {   
+        $dql = 'SELECT it FROM ' . Items::class . ' it '.
+        $dql = 'WHERE it.idItem = :idItem AND it.ownWaId = :waId';
+        return $this->_em->createQuery($dql)->setParameters(['idItem' => $idItem, 'waId' => $waId]);
     }
 
     /** 
@@ -170,4 +183,5 @@ class ItemsRepository extends ServiceEntityRepository
             'subEvent' => $item['type']
         ];
     }
+
 }
