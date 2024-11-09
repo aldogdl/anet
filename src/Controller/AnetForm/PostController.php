@@ -57,7 +57,9 @@ class PostController extends AbstractController
         $data = json_decode($data, true);
       }
     }
-    
+
+    $isDebug = (array_key_exists('debug', $data)) ? true : false;
+
     $id = $itemEm->setProduct($data);
     if($id == 0) {
       $result['msg']  = 'X No se logró guardar el producto';
@@ -81,9 +83,13 @@ class PostController extends AbstractController
       $data['header'] = HeaderDto::ownSlug($data['header'], $slug);
       $data['header'] = HeaderDto::source($data['header'], 'anet_shop');
 
-      $wh->sendMy($data);
+      if(!$isDebug) {
+        file_put_contents('a_prueba.json', json_encode($data));
+        $wh->sendMy($data);
+      }
       $result['abort'] = false;
       $result['idItem'] = $idItem;
+      $result['isDebug'] = $isDebug;
       return $this->json($result);
     }
 
