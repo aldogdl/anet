@@ -29,7 +29,7 @@ class GetController extends AbstractController
     if(array_key_exists('id', $querys)) {
       $dql = $itemEm->getItemById($querys['id']);
       $result['abort'] = false;
-      $result['results'] = $dql->getSingleResult(2);
+      $result['results'] = $dql->getArrayResult();
       return $this->json($result);
     }
 
