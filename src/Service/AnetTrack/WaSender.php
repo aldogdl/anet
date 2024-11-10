@@ -248,7 +248,7 @@ class WaSender
             $byMetodo = 'HEAD';
             // Si isForDownload (para descargar el body) es 0 incluimos los datos en el body
             // ya que se esta diciendo que no es para descarga por lo tanto el body debe
-            // traer los ya los datos para eveitar tenerlos que descargar.
+            // llevar los datos para evitar tenerlos que descargar.
             if($isForDownload == 0) {
                 $dataReq['json'] = $event;
                 $byMetodo = 'POST';

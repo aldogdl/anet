@@ -37,64 +37,62 @@ class PostController extends AbstractController
   }
 
   /** 
-   * Guardamos el item enviado desde AnetFrom
+   * Guardamos el item enviado desde AnetForm
   */
   #[Route('anet-form/item/{key}', methods:['GET', 'POST', 'DELETE'])]
 	public function sendProduct(Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm, String $key): Response
 	{
 
     if(!$sec->isValid($key)) {
-      $result = ['abort' => true, 'msg' => 'Permiso denegado'];
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
       return $this->json($result);
     }
 
     $result = ['abort' => true, 'msg' => ''];
+    $data = [];
     try {
       $data = $this->toArray($req, 'datos');
     } catch (\Throwable $th) {
       $data = $req->getContent();
       if($data) {
         $data = json_decode($data, true);
+      }else{
+        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+        return $this->json($result);
       }
     }
 
+    // Esto es usado para que no se envie el evento hacia el puente y ComCore no
+    // reciba esta prueba, la misma que se realiza desde AnetForm
     $isDebug = (array_key_exists('debug', $data)) ? true : false;
 
     $id = $itemEm->setProduct($data);
     if($id == 0) {
-      $result['msg']  = 'X No se logró guardar el producto';
-    }else{
-      $result['anet_id'] = $id;
-      $data['id'] = $id;
-    }
-
-    if(mb_strpos($result['msg'], 'X ') === false) {
-
-      $type = $data['type'];
-      $slug = $data['ownSlug'];
-      $idItem = $data['idItem'];
-
-      // Solucion temporal, convertidor del Item nuevo a un Json para el sistema ComCore
-      $data = $itemEm->parseItem($data);
-      
-      $data['header'] = HeaderDto::event([], $type);
-      $data['header'] = HeaderDto::includeBody($data['header'], false);
-      $data['header'] = HeaderDto::idItem($data['header'], $idItem);
-      $data['header'] = HeaderDto::ownSlug($data['header'], $slug);
-      $data['header'] = HeaderDto::source($data['header'], 'anet_shop');
-
-      if(!$isDebug) {
-        file_put_contents('a_prueba.json', json_encode($data));
-        $wh->sendMy($data);
-      }
-      $result['abort'] = false;
-      $result['idItem'] = $idItem;
-      $result['isDebug'] = $isDebug;
+      $result['msg']  = 'X No se logró guardar el producto en D.B.';
       return $this->json($result);
     }
 
-    $result['msg']  = 'X Error al guardar producto';
-	  return $this->json($result);
+    // Solucion temporal, convertidor del Item nuevo a un Json para el sistema ComCore
+    // $data = $itemEm->parseItem($data);
+    
+    $head = [];
+    $head['header'] = HeaderDto::event([], $data['type']);
+    $head['header'] = HeaderDto::includeBody($head['header'], false);
+    $head['header'] = HeaderDto::idDB($head['header'], $id);
+    $head['header'] = HeaderDto::idItem($head['header'], $data['idItem']);
+    $head['header'] = HeaderDto::ownSlug($head['header'], $data['ownSlug']);
+    $head['header'] = HeaderDto::source($head['header'], 'anet_form');
+
+    if(!$isDebug) {
+      $wh->sendMy($head);
+    }
+
+    $result['abort']   = false;
+    $result['anet_id'] = $id;
+    $result['idItem']  = $data['idItem'];
+    $result['isDebug'] = $isDebug;
+    return $this->json($result);
+
 	}
 
 }

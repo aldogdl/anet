@@ -7,69 +7,75 @@ class HeaderDto {
     static String $PREF = 'Anet-';
 
     /** */
-    static function includeBody(array $header, bool $includeBody): array
+    static function includeBody(array $header, bool $value): array
     {
-        $header[HeaderDto::$PREF."Down"] = ($includeBody) ? 0 : 1;
+        $header[HeaderDto::$PREF."Down"] = ($value) ? 0 : 1;
         return $header;
     }
     /** */
-    static function event(array $header, String $eventName): array
+    static function event(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."Event"] = $eventName;
+        $header[HeaderDto::$PREF."Event"] = $value;
         return $header;
     }
     /** */
-    static function fileName(array $header, String $fileName): array
+    static function idDB(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."Name"] = $fileName;
+        $header[HeaderDto::$PREF."Iddb"] = $value;
         return $header;
     }
     /** */
-    static function recived(array $header, String $recived): array
+    static function fileName(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."Recived"] = $recived;
+        $header[HeaderDto::$PREF."Name"] = $value;
         return $header;
     }
     /** */
-    static function waId(array $header, String $waId): array
+    static function recived(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."WaId"] = $waId;
+        $header[HeaderDto::$PREF."Recived"] = $value;
         return $header;
     }
     /** */
-    static function idItem(array $header, String $idItem): array
+    static function waId(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."IdItem"] = $idItem;
+        $header[HeaderDto::$PREF."WaId"] = $value;
         return $header;
     }
     /** */
-    static function context(array $header, String $context): array
+    static function idItem(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."Context"] = $context;
+        $header[HeaderDto::$PREF."IdItem"] = $value;
         return $header;
     }
     /** */
-    static function ownSlug(array $header, String $ownSlug): array
+    static function context(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."OwnSlug"] = $ownSlug;
+        $header[HeaderDto::$PREF."Context"] = $value;
         return $header;
     }
     /** */
-    static function cnxVer(array $header, String $cnxVer): array
+    static function ownSlug(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."Router-Version"] = $cnxVer;
+        $header[HeaderDto::$PREF."OwnSlug"] = $value;
         return $header;
     }
     /** */
-    static function source(array $header, String $source): array
+    static function cnxVer(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."Source"] = $source;
+        $header[HeaderDto::$PREF."Router-Version"] = $value;
         return $header;
     }
     /** */
-    static function wamid(array $header, String $wamid): array
+    static function source(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."Wamid"] = $wamid;
+        $header[HeaderDto::$PREF."Source"] = $value;
+        return $header;
+    }
+    /** */
+    static function wamid(array $header, String $value): array
+    {
+        $header[HeaderDto::$PREF."Wamid"] = $value;
         return $header;
     }
     /** */
@@ -85,9 +91,9 @@ class HeaderDto {
         return $header;
     }
     /** */
-    static function anetKey(array $header, String $anetKey): array
+    static function anetKey(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."Key"] = $anetKey;
+        $header[HeaderDto::$PREF."Key"] = $value;
         return $header;
     }
 }
