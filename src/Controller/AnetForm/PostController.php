@@ -72,15 +72,13 @@ class PostController extends AbstractController
       return $this->json($result);
     }
 
-    // Solucion temporal, convertidor del Item nuevo a un Json para el sistema ComCore
-    // $data = $itemEm->parseItem($data);
-    
     $head = [];
     $head['header'] = HeaderDto::event([], $data['type']);
     $head['header'] = HeaderDto::includeBody($head['header'], false);
     $head['header'] = HeaderDto::idDB($head['header'], $id);
     $head['header'] = HeaderDto::idItem($head['header'], $data['idItem']);
     $head['header'] = HeaderDto::ownSlug($head['header'], $data['ownSlug']);
+    $head['header'] = HeaderDto::waId($head['header'], $data['ownWaId']);
     $head['header'] = HeaderDto::source($head['header'], 'anet_form');
 
     if(!$isDebug) {
