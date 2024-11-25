@@ -2,6 +2,7 @@
 
 namespace App\Controller\Items;
 
+use App\Dtos\HeaderDto;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -9,13 +10,49 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Repository\ItemsRepository;
 use App\Repository\PaginatorQuery;
+use App\Service\AnetTrack\WaSender;
 
 class GetController extends AbstractController
 {
 
-  /** 
-   * 
-  */
+  /** */
+  #[Route('item/checkin/{id}', methods:['GET', 'DELETE'])]
+	public function itemRecovery(Request $req, ItemsRepository $itemEm, WaSender $wh, int $id): Response
+	{
+
+    // Esto es usado para que no se envie el evento hacia el puente y ComCore no
+    // reciba esta prueba, la misma que se realiza desde AnetForm
+    $params = $req->query->all();
+    $isDebug = (array_key_exists('debug', $params)) ? true : false;
+
+    $data = $itemEm->find($id);
+
+    if($data) {
+      $head = [];
+      $head['header'] = HeaderDto::event([], $data->getType());
+      $head['header'] = HeaderDto::includeBody($head['header'], false);
+      $head['header'] = HeaderDto::idDB($head['header'], $data->getId());
+      $head['header'] = HeaderDto::idItem($head['header'], $data->getIdItem());
+      $head['header'] = HeaderDto::ownSlug($head['header'], $data->getOwnSlug());
+      $head['header'] = HeaderDto::waId($head['header'], $data->getOwnWaId());
+      $head['header'] = HeaderDto::source($head['header'], 'anet_track');
+    }
+
+    if(!$isDebug) {
+      $wh->sendMy($head);
+    }
+
+    $result['abort']   = false;
+    $result['anet_id'] = $id;
+    $result['idItem']  = $data->getIdItem();
+    $result['isDebug'] = $isDebug;
+    if($isDebug) {
+      $result['header'] = $head['header'];
+    }
+    return $this->json($result);
+	}
+
+  /** */
   #[Route('items/sol/', methods:['GET', 'DELETE'])]
 	public function itemsTypeSolicitud(Request $req, ItemsRepository $itemEm): Response
 	{
