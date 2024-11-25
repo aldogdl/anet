@@ -42,6 +42,7 @@ security:
         ROLE_SOLZ:
         ROLE_COTZ:  [ROLE_SOLZ]
         ROLE_AVO:   [ROLE_COTZ]
+        ROLE_MAIN:   [ROLE_AVO]
         ROLE_EVAL:  [ROLE_AVO]
         ROLE_ADMIN: [ROLE_EVAL]
         ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]

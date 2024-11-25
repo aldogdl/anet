@@ -39,7 +39,7 @@ class PostController extends AbstractController
   /** 
    * Guardamos el item enviado desde AnetForm
   */
-  #[Route('anet-form/item/{key}', methods:['GET', 'POST', 'DELETE'])]
+  #[Route('anet-form/item/{key}', methods:['POST'])]
 	public function sendProduct(Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm, String $key): Response
 	{
 

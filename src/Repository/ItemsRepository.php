@@ -42,6 +42,20 @@ class ItemsRepository extends ServiceEntityRepository
         return $this->_em->createQuery($dql)->setParameters(['id' => $id]);
     }
 
+    /** 
+     * Tomamos una lista de Items como referencia, es decir una lista con los
+     * campos básicos para una presentacion rapida, como listas de busqueda, etc.
+    */
+    public function getItemsAsRefByType(String $type): \Doctrine\ORM\Query {
+
+        $dql = 'SELECT partial it.{id, pieza, lado, poss, marca, model, anios, ownWaId, '.
+        'ownSlug, thumbnail, stt, createdAt} FROM '.Items::class.' it '.
+        'WHERE it.type = :tipo '.
+        'ORDER BY it.id DESC';
+
+        return $this->_em->createQuery($dql)->setParameter('tipo', $type);
+    }
+
     /** */
     public function setProduct(array $product): ?int
     {
