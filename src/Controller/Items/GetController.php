@@ -32,7 +32,7 @@ class GetController extends AbstractController
 
     $offset = 1;
     if(array_key_exists('offset', $params)) {
-      $offset = $params['offset'];
+      $offset = (integer) $params['offset'];
     }
 
     $result = $paginator->pagine($query, 20, 'min', $offset);

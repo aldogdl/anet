@@ -33,7 +33,7 @@ class PaginatorQuery
                 'total' => $totalItems,
                 'pages' => $pagesCount,
                 'offset'=> $page,
-                'primary_results' => count($results),
+                'results' => count($results),
                 'limit' => $limit
             ],
             'result' => $results
