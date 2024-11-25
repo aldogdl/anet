@@ -50,8 +50,7 @@ class ItemsRepository extends ServiceEntityRepository
 
         $dql = 'SELECT partial it.{id, pieza, lado, poss, marca, model, anios, ownWaId, '.
         'ownSlug, thumbnail, stt, createdAt} FROM '.Items::class.' it '.
-        'WHERE it.type = :tipo '.
-        'ORDER BY it.id DESC';
+        'WHERE it.type = :tipo ';
 
         return $this->_em->createQuery($dql)->setParameter('tipo', $type);
     }
