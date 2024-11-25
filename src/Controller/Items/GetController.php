@@ -23,18 +23,19 @@ class GetController extends AbstractController
     $paginator = new PaginatorQuery();
     $result = ['paging' => ['total' => 0], 'result' => []];
 
-    $query = $req->query->all();
-    if(count($query) == 0) {
+    $params = $req->query->all();
+    if(count($params) == 0) {
       $query = $itemEm->getItemsAsRefByType($type);
-      $result = $paginator->pagine($query, 20, 'min');
     }else{
-      // $id = $itemEm->setProduct($data);
-      // if($id == 0) {
-        //   $result['msg']  = 'X No se logró guardar el producto en D.B.';
-        //   return $this->json($result);
-        // }
+      $query = $itemEm->getItemsAsRefByType($type);
     }
-    
+
+    $offset = 1;
+    if(array_key_exists('offset', $params)) {
+      $offset = $params['offset'];
+    }
+
+    $result = $paginator->pagine($query, 20, 'min', $offset);
     return $this->json($result);
 	}
 
