@@ -49,7 +49,7 @@ class ItemsRepository extends ServiceEntityRepository
     public function getItemsAsRefByType(String $type): \Doctrine\ORM\Query {
 
         $dql = 'SELECT partial it.{id, pieza, lado, poss, marca, model, anios, ownWaId, '.
-        'ownSlug, thumbnail, stt, createdAt} FROM '.Items::class.' it '.
+        'ownSlug, thumbnail, stt, idItem, fotos, createdAt} FROM '.Items::class.' it '.
         'WHERE it.type = :tipo '.
         'ORDER BY it.id DESC';
 

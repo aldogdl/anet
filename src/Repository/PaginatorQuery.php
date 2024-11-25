@@ -81,13 +81,15 @@ class PaginatorQuery
         
         $fecha = $item['createdAt'];
         return [
-            "id"        => $item['id'],
-            "item"      => $token,
-            "ownWaId"   => $item['ownWaId'],
-            "ownSlug"   => $item['ownSlug'],
-            "stt"       => $item['stt'],
-            "thumbnail" => $item['thumbnail'],
-            "createdAt" =>  $fecha->format('d/m H:i'),
+            'id'        => $item['id'],
+            'item'      => $token,
+            'ownWaId'   => $item['ownWaId'],
+            'ownSlug'   => $item['ownSlug'],
+            'stt'       => $item['stt'],
+            'thumbnail' => $item['thumbnail'],
+            'idItem'    => $item['idItem'],
+            'fotos'     => (array_key_exists('anios', $item)) ? $item['fotos'] : [],
+            'createdAt' =>  $fecha->format('d/m H:i'),
         ];
     }
 
