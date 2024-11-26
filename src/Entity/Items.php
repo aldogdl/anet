@@ -123,36 +123,6 @@ class Items
     }
 
     /** */
-    public function fromMap(array $item): static
-    {   
-        $hoy = new \DateTimeImmutable('now');
-        $att = $item['attrs'];
-
-        $this->type      = 'solicitud';
-        $this->condicion = $item['detalles'];
-        $this->idItem    = $item['uuid'];
-        $this->fotos     = $item['fotos'];
-        $this->ownWaId   = $item['waId'];
-        $this->ownSlug   = $item['sellerSlug'];
-        $this->price     = $item['price'];
-        $this->costo     = $item['originalPrice'];
-        $this->pieza     = $att['pieza'];
-        $this->lado      = $att['lado'];
-        $this->poss      = $att['poss'];
-        $this->marca     = $att['marca'];
-        $this->model     = $att['modelo'];
-        $this->anios     = $att['anios'];
-        $this->origen    = $att['origen'];
-        $this->idCot     = '';
-        $this->place     = '';
-        $this->stt       = 0;
-        $this->imgWa     = [];
-        $this->createdAt = $hoy;
-
-        return $this;
-    }
-
-    /** */
     public function fromMapItem(array $item): static
     {   
         if(array_key_exists('id', $item)) {
@@ -191,9 +161,25 @@ class Items
         $this->calif     = $item['calif'];
         $this->imgWa     = [];
         $this->createdAt = $hoy;
-
         return $this;
     }
+
+    /** */
+    public function toJsonForHead(): array
+    {   
+        $fecha = $this->createdAt;
+        return [
+            'type'      => $this->type,
+            'id'        => $this->id,
+            'idItem'    => $this->idItem,
+            'ownSlug'   => $this->ownSlug,
+            'ownWaId'   => $this->ownWaId,
+            'thumbnail' => $this->thumbnail,
+            'source'    => $this->source,
+            'checkinSR' => $fecha->format("Y-m-d\TH:i:s.v")
+        ];
+    }
+
 
     public function getId(): ?int
     {

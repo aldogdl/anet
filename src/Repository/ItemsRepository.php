@@ -60,16 +60,12 @@ class ItemsRepository extends ServiceEntityRepository
     public function setProduct(array $product): ?int
     {
         $item = new Items();
-        if(array_key_exists('attrs', $product)) {
-            $item->fromMap($product);
-        }else{
-            $query = $this->getItemByIdItemAndWaId($product['idItem'], $product['ownWaId']);
-            $result = $query->getResult();
-            if($result) {
-                $item = $result[0];
-            }
-            $item->fromMapItem($product);
+        $query = $this->getItemByIdItemAndWaId($product['idItem'], $product['ownWaId']);
+        $result = $query->getResult();
+        if($result) {
+            $item = $result[0];
         }
+        $item->fromMapItem($product);
         try {
             $this->add($item, true);
             return $item->getId();

@@ -12,6 +12,7 @@ use App\Service\SecurityBasic;
 use App\Dtos\HeaderDto;
 use App\Repository\ItemsRepository;
 use App\Service\AnetTrack\WaSender;
+use App\Service\HeaderItem;
 
 class PostController extends AbstractController
 {
@@ -71,16 +72,12 @@ class PostController extends AbstractController
       $result['msg']  = 'X No se logró guardar el producto en D.B.';
       return $this->json($result);
     }
-
-    $head = [];
-    $head['header'] = HeaderDto::event([], $data['type']);
-    $head['header'] = HeaderDto::includeBody($head['header'], false);
-    $head['header'] = HeaderDto::idDB($head['header'], $id);
-    $head['header'] = HeaderDto::idItem($head['header'], $data['idItem']);
-    $head['header'] = HeaderDto::ownSlug($head['header'], $data['ownSlug']);
-    $head['header'] = HeaderDto::waId($head['header'], $data['ownWaId']);
-    $head['header'] = HeaderDto::source($head['header'], 'anet_form');
-
+    $data['id']        = $id;
+    $data['source']    = 'anet_form';
+    $data['checkinSR'] = date("Y-m-d\TH:i:s.v");
+    $builder = new HeaderItem();
+    $head = $builder->build($data);
+    
     if(!$isDebug) {
       $wh->sendMy($head);
     }

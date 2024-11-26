@@ -89,7 +89,7 @@ class PaginatorQuery
             'thumbnail' => $item['thumbnail'],
             'idItem'    => $item['idItem'],
             'fotos'     => (array_key_exists('anios', $item)) ? $item['fotos'] : [],
-            'createdAt' =>  $fecha->format('d/m H:i'),
+            'createdAt' => $fecha->format('d/m H:i'),
         ];
     }
 

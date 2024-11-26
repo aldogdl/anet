@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Repository\ItemsRepository;
 use App\Repository\PaginatorQuery;
 use App\Service\AnetTrack\WaSender;
+use App\Service\HeaderItem;
 
 class GetController extends AbstractController
 {
@@ -28,18 +29,11 @@ class GetController extends AbstractController
     $data = $itemEm->find($id);
 
     if($data) {
-      $head = [];
-      $head['header'] = HeaderDto::event([], $data->getType());
-      $head['header'] = HeaderDto::includeBody($head['header'], false);
-      $head['header'] = HeaderDto::idDB($head['header'], $data->getId());
-      $head['header'] = HeaderDto::idItem($head['header'], $data->getIdItem());
-      $head['header'] = HeaderDto::ownSlug($head['header'], $data->getOwnSlug());
-      $head['header'] = HeaderDto::waId($head['header'], $data->getOwnWaId());
-      $head['header'] = HeaderDto::source($head['header'], 'anet_track');
-    }
-
-    if(!$isDebug) {
-      $wh->sendMy($head);
+      $builder = new HeaderItem();
+      $head = $builder->build($data->toJsonForHead());
+      if(!$isDebug) {
+        $wh->sendMy($head);
+      }
     }
 
     $result['abort']   = false;
