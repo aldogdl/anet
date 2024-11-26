@@ -54,14 +54,10 @@ class GetController extends AbstractController
     $paginator = new PaginatorQuery();
     $result = ['paging' => ['total' => 0], 'result' => []];
 
-    $params = $req->query->all();
-    if(count($params) == 0) {
-      $query = $itemEm->getItemsAsRefByType($type);
-    }else{
-      $query = $itemEm->getItemsAsRefByType($type);
-    }
+    $query = $itemEm->getItemsAsRefByType($type);
 
     $offset = 1;
+    $params = $req->query->all();
     if(array_key_exists('offset', $params)) {
       $offset = (integer) $params['offset'];
     }
@@ -70,9 +66,7 @@ class GetController extends AbstractController
     return $this->json($result);
 	}
 
-  /** 
-   * 
-  */
+  /** */
   #[Route('items/cot/', methods:['GET', 'DELETE'])]
 	public function itemsTypeCotizacion(Request $req, ItemsRepository $itemEm): Response
 	{
@@ -92,6 +86,24 @@ class GetController extends AbstractController
 
     return $this->json($result);
 
+	}
+
+  /** */
+  #[Route('item', methods:['GET', 'DELETE'])]
+	public function item(Request $req, ItemsRepository $itemEm): Response
+	{
+    $params = $req->query->all();
+    if(count($params) != 0) {
+      if(array_key_exists('field', $params)) {
+        if($params['field'] == 'id') {
+          $query = $itemEm->getItemById($params['value']);
+          $item = $query->getArrayResult();
+          return $this->json(($item) ? $item[0] : []);
+        }
+      }
+    }
+
+    return $this->json([]);
 	}
 
 }
