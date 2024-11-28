@@ -207,7 +207,7 @@ class WaSender
         }
         
         $rutas = [];
-        $error = 'No hay ruta activa hacia ComCore';
+        $error = 'No hay ruta activa hacia AnetTrack';
         $cnxFile = $this->getCnxFile();
         if(array_key_exists('routes', $cnxFile)) {
             $rutas = $cnxFile['routes'];
@@ -260,7 +260,7 @@ class WaSender
 
                     $filename = '/'.$headers['Anet-Event'].'_'.$headers['Anet-WaId'].'_'.time();
                     $pathSendmy = $this->fSys->getFolderTo('waSendmy');
-                    $headers['Anet-Backup'] = $filename;
+                    $dataReq['headers']['Anet-Backup'] = $filename;
                     file_put_contents($pathSendmy.$filename.'.json', json_encode([
                         'method' => $byMetodo,
                         'rutas'  => $rutas,
