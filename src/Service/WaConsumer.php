@@ -1,15 +1,19 @@
 <?php
 
-namespace App\Service\AnetTrack;
+namespace App\Service;
 
 use App\Enums\TypesWaMsgs;
 use App\Service\AnetTrack\Fsys;
 use App\Service\AnetTrack\WaInitSess;
 use App\Service\AnetTrack\HandlerQuote;
 use App\Service\AnetTrack\HandlerCMD;
+use App\Service\AnetTrack\HcFinisherCot;
+use App\Service\AnetTrack\ParseMsg;
+use App\Service\AnetTrack\WaBtnCotNow;
+use App\Service\AnetTrack\WaBtnNtgX;
 use App\Service\AnetTrack\WaSender;
 
-class Consumer
+class WaConsumer
 {
     private Fsys $fSys;
     private WaSender $waSender;
@@ -34,11 +38,11 @@ class Consumer
         }
 
         // Esto es solo para desarrollo
-        // if($obj->tipoMsg != TypesWaMsgs::STT) {
-        //     $t = time();
-        //     file_put_contents('message_'.$t.'.json', json_encode($message));
-        //     file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
-        // }
+        if($obj->tipoMsg != TypesWaMsgs::STT) {
+            $t = time();
+            file_put_contents('message_'.$t.'.json', json_encode($message));
+            file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
+        }
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
 
@@ -67,11 +71,13 @@ class Consumer
                 "TEXTO e IMÁGENES."
             );
             return;
+
         }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
 
             $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
             $clase->exe();
             return;
+
         }elseif ($obj->tipoMsg == TypesWaMsgs::COMMAND) {
 
             if($this->fSys->existe('tracking', $obj->from.'.json')) {

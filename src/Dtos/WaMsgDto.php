@@ -95,7 +95,7 @@ class WaMsgDto
         return ['header' => $headers];
     }
 
-    /** Envio a comCore para Inicio de Sesion */
+    /** Envio a anetTrack para Inicio de Sesion */
     public function toInit(): array
     {
         $headers = HeaderDto::event([], $this->subEvento);

@@ -16,13 +16,16 @@ use App\Service\HeaderItem;
 class GetController extends AbstractController
 {
 
-  /** */
+  /** 
+   * Metodo auxiliar para repetir la axión de hacer checkin, es decir, en el momento
+   * que se recibe una solicitud, cotizacion o publicacion se envia automaticamente
+   * una notificacion a AnetTrack, pero por si alguna razón no se recibe o se quiere
+   * repetir el proceso para un item en particular, desde AnetTrack se llama a esta API.
+  */
   #[Route('item/checkin/{id}', methods:['GET', 'DELETE'])]
 	public function itemRecovery(Request $req, ItemsRepository $itemEm, WaSender $wh, int $id): Response
 	{
 
-    // Esto es usado para que no se envie el evento hacia el puente y ComCore no
-    // reciba esta prueba, la misma que se realiza desde AnetForm
     $params = $req->query->all();
     $isDebug = (array_key_exists('debug', $params)) ? true : false;
 
@@ -46,7 +49,9 @@ class GetController extends AbstractController
     return $this->json($result);
 	}
 
-  /** */
+  /** 
+   * Recuperación y gestion para los item de tipo solicitud
+  */
   #[Route('items/sol/', methods:['GET', 'DELETE'])]
 	public function itemsTypeSolicitud(Request $req, ItemsRepository $itemEm): Response
 	{
@@ -66,7 +71,9 @@ class GetController extends AbstractController
     return $this->json($result);
 	}
 
-  /** */
+  /** 
+   * Recuperación y gestion para los item de tipo cotizacion
+  */
   #[Route('items/cot/', methods:['GET', 'DELETE'])]
 	public function itemsTypeCotizacion(Request $req, ItemsRepository $itemEm): Response
 	{

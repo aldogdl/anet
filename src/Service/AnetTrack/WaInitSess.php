@@ -25,35 +25,32 @@ class WaInitSess
     }
 
     /** 
-     * Cuando NiFi o Ngrok no responden inmediatamente por causa de latencia, whatsapp
-     * considera que no llego el mensaje a este servidor, por lo tanto reenvia el mensaje
-     * causando que el usuario reciba varios mensajes de confirmación.
+     * Cuando Ngrok no responden inmediatamente por causa de latencia, whatsapp
+     * considera que no llego el mensaje a este servidor, por lo tanto, reenvia el mensaje
+     * a este mismo servidor causando que el usuario reciba varios mensajes de confirmación.
      * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
-     * evitamos esto.
+     * evitamos el problema descrito.
     */
     public function isAtendido(): bool { return $this->fSys->existe('/', $this->fileTmp); }
 
     /** */
     public function exe() {
 
-        $this->waSender->setConmutador($this->waMsg);
         if($this->isAtendido()) {
-            $this->waSender->sendText("🎟️ Gracias, ya tienes una sesión en curso Activa");
             return;
         }
         $this->fSys->setContent('/', $this->fileTmp, ['']);
+        
+        $this->hasErr = '';
+        $this->waSender->setConmutador($this->waMsg);
 
-        $cuando = '';
         try {
             $date = new \DateTime(strtotime($this->waMsg->creado));
-            $timeFin = $date->format('h:i:s a');
         } catch (\Throwable $th) {
-            $this->hasErr = $th->getMessage();
+            $date = new \DateTime('now');
         }
-
-        if($this->hasErr == '') {$cuando = " a las " . $timeFin;}
         $code = $this->waSender->sendText(
-            "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana" . $cuando
+            "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana a las " . $date->format('h:i:s a')
         );
 
         if($code >= 200 && $code <= 300) {
