@@ -41,8 +41,8 @@ class WaConsumer
         if($obj->tipoMsg != TypesWaMsgs::STT) {
         }
         $t = time();
-        file_put_contents('message_'.$obj->tipoMsg.'_'.$t.'.json', json_encode($message));
-        file_put_contents('message_'.$obj->tipoMsg.'_process_'.$t.'.json', json_encode($obj->toArray()));
+        file_put_contents('message_'.$t.'.json', json_encode($message));
+        file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
 
