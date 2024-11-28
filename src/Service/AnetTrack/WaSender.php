@@ -229,7 +229,7 @@ class WaSender
 
         $rutaSend = [];
         $erroresSend = [];
-        $error = 'Error inesperado al enviar mensaje a ComCore';
+        $error = 'Error inesperado al enviar mensaje a AnetTrack';
 
         if($this->isTest) {
             file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($event));
@@ -258,8 +258,10 @@ class WaSender
             if(array_key_exists('Anet-Event', $headers)) {
                 if($headers['Anet-Event'] != 'stt') {
 
+                    $filename = '/'.$headers['Anet-Event'].'_'.$headers['Anet-WaId'].'_'.time();
                     $pathSendmy = $this->fSys->getFolderTo('waSendmy');
-                    file_put_contents($pathSendmy.'/message_sendmy_'.time().'.json', json_encode([
+                    $headers['Anet-Backup'] = $filename;
+                    file_put_contents($pathSendmy.$filename.'.json', json_encode([
                         'method' => $byMetodo,
                         'rutas'  => $rutas,
                         'headers' => $dataReq
@@ -272,7 +274,14 @@ class WaSender
                 try {
                     $response = $this->client->request($byMetodo, $rutas[$i]['url'], $dataReq);
                     $code = $response->getStatusCode();
+                    if($code != 200) {
+                        $erroresSend[] = [
+                            'ruta' => $rutas[$i],
+                            'error'=> $response->getContent()
+                        ];
+                    }
                 } catch (\Throwable $th) {
+
                     $toUrl = $rutas[$i]['url'];
                     $error = $th->getMessage();
                     $erroresSend[] = [
@@ -363,8 +372,10 @@ class WaSender
             }
 
             $url = $cnxFile['routes'][$r]['public'].'-'.$cnxFile['routes'][$r]['id'];
+            $apiv= $cnxFile['apiv'];
+
             $tunel = [
-                'url'  => 'https://'.$url.'.ngrok-free.app/api/sse',
+                'url'  => 'https://'.$url.'.ngrok-free.app/'.$apiv.'/api/sse',
                 'isPay'=> $cnxFile['routes'][$r]['isPay'],
                 'user' => $cnxFile['routes'][$r]['user'],
                 'host' => $cnxFile['routes'][$r]['host'],
