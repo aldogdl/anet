@@ -268,39 +268,32 @@ class WaSender
                     ]));
                 }
             }
-            file_put_contents('erro_timer.txt', '');
-            return true;
+            
             for ($i=0; $i < $cant; $i++) {
 
                 try {
                     $response = $this->client->request($byMetodo, $rutas[$i]['url'], $dataReq);
                     $code = $response->getStatusCode();
                     if($code != 200) {
-                        $erroresSend[] = [
-                            'ruta' => $rutas[$i],
-                            'error'=> $response->getContent()
-                        ];
+                        $error = $response->getContent();
                     }
                 } catch (\Throwable $th) {
-
-                    $toUrl = $rutas[$i]['url'];
                     $error = $th->getMessage();
-                    $erroresSend[] = [
-                        'ruta' => $rutas[$i],
-                        'error'=> $th->getMessage()
-                    ];
                 }
                 
+                $toUrl = $rutas[$i]['url'];
                 if($code == 200) {
                     $error = '';
                     $rutaSend = $rutas[$i];
                     break;
+                } else {
+                    $erroresSend[] = ['ruta' => $rutas[$i], 'error'=> $error];
                 }
             }
         }
 
         if($code != 200) {
-            // $this->sendReporErrorBySendMy($headers, $toUrl, $code, $error, $erroresSend);
+            $this->sendReporErrorBySendMy($headers, $toUrl, $code, $error, $erroresSend);
             return true;
         }
 
