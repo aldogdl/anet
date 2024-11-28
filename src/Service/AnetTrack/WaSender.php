@@ -299,7 +299,7 @@ class WaSender
         }
 
         if($code != 200) {
-            $this->sendReporErrorBySendMy($headers, $toUrl, $code, $error, $erroresSend);
+            // $this->sendReporErrorBySendMy($headers, $toUrl, $code, $error, $erroresSend);
             return true;
         }
 
