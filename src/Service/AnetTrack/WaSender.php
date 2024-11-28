@@ -268,7 +268,8 @@ class WaSender
                     ]));
                 }
             }
-            
+            file_put_contents('erro_timer.txt', '');
+            return;
             for ($i=0; $i < $cant; $i++) {
 
                 try {
