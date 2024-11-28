@@ -20,7 +20,7 @@ class WaSender
     private $sseFails;
     private $cnxFile;
     private bool $isTest;
-    private String $reporTo = '523320396725';
+    private String $reporTo = '523316195698';
 
     public Fsys $fSys;
     public String $context;
@@ -185,12 +185,12 @@ class WaSender
     public function sendMy(array $event): bool
     {
         $code  = 505;
-        $toUrl = 'http://to-comcore.info';
+        $toUrl = 'http://to-anettrack.info';
         $this->isTest = false;
 
         if(count($event) == 0) {
             $this->sendReporErrorBySendMy(
-                [], $toUrl, $code, 'El cuerpo del mensaje resulto bacio, nada para enviar'
+                [], $toUrl, $code, 'El cuerpo del mensaje resultó bacio, nada para enviar'
             );
             return false;
         }
