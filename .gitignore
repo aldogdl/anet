@@ -45,7 +45,6 @@ public_html/sse_metas/
 public_html/sse_fails/
 public_html/form/
 public_html/catalogo/
-public_html/item_track/
 public_html/scm/
 public_html/td/
 public_html/ctcs/
@@ -54,9 +53,10 @@ public_html/ctc_logo/
 public_html/sl_index/
 public_html/trackeds/
 public_html/tracking/
-public_html/wa_templates/
-public_html/coolers/
+public_html/wa_coolers/
 public_html/wa_sendmy/
+public_html/wa_item_track/
+public_html/wa_templates/
 
 var/
 vendor/
