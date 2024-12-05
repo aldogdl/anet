@@ -14,7 +14,7 @@ class GetController extends AbstractController
 {
 
   /** */
-  #[Route('anet-track/reset-cot/{tokenBasic}/{idItem}/{waIdCot}', methods:['get'])]
+  #[Route('anet-track/reset-cot/{idItem}/{waIdCot}/{tokenBasic}', methods:['get'])]
   public function resetCot(Fsys $fSys, String $tokenBasic, String $idItem, String $waIdCot): Response
   {
     $tok = base64_decode($tokenBasic);
@@ -31,8 +31,10 @@ class GetController extends AbstractController
     return $this->json($response);
   }
 
-  /** */
-  #[Route('anet-track/del-init-login/{tokenBasic}/{waIdCot}', methods:['get'])]
+  /** 
+   * [V6]
+  */
+  #[Route('anet-track/del-init-login/{waIdCot}/{tokenBasic}', methods:['get'])]
   public function delInitLoginCot(Fsys $fSys, String $tokenBasic, String $waIdCot): Response
   {
     $response = ['abort' => true, 'body' => ''];
@@ -47,7 +49,7 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('anet-track/liberar-stt/{tokenBasic}/{waIdCot}', methods:['get'])]
+  #[Route('anet-track/liberar-stt/{waIdCot}/{tokenBasic}', methods:['get'])]
   public function liberarStt(Fsys $fSys, String $tokenBasic, String $waIdCot): Response
   {
     $response = ['abort' => true, 'body' => ''];
@@ -62,7 +64,7 @@ class GetController extends AbstractController
   }
 
   /** */
-  #[Route('anet-track/cooler/{tokenBasic}/{waIdCot}/{delStopStt}', methods:['get', 'post'], defaults:['delStopStt' => 0])]
+  #[Route('anet-track/cooler/{waIdCot}/{delStopStt}/{tokenBasic}', methods:['get', 'post'], defaults:['delStopStt' => 0])]
   public function cooler(Request $req, Fsys $fSys, String $tokenBasic, String $waIdCot, int $delStopStt = 0): Response
   {
     $response = ['abort' => true, 'body' => ''];
