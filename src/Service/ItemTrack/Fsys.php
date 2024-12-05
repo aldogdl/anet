@@ -184,17 +184,20 @@ class Fsys {
      * @return String El Id del Item encontrado
     */
     public function getNextBait(WaMsgDto $waMsg, String $mrkpref): array
-    {    
+    {
         $mrkpref = mb_strtolower($mrkpref);
         $return = ['idAnet' => 0, 'cant' => 0];
 
         $cooler = $this->getContent('coolers', $waMsg->from.'.json');
+        file_put_contents('getNextBait_1.json', json_encode($cooler));
+        
         $cantItems = count($cooler);
         if($cantItems == 0) {
             return $return;
         }
         $return['cant'] = $cantItems;
-
+        file_put_contents('getNextBait_2.json', json_encode($return));
+        
         // Si el cotizador dijo [NO TENGO LA MARCA] eliminamos todas los
         // items de esa misma marca.
         if($waMsg->subEvento == 'ntga') {
@@ -205,7 +208,7 @@ class Fsys {
             }
             $this->setContent('coolers', $waMsg->from.'.json', $cooler);
         }
-
+        
         if($cantItems > 0) {
             $has = false;
             if($mrkpref != '') {
@@ -216,7 +219,8 @@ class Fsys {
             $has = ($has === false) ? 0 : $has;
             $return['idAnet'] = $cooler[$has]['idAnet'];
         }
-
+        
+        file_put_contents('getNextBait_3.json', json_encode($return));
         return $return;
     }
 

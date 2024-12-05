@@ -63,11 +63,13 @@ class WaInitSess
             if(!$has) {
                 // Buscar en el cooler del cotizador que inicio sesion un item dispuesto
                 $itemResult = $this->fSys->getNextBait($this->waMsg, '');
+                file_put_contents('getNextBait_4.json', json_encode($itemResult));
                 $wamid = '';
                 if($itemResult['idAnet'] != 0) {
                     // TODO hacer todo para enviar $item
                     $headers = HeaderDto::idDB($headers, $itemResult['idAnet']);
                     $headers = HeaderDto::campoValor($headers, 'message', $wamid);
+                    file_put_contents('getNextBait_5.json', json_encode($headers));
                 }
             }else{
                 // TODO... SE encontró un item pendiente de cotizar
