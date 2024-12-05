@@ -174,4 +174,5 @@ class HcFinisherCot
         $baitFromCooler['code'] = $code;
         return $baitFromCooler;
     }
+
 }

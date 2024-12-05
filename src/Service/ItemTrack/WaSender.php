@@ -24,6 +24,7 @@ class WaSender
     public Fsys $fSys;
     public String $context;
     public String $wamidMsg;
+    public String $errFromWa;
     /** La version del archivo de rutas */
     public String $sseNotRouteActive = '';
     
@@ -55,9 +56,9 @@ class WaSender
      * Usado para enviar msg de rastreo, es decir, aquellas plantillas que ya
      * estan armadas y no requieren de envoltura de otros campos.
     */
-    public function sendTemplate(String $idItem): int
+    public function sendTemplate(String $idAnet): int
     {
-        $tmp = $this->fSys->getContent('prodTrack', $idItem.'_track.json');
+        $tmp = $this->fSys->getContent('itemTrack', $idAnet.'_track.json');
 
         if(count($tmp) > 0) {
             $tmp = $tmp['message'];
@@ -119,18 +120,18 @@ class WaSender
         $code  = 504;
         $bodyResult = [];
         $this->wamidMsg = '';
-        $error = ($this->conm == null)
+        $this->errFromWa = ($this->conm == null)
             ? 'El Archivo conmutador de SR. resulto nulo'
             : '';
         if(count($this->body) == 0) {
-            $error = 'El cuerpo del mensaje resulto bacio, nada para enviar';
+            $this->errFromWa = 'El cuerpo del mensaje resulto bacio, nada para enviar';
         }
-        if($error != '') {
+        if($this->errFromWa != '') {
             return $code;
         }
 
         $url = $this->conm->uriToWhatsapp.'/messages';
-        if($error == '') {
+        if($this->errFromWa == '') {
 
             if($this->isTest) {
                 file_put_contents('test_sentToWa_'.$this->conm->to.'.json', json_encode($this->body));
@@ -156,25 +157,25 @@ class WaSender
                             }
                         }
                     }else {
-                        $error = $response->getContent();
+                        $this->errFromWa = $response->getContent();
                     }
     
                 } catch (\Throwable $th) {
     
-                    $error = $th->getMessage();
-                    if(mb_strpos($error, '401') !== false) {
-                        $error = 'Token de Whatsapp API caducado';
-                    }else if(mb_strpos($error, '400') !== false) {
-                        $error = 'Mensaje mal formado';
-                    }else if(mb_strpos($error, 'timeout') !== false) {
-                        $error = 'Se superó el tiempo de espera';
+                    $this->errFromWa = $th->getMessage();
+                    if(mb_strpos($this->errFromWa, '401') !== false) {
+                        $this->errFromWa = 'Token de Whatsapp API caducado';
+                    }else if(mb_strpos($this->errFromWa, '400') !== false) {
+                        $this->errFromWa = 'Mensaje mal formado';
+                    }else if(mb_strpos($this->errFromWa, 'timeout') !== false) {
+                        $this->errFromWa = 'Se superó el tiempo de espera';
                     }
                 }
             }
         }
 
         if($code > 200) {
-            $this->sendReporErrorBySendToWa($url, $code, $error, $this->body);
+            $this->sendReporErrorBySendToWa($url, $code, $this->errFromWa, $this->body);
         }
 
         return $code;

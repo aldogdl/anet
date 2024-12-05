@@ -103,6 +103,6 @@ class WaMsgDto
         $headers = HeaderDto::waId($headers, $this->from);
         $headers = HeaderDto::includeBody($headers, false);
         $headers = HeaderDto::recived($headers, $this->recibido);
-        return ['header' => $headers];
+        return $headers;
     }
 }

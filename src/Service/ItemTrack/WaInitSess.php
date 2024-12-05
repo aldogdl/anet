@@ -63,11 +63,16 @@ class WaInitSess
             if(!$has) {
                 // Buscar en el cooler del cotizador que inicio sesion un item dispuesto
                 $itemResult = $this->fSys->getNextBait($this->waMsg, '');
-                file_put_contents('getNextBait_4.json', json_encode($itemResult));
                 $wamid = '';
                 if($itemResult['idAnet'] != 0) {
-                    // TODO hacer todo para enviar $item
+                    
                     $headers = HeaderDto::idDB($headers, $itemResult['idAnet']);
+                    $code = $this->waSender->sendTemplate($itemResult['idAnet']);
+                    if($code == 200) {
+                        $wamid = $this->waSender->wamidMsg;
+                    }else{
+                        $wamid = 'X ' .$this->waSender->errFromWa;
+                    }
                     $headers = HeaderDto::campoValor($headers, 'message', $wamid);
                     file_put_contents('getNextBait_5.json', json_encode($headers));
                 }
@@ -76,7 +81,7 @@ class WaInitSess
                 // Reenviarselo al cotizador para continuar su proceso
             }
 
-            $this->waSender->sendMy($headers);
+            $this->waSender->sendMy(['header' => $headers]);
         }
     }
 
