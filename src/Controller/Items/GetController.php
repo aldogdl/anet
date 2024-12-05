@@ -10,7 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Repository\ItemsRepository;
 use App\Repository\PaginatorQuery;
-use App\Service\AnetTrack\WaSender;
+use App\Service\ItemTrack\WaSender;
 use App\Service\HeaderItem;
 
 class GetController extends AbstractController

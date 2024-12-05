@@ -96,7 +96,7 @@ class WaMsgDto
     }
 
     /** Envio a anetTrack para Inicio de Sesion */
-    public function toInit(): array
+    public function toInit(String $message = ''): array
     {
         $headers = HeaderDto::event([], $this->subEvento);
         $headers = HeaderDto::source($headers, $this->eventName);

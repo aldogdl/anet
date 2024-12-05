@@ -3,15 +3,15 @@
 namespace App\Service;
 
 use App\Enums\TypesWaMsgs;
-use App\Service\AnetTrack\Fsys;
-use App\Service\AnetTrack\WaInitSess;
-use App\Service\AnetTrack\HandlerQuote;
-use App\Service\AnetTrack\HandlerCMD;
-use App\Service\AnetTrack\HcFinisherCot;
-use App\Service\AnetTrack\ParseMsg;
-use App\Service\AnetTrack\WaBtnCotNow;
-use App\Service\AnetTrack\WaBtnNtgX;
-use App\Service\AnetTrack\WaSender;
+use App\Service\ItemTrack\Fsys;
+use App\Service\ItemTrack\WaInitSess;
+use App\Service\ItemTrack\HandlerQuote;
+use App\Service\ItemTrack\HandlerCMD;
+use App\Service\ItemTrack\HcFinisherCot;
+use App\Service\ItemTrack\ParseMsg;
+use App\Service\ItemTrack\WaBtnCotNow;
+use App\Service\ItemTrack\WaBtnNtgX;
+use App\Service\ItemTrack\WaSender;
 
 class WaConsumer
 {
@@ -74,6 +74,7 @@ class WaConsumer
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
 
+            // $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
             $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
             $clase->exe();
             return;

@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Service\AnetTrack;
+namespace App\Service\ItemTrack;
 
+use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
-use App\Service\AnetTrack\Fsys;
+use App\Service\ItemTrack\Fsys;
 
 class WaInitSess
 {
-
     public String $hasErr = '';
 
     private WaMsgDto $waMsg;
@@ -33,7 +33,9 @@ class WaInitSess
     */
     public function isAtendido(): bool { return $this->fSys->existe('/', $this->fileTmp); }
 
-    /** */
+    /** 
+     * [V6]
+    */
     public function exe() {
 
         if($this->isAtendido()) {
@@ -52,9 +54,27 @@ class WaInitSess
         $code = $this->waSender->sendText(
             "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana a las " . $date->format('h:i:s a')
         );
-
+        
         if($code >= 200 && $code <= 300) {
-            $this->waSender->sendMy($this->waMsg->toInit());
+            
+            $headers = $this->waMsg->toInit();
+            // Revisar si hay alguna cotizacion en curso
+            $has = $this->fSys->hasCotizando($this->waMsg);
+            if(!$has) {
+                // Buscar en el cooler del cotizador que inicio sesion un item dispuesto
+                $itemResult = $this->fSys->getNextBait($this->waMsg, '');
+                $wamid = '';
+                if($itemResult['idAnet'] != 0) {
+                    // TODO hacer todo para enviar $item
+                    $headers = HeaderDto::idDB($headers, $itemResult['idAnet']);
+                    $headers = HeaderDto::campoValor($headers, 'message', $wamid);
+                }
+            }else{
+                // TODO... SE encontró un item pendiente de cotizar
+                // Reenviarselo al cotizador para continuar su proceso
+            }
+
+            $this->waSender->sendMy($headers);
         }
     }
 

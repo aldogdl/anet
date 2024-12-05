@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 use App\Repository\NG2ContactosRepository;
 use App\Service\AnetShop\AnetShopSystemFileService;
-use App\Service\AnetTrack\WaSender;
+use App\Service\ItemTrack\WaSender;
 
 class GetController extends AbstractController
 {

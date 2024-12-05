@@ -50,7 +50,7 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
     app.service.consumer:
-        class: App\Service\AnetTrack\Consumer
+        class: App\Service\ItemTrack\Consumer
         arguments:
             - '@app.repository.ItemsRepository'
 

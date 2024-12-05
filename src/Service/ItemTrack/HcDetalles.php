@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Service\AnetTrack;
+namespace App\Service\ItemTrack;
 
-use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
-use App\Service\AnetTrack\Fsys;
-use App\Service\AnetTrack\WaSender;
+use App\Service\ItemTrack\Fsys;
+use App\Service\ItemTrack\WaSender;
 
 class HcDetalles
 {

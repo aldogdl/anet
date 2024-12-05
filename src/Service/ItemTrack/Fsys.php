@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\AnetTrack;
+namespace App\Service\ItemTrack;
 
 use Symfony\Component\Finder\Finder;
 
@@ -22,8 +22,8 @@ class Fsys {
     }
     
     /** */
-    public function existeInCooler(String $waId, String $idItem) {
-        
+    public function existeInCooler(String $waId, String $idItem)
+    {    
         $cooler = $this->getContent('waEstanque', $waId.'.json');
 
         if(count($cooler) > 0) {
@@ -166,41 +166,55 @@ class Fsys {
         }
         return false;
     }
+    
+    /** 
+     * Revisamos si el cotizador tiene un item actualmente cotizando
+    */
+    public function hasCotizando(WaMsgDto $waMsg): bool
+    {    
+        $cotizando = $this->getContent('tracking', $waMsg->from . '.json');
+        return (count($cotizando) > 0) ? true : false;
+    }
 
     /** 
-     * Buscamos entre el estanque si existe otro bait que podamos enviar de preferencia
-     * del mismo modelo que el enviado por parametro, si no hay mismo modelo retornamos
-     * la primer opcion disponible.
+     * [V6]
+     * Buscamos en el cooler si existe otro bait que podamos enviar de preferencia
+     * de la misma marca que el enviado por parametro, si no hay misma marca retornamos
+     * la primer opción disponible.
      * @return String El Id del Item encontrado
     */
     public function getNextBait(WaMsgDto $waMsg, String $mrkpref): array
     {    
-        $return = ['send' => '', 'baitsInCooler' => []];
+        $mrkpref = mb_strtolower($mrkpref);
+        $return = ['idAnet' => 0, 'cant' => 0];
 
-        $est = $this->getContent('waEstanque', $waMsg->from.'.json');
-        if(count($est) > 0) {
-            if(array_key_exists('baits', $est)) {
+        $cooler = $this->getContent('coolers', $waMsg->from.'.json');
+        $cantItems = count($cooler);
+        if($cantItems == 0) {
+            return $return;
+        }
+        $return['cant'] = $cantItems;
 
-                if($waMsg->subEvento == 'ntga') {
-                    $rota = count($est['baits']);
-                    // Si el cotizador dijo no tengo la marca eliminamos todas las
-                    // autopartes de esa misma marca.
-                    for ($i=0; $i < $rota; $i++) { 
-                        if($est['baits'][$i]['mrk'] == $mrkpref) {
-                            unset($est['baits'][$i]);
-                        }
-                    }
-                    $this->setContent('waEstanque', $waMsg->from.'.json', $est);
-                }
-
-                $baits = $est['baits'];
-                $return['baitsInCooler'] = count($baits);
-                if($return['baitsInCooler'] > 0) {
-                    $has = array_search($mrkpref, array_column($baits, 'mrk'));
-                    $has = ($has === false) ? 0 : $has;
-                    $return['send'] = $baits[$has]['idItem'];
+        // Si el cotizador dijo [NO TENGO LA MARCA] eliminamos todas los
+        // items de esa misma marca.
+        if($waMsg->subEvento == 'ntga') {
+            for ($i=0; $i < $cantItems; $i++) { 
+                if($cooler[$i]['mrk'] == $mrkpref) {
+                    unset($cooler[$i]);
                 }
             }
+            $this->setContent('coolers', $waMsg->from.'.json', $cooler);
+        }
+
+        if($cantItems > 0) {
+            $has = false;
+            if($mrkpref != '') {
+                $has = array_search($mrkpref, array_column($cooler, 'mrk'));
+            }
+            // Si no se encontró uno de la misma marca "Si es que el valor de $mrkPref"
+            // no esta vacio... tomamos el primero
+            $has = ($has === false) ? 0 : $has;
+            $return['idAnet'] = $cooler[$has]['idAnet'];
         }
 
         return $return;
