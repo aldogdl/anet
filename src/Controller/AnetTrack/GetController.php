@@ -39,7 +39,8 @@ class GetController extends AbstractController
   {
     $response = ['abort' => true, 'body' => ''];
     if($this->isValid($tokenBasic)) {
-      $fSys->delete('/', $waIdCot."_iniLogin.json");
+      $fSys->deleteInitLoginFile($waIdCot);
+      
       $response = ['abort' => false, 'body' => 'ok'];
     }else{
       $response = ['abort' => true, 'body' => '¿Que haces aquí?'];

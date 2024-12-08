@@ -127,6 +127,28 @@ class Fsys {
     }
 
     /** 
+     * Borramos archivo de inicio de secion del cotizador o todos en caso
+     * de que $waIdCot sea con valor all
+    */
+    public function deleteInitLoginFile(String $waIdCot): array
+    {
+        if($waIdCot == 'all') {
+            $public = $this->params->get('phtml');
+            $finder = new Finder();
+            $finder->files()->in($public)->name('*_iniLogin.json');
+            if ($finder->hasResults()) {
+                foreach ($finder as $file) {
+                    $this->delete($file->getRelativePathname());
+                }
+            }
+        }else{
+            $this->delete('/', $waIdCot."_iniLogin.json");
+        }
+
+        return [];
+    }
+
+    /** 
      * Borramos del Cooler el item del cotizador que esta queriendo cotizar y lo enviamos
      * a tracking para indicar que este cotizador esta cotizando.
     */
