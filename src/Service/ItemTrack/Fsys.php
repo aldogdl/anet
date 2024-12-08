@@ -142,8 +142,10 @@ class Fsys {
             if ($finder->hasResults()) {
                 foreach ($finder as $file) {
                     try {
-                        $this->delete($file->getRealPath());
-                        $borrados = $borrados + 1;
+                        if(is_file($file->getRealPath())) {
+                            $this->filesystem->remove($file->getRealPath());
+                            $borrados = $borrados + 1;
+                        }
                     } catch (void) {
                         $borrados = -1;
                     }
