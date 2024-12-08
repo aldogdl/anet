@@ -135,13 +135,14 @@ class Fsys {
     {
         $borrados = 0;
         if($waIdCot == 'all') {
-            
+
+            $public = $this->params->get('phtml');
             $finder = new Finder();
-            $finder->files()->in('/')->name('*_iniLogin.json');
+            $finder->files()->in($public)->name('*_iniLogin.json');
             if ($finder->hasResults()) {
                 foreach ($finder as $file) {
                     try {
-                        $this->delete($file->getPath());
+                        $this->delete($file->getRealPath());
                         $borrados = $borrados + 1;
                     } catch (void) {
                         $borrados = -1;
