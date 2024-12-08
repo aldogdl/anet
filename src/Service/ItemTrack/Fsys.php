@@ -127,40 +127,33 @@ class Fsys {
     }
 
     /** 
-     * Borramos del Cooler el bait del cotizador que esta queriendo cotizar y lo enviamos
-     * a tracking para indicar que este cotizador esta cotizando un Item 
+     * Borramos del Cooler el item del cotizador que esta queriendo cotizar y lo enviamos
+     * a tracking para indicar que este cotizador esta cotizando.
     */
     public function putCotizando(WaMsgDto $waMsg): bool
     {    
-        $cooler = $this->getContent('waEstanque', $waMsg->from . '.json');
+        $cooler = $this->getContent('coolers', $waMsg->from . '.json');
 
         if(count($cooler) > 0) {
-            if(array_key_exists('baits', $cooler)) {
+            $has = array_search($waMsg->idAnet, array_column($cooler, 'idAnet'));
+            if($has !== false) {
 
-                $baits = $cooler['baits'];
-                if(count($baits) > 0) {
+                try {
+                    $item = $cooler[$has];
+                    unset($cooler[$has]);
+                    $cooler = array_values($cooler);
+                    $this->setContent('coolers', $waMsg->from.'.json', $cooler);
+                } catch (\Throwable $th) {
+                    return false;
+                }
 
-                    $has = array_search($waMsg->idItem, array_column($baits, 'idItem'));
-                    if($has !== false) {
-
-                        try {
-                            $bait = $baits[$has];
-                            unset($baits[$has]);
-                            $cooler['baits'] = array_values($baits);
-                            $this->setContent('waEstanque', $waMsg->from.'.json', $cooler);
-                        } catch (\Throwable $th) {
-                            return false;
-                        }
-
-                        if(array_key_exists('idItem', $bait)) {
-                            $date = new \DateTime('now');
-                            $bait['wamid']   = $waMsg->id;
-                            $bait['current'] = 'sfto';
-                            $bait['attend']  = $date->format('Y-m-d h:i:s');
-                            $this->setContent('tracking', $waMsg->from.'.json', $bait);
-                            return true;
-                        }
-                    }
+                if(array_key_exists('idAnet', $item)) {
+                    $date = new \DateTime('now');
+                    $item['wamid']   = $waMsg->id;
+                    $item['current'] = 'sfto';
+                    $item['attend']  = $date->format('Y-m-d h:i:s');
+                    $this->setContent('tracking', $waMsg->from.'.json', $item);
+                    return true;
                 }
             }
         }

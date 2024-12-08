@@ -63,6 +63,8 @@ class WaSender
         if(count($tmp) > 0) {
             $tmp = $tmp['message'];
             $tmp['to'] = $this->conm->to;
+            $tmp[$tmp['type']]['footer'] = 'Aumenta tu calificación de proveedor atendiendo este MSJ.👍';
+
             $this->type = $tmp['type'];
             $this->body = $tmp;
             return $this->sendToWa();

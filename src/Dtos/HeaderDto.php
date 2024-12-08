@@ -19,12 +19,6 @@ class HeaderDto {
         return $header;
     }
     /** */
-    static function idDB(array $header, String $value): array
-    {
-        $header[HeaderDto::$PREF."Iddb"] = $value;
-        return $header;
-    }
-    /** */
     static function fileName(array $header, String $value): array
     {
         $header[HeaderDto::$PREF."Name"] = $value;
@@ -46,6 +40,12 @@ class HeaderDto {
     static function idItem(array $header, String $value): array
     {
         $header[HeaderDto::$PREF."IdItem"] = $value;
+        return $header;
+    }
+    /** */
+    static function idDB(array $header, String $value): array
+    {
+        $header[HeaderDto::$PREF."Iddb"] = $value;
         return $header;
     }
     /** */
@@ -94,6 +94,18 @@ class HeaderDto {
     static function anetKey(array $header, String $value): array
     {
         $header[HeaderDto::$PREF."Key"] = $value;
+        return $header;
+    }
+    /** */
+    static function sendedidAnet(array $header, String $value): array
+    {
+        $header[HeaderDto::$PREF."sndidanet"] = $value;
+        return $header;
+    }
+    /** */
+    static function sendedWamid(array $header, String $value): array
+    {
+        $header[HeaderDto::$PREF."sndwamid"] = $value;
         return $header;
     }
 }

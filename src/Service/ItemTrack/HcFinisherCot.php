@@ -53,7 +53,7 @@ class HcFinisherCot
             $headers = HeaderDto::campoValor($headers, 'sended', $result['send']);
         }
         $headers = HeaderDto::event($headers, $this->waMsg->subEvento);
-        $headers = HeaderDto::idItem($headers, $this->waMsg->idItem);
+        $headers = HeaderDto::idDB($headers, $this->waMsg->idAnet);
         
         if($result['code'] >= 200 && $result['code'] <= 300 || $this->waMsg->isTest) {
 
@@ -70,7 +70,7 @@ class HcFinisherCot
                 $headers = HeaderDto::includeBody($headers, true);
             }
 
-            if(mb_strpos($this->waMsg->idItem, 'demo') === false) {
+            if(mb_strpos($this->waMsg->idAnet, 'demo') === false) {
                 $this->waSender->sendMy($response);
             }
         }
@@ -115,7 +115,7 @@ class HcFinisherCot
         }else {
             $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
             $this->waMsg->subEvento = 'sgrx';
-            $this->waMsg->idItem = $this->bait['idItem'];
+            $this->waMsg->idAnet = $this->bait['idAnet'];
         }
 
         $body = "Aquí tienes otra oportunidad de venta💰";
@@ -124,10 +124,10 @@ class HcFinisherCot
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
         $baitFromCooler = ['send' => ''];
-        $idDemo = (mb_strpos($this->waMsg->idItem, 'demo') === false) ? false : true;
+        $idDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
         
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
-            $this->waSender->fSys->setContent('trackeds', $this->bait['idItem']."_".$this->bait['waId'].'.json', $this->bait);
+            $this->waSender->fSys->setContent('trackeds', $this->bait['idAnet']."_".$this->bait['waId'].'.json', $this->bait);
             $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
             // Recuperamos otro bait directamente desde el estanque
             $baitFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $mrk);

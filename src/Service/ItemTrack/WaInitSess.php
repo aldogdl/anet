@@ -66,15 +66,14 @@ class WaInitSess
                 $wamid = '';
                 if($itemResult['idAnet'] != 0) {
                     
-                    $headers = HeaderDto::idDB($headers, $itemResult['idAnet']);
+                    $headers = HeaderDto::sendedidAnet($headers, $itemResult['idAnet']);
                     $code = $this->waSender->sendTemplate($itemResult['idAnet']);
                     if($code == 200) {
                         $wamid = $this->waSender->wamidMsg;
                     }else{
                         $wamid = 'X ' .$this->waSender->errFromWa;
                     }
-                    $headers = HeaderDto::campoValor($headers, 'message', $wamid);
-                    file_put_contents('getNextBait_5.json', json_encode($headers));
+                    $headers = HeaderDto::sendedWamid($headers, $wamid);
                 }
             }else{
                 // TODO... SE encontró un item pendiente de cotizar
