@@ -37,12 +37,12 @@ class GetController extends AbstractController
   #[Route('anet-track/del-init-login/{waIdCot}/{tokenBasic}', methods:['get'])]
   public function delInitLoginCot(Fsys $fSys, String $tokenBasic, String $waIdCot): Response
   {
-    $response = ['abort' => true, 'body' => ''];
+    $response = ['abort' => true, 'body' => 0];
     if($this->isValid($tokenBasic)) {
       $borradosCant = $fSys->deleteInitLoginFile($waIdCot);
-      $response = ['abort' => false, 'body' => 'Ok Borrados '.$borradosCant];
+      $response = ['abort' => false, 'body' => $borradosCant];
     }else{
-      $response = ['abort' => true, 'body' => '¿Que haces aquí?'];
+      $response = ['abort' => true, 'body' => 0];
     }
 
     return $this->json($response);
