@@ -39,9 +39,8 @@ class GetController extends AbstractController
   {
     $response = ['abort' => true, 'body' => ''];
     if($this->isValid($tokenBasic)) {
-      $fSys->deleteInitLoginFile($waIdCot);
-      
-      $response = ['abort' => false, 'body' => 'ok'];
+      $borradosCant = $fSys->deleteInitLoginFile($waIdCot);
+      $response = ['abort' => false, 'body' => 'Ok Borrados '.$borradosCant];
     }else{
       $response = ['abort' => true, 'body' => '¿Que haces aquí?'];
     }

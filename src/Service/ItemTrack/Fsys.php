@@ -127,25 +127,37 @@ class Fsys {
     }
 
     /** 
+     * [V6]
      * Borramos archivo de inicio de secion del cotizador o todos en caso
      * de que $waIdCot sea con valor all
     */
-    public function deleteInitLoginFile(String $waIdCot): array
+    public function deleteInitLoginFile(String $waIdCot): int
     {
+        $borrados = 0;
         if($waIdCot == 'all') {
             $public = $this->params->get('phtml');
             $finder = new Finder();
             $finder->files()->in($public)->name('*_iniLogin.json');
             if ($finder->hasResults()) {
                 foreach ($finder as $file) {
-                    $this->delete($file->getRelativePathname());
+                    try {
+                        $this->delete($file->getRelativePathname());
+                        $borrados = $borrados + 1;
+                    } catch (\Throwable $th) {
+                        $borrados = $borrados - 1;
+                    }
                 }
             }
         }else{
-            $this->delete('/', $waIdCot."_iniLogin.json");
+            try {
+                $this->delete('/', $waIdCot."_iniLogin.json");
+                $borrados = 1;
+            } catch (void) {
+                $borrados = 0;
+            }
         }
 
-        return [];
+        return $borrados;
     }
 
     /** 
