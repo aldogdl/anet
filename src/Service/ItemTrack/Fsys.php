@@ -135,9 +135,9 @@ class Fsys {
     {
         $borrados = 0;
         if($waIdCot == 'all') {
-            $public = $this->params->get('phtml');
+            
             $finder = new Finder();
-            $finder->files()->in($public)->name('*_iniLogin.json');
+            $finder->files()->in('/')->name('*_iniLogin.json');
             if ($finder->hasResults()) {
                 foreach ($finder as $file) {
                     try {
