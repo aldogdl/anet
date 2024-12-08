@@ -164,10 +164,11 @@ class Fsys {
     }
 
     /** 
+     * [V6]
      * Borramos del Cooler el item del cotizador que esta queriendo cotizar y lo enviamos
      * a tracking para indicar que este cotizador esta cotizando.
     */
-    public function putCotizando(WaMsgDto $waMsg): bool
+    public function putCotizando(WaMsgDto $waMsg, bool $withResults = false): bool | array
     {    
         $cooler = $this->getContent('coolers', $waMsg->from . '.json');
 
@@ -181,7 +182,7 @@ class Fsys {
                     $cooler = array_values($cooler);
                     $this->setContent('coolers', $waMsg->from.'.json', $cooler);
                 } catch (\Throwable $th) {
-                    return false;
+                    return ($withResults) ? [] : false;
                 }
 
                 if(array_key_exists('idAnet', $item)) {
@@ -190,11 +191,12 @@ class Fsys {
                     $item['current'] = 'sfto';
                     $item['attend']  = $date->format('Y-m-d h:i:s');
                     $this->setContent('tracking', $waMsg->from.'.json', $item);
-                    return true;
+                    return ($withResults) ? $item : false;
                 }
             }
         }
-        return false;
+
+        return ($withResults) ? [] : false;
     }
     
     /** 

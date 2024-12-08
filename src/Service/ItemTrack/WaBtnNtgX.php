@@ -33,14 +33,14 @@ class WaBtnNtgX
             $item = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
             if(count($item) > 0) {
                 if($item['idAnet'] != $this->waMsg->idAnet) {
-                    // Si se esta cotizando actualmente una, pero la que se dijo no tengo es otra
+                    // Si se esta cotizando actualmente una, pero la que se dijo "no tengo" es otra,
                     // entonces enviamos un mensaje de recordatorio que se esta en proceso de
                     // cotizacion de otra pieza.
                     $this->waSender->sendText(
                         "😉 *COTIZACIÓN EN PROGRESO*...\n".
                         "Actualmente estás cotizando otra autoparte:\n\n".
                         "Termina de cotizar la refacción anterior para poder ".
-                        "continuar con a la siguiente cotización.\n\n".
+                        "continuar con la siguiente cotización.\n\n".
                         "👍 _GRACIAS por tu atención_"
                     );
                     return;
@@ -54,8 +54,7 @@ class WaBtnNtgX
             // 1.- Eliminar el Item del cooler del cotizador y a su ves
             // 2.- Para que la clase HcFinisherCot, prosiga con el proceso de fin
             /// de cotizacion del item.
-            $this->waSender->fSys->putCotizando($this->waMsg);
-            $item = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
+            $item = $this->waSender->fSys->putCotizando($this->waMsg, true);
         }
 
         $finicher = new HcFinisherCot($this->waSender, $this->waMsg, $item);

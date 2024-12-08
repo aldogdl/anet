@@ -10,14 +10,14 @@ class HcFinisherCot
 {
     private WaSender $waSender;
     private WaMsgDto $waMsg;
-    private array $bait;
+    private array $item;
 
     /** */
-    public function __construct(WaSender $waS, WaMsgDto $msg, array $bait)
+    public function __construct(WaSender $waS, WaMsgDto $msg, array $item)
     {
         $this->waSender = $waS;
         $this->waMsg = $msg;
-        $this->bait = $bait;
+        $this->item = $item;
         $this->waSender->setConmutador($this->waMsg);
     }
 
@@ -44,13 +44,13 @@ class HcFinisherCot
 
         $result = $this->responseToAction($tipoFinish);
         $cant = 0;
-        if(array_key_exists('baitsInCooler', $result)) {
-            $cant = $result['baitsInCooler'];
+        if(array_key_exists('cant', $result)) {
+            $cant = $result['cant'];
         }
         
-        $headers = HeaderDto::campoValor($headers, 'baits', $cant);
-        if($result['send'] != '') {
-            $headers = HeaderDto::campoValor($headers, 'sended', $result['send']);
+        if($result['idAnet'] > 0) {
+            $headers = HeaderDto::sendedidAnet($headers, $result['idAnet']);
+            $headers = HeaderDto::sendedWamid($headers, $result['wamid']);
         }
         $headers = HeaderDto::event($headers, $this->waMsg->subEvento);
         $headers = HeaderDto::idDB($headers, $this->waMsg->idAnet);
@@ -61,7 +61,7 @@ class HcFinisherCot
             if($tipoFinish == 'fin') {
                 // Incluimos todos los datos resultantes de la cotizacion y sus cabecesaras
                 $headers = HeaderDto::includeBody($headers, true);
-                $response = [$this->bait['track'], 'header' => $headers];
+                $response = [$this->item['resp'], 'header' => $headers];
             }
 
             if($this->waMsg->subEvento == 'cleanCN' || $this->waMsg->subEvento == 'cleanNt') {
@@ -93,7 +93,7 @@ class HcFinisherCot
     /** */
     private function responseToAction(String $tipoFinish): array
     {
-        $mrk = (count($this->bait) > 0) ? $this->bait['mrk'] : '';
+        $mrk = (count($this->item) > 0) ? $this->item['mrk'] : '';
         // Dependiendo de la accion realizada grabamos distintas
         // cabeceras para la respuesta a dicha accion.
         if($tipoFinish == 'cancel') {
@@ -101,11 +101,11 @@ class HcFinisherCot
         }elseif($tipoFinish == 'ntg') {
             $head = "🙂👍 *NO TE PREOCUPES.*\n\n";
             $this->waMsg->subEvento = 'ntg';
-            $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
+            $this->item['resp'] = ['fotos' => [], 'detalles' => 'No Tengo Pieza', 'costo' => 0];
         }elseif($tipoFinish == 'ntga') {
             $head = "🚗 *PERFECTO GRACIAS.*\n\n";
             $this->waMsg->subEvento = 'ntga';
-            $this->bait['track'] = ['fotos' => [], 'detalles' => 'No Vendo la Marca', 'costo' => 0];
+            $this->item['resp'] = ['fotos' => [], 'detalles' => 'No Vendo la Marca', 'costo' => 0];
         }elseif($tipoFinish == 'checkCnow') {
             $head = "😉 *SOLICITUD RECIBIDA PARA COTIZAR!!*...\n\n";
             $this->waMsg->subEvento = 'cleanCN';
@@ -115,39 +115,43 @@ class HcFinisherCot
         }else {
             $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
             $this->waMsg->subEvento = 'sgrx';
-            $this->waMsg->idAnet = $this->bait['idAnet'];
+            $this->waMsg->idAnet = $this->item['idAnet'];
         }
 
         $body = "Aquí tienes otra oportunidad de venta💰";
         
-        // Si el subEvent se coloco en cleaner es que no hay un bait en el cooler del cotizador
+        // Si el subEvent se coloco en cleaner es que no hay un item en el cooler del cotizador
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
-        $baitFromCooler = ['send' => ''];
+        $itemFromCooler = ['idAnet' => 0];
         $idDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
         
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
-            $this->waSender->fSys->setContent('trackeds', $this->bait['idAnet']."_".$this->bait['waId'].'.json', $this->bait);
-            $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
-            // Recuperamos otro bait directamente desde el estanque
-            $baitFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $mrk);
+            // Si no es subEvento "clean" y tampoco es "DEMO"
+            $this->waSender->fSys->setContent('trackeds', $this->item['idAnet']."_".$this->item['waId'].'.json', $this->item);
+            $this->waSender->fSys->delete('tracking', $this->item['waId'].'.json');
+            // Recuperamos otro item directamente desde el cooler del cotizador
+            $itemFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $mrk);
         }else if($idDemo) {
-            $this->waSender->fSys->delete('tracking', $this->bait['waId'].'.json');
-            $baitFromCooler = ['send' => '', 'baitsInCooler' => 0];
+            $this->waSender->fSys->delete('tracking', $this->item['waId'].'.json');
+            $itemFromCooler = ['idAnet' => 0, 'cant' => 0];
         }
 
         // Quitamos el context para que los msg siguientes no
         // lleven la cabecera de la cotizacion en curso.
         $contextOld = $this->waSender->context;
         $this->waSender->context = '';
-        // Si se encotro un nuevo bait, el idItem esta en el campo send
-        // por ende enviamos el nuevo bait al cotizador
+
+        // Si se encontró un nuevo item, enviamos el nuevo item al cotizador
         $code = 200;
-        if($baitFromCooler['send'] != '') {
+        if($itemFromCooler['cant'] > 0) {
             $code = $this->waSender->sendText($head.$body);
-            $code = $this->waSender->sendTemplate($baitFromCooler['send']);
+            $code = $this->waSender->sendTemplate($itemFromCooler['idAnet']);
+            if($code == 200) {
+                $itemFromCooler['wamid'] = $this->waSender->wamidMsg;
+            }
         }else {
-            // Si no se encontro un nuevo bait se analizan los siguiente aspecto y se
+            // Si no se encontro un nuevo item se analizan los siguiente aspecto y se
             // actua en concecuencia.
             if($this->waMsg->subEvento == 'cleanCN') {
                 $body = "El sistema automatizado esta organizando ".
@@ -171,8 +175,8 @@ class HcFinisherCot
 
         // Volvemos a colocar el contexto para proceguir con el proceso siguiente
         $this->waSender->context = $contextOld;
-        $baitFromCooler['code'] = $code;
-        return $baitFromCooler;
+        $itemFromCooler['code'] = $code;
+        return $itemFromCooler;
     }
 
 }
