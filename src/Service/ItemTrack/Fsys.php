@@ -141,10 +141,10 @@ class Fsys {
             if ($finder->hasResults()) {
                 foreach ($finder as $file) {
                     try {
-                        $this->delete($file->getRelativePathname());
+                        $this->delete($file->getPath());
                         $borrados = $borrados + 1;
-                    } catch (\Throwable $th) {
-                        $borrados = $borrados - 1;
+                    } catch (void) {
+                        $borrados = -1;
                     }
                 }
             }
@@ -153,7 +153,7 @@ class Fsys {
                 $this->delete('/', $waIdCot."_iniLogin.json");
                 $borrados = 1;
             } catch (void) {
-                $borrados = 0;
+                $borrados = -1;
             }
         }
 
