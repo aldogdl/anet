@@ -12,20 +12,25 @@ class HcDetalles
     private Fsys $fSys;
     private WaSender $waSender;
     private WaMsgDto $waMsg;
-    private array $bait;
+    private array $item;
     private String $txtValid = '';
 
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
+    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $theItem)
     {
         $this->fSys = $fsys;
         $this->waSender = $waS;
         $this->waMsg = $msg;
-        $this->bait = $bait;
+        $this->item = $theItem;
+        if($this->waMsg->idAnet == '') {
+            $this->waMsg->idAnet = $this->item['idAnet'];
+        }
         $this->waSender->setConmutador($this->waMsg);
     }
 
-    /** */
+    /** 
+     * [V6]
+    */
     public function exe(): void
     {
         $this->prepareStep();
@@ -83,10 +88,10 @@ class HcDetalles
     /** */
     private function editarBait(): void
     {
-        $this->bait['track']['detalles'] = $this->waMsg->content;
-        $this->bait['current'] = 'scto';
+        $this->item['resp']['detalles'] = $this->waMsg->content;
+        $this->item['current'] = 'scto';
         $this->waMsg->subEvento = 'sdta';
-        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
+        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->item);
     }
 
     /** */
@@ -101,12 +106,12 @@ class HcDetalles
         }
 
         $notFto = false;
-        if(!array_key_exists('track', $this->bait)) {
+        if(!array_key_exists('resp', $this->item)) {
             $notFto = true;
         }else{
-            $track = $this->bait['track'];
-            if(array_key_exists('fotos', $track)) {
-                $notFto = (count($track['fotos']) > 0) ? false : true;
+            $resp = $this->item['resp'];
+            if(array_key_exists('fotos', $resp)) {
+                $notFto = (count($resp['fotos']) > 0) ? false : true;
             }else{
                 $notFto = true;
             }
@@ -132,7 +137,7 @@ class HcDetalles
     /** */
     private function enviarMsg(): void
     {
-        $this->waSender->context = $this->bait['wamid'];
+        $this->waSender->context = $this->item['wamid'];
         
         $builder = new BuilderTemplates($this->fSys, $this->waMsg);
         $template = $builder->exe('scto');
@@ -148,7 +153,7 @@ class HcDetalles
         }
         
         if($res >= 200 && $res <= 300) {
-            if(mb_strpos($this->waMsg->idItem, 'demo') === false) {
+            if(mb_strpos($this->waMsg->idAnet, 'demo') === false) {
                 $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
             }
         }
