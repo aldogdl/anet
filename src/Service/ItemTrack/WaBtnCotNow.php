@@ -31,7 +31,9 @@ class WaBtnCotNow
     */
     public function isAtendido(): bool { return $this->waSender->fSys->existe('/', $this->fileTmp); }
 
-    /** */
+    /** 
+     * [V6]
+    */
     public function exe(bool $hasCotInProgress): void
     {
         if($this->existeInTrackeds()) { return; }
@@ -54,9 +56,9 @@ class WaBtnCotNow
         if($this->isAtendido()) {
             return;
         }
+        $isDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
 
         $exite = true;
-        $isDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
         if(!$isDemo) {
             $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idAnet);
         }

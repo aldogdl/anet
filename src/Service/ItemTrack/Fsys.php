@@ -22,25 +22,6 @@ class Fsys {
     }
     
     /** */
-    public function existeInCooler(String $waId, String $idItem)
-    {    
-        $cooler = $this->getContent('waEstanque', $waId.'.json');
-
-        if(count($cooler) > 0) {
-            if(array_key_exists('baits', $cooler)) {
-                $baits = array_column($cooler['baits'], 'idItem');
-                if(count($baits) > 0) {
-                    $has = array_search($idItem, $baits);
-                    if($has !== false) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-    
-    /** */
     public function setStopStt(String $waIdCot): void
     {
         try {
@@ -163,6 +144,26 @@ class Fsys {
         return $borrados;
     }
 
+    
+    /** 
+     * [V6]
+    */
+    public function existeInCooler(String $waId, String $idAnet)
+    {    
+        $cooler = $this->getContent('coolers', $waId.'.json');
+
+        if(count($cooler) > 0) {
+            $items = array_column($cooler, 'idAnet');
+            if(count($items) > 0) {
+                $has = array_search($idAnet, $items);
+                if($has !== false) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     /** 
      * [V6]
      * Borramos del Cooler el item del cotizador que esta queriendo cotizar y lo enviamos
