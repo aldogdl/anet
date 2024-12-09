@@ -70,6 +70,7 @@ class HcFinisherCot
                 $headers = HeaderDto::includeBody($headers, true);
             }
 
+            // Si no es demo, enviamos el resultado a AnetTrack
             if(mb_strpos($this->waMsg->idAnet, 'demo') === false) {
                 $this->waSender->sendMy($response);
             }
@@ -123,7 +124,7 @@ class HcFinisherCot
         // Si el subEvent se coloco en cleaner es que no hay un item en el cooler del cotizador
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
-        $itemFromCooler = ['idAnet' => 0];
+        $itemFromCooler = ['idAnet' => 0, 'cant' => 0];
         $idDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
         
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
@@ -131,10 +132,9 @@ class HcFinisherCot
             $this->waSender->fSys->setContent('trackeds', $this->item['idAnet']."_".$this->item['waId'].'.json', $this->item);
             $this->waSender->fSys->delete('tracking', $this->item['waId'].'.json');
             // Recuperamos otro item directamente desde el cooler del cotizador
-            $itemFromCooler = $this->waSender->fSys->getNextBait($this->waMsg, $mrk);
+            $itemFromCooler = $this->waSender->fSys->getNextItemForSend($this->waMsg, $mrk);
         }else if($idDemo) {
             $this->waSender->fSys->delete('tracking', $this->item['waId'].'.json');
-            $itemFromCooler = ['idAnet' => 0, 'cant' => 0];
         }
 
         // Quitamos el context para que los msg siguientes no

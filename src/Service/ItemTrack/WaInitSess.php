@@ -62,7 +62,7 @@ class WaInitSess
             $has = $this->fSys->hasCotizando($this->waMsg);
             if(!$has) {
                 // Buscar en el cooler del cotizador que inicio sesion un item dispuesto
-                $itemResult = $this->fSys->getNextBait($this->waMsg, '');
+                $itemResult = $this->fSys->getNextItemForSend($this->waMsg, '');
                 $wamid = '';
                 if($itemResult['idAnet'] != 0) {
                     

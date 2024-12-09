@@ -61,7 +61,7 @@ class WaBtnNtgX
         if(count($item) > 0) {
             $finicher->exe($this->waMsg->subEvento);
         }else{
-            // No se encontró una pieza en trackeds(cotizada) ni tampoco en el cooler
+            // No se encontró una pieza en el cooler ni tampoco en trackeds(cotizada)
             $finicher->exe('checkNt');
         }
         return;

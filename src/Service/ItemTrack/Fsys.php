@@ -210,12 +210,12 @@ class Fsys {
 
     /** 
      * [V6]
-     * Buscamos en el cooler si existe otro bait que podamos enviar de preferencia
+     * Buscamos en el cooler si existe otro item que podamos enviar de preferencia
      * de la misma marca que el enviado por parametro, si no hay misma marca retornamos
      * la primer opción disponible.
      * @return String El Id del Item encontrado
     */
-    public function getNextBait(WaMsgDto $waMsg, String $mrkpref): array
+    public function getNextItemForSend(WaMsgDto $waMsg, String $mrkpref): array
     {
         $mrkpref = mb_strtolower($mrkpref);
         $return = ['idAnet' => 0, 'cant' => 0];
