@@ -19,7 +19,9 @@ class WaBtnNtgX
         $this->waSender->setConmutador($this->waMsg);
     }
 
-    /** */
+    /** 
+     * [V6]
+    */
     public function exe(bool $hasCotInProgress)
     {
         $this->item = [];

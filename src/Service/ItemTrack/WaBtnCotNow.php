@@ -34,24 +34,19 @@ class WaBtnCotNow
     /** */
     public function exe(bool $hasCotInProgress): void
     {
-        if($this->existeInTrackeds()) {
-            return;
-        }
+        if($this->existeInTrackeds()) { return; }
 
         $builder = new BuilderTemplates($this->waSender->fSys, $this->waMsg);
         if($hasCotInProgress) {
             // Avisamos que hay una cotizacion en progreso y damos opción a cancelar o seguir
             // con la que esta en curso.
-            $bait = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
-            if(count($bait) > 0) {
-                $template = $builder->exe('cext', $bait['idItem']);
-                if(array_key_exists('wamid', $bait)) {
-                    $this->waSender->context = $bait['wamid'];
+            $item = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
+            if(count($item) > 0) {
+                $template = $builder->exe('cext', $item['idAnet']);
+                if(array_key_exists('wamid', $item)) {
+                    $this->waSender->context = $item['wamid'];
                 }
-                $code = $this->waSender->sendPreTemplate($template);
-                if($code >= 200 && $code <= 300) {
-                    // $this->waSender->sendMy($this->waMsg->toMini());
-                }
+                $this->waSender->sendPreTemplate($template);
             }
             return;
         }
@@ -61,9 +56,9 @@ class WaBtnCotNow
         }
 
         $exite = true;
-        $isDemo = (mb_strpos($this->waMsg->idItem, 'demo') === false) ? false : true;
+        $isDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
         if(!$isDemo) {
-            $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idItem);
+            $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idAnet);
         }
 
         if(!$exite) {
@@ -111,7 +106,7 @@ class WaBtnCotNow
     {
         $resp = false;
         $exist = $this->waSender->fSys->getContent(
-            'trackeds', $this->waMsg->idItem.'_'.$this->waMsg->from.'.json'
+            'trackeds', $this->waMsg->idAnet.'_'.$this->waMsg->from.'.json'
         );
 
         if(count($exist) > 0) {

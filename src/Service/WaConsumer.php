@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Enums\TypesWaMsgs;
 use App\Service\ItemTrack\Fsys;
-use App\Service\ItemTrack\WaInitSess;
 use App\Service\ItemTrack\HandlerQuote;
 use App\Service\ItemTrack\HandlerCMD;
 use App\Service\ItemTrack\HcFinisherCot;
@@ -12,18 +11,19 @@ use App\Service\ItemTrack\ParseMsg;
 use App\Service\ItemTrack\WaBtnCotNow;
 use App\Service\ItemTrack\WaBtnNtgX;
 use App\Service\ItemTrack\WaSender;
+use App\Service\ItemTrack\WaInitSess;
 
 class WaConsumer
 {
-    private Fsys $fSys;
     private WaSender $waSender;
+    private Fsys $fsys;
 
     /** 
      * Analizamos si el mensaje es parte de una cotizacion
     */
-    public function __construct(Fsys $fsys, WaSender $waS)
+    public function __construct(Fsys $sysFile, WaSender $waS)
     {
-        $this->fSys = $fsys;
+        $this->fsys = $sysFile;
         $this->waSender = $waS;
     }
 
@@ -47,15 +47,15 @@ class WaConsumer
         if($obj->tipoMsg == TypesWaMsgs::STT) {
 
             // Si no hay un archivo de Stop STT enviamos los STT a EventCore
-            if(!$this->fSys->existe('/', $obj->from.'_stopstt.json')) {
+            if(!$this->fsys->existe('/', $obj->from.'_stopstt.json')) {
                 $this->waSender->setConmutador($obj);
                 $this->waSender->sendMy($obj->toStt());
             }else{
 
                 // Si es un STT y hay un archivo de Costo, es que acaba de ser
                 // finalizada una cotizacion por parte del cotizador.
-                if($this->fSys->existe('/', $obj->from.'_scto.json')) {
-                    $bait = $this->fSys->getContent('tracking', $obj->from.'.json');
+                if($this->fsys->existe('/', $obj->from.'_scto.json')) {
+                    $bait = $this->fsys->getContent('tracking', $obj->from.'.json');
                     if(count($bait) > 0) {
                         $finicher = new HcFinisherCot($this->waSender, $obj, $bait);
                         $finicher->exe('fin');
@@ -74,14 +74,13 @@ class WaConsumer
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
 
-            // $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
-            $clase = new WaInitSess($this->fSys, $this->waSender, $obj);
+            $clase = new WaInitSess($this->fsys, $this->waSender, $obj);
             $clase->exe();
             return;
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::COMMAND) {
 
-            if($this->fSys->existe('tracking', $obj->from.'.json')) {
+            if($this->fsys->existe('tracking', $obj->from.'.json')) {
                 $this->waSender->setConmutador($obj);
                 $this->waSender->sendText(
                     "⚠️ Lo sentimos mucho, para ejecutar cualquier *COMANDO*, ".
@@ -90,15 +89,15 @@ class WaConsumer
                 );
                 return;
             }
-            $clase = new HandlerCMD($this->fSys, $this->waSender, $obj);
+            $clase = new HandlerCMD($this->fsys, $this->waSender, $obj);
             $clase->exe();
             return;
         }
 
         // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario
-        $this->fSys->delete('/', $obj->from.'_iniLogin.json');
+        $this->fsys->delete('/', $obj->from.'_iniLogin.json');
         
-        $hasCotProgress = $this->fSys->existe('tracking', $obj->from.'.json');
+        $hasCotProgress = $this->fsys->existe('tracking', $obj->from.'.json');
 
         if($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
 
@@ -114,10 +113,10 @@ class WaConsumer
         
         if($hasCotProgress) {
             
-            $handler = new HandlerQuote($this->fSys, $this->waSender, $obj);
+            $handler = new HandlerQuote($this->fsys, $this->waSender, $obj);
             $handler->exe();
             return;
-        }elseif ($this->fSys->existe('/', 'conv_free_'.$obj->from.'.json')) {
+        }elseif ($this->fsys->existe('/', 'conv_free_'.$obj->from.'.json')) {
             
             // dd('Hay conversacion libre');
         }
