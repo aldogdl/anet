@@ -12,21 +12,23 @@ class HcFotos
     private Fsys $fSys;
     private WaSender $waSender;
     private WaMsgDto $waMsg;
-    private array $bait;
+    private array $item;
     private String $txtValid = '';
     private bool $sendMsgDeta = true;
 
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
+    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $theItem)
     {
-        $this->fSys = $fsys;
+        $this->fSys     = $fsys;
+        $this->waMsg    = $msg;
+        $this->item     = $theItem;
         $this->waSender = $waS;
-        $this->waMsg = $msg;
-        $this->bait = $bait;
         $this->waSender->setConmutador($this->waMsg);
     }
 
-    /** */
+    /** 
+     * [V6]
+    */
     public function exe(): void
     {
         $continuarSinFotos = false;
@@ -40,7 +42,7 @@ class HcFotos
                 // El usuario desea continuar sin fotos
                 $continuarSinFotos = true;
                 $this->waMsg->content = ['id' => 0, 'mime_type' => 'none'];
-                $this->bait['current'] = 'sdta';
+                $this->item['current'] = 'sdta';
             }else {
                 // El usuario se arrepintio desea continuar con fotos
                 $this->enviarMsg('sfto');
@@ -52,7 +54,7 @@ class HcFotos
         // antes de validar los datos recibidos por la cuestion del envio de fotos.
         if(!$continuarSinFotos) {
             $this->prepareStep();
-            $this->bait['current'] = 'sdta';
+            $this->item['current'] = 'sdta';
             // Validamos la integridad del tipo de mensaje
             if(!$this->isValid() && $this->txtValid != '') {
                 $this->waSender->sendText($this->txtValid);
@@ -60,8 +62,8 @@ class HcFotos
             }
         }
 
-        $this->editarBait();
-        $this->enviarMsg($this->bait['current'], $continuarSinFotos);
+        $this->editarItem();
+        $this->enviarMsg($this->item['current'], $continuarSinFotos);
         return;
     }
 
@@ -118,11 +120,11 @@ class HcFotos
     }
 
     /** */
-    private function editarBait(): void
+    private function editarItem(): void
     {
         $track = [];
-        if(array_key_exists('track', $this->bait)) {
-            $track = $this->bait['track'];
+        if(array_key_exists('track', $this->item)) {
+            $track = $this->item['track'];
         }
 
         if(!array_key_exists('fotos', $track)) {
@@ -138,9 +140,9 @@ class HcFotos
             }
         }
 
-        $this->bait['track'] = $track;
-        $this->bait['current'] = 'sdta';
-        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
+        $this->item['track'] = $track;
+        $this->item['current'] = 'sdta';
+        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->item);
     }
 
     /** */
@@ -190,16 +192,16 @@ class HcFotos
 
         // Para esta plantilla de solicitud de detalles enviamos una
         // serie de mensajes al azar para interactual con el usuario
-        $template = $builder->exe($oldCurrent, $this->waMsg->idItem);
+        $template = $builder->exe($oldCurrent, $this->waMsg->idAnet);
         if($oldCurrent == 'sdta' && $resent) {
             $template = $builder->editForDetalles($template);
         }
 
-        $this->waSender->context = $this->bait['wamid'];
+        $this->waSender->context = $this->item['wamid'];
         if(count($template) > 0) {
             $res = $this->waSender->sendPreTemplate($template);
             if($oldCurrent == 'sdta') {
-                if(mb_strpos($this->waMsg->idItem, 'demo') === false) {
+                if(mb_strpos($this->waMsg->idAnet, 'demo') === false) {
                     if($res >= 200 && $res <= 300) {
                         $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
                     }
