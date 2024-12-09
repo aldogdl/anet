@@ -22,6 +22,9 @@ class HcFotos
         $this->fSys     = $fsys;
         $this->waMsg    = $msg;
         $this->item     = $theItem;
+        if($msg->idAnet == '') {
+            $msg->idAnet = $this->item['idAnet'];
+        }
         $this->waSender = $waS;
         $this->waSender->setConmutador($this->waMsg);
     }
