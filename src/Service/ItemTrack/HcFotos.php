@@ -99,7 +99,7 @@ class HcFotos
         if($filename != '') {
             $this->fSys->delete('/', $filename);
             // Si ya existe el archivo lo partimos en sus partes para optener el momento
-            // que este archivo se creo
+            // en el que este archivo se creo
             $partes = explode('_', $filename);
             $rota = count($partes) -1;
             $lastTime = (integer) $partes[$rota - 1];
@@ -122,25 +122,25 @@ class HcFotos
     /** */
     private function editarItem(): void
     {
-        $track = [];
-        if(array_key_exists('track', $this->item)) {
-            $track = $this->item['track'];
+        $resp = [];
+        if(array_key_exists('resp', $this->item)) {
+            $resp = $this->item['resp'];
         }
 
-        if(!array_key_exists('fotos', $track)) {
-            $track['fotos'] = [$this->waMsg->content];
+        if(!array_key_exists('fotos', $resp)) {
+            $resp['fotos'] = [$this->waMsg->content];
         }else{
-            if(count($track['fotos']) > 0) {
-                $idsFtos = array_column($track['fotos'], 'id');
+            if(count($resp['fotos']) > 0) {
+                $idsFtos = array_column($resp['fotos'], 'id');
                 $has = array_search($this->waMsg->content['id'], $idsFtos);
                 if($has !== false) {
                     return;
                 }
-                array_push($track['fotos'], $this->waMsg->content);
+                array_push($resp['fotos'], $this->waMsg->content);
             }
         }
 
-        $this->item['track'] = $track;
+        $this->item['resp'] = $resp;
         $this->item['current'] = 'sdta';
         $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->item);
     }
