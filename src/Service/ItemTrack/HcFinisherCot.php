@@ -94,7 +94,6 @@ class HcFinisherCot
     /** */
     private function responseToAction(String $tipoFinish): array
     {
-        $mrk = (count($this->item) > 0) ? $this->item['mrk'] : '';
         // Dependiendo de la accion realizada grabamos distintas
         // cabeceras para la respuesta a dicha accion.
         if($tipoFinish == 'cancel') {
@@ -128,11 +127,14 @@ class HcFinisherCot
         $idDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
         
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
+            
             // Si no es subEvento "clean" y tampoco es "DEMO"
             $this->waSender->fSys->setContent('trackeds', $this->item['idAnet']."_".$this->item['waId'].'.json', $this->item);
             $this->waSender->fSys->delete('tracking', $this->item['waId'].'.json');
             // Recuperamos otro item directamente desde el cooler del cotizador
+            $mrk = (count($this->item) > 0) ? $this->item['mrk'] : '';
             $itemFromCooler = $this->waSender->fSys->getNextItemForSend($this->waMsg, $mrk);
+
         }else if($idDemo) {
             $this->waSender->fSys->delete('tracking', $this->item['waId'].'.json');
         }

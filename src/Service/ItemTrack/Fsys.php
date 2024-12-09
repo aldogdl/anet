@@ -175,7 +175,6 @@ class Fsys {
         if(count($cooler) > 0) {
             $has = array_search($waMsg->idAnet, array_column($cooler, 'idAnet'));
             if($has !== false) {
-
                 try {
                     $item = $cooler[$has];
                     unset($cooler[$has]);
@@ -217,7 +216,7 @@ class Fsys {
     */
     public function getNextItemForSend(WaMsgDto $waMsg, String $mrkpref): array
     {
-        $mrkpref = mb_strtolower($mrkpref);
+        $mrkpref = trim(mb_strtolower($mrkpref));
         $return = ['idAnet' => 0, 'cant' => 0];
 
         $cooler = $this->getContent('coolers', $waMsg->from.'.json');
@@ -226,16 +225,18 @@ class Fsys {
         if($cantItems == 0) {
             return $return;
         }
-        $return['cant'] = $cantItems;
-        
+
         // Si el cotizador dijo [NO TENGO LA MARCA] eliminamos todas los
         // items de esa misma marca.
         if($waMsg->subEvento == 'ntga') {
             for ($i=0; $i < $cantItems; $i++) { 
-                if($cooler[$i]['mrk'] == $mrkpref) {
+
+                $theMrk = trim(mb_strtolower($cooler[$i]['mrk']));
+                if($theMrk == $mrkpref) {
                     unset($cooler[$i]);
                 }
             }
+            $cantItems = count($cooler);
             $this->setContent('coolers', $waMsg->from.'.json', $cooler);
         }
         
@@ -249,7 +250,8 @@ class Fsys {
             $has = ($has === false) ? 0 : $has;
             $return['idAnet'] = $cooler[$has]['idAnet'];
         }
-        
+
+        $return['cant'] = $cantItems;
         return $return;
     }
 
