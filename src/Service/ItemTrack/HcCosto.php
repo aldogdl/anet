@@ -12,20 +12,25 @@ class HcCosto
     private Fsys $fSys;
     private WaSender $waSender;
     private WaMsgDto $waMsg;
-    private array $bait;
+    private array $item;
     private String $txtValid = '';
 
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $bait)
+    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $theItem)
     {
-        $this->fSys = $fsys;
+        $this->fSys     = $fsys;
         $this->waSender = $waS;
-        $this->waMsg = $msg;
-        $this->bait = $bait;
+        $this->waMsg    = $msg;
+        $this->item     = $theItem;
+        if($this->waMsg->idAnet == '') {
+            $this->waMsg->idAnet = $this->item['idAnet'];
+        }
         $this->waSender->setConmutador($this->waMsg);
     }
 
-    /** */
+    /** 
+     * [V6]
+    */
     public function exe(): void
     {
         // Validamos la integridad del tipo de mensaje
@@ -34,7 +39,7 @@ class HcCosto
             return;
         }
         $this->prepareStep();
-        $this->editarBait();
+        $this->editarItem();
         $this->enviarMsg();
         return;
     }
@@ -74,27 +79,27 @@ class HcCosto
 
     /** 
      * Cuando los detalles no se pusieron por algun error regresarmos todos
-     * los valores del bait a detalles para solicitarlos nuevamente.
+     * los valores del item a detalles para solicitarlos nuevamente.
     */
     private function changeToDetalles(): void
     {
         $this->waMsg->subEvento = 'sdta';
-        $this->bait['current'] = $this->waMsg->subEvento;
+        $this->item['current'] = $this->waMsg->subEvento;
         // Eliminamos el archivo indicativo del proceso anterior
         $filename = $this->createFilenameTmpOf('scto');
         $this->fSys->delete('/', $filename);
         $filename = $this->createFilenameTmpOf($this->waMsg->subEvento);
         $this->fSys->setContent('/', $filename, ['']);
-        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
+        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->item);
     }
 
     /** */
-    private function editarBait(): void
+    private function editarItem(): void
     {
-        $this->bait['track']['costo'] = $this->waMsg->content;
-        $this->bait['current'] = 'sgrx';
+        $this->item['resp']['costo'] = $this->waMsg->content;
+        $this->item['current'] = 'sgrx';
         $this->waMsg->subEvento = 'scto';
-        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->bait);
+        $this->fSys->setContent('tracking', $this->waMsg->from.'.json', $this->item);
     }
 
     /** */
@@ -108,12 +113,12 @@ class HcCosto
         }
 
         $notDta = false;
-        if(!array_key_exists('track', $this->bait)) {
+        if(!array_key_exists('resp', $this->item)) {
             $notDta = true;
         }else{
-            $track = $this->bait['track'];
-            if(array_key_exists('detalles', $track)) {
-                $notDta = (strlen($track['detalles']) > 0) ? false : true;
+            $resp = $this->item['resp'];
+            if(array_key_exists('detalles', $resp)) {
+                $notDta = (strlen($resp['detalles']) > 0) ? false : true;
             }else{
                 $notDta = true;
             }
@@ -122,7 +127,7 @@ class HcCosto
         if($notDta) {
             $this->txtValid = "⚠️ ¡Lo sentimos!, pero es muy importante que ".
             "indiques los detalles de la pieza.";
-            // Se necesita cambiar el bait en el campo current a sdta
+            // Se necesita cambiar el item en el campo current a sdta
             $this->changeToDetalles();
             return false;
         }
@@ -178,14 +183,14 @@ class HcCosto
     /** */
     private function enviarMsg(): void
     {
-        $this->waSender->context = $this->bait['wamid'];
+        $this->waSender->context = $this->item['wamid'];
         $res = $this->waSender->sendText(
             "🤩 *Finalizaste con ÉXITO!.*\n\n".
             "*RECUERDA*: Puedes vaciar este chat para mantener limpio tu dispositivo\n\n".
             "_NUNCA PERDERÁS ningúna OPORTUNIDAD DE VENTA_💰"
         );
         if($res >= 200 && $res <= 300) {
-            if(mb_strpos($this->waMsg->idItem, 'demo') === false) {
+            if(mb_strpos($this->waMsg->idAnet, 'demo') === false) {
                 $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
             }
         }

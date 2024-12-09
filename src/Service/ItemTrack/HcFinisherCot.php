@@ -13,31 +13,20 @@ class HcFinisherCot
     private array $item;
 
     /** */
-    public function __construct(WaSender $waS, WaMsgDto $msg, array $item)
+    public function __construct(WaSender $waS, WaMsgDto $msg, array $theItem)
     {
         $this->waSender = $waS;
         $this->waMsg = $msg;
-        $this->item = $item;
+        $this->item = $theItem;
+        if($this->waMsg->idAnet == '') {
+            $this->waMsg->idAnet = $this->item['idAnet'];
+        }
         $this->waSender->setConmutador($this->waMsg);
     }
 
-    /** */
-    private function createFilenameTmpOf(String $name): String {
-        return $this->waMsg->from.'_'.$name.'.json';
-    }
-
     /** 
-     * Cuando NiFi o Ngrok no responden inmediatamente por causa de latencia, whatsapp
-     * considera que no llego el mensaje a este servidor, por lo tanto reenvia el mensaje
-     * causando que el usuario reciba varios mensajes de confirmación.
-     * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
-     * evitamos esto.
+     * [V6]
     */
-    public function isAtendido(String $filename): bool {
-        return $this->waSender->fSys->existe('/', $filename);
-    }
-
-    /** */
     public function exe(String $tipoFinish = 'cancel'): void
     {
         $headers = $this->waMsg->toStt(true);
@@ -115,7 +104,6 @@ class HcFinisherCot
         }else {
             $head = "😃🫵 *Sigue vendiendo MÁS!!.*\n\n";
             $this->waMsg->subEvento = 'sgrx';
-            $this->waMsg->idAnet = $this->item['idAnet'];
         }
 
         $body = "Aquí tienes otra oportunidad de venta💰";
@@ -179,6 +167,22 @@ class HcFinisherCot
         $this->waSender->context = $contextOld;
         $itemFromCooler['code'] = $code;
         return $itemFromCooler;
+    }
+
+    /** */
+    private function createFilenameTmpOf(String $name): String {
+        return $this->waMsg->from.'_'.$name.'.json';
+    }
+
+    /** 
+     * Cuando NiFi o Ngrok no responden inmediatamente por causa de latencia, whatsapp
+     * considera que no llego el mensaje a este servidor, por lo tanto reenvia el mensaje
+     * causando que el usuario reciba varios mensajes de confirmación.
+     * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
+     * evitamos esto.
+    */
+    public function isAtendido(String $filename): bool {
+        return $this->waSender->fSys->existe('/', $filename);
     }
 
 }

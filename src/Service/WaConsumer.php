@@ -39,14 +39,14 @@ class WaConsumer
 
         // Esto es solo para desarrollo
         if($obj->tipoMsg != TypesWaMsgs::STT) {
+            $t = time();
+            file_put_contents('message_'.$t.'.json', json_encode($message));
+            file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
         }
-        $t = time();
-        file_put_contents('message_'.$t.'.json', json_encode($message));
-        file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
 
-            // Si no hay un archivo de Stop STT enviamos los STT a EventCore
+            // Si no hay un archivo de Stop STT enviamos los STT a AnetTrack
             if(!$this->fsys->existe('/', $obj->from.'_stopstt.json')) {
                 $this->waSender->setConmutador($obj);
                 $this->waSender->sendMy($obj->toStt());
@@ -55,9 +55,9 @@ class WaConsumer
                 // Si es un STT y hay un archivo de Costo, es que acaba de ser
                 // finalizada una cotizacion por parte del cotizador.
                 if($this->fsys->existe('/', $obj->from.'_scto.json')) {
-                    $bait = $this->fsys->getContent('tracking', $obj->from.'.json');
-                    if(count($bait) > 0) {
-                        $finicher = new HcFinisherCot($this->waSender, $obj, $bait);
+                    $item = $this->fsys->getContent('tracking', $obj->from.'.json');
+                    if(count($item) > 0) {
+                        $finicher = new HcFinisherCot($this->waSender, $obj, $item);
                         $finicher->exe('fin');
                     }
                 }
