@@ -154,7 +154,7 @@ class Fsys {
         $borrados = 0;
         $waSendmy = $this->params->get('waSendmy');
         $finder = new Finder();
-        $finder->files()->in($waSendmy)->name($idAnet.'*'.$waIdCot);
+        $finder->files()->in($waSendmy)->name($idAnet.'*'.$waIdCot.'.json');
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
                 try {
