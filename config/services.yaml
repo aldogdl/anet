@@ -28,7 +28,6 @@ parameters:
     reqRadec   : '%phtml%/req_radec/'
     waTemplates: '%phtml%/wa_templates/'
     waAnalizar : '%phtml%/wa_analizar/'
-    waEstanque : '%phtml%/wa_estanque/'
     dtaCtcLog  : '%dtaCtc%/log'
     sseNotRouteActive: '%phtml%/sse_not_route/'
     sseMetas   : '%phtml%/sse_metas/'

@@ -260,13 +260,13 @@ class WaSender
             if(array_key_exists('Anet-Event', $headers)) {
                 if($headers['Anet-Event'] != 'stt') {
 
-                    $filename = '/'.$headers['Anet-Event'].'_'.$headers['Anet-WaId'].'_'.time();
+                    $filename = '/'.$headers['Anet-Iddb'].'_'.$headers['Anet-Event'].'_'.$headers['Anet-WaId'];
                     $pathSendmy = $this->fSys->getFolderTo('waSendmy');
                     $dataReq['headers']['Anet-Backup'] = $filename;
                     file_put_contents($pathSendmy.$filename.'.json', json_encode([
                         'method' => $byMetodo,
                         'rutas'  => $rutas,
-                        'headers' => $dataReq
+                        'content' => $dataReq
                     ]));
                 }
             }

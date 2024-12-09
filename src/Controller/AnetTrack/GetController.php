@@ -3,7 +3,6 @@
 namespace App\Controller\AnetTrack;
 
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
@@ -14,14 +13,12 @@ class GetController extends AbstractController
 {
 
   /** */
-  #[Route('anet-track/reset-cot/{idItem}/{waIdCot}/{tokenBasic}', methods:['get'])]
-  public function resetCot(Fsys $fSys, String $tokenBasic, String $idItem, String $waIdCot): Response
+  #[Route('anet-track/resent-msgtrack/{idAnet}/{waIdCot}/{tokenBasic}', methods:['get'])]
+  public function resentMsgTrackDeep(Fsys $fSys, String $tokenBasic, String $idAnet, String $waIdCot): Response
   {
-    $tok = base64_decode($tokenBasic);
     $response = ['abort' => true, 'body' => ''];
-    $miTok = $this->getParameter('getAnToken');
-    if($miTok == $tok) {
-      $acc = new ResetCot($fSys, $idItem, $waIdCot);
+    if($this->isValid($tokenBasic)) {
+      $acc = new ResetCot($fSys, $idAnet, $waIdCot);
       $resul = $acc->exe();
       $response = ['abort' => false, 'body' => $resul];
     }else{
@@ -33,6 +30,8 @@ class GetController extends AbstractController
 
   /** 
    * [V6]
+   * Eliminamos el archivo de login de un cotizador o todos si asi lo indica
+   * el paramentro waIdCot
   */
   #[Route('anet-track/del-init-login/{waIdCot}/{tokenBasic}', methods:['get'])]
   public function delInitLoginCot(Fsys $fSys, String $tokenBasic, String $waIdCot): Response
@@ -48,7 +47,10 @@ class GetController extends AbstractController
     return $this->json($response);
   }
 
-  /** */
+  /** 
+   * Eliminamos el archivo que se encarga de detener los stt de wa mientras que
+   * se esta realizando una cotizacion
+  */
   #[Route('anet-track/liberar-stt/{waIdCot}/{tokenBasic}', methods:['get'])]
   public function liberarStt(Fsys $fSys, String $tokenBasic, String $waIdCot): Response
   {
@@ -56,34 +58,6 @@ class GetController extends AbstractController
     if($this->isValid($tokenBasic)) {
       $fSys->delete('/', $waIdCot."_stopstt.json");
       $response = ['abort' => false, 'body' => 'ok'];
-    }else{
-      $response = ['abort' => true, 'body' => '¿Que haces aquí?'];
-    }
-
-    return $this->json($response);
-  }
-
-  /** */
-  #[Route('anet-track/cooler/{waIdCot}/{delStopStt}/{tokenBasic}', methods:['get', 'post'], defaults:['delStopStt' => 0])]
-  public function cooler(Request $req, Fsys $fSys, String $tokenBasic, String $waIdCot, int $delStopStt = 0): Response
-  {
-    $response = ['abort' => true, 'body' => ''];
-    
-    if($this->isValid($tokenBasic)) {
-      $cooler = [];
-      // Eliminamos la marca de detencion de Status
-      if($delStopStt == 1) {
-        $fSys->delete('/', $waIdCot."_stopstt.json");
-      }
-      if($req->getMethod() == 'GET') {
-
-        $cooler = $fSys->getContent('waEstanque', $waIdCot.".json");
-
-      }elseif($req->getMethod() == 'POST') {
-        $data = json_decode($req->getContent(), true);
-        $fSys->setContent('waEstanque', $waIdCot.".json", $data);
-      }
-      $response = ['abort' => false, 'body' => $cooler];
     }else{
       $response = ['abort' => true, 'body' => '¿Que haces aquí?'];
     }

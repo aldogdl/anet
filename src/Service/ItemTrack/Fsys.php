@@ -144,7 +144,33 @@ class Fsys {
         return $borrados;
     }
 
-    
+    /** 
+     * [V6]
+     * Borramos todos los archivos generados al momento de enviar un SSE a AnetTrack
+     * y de un determinado item y un determinado cotizador
+    */
+    public function deleteSendmyFiles(String $idAnet, String $waIdCot): int
+    {
+        $borrados = 0;
+        $waSendmy = $this->params->get('waSendmy');
+        $finder = new Finder();
+        $finder->files()->in($waSendmy)->name($idAnet.'*'.$waIdCot);
+        if ($finder->hasResults()) {
+            foreach ($finder as $file) {
+                try {
+                    if(is_file($file->getRealPath())) {
+                        $this->filesystem->remove($file->getRealPath());
+                        $borrados = $borrados + 1;
+                    }
+                } catch (void) {
+                    $borrados = -1;
+                }
+            }
+        }
+
+        return $borrados;
+    }
+
     /** 
      * [V6]
     */
@@ -257,23 +283,17 @@ class Fsys {
     }
 
     /** 
-     * Hacemos un resumen de todos los baits con los que cuenta el cotizador
-     * @return array La lista de los IdItems
+     * Hacemos un resumen de todos los items con los que cuenta el cotizador
+     * @return array La lista de los idAnet
     */
     public function getResumeCooler(String $waId): array
     {    
         $return = [];
-        $est = $this->getContent('waEstanque', $waId . '.json');
-        if(count($est) > 0) {
-            if(array_key_exists('items', $est)) {
-
-                $baits = $est['items'];
-                if(count($baits) > 0) {
-                    $return = array_column($baits, 'idItem');
-                }
-            }
+        $cooler = $this->getContent('coolers', $waId . '.json');
+        $cants = count($cooler);
+        if($cants > 0) {
+            $return = array_column($cooler, 'idAnet');
         }
-
         return $return;
     }
 

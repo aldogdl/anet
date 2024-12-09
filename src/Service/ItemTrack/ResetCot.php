@@ -6,19 +6,20 @@ use App\Service\ItemTrack\Fsys;
 
 class ResetCot
 {
-    private String $idItem;
+    private String $idAnet;
     private String $waIdCot;
     private Fsys $fSys;
 
     /** */
-    public function __construct(Fsys $fSys, String $idItem, String $waIdCot)
+    public function __construct(Fsys $fSys, String $idAnet, String $waIdCot)
     {
-        $this->idItem = $idItem;
+        $this->idAnet = $idAnet;
         $this->waIdCot = $waIdCot;
         $this->fSys = $fSys;
     }
 
     /**
+     * [V6]
      * Reseteamos la cotizacion en curso o la que se encuentra en cotizadas
      * borrando su cotizacion anterior para volvarle a enviar el mensaje al
      * cotizador y que buelva a repetir la acción.
@@ -26,7 +27,7 @@ class ResetCot
     public function exe(): String
     {
         $folder = 'trackeds';
-        $filename = $this->idItem."_".$this->waIdCot;
+        $filename = $this->idAnet."_".$this->waIdCot;
 
         $cotizada = $this->fSys->getContent($folder, $filename.'.json');
         if(count($cotizada) == 0) {
@@ -34,33 +35,40 @@ class ResetCot
             $filename = $this->waIdCot;
             // Si no se encunetra en trackeds buscamos la cotizacion en curso
             $cotizada = $this->fSys->getContent($folder, $filename.'.json');
-            if(count($cotizada) == 0) {
-                return 'X La cotización solicitada no existe en Atendidas';
-            }
         }
-        
+        if(count($cotizada) == 0) {
+            return 'X La cotización solicitada no existe en Atendidas';
+        }
         $this->fSys->delete($folder, $filename.'.json');
 
-        // Recuperamos la hielera del cotizador
-        $cooler = $this->fSys->getContent('waEstanque', $this->waIdCot.'.json');
-        if(count($cooler) == 0) {
-            return 'X El cooler del cotizador no existe en SR.';
+        // El item encontrado, lo limpiamos para que quede como nuevo
+        if(array_key_exists('wamid', $cotizada)) {
+            unset($cotizada['wamid']);
+        }
+        if(array_key_exists('current', $cotizada)) {
+            unset($cotizada['current']);
+        }
+        if(array_key_exists('attend', $cotizada)) {
+            unset($cotizada['attend']);
+        }
+        if(array_key_exists('resp', $cotizada)) {
+            unset($cotizada['resp']);
         }
 
-        $items = $cooler['items'];
+        // Recuperamos la hielera del cotizador
+        $cooler = $this->fSys->getContent('coolers', $this->waIdCot.'.json');
         // Buscamos en cooler para ver si existe la solicitud
-        $has = array_search($this->idItem, array_column($items, 'idItems'));
+        $has = array_search($this->idAnet, array_column($cooler, 'idAnet'));
         if($has !== false) {
             // Si existe lo eliminamos para insertar la que se encontro en Trackeds
-            unset($items[$has]);
+            unset($cooler[$has]);
         }
 
-        // Limpiamos la cotizacion
-        $cotizada['track'] = [];
-        array_unshift($items, $cotizada);
-        $cooler['items'] = $items;
-
-        $this->fSys->setContent('waEstanque', $this->waIdCot.'.json', $cooler);
+        array_unshift($cooler, $cotizada);
+        $this->fSys->setContent('coolers', $this->waIdCot.'.json', $cooler);
+        
+        // Borramos tambien los registros de sendmy para deshacernos de basura
+        $this->fSys->deleteSendmyFiles($this->idAnet, $this->waIdCot);
 
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         $rota = count($toDelete);

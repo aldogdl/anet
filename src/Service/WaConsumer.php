@@ -63,6 +63,7 @@ class WaConsumer
                 }
             }
             return;
+
         }elseif ($obj->tipoMsg == TypesWaMsgs::DOC) {
 
             $this->waSender->setConmutador($obj);
