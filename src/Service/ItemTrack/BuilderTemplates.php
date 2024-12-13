@@ -59,7 +59,7 @@ class BuilderTemplates {
     }
 
     /** */
-    public function exe(String $template, String $idItem = ''): array
+    public function exe(String $template, String $idAnet = ''): array
     {
         $content = [];
         try {
@@ -69,7 +69,7 @@ class BuilderTemplates {
         if(count($content) > 0) {
             $changeOnlyBtns = ['sfto', 'sdta', 'cext', 'nfto'];
             if(in_array($template, $changeOnlyBtns)) {
-                return $this->changeOnlyIdByBtns($content, $idItem);
+                return $this->changeOnlyIdByBtns($content, $idAnet);
             }
         }
         
@@ -92,9 +92,9 @@ class BuilderTemplates {
     }
 
     /** */
-    private function changeOnlyIdByBtns(array $tmp, String $idItem = ''): array
+    private function changeOnlyIdByBtns(array $tmp, String $idAnet = ''): array
     {
-        $idItem = ($idItem == '') ? $this->waMsg->idItem : $idItem;
+        $idAnet = ($idAnet == '') ? $this->waMsg->idAnet : $idAnet;
         if(array_key_exists('interactive', $tmp)) {
 
             $btns = $tmp['interactive']['action']['buttons'];
@@ -102,7 +102,7 @@ class BuilderTemplates {
             if($rota > 0) {
                 for ($i=0; $i < $rota; $i++) {
                     $id = $tmp['interactive']['action']['buttons'][$i]['reply']['id'];
-                    $id = str_replace('{:uuid}', $idItem, $id);
+                    $id = str_replace('{:uuid}', $idAnet, $id);
                     $tmp['interactive']['action']['buttons'][$i]['reply']['id'] = $id;
                 }
             }

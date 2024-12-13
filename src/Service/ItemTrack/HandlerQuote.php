@@ -28,7 +28,7 @@ class HandlerQuote
     }
 
     /** 
-     * Cuando NiFi o Ngrok no responden inmediatamente por causa de latencia, whatsapp
+     * Cuando Ngrok no responden inmediatamente por causa de latencia, whatsapp
      * considera que no llego el mensaje a este servidor, por lo tanto reenvia el mensaje
      * causando que el usuario reciba varios mensajes de confirmación.
      * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
@@ -36,47 +36,49 @@ class HandlerQuote
     */
     public function isAtendido(): bool { return $this->fSys->existe('/', $this->fileTmp); }
 
-    /** */
+    /** 
+     * [V6]
+    */
     public function exe()
     {
-        $bait = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
-        if(count($bait) == 0) {
+        $item = $this->fSys->getContent('tracking', $this->waMsg->from.'.json');
+        if(count($item) == 0) {
             // TODO alertar que el item a cotizar no existe, o tratar de recuperarlo
             return;
         }else{
-            if($this->waMsg->idItem == '' && $bait['idItem'] != '') {
-                $this->waMsg->idItem = $bait['idItem'];
+            if($this->waMsg->idAnet == '' && $item['idAnet'] != '') {
+                $this->waMsg->idAnet = $item['idAnet'];
             }
-            if($this->waMsg->context == '' && $bait['wamid'] != '') {
-                $this->waMsg->context = $bait['wamid'];
+            if($this->waMsg->context == '' && $item['wamid'] != '') {
+                $this->waMsg->context = $item['wamid'];
             }
         }
 
         if($this->waMsg->subEvento == 'cnc') {
             //-> Cancelar cotizacion en curso
-            $handler = new HcFinisherCot($this->waSender, $this->waMsg, $bait);
+            $handler = new HcFinisherCot($this->waSender, $this->waMsg, $item);
             $handler->exe('cancel');
             return;
         }elseif($this->waMsg->subEvento == 'ccc') {
 
         }
 
-        switch ($bait['current']) {
+        switch ($item['current']) {
             case 'sfto':
-                $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
+                $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $item);
                 $handler->exe();
                 break;
             case 'sdta':
                 if($this->waMsg->tipoMsg == TypesWaMsgs::IMAGE) {
-                    $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $bait);
+                    $handler = new HcFotos($this->fSys, $this->waSender, $this->waMsg, $item);
                     $handler->exe();
                 }else {
-                    $handler = new HcDetalles($this->fSys, $this->waSender, $this->waMsg, $bait);
+                    $handler = new HcDetalles($this->fSys, $this->waSender, $this->waMsg, $item);
                     $handler->exe();
                 }
                 break;
             case 'scto':
-                $handler = new HcCosto($this->fSys, $this->waSender, $this->waMsg, $bait);
+                $handler = new HcCosto($this->fSys, $this->waSender, $this->waMsg, $item);
                 $handler->exe();
                 break;
             default:

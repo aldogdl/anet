@@ -97,7 +97,7 @@ class PostController extends AbstractController
       }
     }
 
-    // --------- Este es el nuevo camino para AnetCraw
+    // --------- Este es el nuevo camino para AnetShop
     $id = 0;
     if(array_key_exists('product', $data)) {
       $data['product']['waId'] = $waId;

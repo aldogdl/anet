@@ -266,7 +266,6 @@ class GetController extends AbstractController
     if($res == 'ok') {
       $result['abort']   = false;
       $data['header'] = HeaderDto::event([], 'delete_pza');
-      $data['header'] = HeaderDto::idItem($data['header'], $idPza);
       $wh->sendMy($data);
     }
 
