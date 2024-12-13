@@ -27,7 +27,10 @@ class GetController extends AbstractController
 	{
 
     $params = $req->query->all();
-    $sendMy = (array_key_exists('sendMy', $params)) ? $params['sendMy'] : false;
+    $sendMy = false;
+    if(array_key_exists('sendMy', $params)) {
+      $sendMy = ($params['sendMy'] == '0') ? false : true;
+    }
 
     $data = $itemEm->find($id);
 
