@@ -69,7 +69,9 @@ class WaConsumer
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "⚠️ Lo sentimos mucho, por el momento este sistema acepta sólo:\n".
-                "TEXTO e IMÁGENES."
+                "TEXTO e IMÁGENES.\n".
+                "Posiblemente una de las imágenes que enviaste con anterioridad ".
+                "resultó ser un video u otro tipo de archivo que no es una Imagen."
             );
             return;
 
