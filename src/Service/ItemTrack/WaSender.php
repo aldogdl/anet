@@ -186,13 +186,14 @@ class WaSender
     /** // TODO agregar whatsapp_api en la cabecera */
     public function sendMy(array $event): bool
     {
+        $byMetodo = 'HEAD';
         $code  = 505;
         $toUrl = 'http://to-anettrack.info';
         $this->isTest = false;
 
         if(count($event) == 0) {
             $this->sendReporErrorBySendMy(
-                [], $toUrl, $code, 'El cuerpo del mensaje resultó bacio, nada para enviar'
+                $byMetodo, [], $toUrl, $code, 'El cuerpo del mensaje resultó bacio, nada para enviar'
             );
             return false;
         }
@@ -216,7 +217,7 @@ class WaSender
         }
         $cant = count($rutas);
         if($cant == 0) {
-            $this->sendReporErrorBySendMy($headers, $toUrl, 506, $error);
+            $this->sendReporErrorBySendMy($byMetodo, $headers, $toUrl, 506, $error);
             return false;
         }
         
@@ -247,7 +248,6 @@ class WaSender
                 'headers' => $headers,
             ];
 
-            $byMetodo = 'HEAD';
             // Si isForDownload (para descargar el body) es 0 incluimos los datos en el body
             // ya que se esta diciendo que no es para descarga por lo tanto el body debe
             // llevar los datos para evitar tenerlos que descargar.
@@ -295,7 +295,7 @@ class WaSender
         }
 
         if($code != 200) {
-            $this->sendReporErrorBySendMy($headers, $toUrl, $code, $error, $erroresSend);
+            $this->sendReporErrorBySendMy($byMetodo, $headers, $toUrl, $code, $error, $erroresSend);
             return true;
         }
 
@@ -461,9 +461,10 @@ class WaSender
     }
 
     /** */
-    private function sendReporErrorBySendMy(array $headers, String $url, String $code, String $error, array $body = []) {
+    private function sendReporErrorBySendMy(String $method, array $headers, String $url, String $code, String $error, array $body = []) {
 
         $result = [
+            'metodo'     => $method,
             'statusCode' => $code,
             'reason'     => $error,
             'toUrl'      => $url,
