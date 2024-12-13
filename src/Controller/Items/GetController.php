@@ -27,14 +27,14 @@ class GetController extends AbstractController
 	{
 
     $params = $req->query->all();
-    $isDebug = (array_key_exists('debug', $params)) ? true : false;
+    $sendMy = (array_key_exists('sendMy', $params)) ? $params['sendMy'] : false;
 
     $data = $itemEm->find($id);
 
     if($data) {
       $builder = new HeaderItem();
       $head = $builder->build($data->toJsonForHead());
-      if(!$isDebug) {
+      if($sendMy) {
         $wh->sendMy($head);
       }
     }
@@ -42,8 +42,8 @@ class GetController extends AbstractController
     $result['abort']   = false;
     $result['anet_id'] = $id;
     $result['idItem']  = $data->getIdItem();
-    $result['isDebug'] = $isDebug;
-    if($isDebug) {
+    $result['sendMy'] = $sendMy;
+    if(!$sendMy) {
       $result['header'] = $head['header'];
     }
     return $this->json($result);
