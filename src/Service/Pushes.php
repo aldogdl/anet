@@ -2,17 +2,20 @@
 
 namespace App\Service;
 
+use Kreait\Firebase\Factory;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
+
 use Kreait\Firebase\Exception\Messaging\InvalidMessage;
 use Kreait\Firebase\Messaging\AndroidConfig;
 use Kreait\Firebase\Messaging\Notification;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class Pushes
 {
 
     private $messaging;
-    private $channel = 'ANETCHANNEL';
+    private $channel = 'RASCHANNEL';
 
     public function __construct(Messaging $messaging)
     {
@@ -47,7 +50,7 @@ class Pushes
             'notification' => [
                 'channel_id' => $this->channel,
             ],
-        ])->withHighPriority();
+        ]);
         // $config = AndroidConfig::fromArray([
         //     'ttl' => '3600s',
         //     'notification' => [
@@ -85,12 +88,20 @@ class Pushes
             'notification' => [
                 'channel_id' => $this->channel,
             ],
-        ])->withHighPriority();
+        ]);
         $message = CloudMessage::new()
-        ->withNotification($notification)
-        ->withAndroidConfig($config)
-        ->withData($data);
-        
+            ->withNotification($notification)
+            ->withAndroidConfig($config)
+            ->withData($data);
+
+        $message = CloudMessage::new()
+            ->withNotification(Notification::create('Title', 'Body'))
+            ->withData(['key' => 'value'])
+            ->toToken('...')
+            // ->toTopic('...')
+            // ->toCondition('...')
+        ;
+
         $tks = [];
         $rota = count($tokens);
         for ($i=0; $i < $rota; $i++) { 
@@ -135,4 +146,5 @@ class Pushes
             'result' => $result['result'], 'unknown' => $unks, 'invalid' => $invs,
         ];
     }
+
 }

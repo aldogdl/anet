@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\SecurityBasic;
-use App\Dtos\HeaderDto;
 use App\Repository\ItemsRepository;
 use App\Service\ItemTrack\WaSender;
 use App\Service\HeaderItem;

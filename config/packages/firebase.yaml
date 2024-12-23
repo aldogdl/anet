@@ -1,5 +1,5 @@
 kreait_firebase:
     projects:
-        my_project:
+        rasterfy_pro:
             credentials: '%kernel.project_dir%/config/saf.json'
             public : false
