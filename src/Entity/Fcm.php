@@ -15,7 +15,7 @@ class Fcm
     private ?int $id = null;
 
     #[ORM\Column(length: 20)]
-    private ?string $waid = null;
+    private ?string $waId = null;
 
     #[ORM\Column(length: 20)]
     private ?string $slug = null;
@@ -36,12 +36,12 @@ class Fcm
 
     public function getWaid(): ?string
     {
-        return $this->waid;
+        return $this->waId;
     }
 
     public function setWaid(string $waid): static
     {
-        $this->waid = $waid;
+        $this->waId = $waid;
 
         return $this;
     }

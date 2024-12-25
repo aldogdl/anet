@@ -13,13 +13,18 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 class Pushes
 {
-
     private $messaging;
     private $channel = 'RASCHANNEL';
 
     public function __construct(Messaging $messaging)
     {
         $this->messaging = $messaging;
+    }
+    
+    /** */
+    public function send(array $tokens)
+    {
+        
     }
 
     /**

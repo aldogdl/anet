@@ -21,4 +21,16 @@ class FcmRepository extends ServiceEntityRepository
         parent::__construct($registry, Fcm::class);
     }
 
+    /**
+     * Este método recupera la entidad Fcm basada en el ID de WhatsApp (waId) proporcionado.
+     * 
+     * @param string $waId El ID de WhatsApp para buscar.
+     * @return Fcm|null La entidad Fcm si se encuentra, o null si no se encuentra.
+     */
+    public function getTokenByWaId($waId): ?Fcm
+    {
+        $dql = 'SELECT f FROM App\Entity\Fcm f WHERE f.waId = :waId';
+        return $this->_em->createQuery($dql)
+            ->setParameter('waId', $waId)->getOneOrNullResult();
+    }
 }
