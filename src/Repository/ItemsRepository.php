@@ -6,6 +6,7 @@ use App\Entity\Items;
 use Doctrine\ORM\Query;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Google\Auth\Cache\Item;
 
 /**
  * @extends ServiceEntityRepository<Items>
@@ -52,23 +53,35 @@ class ItemsRepository extends ServiceEntityRepository
         'ownSlug, thumbnail, stt, idItem, fotos, createdAt} FROM '.Items::class.' it '.
         'WHERE it.type = :tipo '.
         'ORDER BY it.id DESC';
-
         return $this->_em->createQuery($dql)->setParameter('tipo', $type);
     }
 
-    /** */
-    public function setProduct(array $product): ?int
+    /** 
+     * Tomamos una lista de Items con todos los campos donde el waId paraso por
+     * parametro sean diferentes a este, tomando los items que pertenecen a otros usuarios
+    */
+    public function getItemsCompleteByType(String $type, String $waIdFrom = ''): \Doctrine\ORM\Query
     {
-        $item = new Items();
-        $query = $this->getItemByIdItemAndWaId($product['idItem'], $product['ownWaId']);
-        $result = $query->getResult();
-        if($result) {
-            $item = $result[0];
+        $dql = 'SELECT it FROM '.Items::class.' it '.
+        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo '.
+        'ORDER BY it.id DESC';
+
+        return $this->_em->createQuery($dql)->setParameters(['tipo' => $type, 'waIdFrom' => $waIdFrom]);
+    }
+
+    /** */
+    public function setItem(array $item): ?int
+    {
+        $query = $this->getItemByIdItemAndWaId($item['idItem'], $item['ownWaId']);
+        $obj = $query->getOneOrNullResult();
+        if($obj == null) {
+            $obj = new Items();
         }
-        $item->fromMapItem($product);
+
+        $obj->fromMapItem($item);
         try {
-            $this->add($item, true);
-            return $item->getId();
+            $this->add($obj, true);
+            return $obj->getId();
         } catch (\Throwable $th) {
             return 0;
         }

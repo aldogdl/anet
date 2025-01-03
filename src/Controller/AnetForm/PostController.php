@@ -2,6 +2,7 @@
 
 namespace App\Controller\AnetForm;
 
+use App\Repository\FcmRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -37,9 +38,47 @@ class PostController extends AbstractController
   }
 
   /** 
-   * Guardamos el item enviado desde AnetForm
+   * Guardamos el token FCM
   */
-  #[Route('anet-form/item/{key}', methods:['POST'])]
+  #[Route('form/tkfcm/{key}', methods:['POST'])]
+	public function setTokenFCM(Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, String $key): Response
+	{
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    $result = ['abort' => true, 'msg' => ''];
+    $data = [];
+    try {
+      $data = $this->toArray($req, 'data');
+    } catch (\Throwable $th) {
+      $data = $req->getContent();
+      if($data) {
+        $data = json_decode($data, true);
+      }else{
+        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+        return $this->json($result);
+      }
+    }
+
+    $res = $fcmEm->setDataToken($data);
+    $result['msg'] = $res;
+    if(strpos($res, 'X') === false) {
+      $result['abort'] = false;
+      if(array_key_exists('isInit', $data) && $data['isInit'] != 'debug') {
+        // TODO
+        $waS->sendMy([]);
+      }
+    }
+
+    return $this->json($result);
+  }
+
+  /**
+   * Guardamos el item enviado desde RasForm
+  */
+  #[Route('form/item/{key}', methods:['POST'])]
 	public function sendProduct(Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm, String $key): Response
 	{
 
@@ -72,7 +111,7 @@ class PostController extends AbstractController
       return $this->json($result);
     }
     $data['id']        = $id;
-    $data['source']    = 'anet_form';
+    $data['source']    = 'form';
     $data['checkinSR'] = date("Y-m-d\TH:i:s.v");
     $builder = new HeaderItem();
     $head = $builder->build($data);

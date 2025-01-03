@@ -26,8 +26,23 @@ class Fcm
     #[ORM\Column(length: 255)]
     private ?string $tkfcm = null;
 
+    /** No vendo la marca una lista de todas las marcas que no vende */
     #[ORM\Column(type: Types::JSON)]
     private array $nvm = [];
+
+    public function __construct()
+    {
+        $this->nvm = [];
+    }
+
+    /** */
+    public function fromJson(array $data) {
+        $this->waId   = $data['waId'];
+        $this->slug   = $data['slug'];
+        $this->device = $data['device'];
+        $this->tkfcm  = $data['token'];
+        return $this;
+    }
 
     public function getId(): ?int
     {

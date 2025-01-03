@@ -27,10 +27,49 @@ class FcmRepository extends ServiceEntityRepository
      * @param string $waId El ID de WhatsApp para buscar.
      * @return Fcm|null La entidad Fcm si se encuentra, o null si no se encuentra.
      */
-    public function getTokenByWaId($waId): ?Fcm
+    public function getTokenByWaIdAndDevice(String $waId, String $device): ?Fcm
     {
-        $dql = 'SELECT f FROM App\Entity\Fcm f WHERE f.waId = :waId';
+        $dql = 'SELECT f FROM '. Fcm::class .' f '.
+        'WHERE f.waId = :waId AND f.device = :device';
+        
         return $this->_em->createQuery($dql)
-            ->setParameter('waId', $waId)->getOneOrNullResult();
+            ->setParameters(['waId' => $waId, 'device' => $device])->getOneOrNullResult();
+    }
+
+    /**
+     * Este método establece el token de datos basado en la información
+     * proporcionada.
+     * 
+     * @param array $data Un array asociativo que contiene 'waId' y 'device'.
+     * @return String
+     */
+    public function setDataToken(array $data): String
+    {
+        $result = 'X Error inesperado';
+        $save = false;
+        $obj = $this->getTokenByWaId($data['waId'], $data['device']);
+        if($obj != null) {
+            if($obj->getTkfcm() != $data['token']) {
+                $obj->setTkfcm($data['token']);
+                $result = 'Actualizado con éxito';
+                $save = true;
+            }else{
+                $result = 'Encontrado y Sin Acciones';
+            }
+        }else{
+            $clase = new Fcm();
+            $obj = $clase->fromJson($data);
+            $result = 'Guardado con éxito';
+            $save = true;
+        }
+        if($obj && $save) {
+            try {
+                $this->_em->persist($obj);
+                $this->_em->flush();
+            } catch (\Throwable $th) {
+                $result = 'X '.$th->getMessage();
+            }
+        }
+        return $result;
     }
 }

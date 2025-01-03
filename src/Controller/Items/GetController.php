@@ -19,8 +19,8 @@ class GetController extends AbstractController
   /** 
    * Metodo auxiliar para repetir la axión de hacer checkin, es decir, en el momento
    * que se recibe una solicitud, cotizacion o publicacion se envia automaticamente
-   * una notificacion a AnetTrack, pero por si alguna razón no se recibe o se quiere
-   * repetir el proceso para un item en particular, desde AnetTrack se llama a esta API.
+   * una notificacion a Rasview, pero por si alguna razón no se recibe o se quiere
+   * repetir el proceso para un item en particular, desde Rasview se llama a esta API.
   */
   #[Route('item/checkin/{id}', methods:['GET', 'DELETE'])]
 	public function itemRecovery(Request $req, ItemsRepository $itemEm, WaSender $wh, int $id): Response
@@ -62,15 +62,26 @@ class GetController extends AbstractController
     $paginator = new PaginatorQuery();
     $result = ['paging' => ['total' => 0], 'result' => []];
 
-    $query = $itemEm->getItemsAsRefByType($type);
+    $limit = 20;
+    $arrayType = 'min';
+    $params = $req->query->all();
+    // Quien es el que solicito la lista, si viene este parametro
+    // Significa que se recupera los ultimos 20 items tipo solicitud
+    // excepto los que coincidan con waId que requiere la lista.
+    if(array_key_exists('fromWaId', $params)) {
+      $query = $itemEm->getItemsCompleteByType($type, $params['fromWaId']);
+      $limit = 10;
+      $arrayType = 'max';
+    }else{
+      $query = $itemEm->getItemsAsRefByType($type);
+    }
 
     $offset = 1;
-    $params = $req->query->all();
     if(array_key_exists('offset', $params)) {
       $offset = (integer) $params['offset'];
     }
 
-    $result = $paginator->pagine($query, 20, 'min', $offset);
+    $result = $paginator->pagine($query, $limit, $arrayType, $offset);
     return $this->json($result);
 	}
 

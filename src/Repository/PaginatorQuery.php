@@ -10,7 +10,7 @@ class PaginatorQuery
 {
     ///
     public function pagine(
-        \Doctrine\ORM\Query $query, int $limit = 50, String $showAs = 'normal', int $page = 1, String $mode = 'array'
+        \Doctrine\ORM\Query $query, int $limit = 50, String $showAs = 'max', int $page = 1, String $mode = 'array'
     ): array
     {
         if($mode == 'array') {
@@ -18,7 +18,6 @@ class PaginatorQuery
         }else{
             $query->setHydrationMode(Query::HYDRATE_SCALAR);
         }
-
         $query = $query->setFirstResult($limit * ($page - 1))->setMaxResults($limit);
         
         $pag = new Paginator($query);
