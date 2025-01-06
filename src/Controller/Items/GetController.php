@@ -45,7 +45,7 @@ class GetController extends AbstractController
     $result['abort']   = false;
     $result['anet_id'] = $id;
     $result['idItem']  = $data->getIdItem();
-    $result['sendMy'] = $sendMy;
+    $result['sendMy']  = $sendMy;
     if(!$sendMy) {
       $result['header'] = $head['header'];
     }
@@ -115,12 +115,11 @@ class GetController extends AbstractController
 	{
     $params = $req->query->all();
     if(count($params) != 0) {
-      if(array_key_exists('field', $params)) {
-        if($params['field'] == 'id') {
-          $query = $itemEm->getItemById($params['value']);
-          $item = $query->getArrayResult();
-          return $this->json(($item) ? $item[0] : []);
-        }
+      if(array_key_exists('field', $params) && array_key_exists('value', $params)) {
+
+        $query = $itemEm->getItemByCampoValor($params['field'], $params['value']);
+        $item = $query->getArrayResult();
+        return $this->json(($item) ? $item[0] : []);
       }
     }
 
