@@ -29,7 +29,7 @@ class Fcm
     /** No vendo la marca una lista de todas las marcas que no vende */
     #[ORM\Column(type: Types::JSON)]
     private array $nvm = [];
-
+   
     public function __construct()
     {
         $this->nvm = [];

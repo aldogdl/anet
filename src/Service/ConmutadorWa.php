@@ -6,7 +6,7 @@ use App\Dtos\WaMsgDto;
 
 class ConmutadorWa
 {
-    public String $uriBase = 'https://graph.facebook.com/v17.0/';
+    public String $uriBase = 'https://graph.facebook.com/v21.0/';
     public String $token;
     public String $to;
     public String $waid;
@@ -63,9 +63,11 @@ class ConmutadorWa
 
         $creado = round(microtime(true) * 1000);
         $obj = new WaMsgDto(
+            false,
             ($from == '') ? $recibido->from : $from,
             $id,
             $recibido->id,
+            '',
             $creado,
             $recibido->recibido,
             $recibido->tipoMsg,

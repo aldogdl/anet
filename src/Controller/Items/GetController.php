@@ -55,10 +55,9 @@ class GetController extends AbstractController
   /** 
    * Recuperación y gestion para los item de tipo solicitud
   */
-  #[Route('items/sol/', methods:['GET', 'DELETE'])]
-	public function itemsTypeSolicitud(Request $req, ItemsRepository $itemEm): Response
+  #[Route('items/type/{type}', methods:['GET', 'DELETE'])]
+	public function itemsTypeSolicitud(Request $req, ItemsRepository $itemEm, String $type): Response
 	{
-    $type = 'solicita';
     $paginator = new PaginatorQuery();
     $result = ['paging' => ['total' => 0], 'result' => []];
 
@@ -85,30 +84,6 @@ class GetController extends AbstractController
     return $this->json($result);
 	}
 
-  /** 
-   * Recuperación y gestion para los item de tipo cotizacion
-  */
-  #[Route('items/cot/', methods:['GET', 'DELETE'])]
-	public function itemsTypeCotizacion(Request $req, ItemsRepository $itemEm): Response
-	{
-
-    $result = ['abort' => true, 'msg' => ''];
-    
-    $query = $req->query->all();
-    if(count($query) == 0) {
-      $result['msg']  = 'X No se recibieron instrucciones';
-    }else{
-      // $id = $itemEm->setProduct($data);
-      // if($id == 0) {
-      //   $result['msg']  = 'X No se logró guardar el producto en D.B.';
-      //   return $this->json($result);
-      // }
-    }
-
-    return $this->json($result);
-
-	}
-
   /** */
   #[Route('item', methods:['GET', 'DELETE'])]
 	public function item(Request $req, ItemsRepository $itemEm): Response
@@ -119,6 +94,9 @@ class GetController extends AbstractController
 
         $query = $itemEm->getItemByCampoValor($params['field'], $params['value']);
         $item = $query->getArrayResult();
+        if(count($item) > 1) {
+          return $this->json($item);
+        }
         return $this->json(($item) ? $item[0] : []);
       }
     }

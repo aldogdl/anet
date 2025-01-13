@@ -38,9 +38,19 @@ class ItemsRepository extends ServiceEntityRepository
     /** */
     public function getItemByCampoValor(String $campo, $value): \Doctrine\ORM\Query
     {   
-        $dql = 'SELECT it FROM ' . Items::class . ' it '.
-        $dql = 'WHERE it.'.$campo.' = :valor';
-        return $this->_em->createQuery($dql)->setParameters(['valor' => $value]);
+        if(mb_strpos($value, ',')) {
+
+            $valores = explode(',', $value);
+            $dql = 'SELECT it FROM ' . Items::class . ' it '.
+            $dql = 'WHERE it.'.$campo.' IN (:valores)';
+            return $this->_em->createQuery($dql)->setParameters(['valores' => $valores]);
+
+        }else{
+
+            $dql = 'SELECT it FROM ' . Items::class . ' it '.
+            $dql = 'WHERE it.'.$campo.' = :valor';
+            return $this->_em->createQuery($dql)->setParameters(['valor' => $value]);
+        }
     }
 
     /** 
