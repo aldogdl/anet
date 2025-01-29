@@ -47,7 +47,7 @@ class FcmRepository extends ServiceEntityRepository
     {
         $result = 'X Error inesperado';
         $save = false;
-        $obj = $this->getTokenByWaId($data['waId'], $data['device']);
+        $obj = $this->getTokenByWaIdAndDevice($data['waId'], $data['device']);
         if($obj != null) {
             if($obj->getTkfcm() != $data['token']) {
                 $obj->setTkfcm($data['token']);

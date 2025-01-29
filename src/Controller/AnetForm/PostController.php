@@ -61,7 +61,16 @@ class PostController extends AbstractController
         return $this->json($result);
       }
     }
-
+    
+    // Las metas es informacion que cada dispoitivo usado por el usuario nos envia
+    // para conocer sus caracteristicas con finalidad de ofrecer un mejor soporte.
+    if(array_key_exists('meta', $data)) {
+      $folderMetas = $this->getParameter('sseMetas');
+      $filename = $data['slug'].'_'.$data['waId'].'.json';
+      file_put_contents($folderMetas.'/'.$filename, json_encode($data['meta']));
+      unset($data['meta']);
+    }
+    
     $res = $fcmEm->setDataToken($data);
     $result['msg'] = $res;
     if(strpos($res, 'X') === false) {
