@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\AnetForm;
+namespace App\Controller\RfyForm;
 
 use App\Repository\FcmRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,7 +40,7 @@ class PostController extends AbstractController
   /** 
    * Guardamos el token FCM
   */
-  #[Route('form/tkfcm/{key}', methods:['POST'])]
+  #[Route('rfyform/tkfcm/{key}', methods:['POST'])]
 	public function setTokenFCM(Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, String $key): Response
 	{
     if(!$sec->isValid($key)) {
@@ -87,7 +87,7 @@ class PostController extends AbstractController
   /**
    * Guardamos el item enviado desde RasForm
   */
-  #[Route('form/item/{key}', methods:['POST'])]
+  #[Route('rfyform/item/{key}', methods:['POST'])]
 	public function sendProduct(Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm, String $key): Response
 	{
 

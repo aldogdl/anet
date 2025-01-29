@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\AnetForm;
+namespace App\Controller\RfyForm;
 
 use App\Repository\FcmRepository;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +18,7 @@ class GetController extends AbstractController
   * Valida la clave de seguridad, recupera el token del dispositivo y
   * envía una notificación push de prueba.
   */
-  #[Route('form/push-test/{device}/{waid}/{key}', methods:['GET'])]
+  #[Route('rfyform/push-test/{device}/{waid}/{key}', methods:['GET'])]
 	public function testPush(
     Request $req, SecurityBasic $sec, FcmRepository $fcmEm, Pushes $fcmSend, String $device, String $waid, String $key
   ): Response
