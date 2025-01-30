@@ -37,6 +37,19 @@ class FcmRepository extends ServiceEntityRepository
     }
 
     /**
+     * Recuperamos todos los registros exepto todos aquellos que coincidan con
+     * el slug enviado por paramentro.
+     * 
+     * @param string $slug El slug del cual no queremos los registros.
+     */
+    public function getAllByWaIdExcept(String $slug): \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT f FROM '. Fcm::class .' f '.
+        'WHERE f.slug != :slug';
+        return $this->_em->createQuery($dql)->setParameter('slug', $slug);
+    }
+    
+    /**
      * Este método establece el token de datos basado en la información
      * proporcionada.
      * 
@@ -76,8 +89,17 @@ class FcmRepository extends ServiceEntityRepository
     }
 
     /** */
-    public function matchContacts(): array
+    public function matchContacts(array $itemNew): array
     {
+        if($itemNew['type'] == 'solicita') {
+            // Buscar todos los cotizadores diferentes al dueño del ITEM
+            $dql = $this->getAllByWaIdExcept($itemNew['ownSlug']);
+            $contacts = $dql->getResult();
+            $rota = count($contacts);
+            if($rota == 0) {
+                return [];
+            }
+        }
         return [];
     }
 }

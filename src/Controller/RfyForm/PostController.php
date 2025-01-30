@@ -127,9 +127,9 @@ class PostController extends AbstractController
     $data['id']        = $id;
     $data['source']    = 'form';
     $data['checkinSR'] = date("Y-m-d\TH:i:s.v");
-    
+
     // Buscamos contactos para el envio de notificaciones
-    $contacts = $fbem->matchContacts();
+    $contacts = $fbem->matchContacts($data);
 
     $builder = new HeaderItem();
     $head = $builder->build($data);
