@@ -62,6 +62,7 @@ class FcmRepository extends ServiceEntityRepository
             $result = 'Guardado con éxito';
             $save = true;
         }
+
         if($obj && $save) {
             try {
                 $this->_em->persist($obj);
@@ -70,6 +71,7 @@ class FcmRepository extends ServiceEntityRepository
                 $result = 'X '.$th->getMessage();
             }
         }
+        
         return $result;
     }
 }

@@ -102,6 +102,7 @@ class PostController extends AbstractController
       $data = $this->toArray($req, 'datos');
     } catch (\Throwable $th) {
       $data = $req->getContent();
+      file_put_contents('wa_test.json', $data);
       if($data) {
         $data = json_decode($data, true);
       }else{
@@ -114,7 +115,7 @@ class PostController extends AbstractController
     // reciba esta prueba, la misma que se realiza desde AnetForm
     $isDebug = (array_key_exists('debug', $data)) ? true : false;
 
-    $id = $itemEm->setProduct($data);
+    $id = $itemEm->setItem($data);
     if($id == 0) {
       $result['msg']  = 'X No se logró guardar el producto en D.B.';
       return $this->json($result);
@@ -122,15 +123,15 @@ class PostController extends AbstractController
     $data['id']        = $id;
     $data['source']    = 'form';
     $data['checkinSR'] = date("Y-m-d\TH:i:s.v");
+    
     $builder = new HeaderItem();
     $head = $builder->build($data);
-    
     if(!$isDebug) {
       $wh->sendMy($head);
     }
 
     $result['abort']   = false;
-    $result['anet_id'] = $id;
+    $result['idDbSr']  = $id;
     $result['idItem']  = $data['idItem'];
     $result['isDebug'] = $isDebug;
     return $this->json($result);
