@@ -114,7 +114,7 @@ class PostController extends AbstractController
       }
     }
     
-    file_put_contents('wa_test.json', $data);
+    file_put_contents('wa_test.json', json_encode($data));
     // Esto es usado para que no se envie el evento hacia el puente y ComCore no
     // reciba esta prueba, la misma que se realiza desde AnetForm
     $isDebug = (array_key_exists('debug', $data)) ? true : false;
