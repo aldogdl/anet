@@ -97,9 +97,9 @@ class HeaderDto {
         return $header;
     }
     /** */
-    static function sendedidAnet(array $header, String $value): array
+    static function sendedIdDbSr(array $header, String $value): array
     {
-        $header[HeaderDto::$PREF."sndidanet"] = $value;
+        $header[HeaderDto::$PREF."sndidDbSr"] = $value;
         return $header;
     }
     /** */

@@ -22,8 +22,8 @@ class HcCosto
         $this->waSender = $waS;
         $this->waMsg    = $msg;
         $this->item     = $theItem;
-        if($this->waMsg->idAnet == '') {
-            $this->waMsg->idAnet = $this->item['idAnet'];
+        if($this->waMsg->idDbSr == '') {
+            $this->waMsg->idDbSr = $this->item['idDbSr'];
         }
         $this->waSender->setConmutador($this->waMsg);
     }
@@ -190,7 +190,7 @@ class HcCosto
             "_NUNCA PERDERÁS ningúna OPORTUNIDAD DE VENTA_💰"
         );
         if($res >= 200 && $res <= 300) {
-            if(mb_strpos($this->waMsg->idAnet, 'demo') === false) {
+            if(mb_strpos($this->waMsg->idDbSr, 'demo') === false) {
                 $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
             }
         }

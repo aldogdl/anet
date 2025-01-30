@@ -9,7 +9,7 @@ class WaMsgDto
     public bool $isTest;
     public String $from;
     public String $id;
-    public String $idAnet;
+    public String $idDbSr;
     public String $context;
     public String $creado;
     public String $recibido;
@@ -22,13 +22,13 @@ class WaMsgDto
 
     /** */
     public function __construct(
-        bool $isTest, String $from, String $id, String $idAnet, String $context, String $creado, String $recibido,
+        bool $isTest, String $from, String $id, String $idDbSr, String $context, String $creado, String $recibido,
         TypesWaMsgs $type, String|array $content, String $status, String $subEvento = ''
     )
     {
         $this->from      = $from;
         $this->id        = $id;
-        $this->idAnet    = $idAnet;
+        $this->idDbSr    = $idDbSr;
         $this->context   = $context;
         $this->creado    = $creado;
         $this->recibido  = $recibido;
@@ -47,7 +47,7 @@ class WaMsgDto
             'subEvent'  => $this->subEvento,
             'from'      => $this->from,
             'id'        => $this->id,
-            'idAnet'    => $this->idAnet,
+            'idDbSr'    => $this->idDbSr,
             'context'   => $this->context,
             'creado'    => $this->creado,
             'recibido'  => $this->recibido,
@@ -66,8 +66,8 @@ class WaMsgDto
         $headers = HeaderDto::includeBody($headers, false);
         $headers = HeaderDto::recived($headers, $this->recibido);
         $headers = HeaderDto::wamid($headers, $this->id);
-        if($this->idAnet != '') {
-            $headers = HeaderDto::idDB($headers, $this->idAnet);
+        if($this->idDbSr != '') {
+            $headers = HeaderDto::idDB($headers, $this->idDbSr);
         }
         if($this->context != '') {
             if($this->id != $this->context) {

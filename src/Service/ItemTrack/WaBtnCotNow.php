@@ -44,7 +44,7 @@ class WaBtnCotNow
             // con la que esta en curso.
             $item = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
             if(count($item) > 0) {
-                $template = $builder->exe('cext', $item['idAnet']);
+                $template = $builder->exe('cext', $item['idDbSr']);
                 if(array_key_exists('wamid', $item)) {
                     $this->waSender->context = $item['wamid'];
                 }
@@ -56,11 +56,11 @@ class WaBtnCotNow
         if($this->isAtendido()) {
             return;
         }
-        $isDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
+        $isDemo = (mb_strpos($this->waMsg->idDbSr, 'demo') === false) ? false : true;
 
         $exite = true;
         if(!$isDemo) {
-            $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idAnet);
+            $exite = $this->waSender->fSys->existeInCooler($this->waMsg->from, $this->waMsg->idDbSr);
         }
 
         if(!$exite) {
@@ -108,7 +108,7 @@ class WaBtnCotNow
     {
         $resp = false;
         $exist = $this->waSender->fSys->getContent(
-            'trackeds', $this->waMsg->idAnet.'_'.$this->waMsg->from.'.json'
+            'trackeds', $this->waMsg->idDbSr.'_'.$this->waMsg->from.'.json'
         );
 
         if(count($exist) > 0) {

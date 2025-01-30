@@ -78,7 +78,7 @@ class Items
     private ?string $ownMlId = null;
 
     #[ORM\Column]
-    private ?int $idAnet = null;
+    private ?int $idDbSr = null;
 
     #[ORM\Column]
     private ?int $pzaId = null;
@@ -110,7 +110,7 @@ class Items
     public function __construct()
     {
         $this->ownMlId = "";
-        $this->idAnet = -1;
+        $this->idDbSr = -1;
         $this->pzaId = 0;
         $this->mrkId = 0;
         $this->mdlId = 0;
@@ -131,25 +131,25 @@ class Items
 
         $hoy = new \DateTimeImmutable('now');
         $this->type      = $item['type'];
-        $this->condicion = $item['condicion'];
+        $this->condicion = trim($item['condicion']);
         $this->idItem    = $item['idItem'];
         $this->fotos     = $item['fotos'];
-        $this->ownWaId   = $item['ownWaId'];
-        $this->ownSlug   = $item['ownSlug'];
         $this->price     = $item['price'];
         $this->costo     = $item['costo'];
-        $this->pieza     = $item['pieza'];
-        $this->lado      = $item['lado'];
-        $this->poss      = $item['poss'];
-        $this->marca     = $item['marca'];
+        $this->pieza     = trim($item['pieza']);
+        $this->lado      = trim($item['lado']);
+        $this->poss      = trim($item['poss']);
+        $this->marca     = trim($item['marca']);
         $this->model     = (array_key_exists('model', $item)) ? $item['model'] : $item['modelo'];
         $this->anios     = $item['anios'];
         $this->origen    = $item['origen'];
         $this->idCot     = $item['idCot'];
+        $this->idDbSr    = $item['idDbSr'];
         $this->place     = $item['place'];
         $this->stt       = $item['stt'];
+        $this->ownWaId   = $item['ownWaId'];
+        $this->ownSlug   = $item['ownSlug'];
         $this->ownMlId   = $item['ownMlId'];
-        $this->idAnet    = $item['idAnet'];
         $this->pzaId     = $item['pzaId'];
         $this->mrkId     = $item['mrkId'];
         $this->mdlId     = $item['mdlId'];
@@ -438,14 +438,14 @@ class Items
         return $this;
     }
 
-    public function getIdAnet(): ?int
+    public function getIdDbSr(): ?int
     {
-        return $this->idAnet;
+        return $this->idDbSr;
     }
 
-    public function setIdAnet(int $idAnet): static
+    public function setIdDbSr(int $idDbSr): static
     {
-        $this->idAnet = $idAnet;
+        $this->idDbSr = $idDbSr;
 
         return $this;
     }

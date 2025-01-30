@@ -46,8 +46,8 @@ class HandlerQuote
             // TODO alertar que el item a cotizar no existe, o tratar de recuperarlo
             return;
         }else{
-            if($this->waMsg->idAnet == '' && $item['idAnet'] != '') {
-                $this->waMsg->idAnet = $item['idAnet'];
+            if($this->waMsg->idDbSr == '' && $item['idDbSr'] != '') {
+                $this->waMsg->idDbSr = $item['idDbSr'];
             }
             if($this->waMsg->context == '' && $item['wamid'] != '') {
                 $this->waMsg->context = $item['wamid'];

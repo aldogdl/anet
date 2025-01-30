@@ -6,14 +6,14 @@ use App\Service\ItemTrack\Fsys;
 
 class ResetCot
 {
-    private String $idAnet;
+    private String $idDbSr;
     private String $waIdCot;
     private Fsys $fSys;
 
     /** */
-    public function __construct(Fsys $fSys, String $idAnet, String $waIdCot)
+    public function __construct(Fsys $fSys, String $idDbSr, String $waIdCot)
     {
-        $this->idAnet = $idAnet;
+        $this->idDbSr = $idDbSr;
         $this->waIdCot = $waIdCot;
         $this->fSys = $fSys;
     }
@@ -27,7 +27,7 @@ class ResetCot
     public function exe(): String
     {
         $folder = 'trackeds';
-        $filename = $this->idAnet."_".$this->waIdCot;
+        $filename = $this->idDbSr."_".$this->waIdCot;
 
         $cotizada = $this->fSys->getContent($folder, $filename.'.json');
         if(count($cotizada) == 0) {
@@ -58,7 +58,7 @@ class ResetCot
         // Recuperamos la hielera del cotizador
         $cooler = $this->fSys->getContent('coolers', $this->waIdCot.'.json');
         // Buscamos en cooler para ver si existe la solicitud
-        $has = array_search($this->idAnet, array_column($cooler, 'idAnet'));
+        $has = array_search($this->idDbSr, array_column($cooler, 'idDbSr'));
         if($has !== false) {
             // Si existe lo eliminamos para insertar la que se encontro en Trackeds
             unset($cooler[$has]);
@@ -68,7 +68,7 @@ class ResetCot
         $this->fSys->setContent('coolers', $this->waIdCot.'.json', $cooler);
         
         // Borramos tambien los registros de sendmy para deshacernos de basura
-        $this->fSys->deleteSendmyFiles($this->idAnet, $this->waIdCot);
+        $this->fSys->deleteSendmyFiles($this->idDbSr, $this->waIdCot);
 
         $toDelete = ['cnow', 'sfto', 'sdta', 'scto'];
         $rota = count($toDelete);

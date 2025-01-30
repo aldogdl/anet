@@ -189,7 +189,7 @@ class ParseMsg {
     {
         $btnAction = 'Error, no se recibió ningún Interactivo';
         $idContext = '';
-        $idAnet = '';
+        $idDbSr = '';
         if(array_key_exists('context', $this->waMsg)) {
             $idContext = $this->waMsg['context']['id'];
         }
@@ -202,7 +202,7 @@ class ParseMsg {
             $btnAction = $this->waMsg[$this->waMsg['type']]['button_reply'];
             $partes = explode('_', $btnAction['id']);
             $subEvent = $partes[0];
-            $idAnet = $partes[1];
+            $idDbSr = $partes[1];
         }
 
         switch ($subEvent) {
@@ -224,7 +224,7 @@ class ParseMsg {
             $this->isTest,
             $this->waMsg['from'],
             $this->waMsg['id'],
-            $idAnet,
+            $idDbSr,
             $idContext,
             $this->waMsg['timestamp'],
             $this->recibido,

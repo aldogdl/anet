@@ -22,8 +22,8 @@ class HcFotos
         $this->fSys     = $fsys;
         $this->waMsg    = $msg;
         $this->item     = $theItem;
-        if($this->waMsg->idAnet == '') {
-            $this->waMsg->idAnet = $this->item['idAnet'];
+        if($this->waMsg->idDbSr == '') {
+            $this->waMsg->idDbSr = $this->item['idDbSr'];
         }
         $this->waSender = $waS;
         $this->waSender->setConmutador($this->waMsg);
@@ -195,7 +195,7 @@ class HcFotos
 
         // Para esta plantilla de solicitud de detalles enviamos una
         // serie de mensajes al azar para interactual con el usuario
-        $template = $builder->exe($oldCurrent, $this->waMsg->idAnet);
+        $template = $builder->exe($oldCurrent, $this->waMsg->idDbSr);
         if($oldCurrent == 'sdta' && $resent) {
             $template = $builder->editForDetalles($template);
         }
@@ -204,7 +204,7 @@ class HcFotos
         if(count($template) > 0) {
             $res = $this->waSender->sendPreTemplate($template);
             if($oldCurrent == 'sdta') {
-                if(mb_strpos($this->waMsg->idAnet, 'demo') === false) {
+                if(mb_strpos($this->waMsg->idDbSr, 'demo') === false) {
                     if($res >= 200 && $res <= 300) {
                         $this->waSender->sendMy(['header' => $this->waMsg->toStt(true)]);
                     }

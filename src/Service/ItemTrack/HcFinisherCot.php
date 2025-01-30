@@ -18,8 +18,8 @@ class HcFinisherCot
         $this->waSender = $waS;
         $this->waMsg = $msg;
         $this->item = $theItem;
-        if($this->waMsg->idAnet == '') {
-            $this->waMsg->idAnet = $this->item['idAnet'];
+        if($this->waMsg->idDbSr == '') {
+            $this->waMsg->idDbSr = $this->item['idDbSr'];
         }
         $this->waSender->setConmutador($this->waMsg);
     }
@@ -37,12 +37,12 @@ class HcFinisherCot
             $cant = $result['cant'];
         }
         
-        if($result['idAnet'] > 0) {
-            $headers = HeaderDto::sendedidAnet($headers, $result['idAnet']);
+        if($result['idDbSr'] > 0) {
+            $headers = HeaderDto::sendedIdDbSr($headers, $result['idDbSr']);
             $headers = HeaderDto::sendedWamid($headers, $result['wamid']);
         }
         $headers = HeaderDto::event($headers, $this->waMsg->subEvento);
-        $headers = HeaderDto::idDB($headers, $this->waMsg->idAnet);
+        $headers = HeaderDto::idDB($headers, $this->waMsg->idDbSr);
         
         if($result['code'] >= 200 && $result['code'] <= 300 || $this->waMsg->isTest) {
 
@@ -60,7 +60,7 @@ class HcFinisherCot
             }
 
             // Si no es demo, enviamos el resultado a AnetTrack
-            if(mb_strpos($this->waMsg->idAnet, 'demo') === false) {
+            if(mb_strpos($this->waMsg->idDbSr, 'demo') === false) {
                 $this->waSender->sendMy($response);
             }
         }
@@ -111,13 +111,13 @@ class HcFinisherCot
         // Si el subEvent se coloco en cleaner es que no hay un item en el cooler del cotizador
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
-        $itemFromCooler = ['idAnet' => 0, 'cant' => 0];
-        $idDemo = (mb_strpos($this->waMsg->idAnet, 'demo') === false) ? false : true;
+        $itemFromCooler = ['idDbSr' => 0, 'cant' => 0];
+        $idDemo = (mb_strpos($this->waMsg->idDbSr, 'demo') === false) ? false : true;
         
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
             
             // Si no es subEvento "clean" y tampoco es "DEMO"
-            $this->waSender->fSys->setContent('trackeds', $this->item['idAnet']."_".$this->item['waId'].'.json', $this->item);
+            $this->waSender->fSys->setContent('trackeds', $this->item['idDbSr']."_".$this->item['waId'].'.json', $this->item);
             $this->waSender->fSys->delete('tracking', $this->item['waId'].'.json');
             // Recuperamos otro item directamente desde el cooler del cotizador
             $mrk = (count($this->item) > 0) ? $this->item['mrk'] : '';
@@ -136,7 +136,7 @@ class HcFinisherCot
         $code = 200;
         if($itemFromCooler['cant'] > 0) {
             $code = $this->waSender->sendText($head.$body);
-            $code = $this->waSender->sendTemplate($itemFromCooler['idAnet']);
+            $code = $this->waSender->sendTemplate($itemFromCooler['idDbSr']);
             if($code == 200) {
                 $itemFromCooler['wamid'] = $this->waSender->wamidMsg;
             }

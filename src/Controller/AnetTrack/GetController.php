@@ -13,12 +13,12 @@ class GetController extends AbstractController
 {
 
   /** */
-  #[Route('anet-track/resent-msgtrack/{idAnet}/{waIdCot}/{tokenBasic}', methods:['get'])]
-  public function resentMsgTrackDeep(Fsys $fSys, String $tokenBasic, String $idAnet, String $waIdCot): Response
+  #[Route('anet-track/resent-msgtrack/{idDbSr}/{waIdCot}/{tokenBasic}', methods:['get'])]
+  public function resentMsgTrackDeep(Fsys $fSys, String $tokenBasic, String $idDbSr, String $waIdCot): Response
   {
     $response = ['abort' => true, 'body' => ''];
     if($this->isValid($tokenBasic)) {
-      $acc = new ResetCot($fSys, $idAnet, $waIdCot);
+      $acc = new ResetCot($fSys, $idDbSr, $waIdCot);
       $resul = $acc->exe();
       $response = ['abort' => false, 'body' => $resul];
     }else{

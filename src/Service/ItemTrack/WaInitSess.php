@@ -64,10 +64,10 @@ class WaInitSess
                 // Buscar en el cooler del cotizador que inicio sesion un item dispuesto
                 $itemResult = $this->fSys->getNextItemForSend($this->waMsg, '');
                 $wamid = '';
-                if($itemResult['idAnet'] != 0) {
+                if($itemResult['idDbSr'] != 0) {
                     
-                    $headers = HeaderDto::sendedidAnet($headers, $itemResult['idAnet']);
-                    $code = $this->waSender->sendTemplate($itemResult['idAnet']);
+                    $headers = HeaderDto::sendedIdDbSr($headers, $itemResult['idDbSr']);
+                    $code = $this->waSender->sendTemplate($itemResult['idDbSr']);
                     if($code == 200) {
                         $wamid = $this->waSender->wamidMsg;
                     }else{

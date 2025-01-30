@@ -56,9 +56,9 @@ class WaSender
      * Usado para enviar msg de rastreo, es decir, aquellas plantillas que ya
      * estan armadas y no requieren de envoltura de otros campos.
     */
-    public function sendTemplate(String $idAnet): int
+    public function sendTemplate(String $idDbSr): int
     {
-        $tmp = $this->fSys->getContent('itemTrack', $idAnet.'_track.json');
+        $tmp = $this->fSys->getContent('itemTrack', $idDbSr.'_track.json');
 
         if(count($tmp) > 0) {
             $tmp = $tmp['message'];

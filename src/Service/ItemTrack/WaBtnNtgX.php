@@ -58,7 +58,7 @@ class WaBtnNtgX
     {
         $resp = false;
         $exist = $this->waSender->fSys->getContent(
-            'trackeds', $this->waMsg->idAnet.'_'.$this->waMsg->from.'.json'
+            'trackeds', $this->waMsg->idDbSr.'_'.$this->waMsg->from.'.json'
         );
 
         if(count($exist) > 0) {
@@ -92,7 +92,7 @@ class WaBtnNtgX
     {
         $this->item = $this->waSender->fSys->getContent('tracking', $this->waMsg->from.'.json');
         if(count($this->item) > 0) {
-            if($this->item['idAnet'] != $this->waMsg->idAnet) {
+            if($this->item['idDbSr'] != $this->waMsg->idDbSr) {
                 // Si se esta cotizando actualmente una, pero la que se dijo "no tengo" es otra,
                 // entonces enviamos un mensaje de recordatorio que se esta en proceso de
                 // cotizacion de otra pieza.

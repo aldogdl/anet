@@ -149,12 +149,12 @@ class Fsys {
      * Borramos todos los archivos generados al momento de enviar un SSE a AnetTrack
      * y de un determinado item y un determinado cotizador
     */
-    public function deleteSendmyFiles(String $idAnet, String $waIdCot): int
+    public function deleteSendmyFiles(String $idDbSr, String $waIdCot): int
     {
         $borrados = 0;
         $waSendmy = $this->params->get('waSendmy');
         $finder = new Finder();
-        $finder->files()->in($waSendmy)->name($idAnet.'*'.$waIdCot.'.json');
+        $finder->files()->in($waSendmy)->name($idDbSr.'*'.$waIdCot.'.json');
         if ($finder->hasResults()) {
             foreach ($finder as $file) {
                 try {
@@ -174,14 +174,14 @@ class Fsys {
     /** 
      * [V6]
     */
-    public function existeInCooler(String $waId, String $idAnet)
+    public function existeInCooler(String $waId, String $idDbSr)
     {    
         $cooler = $this->getContent('coolers', $waId.'.json');
 
         if(count($cooler) > 0) {
-            $items = array_column($cooler, 'idAnet');
+            $items = array_column($cooler, 'idDbSr');
             if(count($items) > 0) {
-                $has = array_search($idAnet, $items);
+                $has = array_search($idDbSr, $items);
                 if($has !== false) {
                     return true;
                 }
@@ -200,7 +200,7 @@ class Fsys {
         $cooler = $this->getContent('coolers', $waMsg->from . '.json');
 
         if(count($cooler) > 0) {
-            $has = array_search($waMsg->idAnet, array_column($cooler, 'idAnet'));
+            $has = array_search($waMsg->idDbSr, array_column($cooler, 'idDbSr'));
             if($has !== false) {
                 try {
                     $item = $cooler[$has];
@@ -211,7 +211,7 @@ class Fsys {
                     return ($withResults) ? [] : false;
                 }
 
-                if(array_key_exists('idAnet', $item)) {
+                if(array_key_exists('idDbSr', $item)) {
                     $date = new \DateTime('now');
                     $item['wamid']   = $waMsg->id;
                     $item['current'] = 'sfto';
@@ -244,7 +244,7 @@ class Fsys {
     public function getNextItemForSend(WaMsgDto $waMsg, String $mrkpref): array
     {
         $mrkpref = trim(mb_strtolower($mrkpref));
-        $return = ['idAnet' => 0, 'cant' => 0];
+        $return = ['idDbSr' => 0, 'cant' => 0];
 
         $cooler = $this->getContent('coolers', $waMsg->from.'.json');
         
@@ -275,7 +275,7 @@ class Fsys {
             // Si no se encontró uno de la misma marca "Si es que el valor de $mrkPref"
             // no esta vacio... tomamos el primero
             $has = ($has === false) ? 0 : $has;
-            $return['idAnet'] = $cooler[$has]['idAnet'];
+            $return['idDbSr'] = $cooler[$has]['idDbSr'];
         }
 
         $return['cant'] = $cantItems;
@@ -284,7 +284,7 @@ class Fsys {
 
     /** 
      * Hacemos un resumen de todos los items con los que cuenta el cotizador
-     * @return array La lista de los idAnet
+     * @return array La lista de los idDbSr
     */
     public function getResumeCooler(String $waId): array
     {    
@@ -292,7 +292,7 @@ class Fsys {
         $cooler = $this->getContent('coolers', $waId . '.json');
         $cants = count($cooler);
         if($cants > 0) {
-            $return = array_column($cooler, 'idAnet');
+            $return = array_column($cooler, 'idDbSr');
         }
         return $return;
     }
