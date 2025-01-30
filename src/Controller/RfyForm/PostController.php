@@ -13,6 +13,7 @@ use App\Service\SecurityBasic;
 use App\Repository\ItemsRepository;
 use App\Service\ItemTrack\WaSender;
 use App\Service\HeaderItem;
+use App\Service\Pushes;
 
 class PostController extends AbstractController
 {
@@ -88,7 +89,10 @@ class PostController extends AbstractController
    * Guardamos el item enviado desde RasForm
   */
   #[Route('rfyform/item/{key}', methods:['POST'])]
-	public function sendProduct(Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm, String $key): Response
+	public function sendProduct(
+    Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm,
+    FcmRepository $fbem, Pushes $push, String $key
+  ): Response
 	{
 
     if(!$sec->isValid($key)) {
@@ -102,7 +106,6 @@ class PostController extends AbstractController
       $data = $this->toArray($req, 'datos');
     } catch (\Throwable $th) {
       $data = $req->getContent();
-      file_put_contents('wa_test.json', $data);
       if($data) {
         $data = json_decode($data, true);
       }else{
@@ -110,7 +113,8 @@ class PostController extends AbstractController
         return $this->json($result);
       }
     }
-
+    
+    file_put_contents('wa_test.json', $data);
     // Esto es usado para que no se envie el evento hacia el puente y ComCore no
     // reciba esta prueba, la misma que se realiza desde AnetForm
     $isDebug = (array_key_exists('debug', $data)) ? true : false;
@@ -124,6 +128,9 @@ class PostController extends AbstractController
     $data['source']    = 'form';
     $data['checkinSR'] = date("Y-m-d\TH:i:s.v");
     
+    // Buscamos contactos para el envio de notificaciones
+    $contacts = $fbem->matchContacts();
+
     $builder = new HeaderItem();
     $head = $builder->build($data);
     if(!$isDebug) {

@@ -74,4 +74,10 @@ class FcmRepository extends ServiceEntityRepository
         
         return $result;
     }
+
+    /** */
+    public function matchContacts(): array
+    {
+        return [];
+    }
 }
