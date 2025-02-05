@@ -119,7 +119,7 @@ class PostController extends AbstractController
     }else{
       $data['cant'] = $cant;
       $data['tokens'] = $contacts;
-      $result = $push->sendMultiple($contacts);
+      $result = $push->sendMultiple($data);
     }
 
     file_put_contents('push_sent.json', json_encode($data));
