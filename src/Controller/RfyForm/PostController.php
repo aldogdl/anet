@@ -85,6 +85,46 @@ class PostController extends AbstractController
     return $this->json($result);
   }
 
+  /** 
+   * Enviamos la notificacion de nueva publicacion a los contactos
+  */
+  #[Route('rfyform/make_push/{key}', methods:['POST'])]
+	public function sentNotification(Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, String $key): Response
+	{
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    $result = ['abort' => true, 'msg' => ''];
+    $data = [];
+    try {
+      $data = $this->toArray($req, 'data');
+    } catch (\Throwable $th) {
+      $data = $req->getContent();
+      if($data) {
+        $data = json_decode($data, true);
+      }else{
+        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+        return $this->json($result);
+      }
+    }
+
+    file_put_contents('push_sent.json', json_encode($data));
+    
+    // $res = $fcmEm->setDataToken($data);
+    // $result['msg'] = $res;
+    // if(strpos($res, 'X') === false) {
+    //   $result['abort'] = false;
+    //   if(array_key_exists('isInit', $data) && $data['isInit'] != 'debug') {
+    //     // TODO
+    //     $waS->sendMy([]);
+    //   }
+    // }
+    $result = ['abort' => false, 'msg' => 'Enviado a 5 contactos'];
+    return $this->json($result);
+  }
+
   /**
    * Guardamos el item enviado desde RasForm
   */
@@ -113,7 +153,7 @@ class PostController extends AbstractController
         return $this->json($result);
       }
     }
-    
+
     file_put_contents('wa_test.json', json_encode($data));
     // Esto es usado para que no se envie el evento hacia el puente y ComCore no
     // reciba esta prueba, la misma que se realiza desde AnetForm
