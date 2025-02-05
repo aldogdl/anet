@@ -102,16 +102,42 @@ class FcmRepository extends ServiceEntityRepository
             $dql = $this->getAllBySlugExcept($itemPush['ownSlug']);
             $contacts = $dql->getResult();
             
-            $rota = count($contacts);
-            for ($i=0; $i < $rota; $i++) { 
-                $filtro = $contacts[$i]->getNvm();
-                if($filtros) {
-                    if(!in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
+            if(count($contacts) > 0) {
+                $noTengoLaMrk = array_filter($contacts, function($contac) {
+                    return $contac->mrnta == 'd';
+                });
+                $soloEstasVendo = array_filter($contacts, function($contac) {
+                    return $contac->mrnta == 'i';
+                });
+                $contacts = [];
 
+                // Filtramos primero a los especialistas de la marca
+                $rota = count($soloEstasVendo);
+                for ($i=0; $i < $rota; $i++) { 
+                    $filtro = $soloEstasVendo[$i]->getNvm();
+                    if($filtro) {
+                        if(in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
+                            if(!in_array($soloEstasVendo[$i]->getTkfcm(), $filtros)) {
+                                $filtros[] = $soloEstasVendo[$i]->getTkfcm();
+                            }
+                        }
+                    }
+                }
+
+                // filtramos a los que no venden la marca
+                for ($i=0; $i < $rota; $i++) { 
+                    $filtro = $noTengoLaMrk[$i]->getNvm();
+                    if($filtro) {
+                        if(!in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
+                            if(!in_array($noTengoLaMrk[$i]->getTkfcm(), $filtros)) {
+                                $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
+                            }
+                        }
                     }
                 }
             }
         }
+
         return $filtros;
     }
 

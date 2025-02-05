@@ -112,15 +112,18 @@ class PostController extends AbstractController
       }
     }
 
-    file_put_contents('push_sent.json', json_encode($data));
-    
     $contacts = $fcmEm->getContactsForSend($data);
-    if(count($contacts) == 0) {
-      $result = ['abort' => true, 'msg' => 'X Sin contactos'];
-      return $this->json($result);
+    if(count($contacts) > 0) {
+
+      $data['tokens'] = $contacts;
+      if(count($contacts) == 0) {
+        $result = ['abort' => true, 'msg' => 'X Sin contactos'];
+        return $this->json($result);
+      }  
+      // $result = $push->sendMultiple($contacts);
     }
-    
-    $result = $push->sendMultiple($contacts);
+
+    file_put_contents('push_sent.json', json_encode($data));
     return $this->json($result);
   }
 
