@@ -39,18 +39,17 @@ class Pushes
     */
     public function sendMultiple(array $contacts): array
     {
-        $rota = count($contacts);
-        for ($i=0; $i < $rota; $i++) { 
-            $notification = Notification::create(
-                $contacts['title'], $contacts['body'],
-                'https://autoparnet.com/ic_launcher.png'
-            );
-            $data = [
-                'item' => $contacts['idDbSr'], 'type' => $contacts['type']
-            ];
-            $result = $this->sendTo($contacts['token'], $notification, $data);
+        $notification = Notification::create(
+            $contacts['title'], $contacts['body'],
+            'https://autoparnet.com/ic_launcher.png'
+        );
+        $data = [
+            'item' => $contacts['idDbSr'], 'type' => $contacts['type']
+        ];
+        for ($i=0; $i < $contacts['cant']; $i++) { 
+            $result = $this->sendTo($contacts['tokens'][$i], $notification, $data);
         }
-        return ['abort' => false, 'msg' => 'Enviado a '.$rota.' contactos'];
+        return ['abort' => false, 'msg' => 'Enviado a '.$contacts['cant'].' contactos'];
     }
 
     /** */
@@ -79,6 +78,7 @@ class Pushes
             $result['fails'] = $th->getMessage();
         }
 
+        file_put_contents('push_sent_sended.json', json_encode($result));
         return $result;
     }
 

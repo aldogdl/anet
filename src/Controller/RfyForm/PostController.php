@@ -113,11 +113,13 @@ class PostController extends AbstractController
     }
 
     $contacts = $fcmEm->getContactsForSend($data);
-    if(count($contacts) == 0) {
+    $cant = count($contacts);
+    if($cant == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
+      $data['cant'] = $cant;
       $data['tokens'] = $contacts;
-      // $result = $push->sendMultiple($contacts);
+      $result = $push->sendMultiple($contacts);
     }
 
     file_put_contents('push_sent.json', json_encode($data));
