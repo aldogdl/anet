@@ -101,8 +101,14 @@ class FcmRepository extends ServiceEntityRepository
             // Buscar todos los cotizadores diferentes al dueño del ITEM
             $dql = $this->getAllBySlugExcept($itemPush['ownSlug']);
             $contacts = $dql->getResult();
+            file_put_contents('push_sent_conta.json', json_encode([
+                'cant' => count($contacts),
+                'tok'  => $contacts[0]->getTkfcm(),
+                'mrnta' => $contacts[0]->getMrnta(),
+            ]));
 
             if(count($contacts) > 0) {
+
                 $noTengoLaMrk = array_filter($contacts, function($contac) {
                     return $contac->getMrnta() == 'd';
                 });
@@ -125,6 +131,7 @@ class FcmRepository extends ServiceEntityRepository
                 }
 
                 // filtramos a los que no venden la marca
+                $rota = count($noTengoLaMrk);
                 for ($i=0; $i < $rota; $i++) { 
                     $filtro = $noTengoLaMrk[$i]->getNvm();
                     if($filtro) {
