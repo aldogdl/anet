@@ -89,7 +89,9 @@ class PostController extends AbstractController
    * Enviamos la notificacion de nueva publicacion a los contactos
   */
   #[Route('rfyform/make_push/{key}', methods:['POST'])]
-	public function sentNotification(Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, String $key): Response
+	public function sentNotification(
+    Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, Pushes $push, String $key
+  ): Response
 	{
     if(!$sec->isValid($key)) {
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
@@ -112,16 +114,13 @@ class PostController extends AbstractController
 
     file_put_contents('push_sent.json', json_encode($data));
     
-    // $res = $fcmEm->setDataToken($data);
-    // $result['msg'] = $res;
-    // if(strpos($res, 'X') === false) {
-    //   $result['abort'] = false;
-    //   if(array_key_exists('isInit', $data) && $data['isInit'] != 'debug') {
-    //     // TODO
-    //     $waS->sendMy([]);
-    //   }
-    // }
-    $result = ['abort' => false, 'msg' => 'Enviado a 5 contactos'];
+    $contacts = $fcmEm->getContactsForSend($data);
+    if(count($contacts) == 0) {
+      $result = ['abort' => true, 'msg' => 'X Sin contactos'];
+      return $this->json($result);
+    }
+    
+    $result = $push->sendMultiple($contacts);
     return $this->json($result);
   }
 
@@ -154,7 +153,6 @@ class PostController extends AbstractController
       }
     }
 
-    file_put_contents('wa_test.json', json_encode($data));
     // Esto es usado para que no se envie el evento hacia el puente y ComCore no
     // reciba esta prueba, la misma que se realiza desde AnetForm
     $isDebug = (array_key_exists('debug', $data)) ? true : false;
@@ -168,12 +166,9 @@ class PostController extends AbstractController
     $data['source']    = 'form';
     $data['checkinSR'] = date("Y-m-d\TH:i:s.v");
 
-    // Buscamos contactos para el envio de notificaciones
-    $contacts = $fbem->matchContacts($data);
-
-    $builder = new HeaderItem();
-    $head = $builder->build($data);
     if(!$isDebug) {
+      $builder = new HeaderItem();
+      $head = $builder->build($data);
       $wh->sendMy($head);
     }
 

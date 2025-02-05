@@ -42,7 +42,7 @@ class FcmRepository extends ServiceEntityRepository
      * 
      * @param string $slug El slug del cual no queremos los registros.
      */
-    public function getAllByWaIdExcept(String $slug): \Doctrine\ORM\Query
+    public function getAllBySlugExcept(String $slug): \Doctrine\ORM\Query
     {
         $dql = 'SELECT f FROM '. Fcm::class .' f '.
         'WHERE f.slug != :slug';
@@ -88,18 +88,31 @@ class FcmRepository extends ServiceEntityRepository
         return $result;
     }
 
-    /** */
-    public function matchContacts(array $itemNew): array
+    /** 
+     * Tomamos todos los cotizadores excepto el dueño al remitente enviado
+     * por parametro, para enviar las notificaciones.
+     * FILTRADO tambien filtramos por excepción de marcas.
+    */
+    public function getContactsForSend(array $itemPush): array
     {
-        if($itemNew['type'] == 'solicita') {
+        // Buscamos contactos para el envio de notificaciones
+        $filtros = [];
+        if($itemPush['type'] == 'solicita') {
             // Buscar todos los cotizadores diferentes al dueño del ITEM
-            $dql = $this->getAllByWaIdExcept($itemNew['ownSlug']);
+            $dql = $this->getAllBySlugExcept($itemPush['ownSlug']);
             $contacts = $dql->getResult();
+            
             $rota = count($contacts);
-            if($rota == 0) {
-                return [];
+            for ($i=0; $i < $rota; $i++) { 
+                $filtro = $contacts[$i]->getNvm();
+                if($filtros) {
+                    if(!in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
+
+                    }
+                }
             }
         }
-        return [];
+        return $filtros;
     }
+
 }

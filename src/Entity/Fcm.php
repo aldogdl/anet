@@ -29,9 +29,13 @@ class Fcm
     /** No vendo la marca una lista de todas las marcas que no vende */
     #[ORM\Column(type: Types::JSON)]
     private array $nvm = [];
+
+    #[ORM\Column(length: 1)]
+    private ?string $mrnta = null;
    
     public function __construct()
     {
+        $this->mrnta = 'd';
         $this->nvm = [];
     }
 
@@ -105,6 +109,18 @@ class Fcm
     public function setNvm(array $nvm): static
     {
         $this->nvm = $nvm;
+
+        return $this;
+    }
+
+    public function getMrnta(): ?string
+    {
+        return $this->mrnta;
+    }
+
+    public function setMrnta(string $mrnta): static
+    {
+        $this->mrnta = $mrnta;
 
         return $this;
     }
