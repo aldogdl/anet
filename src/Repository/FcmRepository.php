@@ -133,12 +133,18 @@ class FcmRepository extends ServiceEntityRepository
                 // filtramos a los que no venden la marca
                 $rota = count($noTengoLaMrk);
                 for ($i=0; $i < $rota; $i++) { 
+                    $add = false;
                     $filtro = $noTengoLaMrk[$i]->getNvm();
                     if($filtro) {
                         if(!in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
-                            if(!in_array($noTengoLaMrk[$i]->getTkfcm(), $filtros)) {
-                                $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
-                            }
+                            $add = true;
+                        }
+                    }else{
+                        $add = true;
+                    }
+                    if($add) {
+                        if(!in_array($noTengoLaMrk[$i]->getTkfcm(), $filtros)) {
+                            $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
                         }
                     }
                 }
