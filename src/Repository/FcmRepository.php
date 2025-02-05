@@ -101,13 +101,13 @@ class FcmRepository extends ServiceEntityRepository
             // Buscar todos los cotizadores diferentes al dueño del ITEM
             $dql = $this->getAllBySlugExcept($itemPush['ownSlug']);
             $contacts = $dql->getResult();
-            
+
             if(count($contacts) > 0) {
                 $noTengoLaMrk = array_filter($contacts, function($contac) {
-                    return $contac->mrnta == 'd';
+                    return $contac->getMrnta() == 'd';
                 });
                 $soloEstasVendo = array_filter($contacts, function($contac) {
-                    return $contac->mrnta == 'i';
+                    return $contac->getMrnta() == 'i';
                 });
                 $contacts = [];
 
