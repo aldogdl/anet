@@ -48,7 +48,9 @@ class Pushes
         $notification = Notification::create($push['title'], $push['body'], $thubm);
         $payload = ['idDbSr' => $push['idDbSr'], 'type' => $push['type']];
         if(array_key_exists('srcIdDbSr', $push)) {
-            $payload['srcIdDbSr'] = $push['srcIdDbSr'];
+            if($push['srcIdDbSr'] > 0) {
+                $payload['srcIdDbSr'] = $push['srcIdDbSr'];
+            }
         }
 
         $fails = [];
@@ -58,7 +60,7 @@ class Pushes
                 $fails[] = $result['fails'];
             }
         }
-        
+
         $errs = count($fails);
         $msg = 'Enviado a '.($push['cant'] - $errs).' de '.$push['cant'].' contactos';
         $result = ['abort' => false, 'msg' => $msg];
@@ -71,15 +73,13 @@ class Pushes
     /** */
     private function sendTo(String $contact, Notification $notification, array $payload): array
     {
-        $base = ['click_action' => 'FLUTTER_NOTIFICATION_CLICK'];
-        $payload = array_merge($base, $payload);
-
         $config = AndroidConfig::fromArray([
             'ttl' => '3600s',
             'priority' => 'high',
             'notification' => [
                 'channel_id' => $this->channel,
-                'notification_priority' => 'PRIORITY_HIGH'
+                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                'notification_priority' => 'NOTIFICATION_PRIORITY_HIGH'
             ],
         ]);
         $message = CloudMessage::new()

@@ -130,14 +130,18 @@ class PostController extends AbstractController
       }
       
       $data['cant'] = count($data['tokens']);
-      file_put_contents($filename, json_encode($data));
+      if($data['cant'] == 0) {
+        $result = ['abort' => true, 'msg' => 'X Sin contactos'];
+      }else{
 
-      $result = $push->sendMultiple($data);
-      if(array_key_exists('fails', $result)) {
-        $filename = $this->getParameter('fbFails') .
-          $data['type'] .'_'. round(microtime(true) * 1000) . '.json';
-        file_put_contents($filename, json_encode($data));
-        unset($result['fails']);
+        $result = $push->sendMultiple($data);
+  
+        if(array_key_exists('fails', $result)) {
+          $filename = $this->getParameter('fbFails') .
+            $data['type'] .'_'. round(microtime(true) * 1000) . '.json';
+          file_put_contents($filename, json_encode($data));
+          unset($result['fails']);
+        }
       }
     }
 
