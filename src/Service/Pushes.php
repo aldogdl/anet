@@ -79,7 +79,6 @@ class Pushes
             'notification' => [
                 'channel_id' => $this->channel,
                 'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                'notification_priority' => 'NOTIFICATION_PRIORITY_HIGH'
             ],
         ]);
         $message = CloudMessage::new()
