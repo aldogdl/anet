@@ -113,15 +113,13 @@ class PostController extends AbstractController
     }
 
     $contacts = $fcmEm->getContactsForSend($data);
-    $cant = count($contacts);
-    if($cant == 0) {
+    if(count($contacts) == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
       
       $filename = $this->getParameter('fbSended') .
       $data['type'] .'_'. round(microtime(true) * 1000) . '.json';
       
-      $data['cant'] = $cant;
       if(array_key_exists('slug', $contacts)) {
         $data['srcSlug'] = $contacts['slug'];
         file_put_contents($filename, json_encode($data));
@@ -130,6 +128,8 @@ class PostController extends AbstractController
         file_put_contents($filename, json_encode($data));
         $data['tokens'] = $contacts;
       }
+      
+      $data['cant'] = count($data['tokens']);
       file_put_contents($filename, json_encode($data));
 
       $result = $push->sendMultiple($data);
