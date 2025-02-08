@@ -117,8 +117,10 @@ class PostController extends AbstractController
     if($cant == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
-
-      $filename = $this->getParameter('fbSended') .'_'. round(microtime(true) * 1000) . '.json';
+      
+      $filename = $this->getParameter('fbSended') .
+      $data['type'] .'_'. round(microtime(true) * 1000) . '.json';
+      
       $data['cant'] = $cant;
       if(array_key_exists('slug', $contacts)) {
         $data['srcSlug'] = $contacts['slug'];
@@ -128,10 +130,12 @@ class PostController extends AbstractController
         file_put_contents($filename, json_encode($data));
         $data['tokens'] = $contacts;
       }
+      file_put_contents($filename, json_encode($data));
 
       $result = $push->sendMultiple($data);
       if(array_key_exists('fails', $result)) {
-        $filename = $this->getParameter('fbFails') .'_'. round(microtime(true) * 1000) . '.json';
+        $filename = $this->getParameter('fbFails') .
+          $data['type'] .'_'. round(microtime(true) * 1000) . '.json';
         file_put_contents($filename, json_encode($data));
         unset($result['fails']);
       }
