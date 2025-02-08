@@ -139,6 +139,7 @@ class PostController extends AbstractController
         if(array_key_exists('fails', $result)) {
           $filename = $this->getParameter('fbFails') .
             $data['type'] .'_'. round(microtime(true) * 1000) . '.json';
+            $data['fails'] = $result['fails'];
           file_put_contents($filename, json_encode($data));
           unset($result['fails']);
         }
