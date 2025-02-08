@@ -43,4 +43,18 @@ class GetController extends AbstractController
     return $this->json($result);
 	}
 
+  /** 
+  * Este controlador maneja laS preubas internas
+  */
+  #[Route('rfyform/pruebas', methods:['GET'])]
+	public function pruebasInternas(FcmRepository $fcmEm, Pushes $fcmSend): Response
+	{
+    $result = ['ok' => 'Si funk!!'];
+    // $result = $fcmEm->getContactsForSend([
+    //   "srcWaId" => "demo",
+    //   "type" => "publica"
+    // ]);
+    return $this->json($result);
+  }
+  
 }

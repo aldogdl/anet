@@ -37,16 +37,32 @@ class FcmRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recuperamos todos los registros exepto todos aquellos que coincidan con
-     * el slug enviado por paramentro.
+     * Este método recupera todos los miembros de una empresa por medio del 
+     * waId del solicitante.
      * 
-     * @param string $slug El slug del cual no queremos los registros.
+     * @param string $waId El ID de WhatsApp para buscar.
+     * @return \Doctrine\ORM\Query
      */
-    public function getAllBySlugExcept(String $slug): \Doctrine\ORM\Query
+    public function getAllMiembrosByWaId(String $waId): \Doctrine\ORM\Query
     {
         $dql = 'SELECT f FROM '. Fcm::class .' f '.
-        'WHERE f.slug != :slug';
-        return $this->_em->createQuery($dql)->setParameter('slug', $slug);
+        'WHERE f.slug IN (SELECT f2.slug FROM '. Fcm::class .' f2 WHERE f2.waId = :waId)';
+
+        return $this->_em->createQuery($dql)->setParameter('waId', $waId);
+    }
+
+    /**
+     * Recuperamos todos los registros exepto todos aquellos que coincidan con
+     * el slug que halla coincidido con el waId.
+     * 
+     * @param string $waId El waId del cual no queremos los registros.
+     */
+    public function getAllByWaIdExcept(String $waId): \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT f FROM '. Fcm::class .' f '.
+        'WHERE f.slug NOT IN (SELECT f2.slug FROM '. Fcm::class .' f2 WHERE f2.waId = :waId)';
+
+        return $this->_em->createQuery($dql)->setParameter('waId', $waId);
     }
     
     /**
@@ -98,17 +114,13 @@ class FcmRepository extends ServiceEntityRepository
         // Buscamos contactos para el envio de notificaciones
         $filtros = [];
         if($itemPush['type'] == 'solicita') {
+
             // Buscar todos los cotizadores diferentes al dueño del ITEM
-            $dql = $this->getAllBySlugExcept($itemPush['ownSlug']);
+            $dql = $this->getAllByWaIdExcept($itemPush['ownWaId']);
             $contacts = $dql->getResult();
-            file_put_contents('push_sent_conta.json', json_encode([
-                'cant' => count($contacts),
-                'tok'  => $contacts[0]->getTkfcm(),
-                'mrnta' => $contacts[0]->getMrnta(),
-            ]));
-
+            
             if(count($contacts) > 0) {
-
+                                
                 $noTengoLaMrk = array_filter($contacts, function($contac) {
                     return $contac->getMrnta() == 'd';
                 });
@@ -119,6 +131,7 @@ class FcmRepository extends ServiceEntityRepository
 
                 // Filtramos primero a los especialistas de la marca
                 $rota = count($soloEstasVendo);
+
                 for ($i=0; $i < $rota; $i++) { 
                     $filtro = $soloEstasVendo[$i]->getNvm();
                     if($filtro) {
@@ -149,6 +162,41 @@ class FcmRepository extends ServiceEntityRepository
                     }
                 }
             }
+
+        } else if($itemPush['type'] == 'publica') {
+
+            if(!array_key_exists('srcWaId', $itemPush)) {
+                return [];
+            }
+
+            // Buscar al cotizador quien realizó la solictud de cotizacion
+            $dql = $this->getAllMiembrosByWaId($itemPush['srcWaId']);
+            $contacts = $dql->getResult();
+            
+            // Solo para reforzar que verdaderamente no halla slug que no
+            // pertenezcan a la empresa que hizo la solicitud
+
+            // En este bloque lo que hacemos es que del resultado buscamos el
+            // primer registro que tenga el waId que recibimos por parametro
+            // con la finalidad de obtener su slug y poder filtrar a todos
+            // los que tengan el mismo slug.
+            $waId = $itemPush['srcWaId'];
+            $mismos = array_filter($contacts, function($contac) use ($waId) {
+                return $contac->getWaId() == $waId;
+            });
+            $slug = '';
+            if(count($mismos) > 0) {
+                $slug = $mismos[0]->getSlug();
+            }
+            if($slug == '') { return []; }
+            $mismos = array_filter($contacts, function($contac) use ($slug) {
+                return $contac->getSlug() == $slug;
+            });
+
+            // Ya habiendo filtrado todos los registros con el mismo slug
+            // lo que hacemos es extraer todos sus tokens
+            $mismos = array_map(function($obj) { return $obj->getTkfcm(); }, $mismos);
+            return ['slug' => $slug, 'tokens' => array_unique($mismos)];
         }
 
         return $filtros;

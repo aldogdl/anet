@@ -93,10 +93,10 @@ class PostController extends AbstractController
     Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, Pushes $push, String $key
   ): Response
 	{
-    if(!$sec->isValid($key)) {
-      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
-      return $this->json($result);
-    }
+    // if(!$sec->isValid($key)) {
+    //   $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+    //   return $this->json($result);
+    // }
 
     $result = ['abort' => true, 'msg' => ''];
     $data = [];
@@ -117,12 +117,26 @@ class PostController extends AbstractController
     if($cant == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
+
+      $filename = $this->getParameter('fbSended') .'_'. round(microtime(true) * 1000) . '.json';
       $data['cant'] = $cant;
-      $data['tokens'] = $contacts;
+      if(array_key_exists('slug', $contacts)) {
+        $data['srcSlug'] = $contacts['slug'];
+        file_put_contents($filename, json_encode($data));
+        $data['tokens'] = $contacts['tokens'];
+      }else{
+        file_put_contents($filename, json_encode($data));
+        $data['tokens'] = $contacts;
+      }
+
       $result = $push->sendMultiple($data);
+      if(array_key_exists('fails', $result)) {
+        $filename = $this->getParameter('fbFails') .'_'. round(microtime(true) * 1000) . '.json';
+        file_put_contents($filename, json_encode($data));
+        unset($result['fails']);
+      }
     }
 
-    file_put_contents('push_sent.json', json_encode($data));
     return $this->json($result);
   }
 

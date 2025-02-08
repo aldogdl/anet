@@ -37,39 +37,57 @@ class Pushes
      * Enviamos los push a multiples contactos
      * @param array $contacts
     */
-    public function sendMultiple(array $contacts): array
+    public function sendMultiple(array $push): array
     {
-        $notification = Notification::create(
-            $contacts['title'], $contacts['body'],
-            'https://autoparnet.com/ic_launcher.png'
-        );
-        $data = [
-            'item' => $contacts['idDbSr'], 'type' => $contacts['type']
-        ];
-        for ($i=0; $i < $contacts['cant']; $i++) { 
-            $result = $this->sendTo($contacts['tokens'][$i], $notification, $data);
+        $thubm = 'https://autoparnet.com/ic_launcher.png';
+        if(array_key_exists('thubmnail', $push)) {
+            if(mb_strpos($push['thubmnail'], 'autojoya') !== false) {
+                $thubm = $push['thubmnail'];
+            }
         }
-        return ['abort' => false, 'msg' => 'Enviado a '.$contacts['cant'].' contactos'];
+        $notification = Notification::create($push['title'], $push['body'], $thubm);
+        $payload = ['idDbSr' => $push['idDbSr'], 'type' => $push['type']];
+        if(array_key_exists('srcIdDbSr', $push)) {
+            $payload['srcIdDbSr'] = $push['srcIdDbSr'];
+        }
+
+        $fails = [];
+        for ($i=0; $i < $push['cant']; $i++) { 
+            $result = $this->sendTo($push['tokens'][$i], $notification, $payload);
+            if(array_key_exists('fails', $result)) {
+                $fails[] = $result['fails'];
+            }
+        }
+        
+        $errs = count($fails);
+        $msg = 'Enviado a '.($push['cant'] - $errs).' de '.$push['cant'].' contactos';
+        $result = ['abort' => false, 'msg' => $msg];
+        if($errs > 0) {
+            $result['fails'] = $fails;
+        }
+        return $result;
     }
 
     /** */
-    private function sendTo(String $contact, Notification $notification, array $data): array
+    private function sendTo(String $contact, Notification $notification, array $payload): array
     {
         $base = ['click_action' => 'FLUTTER_NOTIFICATION_CLICK'];
-        $data = array_merge($base, $data);
+        $payload = array_merge($base, $payload);
 
         $config = AndroidConfig::fromArray([
             'ttl' => '3600s',
+            'priority' => 'high',
             'notification' => [
                 'channel_id' => $this->channel,
+                'notification_priority' => 'PRIORITY_HIGH'
             ],
         ]);
         $message = CloudMessage::new()
             ->withNotification($notification)
             ->withAndroidConfig($config)
-            ->withData($data);
+            ->withData($payload);
 
-        $result = ['sended' => [], 'fails' => ''];
+        $result = [];
         $message = $message->toToken($contact);
         try {
             $resp = $this->messaging->send($message);
@@ -78,7 +96,6 @@ class Pushes
             $result['fails'] = $th->getMessage();
         }
 
-        file_put_contents('push_sent_sended.json', json_encode($result));
         return $result;
     }
 

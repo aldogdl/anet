@@ -3,6 +3,8 @@ parameters:
     dtaCtc     : '%phtml%/ctcs/'
     scm        : '%phtml%/scm/'
     sse        : '%phtml%/sse/'
+    fbSended   : '%phtml%/fb_sended/'
+    fbFails    : '%phtml%/fb_fails/'
     prodPubs   : '%phtml%/prod_pubs/'
     prodSols   : '%phtml%/prod_sols/'
     prodTrack  : '%phtml%/prod_track/'

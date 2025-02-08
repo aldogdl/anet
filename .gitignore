@@ -38,6 +38,8 @@ public_html/*.json
 public_html/htacces.zip
 public_html/.well-known/
 public_html/bundles/
+public_html/fb_sended/
+public_html/fb_fails/
 public_html/cc/
 public_html/sse/
 public_html/sse_metas/
