@@ -84,6 +84,7 @@ class Pushes
         $message = CloudMessage::new()
             ->withNotification($notification)
             ->withAndroidConfig($config)
+            ->withHighestPossiblePriority()
             ->withData($payload);
 
         $result = [];
