@@ -42,7 +42,7 @@ class GetController extends AbstractController
 
     return $this->json($result);
 	}
-
+  
   /** 
   * Este controlador maneja laS preubas internas
   */

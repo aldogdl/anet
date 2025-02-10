@@ -91,8 +91,8 @@ class GetController extends AbstractController
     $params = $req->query->all();
     if(count($params) != 0) {
       if(array_key_exists('field', $params) && array_key_exists('value', $params)) {
-
-        $query = $itemEm->getItemByCampoValor($params['field'], $params['value']);
+        
+        $query = $itemEm->getItemByCampoValor($params);
         $item = $query->getArrayResult();
         if(count($item) > 1) {
           return $this->json($item);

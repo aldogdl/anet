@@ -36,21 +36,31 @@ class ItemsRepository extends ServiceEntityRepository
     }
 
     /** */
-    public function getItemByCampoValor(String $campo, $value): \Doctrine\ORM\Query
+    public function getItemByCampoValor(array $params): \Doctrine\ORM\Query
     {   
+        
+        $campo = $params['field'];
+        $value = $params['value'];
+        
+        $dql = 'SELECT it FROM ' . Items::class . ' it ';
         if(mb_strpos($value, ',')) {
-
-            $valores = explode(',', $value);
-            $dql = 'SELECT it FROM ' . Items::class . ' it '.
-            $dql = 'WHERE it.'.$campo.' IN (:valores)';
-            return $this->_em->createQuery($dql)->setParameters(['valores' => $valores]);
-
+            $value = explode(',', $value);            
+            $dql = $dql . 'WHERE it.'.$campo.' IN (:valor)';
         }else{
-
-            $dql = 'SELECT it FROM ' . Items::class . ' it '.
-            $dql = 'WHERE it.'.$campo.' = :valor';
-            return $this->_em->createQuery($dql)->setParameters(['valor' => $value]);
+            $dql = $dql . 'WHERE it.'.$campo.' = :valor';
         }
+        
+        $valores = ['valor' => $value];
+        // TODO $extras que recupere items con condiciones extras ej: mayor_que un tiempo
+        if(array_key_exists('mayor_que', $params)) {
+
+            $dateTime = new \DateTime();
+            $dateTime->setTimestamp($params['mayor_que'] / 1000);
+            $dql = $dql . ' AND it.createdAt > :fecha';
+            $valores['fecha'] = $dateTime;
+        }
+
+        return $this->_em->createQuery($dql)->setParameters($valores);
     }
 
     /** 
