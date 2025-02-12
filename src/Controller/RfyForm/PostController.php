@@ -93,10 +93,11 @@ class PostController extends AbstractController
     Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, Pushes $push, String $key
   ): Response
 	{
-    // if(!$sec->isValid($key)) {
-    //   $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
-    //   return $this->json($result);
-    // }
+    
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
 
     $result = ['abort' => true, 'msg' => ''];
     $data = [];
@@ -146,6 +147,39 @@ class PostController extends AbstractController
       }
     }
 
+    return $this->json($result);
+  }
+
+  /** 
+   * Guardamos la info de ntga y enviamos un sse si el item es de RasterFy
+  */
+  #[Route('rfyform/ntga/{key}', methods:['POST'])]
+	public function setNtgaFromRasterF5(
+    Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, String $key
+  ): Response
+	{
+
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    $result = ['abort' => false, 'msg' => 'ok'];
+    $data = [];
+    try {
+      $data = $this->toArray($req, 'data');
+    } catch (\Throwable $th) {
+      $data = $req->getContent();
+      if($data) {
+        $data = json_decode($data, true);
+      }else{
+        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+        return $this->json($result);
+      }
+    }
+
+    $fcmEm->setDataNTGA($data);
+    
     return $this->json($result);
   }
 

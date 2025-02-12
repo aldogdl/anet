@@ -104,6 +104,44 @@ class FcmRepository extends ServiceEntityRepository
         return $result;
     }
 
+    /**
+     * Este método guarda los registros de no vendo la marca
+     * 
+     * @param array $data Un array asociativo que contiene los datos de la
+     * marca que no se vende.
+     * @return String
+     */
+    public function setDataNTGA(array $data): void
+    {
+        if(array_key_exists('idDbSr', $data)) {
+            unset($data['idDbSr']);
+        }
+        $filtros[] = $data;
+
+        $dql = $this->getAllMiembrosByWaId($data['waId']);
+        $miem = $dql->getResult();
+        $rota = count($miem);
+        for ($i=0; $i < $rota; $i++) { 
+            
+            // Sincronizamos los datos
+            $nvm = $miem[$i]->getNvM();
+            $vueltas = count($nvm);
+            for ($m=0; $m < $vueltas; $m++) {
+                $currents = array_search($nvm[$m]['idMrk'], array_column($filtros, 'idMrk'));
+                if($currents === false) {
+                    $filtros[] = $nvm[$m];
+                }
+            }
+        }
+
+        for ($i=0; $i < $rota; $i++) { 
+            $miem[$i]->setNvM($filtros);
+            $this->_em->persist($miem[$i]);
+        }
+        $this->_em->flush();
+        return;
+    }
+
     /** 
      * Tomamos todos los cotizadores excepto el dueño al remitente enviado
      * por parametro, para enviar las notificaciones.

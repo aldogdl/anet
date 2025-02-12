@@ -73,12 +73,12 @@ class Pushes
     /** */
     private function sendTo(String $contact, Notification $notification, array $payload): array
     {
+        $payload['click_action'] = 'FLUTTER_NOTIFICATION_CLICK';
         $config = AndroidConfig::fromArray([
             'ttl' => '3600s',
             'priority' => 'high',
             'notification' => [
                 'channel_id' => $this->channel,
-                'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
             ],
         ]);
         $message = CloudMessage::new()
