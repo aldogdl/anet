@@ -19,15 +19,14 @@ class Pushes
     }
 
     /** 
-     * Metodo para enviar notificaciones push de solicitud de
-     * cotizacion a los cotizadores.
+     * Metodo para realizar pruebas de funcionamineto del servicio push
      * @param String $token El token del dispositivo a quien se enviará el push.
     */
     public function test(String $token): array
     {
         $notification = Notification::create(
-            "Notificación de Prueba",
-            "Tu servicio PUSH correcto.",
+            "👌 Test RasterFy",
+            "Notificación Web Push Éxitosa",
             'https://autoparnet.com/ic_launcher.png'
         );
         return $this->sendTo($token, $notification, ['type' => 'test']);

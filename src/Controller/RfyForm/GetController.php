@@ -23,6 +23,7 @@ class GetController extends AbstractController
     Request $req, SecurityBasic $sec, FcmRepository $fcmEm, Pushes $fcmSend, String $device, String $waid, String $key
   ): Response
 	{
+
     $result = ['abort' => false, 'msg' => ''];
     if(!$sec->isValid($key)) {
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
@@ -31,12 +32,23 @@ class GetController extends AbstractController
 
     if($req->getMethod() == 'GET') {
 
-      $token = $fcmEm->getTokenByWaIdAndDevice($waid, $device);
-      if($token == null) {
+      $token = '';
+      $query = $req->query->get('test');
+      if(strlen($query) > 20) {
+        $token = $query;
+        $query = '';
+      }else{
+        $entity = $fcmEm->getTokenByWaIdAndDevice($waid, $device);
+        if($entity != null) {
+          $token = $entity?->getTkfcm();
+        }
+      }
+
+      if($token == '') {
         $result = ['abort' => true, 'msg' => 'X No se encontró el token del dispositivo'];
         return $this->json($result);
       }
-      $result = $fcmSend->test($token?->getTkfcm());
+      $result = $fcmSend->test($token);
       $result['abort'] = false;
     }
 
