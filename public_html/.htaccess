@@ -4,7 +4,6 @@ AddType application/wasm .wasm
     AddOutputFilterByType DEFLATE application/json
     # Excluir ciertos tipos de archivos
     SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|pdf)$ no-gzip dont-vary
-
     # Asegurar la compresión
     Header append Vary User-Agent
 </IfModule>
