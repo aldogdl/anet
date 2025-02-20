@@ -14,6 +14,7 @@ use App\Repository\ItemsRepository;
 use App\Service\ItemTrack\WaSender;
 use App\Service\HeaderItem;
 use App\Service\Pushes;
+use App\Service\RasterHub\TrackProv;
 
 class PostController extends AbstractController
 {
@@ -117,34 +118,10 @@ class PostController extends AbstractController
     if(count($contacts) == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
-      
-      $filename = $this->getParameter('fbSended') .
-      $data['type'] .'_'. round(microtime(true) * 1000) . '.json';
-      
-      if(array_key_exists('slug', $contacts)) {
-        $data['srcSlug'] = $contacts['slug'];
-        file_put_contents($filename, json_encode($data));
-        $data['tokens'] = $contacts['tokens'];
-      }else{
-        file_put_contents($filename, json_encode($data));
-        $data['tokens'] = $contacts;
-      }
-      
-      $data['cant'] = count($data['tokens']);
-      if($data['cant'] == 0) {
-        $result = ['abort' => true, 'msg' => 'X Sin contactos'];
-      }else{
-
-        $result = $push->sendMultiple($data);
-  
-        if(array_key_exists('fails', $result)) {
-          $filename = $this->getParameter('fbFails') .
-            $data['type'] .'_'. round(microtime(true) * 1000) . '.json';
-            $data['fails'] = $result['fails'];
-          file_put_contents($filename, json_encode($data));
-          unset($result['fails']);
-        }
-      }
+      $track = new TrackProv($push, $data, $contacts);
+      $result = $track->exe(
+        $this->getParameter('fbSended'), $this->getParameter('fbFails')
+      );
     }
 
     return $this->json($result);

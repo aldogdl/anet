@@ -4,7 +4,7 @@ namespace App\Dtos;
 
 class ConmDto
 {
-    public String $uriToWhatsapp = 'https://graph.facebook.com/v17.0/';
+    public String $uriToWhatsapp = 'https://graph.facebook.com/v22.0/';
     
     public String $token;
     public String $to;
