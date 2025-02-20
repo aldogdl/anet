@@ -6,7 +6,7 @@ use App\Service\Pushes;
 
 /**
  * El sistema de rastreo por medio de notificacions para los
- * proveedores
+ * proveedores.
  */
 class TrackProv {
 
