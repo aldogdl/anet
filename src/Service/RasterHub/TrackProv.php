@@ -78,7 +78,8 @@ class TrackProv {
         if($this->waS->conm != null) {
             for ($i=0; $i < $rota; $i++) {
                 $this->waS->setWaIdToConmutador($this->data['waIds'][$i]);
-                $this->waS->sendPreTemplate( $this->basicTemplate() );
+                $isOk = $this->waS->sendPreTemplate( $this->basicTemplate() );
+                file_put_contents('wa_pruebita_send.json', json_encode($isOk));
             }
         }
     }
@@ -95,7 +96,7 @@ class TrackProv {
                 "image" => ["id" => $this->data['idwap']]
               ],
               "body" => [
-                "text" => $this->data['title'] . "\b" . $this->data['body'] . "\b\b" . 
+                "text" => $this->data['title'] . $this->data['body'] . "\n" . 
                 "https://wa.me/" . $this->data['ownWaId'] . "?text=prueba%20de%20comunicación"
               ],
               "footer" => [
