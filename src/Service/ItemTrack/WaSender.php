@@ -43,6 +43,7 @@ class WaSender
     /** */
     public function initConmutador(): void
     {
+        $this->isTest = false;
         try {
             $this->conm = new ConmDto($this->fSys->getConmuta());
         } catch (\Throwable $th) {
