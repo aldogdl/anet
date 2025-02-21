@@ -13,6 +13,7 @@ use App\Service\ItemTrack\WaBtnCotNow;
 use App\Service\ItemTrack\WaBtnNtgX;
 use App\Service\ItemTrack\WaSender;
 use App\Service\ItemTrack\WaInitSess;
+use App\Service\RasterHub\TrackProv;
 
 class WaConsumer
 {
@@ -47,10 +48,18 @@ class WaConsumer
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
 
-            // Si no hay un archivo de Stop STT enviamos los STT a AnetTrack
+            // Si no hay un archivo de Stop STT enviamos los STT a RasterX
             if(!$this->fsys->existe('/', $obj->from.'_stopstt.json')) {
+
+                // Tecnica para proveedor a proveedor todos los mensajes
+                // enviados se ignoran los status
+                if($this->fsys->existe('waSttStop', $obj->from.'.txt')) {
+                    $this->fsys->delete('waSttStop', $obj->from.'.txt');
+                    return;
+                }
                 $this->waSender->setConmutador($obj);
                 $this->waSender->sendMy($obj->toStt());
+
             }else{
 
                 // Si es un STT y hay un archivo de Costo, es que acaba de ser
@@ -96,6 +105,9 @@ class WaConsumer
             $clase = new HandlerCMD($this->fsys, $this->waSender, $obj);
             $clase->exe();
             return;
+        }elseif ($obj->tipoMsg == TypesWaMsgs::COTPP) {
+            $pp = new TrackProv(null, $this->waSender, [], []);
+            
         }
 
         // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario

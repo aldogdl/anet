@@ -13,5 +13,8 @@ enum TypesWaMsgs: String
     case BTNCOTNOW = 'btnCotNow';
     case NTG = 'ntg';
     case NTGA = 'ntga';
+    case COTDIRECT = 'cotDirect';
+    // Action Cotizacion de Proveedor a Proveedor
+    case COTPP = 'cotPP';
     case COMMAND = 'cmd';
 }

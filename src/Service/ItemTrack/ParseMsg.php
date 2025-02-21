@@ -70,34 +70,35 @@ class ParseMsg {
     */
     function extractMessageType(): WaMsgDto
     {
-        if(array_key_exists('type', $this->waMsg)) {
+        if(!array_key_exists('type', $this->waMsg)) {
+            return null;
+        }
 
-            switch ($this->waMsg['type']) {
-                case 'interactive':
-                    return $this->extractInteractive();
-                    break;
-                case 'text':
-                    return $this->extractText();
-                    break;
-                case 'image':
-                    return $this->extractImage();
-                    break;
-                default:
-                    return new WaMsgDto(
-                        $this->isTest,
-                        $this->waMsg['from'],
-                        $this->waMsg['id'],
-                        '',
-                        '',
-                        $this->waMsg['timestamp'],
-                        $this->recibido,
-                        TypesWaMsgs::DOC,
-                        'Un '.$this->waMsg['type'].' fué enviado por el cliente',
-                        "delivered",
-                        "errorDeTipos"
-                    );
+        switch ($this->waMsg['type']) {
+            case 'interactive':
+                return $this->extractInteractive();
                 break;
-            }
+            case 'text':
+                return $this->extractText();
+                break;
+            case 'image':
+                return $this->extractImage();
+                break;
+            default:
+                return new WaMsgDto(
+                    $this->isTest,
+                    $this->waMsg['from'],
+                    $this->waMsg['id'],
+                    '',
+                    '',
+                    $this->waMsg['timestamp'],
+                    $this->recibido,
+                    TypesWaMsgs::DOC,
+                    'Un '.$this->waMsg['type'].' fué enviado por el cliente',
+                    "delivered",
+                    "errorDeTipos"
+                );
+            break;
         }
     }
 
@@ -214,6 +215,12 @@ class ParseMsg {
                 break;
             case 'ntga':
                 $tipo = TypesWaMsgs::NTGA;
+                break;
+            case 'cotDirect':
+                $tipo = TypesWaMsgs::COTPP;
+                break;
+            case 'cotForm':
+                $tipo = TypesWaMsgs::COTPP;
                 break;
             default:
                 $tipo = TypesWaMsgs::INTERACTIVE;

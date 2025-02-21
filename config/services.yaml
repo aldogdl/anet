@@ -14,6 +14,7 @@ parameters:
     itemTrack  : '%phtml%/wa_item_track/'
     coolers    : '%phtml%/wa_coolers/'
     waSendmy   : '%phtml%/wa_sendmy/'
+    waSttStop  : '%phtml%/wa_stt_stop/'
     
     cnxFile    : '%scm%cnx_file.json'
     verapps    : '%scm%versions.json'
