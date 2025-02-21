@@ -32,6 +32,9 @@ class Fcm
 
     #[ORM\Column(length: 1)]
     private ?string $mrnta = null;
+
+    #[ORM\Column]
+    private ?bool $isLogged = null;
    
     public function __construct()
     {
@@ -121,6 +124,18 @@ class Fcm
     public function setMrnta(string $mrnta): static
     {
         $this->mrnta = $mrnta;
+
+        return $this;
+    }
+
+    public function isIsLogged(): ?bool
+    {
+        return $this->isLogged;
+    }
+
+    public function setIsLogged(bool $isLogged): static
+    {
+        $this->isLogged = $isLogged;
 
         return $this;
     }
