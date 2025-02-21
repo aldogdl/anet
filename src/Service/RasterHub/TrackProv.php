@@ -32,14 +32,19 @@ class TrackProv {
             $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
         
         if(array_key_exists('slug', $this->contacts)) {
+            // Si contiene slug, significa que se le enviará el msg a 1 persona
             $this->data['srcSlug'] = $this->contacts['slug'];
             file_put_contents($filename, json_encode($this->data));
             $this->data['tokens'] = $this->contacts['tokens'];
+            $this->data['waIds'] = $this->contacts['waIds'];
         }else{
+            // Si NO contiene slug, significa que se le enviará el msg a varias personas
             file_put_contents($filename, json_encode($this->data));
             $this->data['tokens'] = $this->contacts['tokens'];
+            $this->data['waIds'] = $this->contacts['waIds'];
         }
-        
+        $this->contacts = [];
+
         $this->data['cant'] = count($this->data['tokens']);
         if($this->data['cant'] == 0) {
             $result = ['abort' => true, 'msg' => 'X Sin contactos'];
@@ -64,14 +69,14 @@ class TrackProv {
     /** */
     private function sendToWhatsapp() {
 
-        $rota = count($this->contacts['waIds']);
+        $rota = count($this->data['waIds']);
         if($rota == 0) {
             return;
         }
         $this->waS->initConmutador();
         if($this->waS->conm != null) {
             for ($i=0; $i < $rota; $i++) { 
-                $this->waS->setWaIdToConmutador($this->contacts['waIds'][$i]);
+                $this->waS->setWaIdToConmutador($this->data['waIds'][$i]);
                 $this->waS->sendPreTemplate( $this->basicTemplate() );
             }
         }
