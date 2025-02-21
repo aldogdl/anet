@@ -118,7 +118,7 @@ class PostController extends AbstractController
     if(count($contacts) == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
-      $track = new TrackProv($push, $data, $contacts);
+      $track = new TrackProv($push, $waS, $data, $contacts);
       $result = $track->exe(
         $this->getParameter('fbSended'), $this->getParameter('fbFails')
       );

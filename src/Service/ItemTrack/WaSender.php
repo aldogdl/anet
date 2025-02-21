@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 class WaSender
 {
     private $client;
-    private ?ConmDto $conm;
+    public ?ConmDto $conm;
     private array $body;
     private String $type;
     private $anetToken;
@@ -38,6 +38,27 @@ class WaSender
         $this->context  = '';
         $this->anetToken= base64_encode($container->get('getAnToken'));
         $this->sseNotRouteActive= $container->get('sseNotRouteActive');
+    }
+
+    /** */
+    public function initConmutador(): void
+    {
+        try {
+            $this->conm = new ConmDto($this->fSys->getConmuta());
+        } catch (\Throwable $th) {
+            $this->conm = null;
+        }
+    }
+
+    /** */
+    public function setWaIdToConmutador(String $waId): bool
+    {
+        try {
+            $this->conm->setWaId($waId);
+        } catch (\Throwable $th) {
+            return false;
+        }
+        return true;
     }
 
     /** */

@@ -25,13 +25,26 @@ class ConmDto
     }
 
     /** */
+    public function waIdToPhone()
+    {
+        if(mb_strpos($this->waId, '521') !== false) {
+            $this->to = str_replace('521', '52', $this->waId);
+        }
+    }
+
+    /** */
+    public function setWaId(String $waid)
+    {
+        $this->waId = $waid;
+        $this->waIdToPhone();
+    }
+
+    /** */
     public function setMetaData(WaMsgDto $waMsg)
     {
         $this->waId = $waMsg->from;
         $this->context = $waMsg->context;
-        if(mb_strpos($waMsg->from, '521') !== false) {
-            $this->to = str_replace('521', '52', $waMsg->from);
-        }
+        $this->waIdToPhone();
     }
 
     /** */

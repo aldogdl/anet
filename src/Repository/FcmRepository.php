@@ -151,6 +151,7 @@ class FcmRepository extends ServiceEntityRepository
     {
         // Buscamos contactos para el envio de notificaciones
         $filtros = [];
+        $waIds = [];
         if($itemPush['type'] == 'solicita') {
 
             // Buscar todos los cotizadores diferentes al dueño del ITEM
@@ -176,6 +177,7 @@ class FcmRepository extends ServiceEntityRepository
                         if(in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
                             if(!in_array($soloEstasVendo[$i]->getTkfcm(), $filtros)) {
                                 $filtros[] = $soloEstasVendo[$i]->getTkfcm();
+                                $waIds[] = $soloEstasVendo[$i]->getWaid();
                             }
                         }
                     }
@@ -196,6 +198,7 @@ class FcmRepository extends ServiceEntityRepository
                     if($add) {
                         if(!in_array($noTengoLaMrk[$i]->getTkfcm(), $filtros)) {
                             $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
+                            $waIds[] = $soloEstasVendo[$i]->getWaid();
                         }
                     }
                 }
@@ -233,11 +236,19 @@ class FcmRepository extends ServiceEntityRepository
 
             // Ya habiendo filtrado todos los registros con el mismo slug
             // lo que hacemos es extraer todos sus tokens
-            $mismos = array_map(function($obj) { return $obj->getTkfcm(); }, $mismos);
-            return ['slug' => $slug, 'tokens' => array_unique($mismos)];
+            $filtros = array_map(function($obj) { return $obj->getTkfcm(); }, $mismos);
+            $waIds = array_map(function($obj) { return $obj->getWaId(); }, $mismos);
+            return [
+                'slug'   => $slug,
+                'tokens' => array_unique($filtros),
+                'waIds'  => array_unique($waIds),
+            ];
         }
 
-        return $filtros;
+        return [
+            'tokens' => array_unique($filtros),
+            'waIds'  => array_unique($waIds),
+        ];
     }
 
 }
