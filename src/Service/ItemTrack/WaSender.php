@@ -101,7 +101,8 @@ class WaSender
         $this->type = $body['type'];
         $this->body = $body[$this->type];
         $this->wrapBody();
-        return $this->sendToWa();
+        file_put_contents('wa_pruebita_2.json', json_encode($this->body));
+        // return $this->sendToWa();
     }
 
     /** 

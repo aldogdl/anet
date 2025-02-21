@@ -152,6 +152,7 @@ class FcmRepository extends ServiceEntityRepository
         // Buscamos contactos para el envio de notificaciones
         $filtros = [];
         $waIds = [];
+        $slug = '';
         if($itemPush['type'] == 'solicita') {
 
             // Buscar todos los cotizadores diferentes al dueño del ITEM
@@ -225,7 +226,7 @@ class FcmRepository extends ServiceEntityRepository
             $mismos = array_filter($contacts, function($contac) use ($waId) {
                 return $contac->getWaId() == $waId;
             });
-            $slug = '';
+            
             if(count($mismos) > 0) {
                 $slug = $mismos[0]->getSlug();
             }
@@ -238,17 +239,19 @@ class FcmRepository extends ServiceEntityRepository
             // lo que hacemos es extraer todos sus tokens
             $filtros = array_map(function($obj) { return $obj->getTkfcm(); }, $mismos);
             $waIds = array_map(function($obj) { return $obj->getWaId(); }, $mismos);
-            return [
-                'slug'   => $slug,
-                'tokens' => array_unique($filtros),
-                'waIds'  => array_unique($waIds),
-            ];
         }
 
-        return [
+
+        $result = [
             'tokens' => array_unique($filtros),
             'waIds'  => array_unique($waIds),
         ];
+        if($slug != '') {
+            $result['slug'] = $slug;
+        }
+        $result['tokens'] = array_values($result['tokens']);
+        $result['waIds'] = array_values($result['waIds']);
+        return $result;
     }
 
 }
