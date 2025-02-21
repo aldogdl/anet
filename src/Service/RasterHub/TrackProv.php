@@ -46,15 +46,15 @@ class TrackProv {
         }else{
             
             $result = $this->push->sendMultiple($this->data);
-            if(array_key_exists('idwap', $this->data)) {
-                $this->sendToWhatsapp();
-            }
             if(array_key_exists('fails', $result)) {
                 $filename = $folderFails .
-                    $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
-                    $this->data['fails'] = $result['fails'];
+                $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
+                $this->data['fails'] = $result['fails'];
                 file_put_contents($filename, json_encode($this->data));
                 unset($result['fails']);
+            }
+            if(array_key_exists('idwap', $this->data)) {
+                $this->sendToWhatsapp();
             }
         }
 
