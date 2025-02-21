@@ -198,7 +198,7 @@ class FcmRepository extends ServiceEntityRepository
                     if($add) {
                         if(!in_array($noTengoLaMrk[$i]->getTkfcm(), $filtros)) {
                             $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
-                            $waIds[] = $soloEstasVendo[$i]->getWaid();
+                            $waIds[] = $noTengoLaMrk[$i]->getWaid();
                         }
                     }
                 }
