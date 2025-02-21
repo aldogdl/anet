@@ -44,13 +44,14 @@ class TrackProv {
             $this->data['waIds'] = $this->contacts['waIds'];
         }
         $this->contacts = [];
+        file_put_contents('wa_pruebita.json', json_encode($this->data));
 
         $this->data['cant'] = count($this->data['tokens']);
         if($this->data['cant'] == 0) {
             $result = ['abort' => true, 'msg' => 'X Sin contactos'];
         }else{
             
-            $result = $this->push->sendMultiple($this->data);
+            // $result = $this->push->sendMultiple($this->data);
             if(array_key_exists('fails', $result)) {
                 $filename = $folderFails .
                 $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
@@ -75,7 +76,7 @@ class TrackProv {
         }
         $this->waS->initConmutador();
         if($this->waS->conm != null) {
-            for ($i=0; $i < $rota; $i++) { 
+            for ($i=0; $i < $rota; $i++) {
                 $this->waS->setWaIdToConmutador($this->data['waIds'][$i]);
                 $this->waS->sendPreTemplate( $this->basicTemplate() );
             }
