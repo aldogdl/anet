@@ -71,7 +71,7 @@ class TrackProv {
     }
     file_put_contents('wa_link.txt', $link);
     $this->waS->setWaIdToConmutador($msg->from);
-    file_put_contents('wa_msg_.txt', json_encode($this->templateTrackLink($link, $file['body'])));
+    file_put_contents('wa_msg_.json', json_encode($this->templateTrackLink($link, $file['body'])));
     $res = $this->waS->sendPreTemplate( $this->templateTrackLink($link, $file['body']) );
     file_put_contents('wa_link_'.$res.'.txt', $link);
     return;

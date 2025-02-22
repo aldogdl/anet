@@ -101,7 +101,6 @@ class WaSender
         $this->type = $body['type'];
         $this->body = $body[$this->type];
         $this->wrapBody();
-        file_put_contents('wa_pruebita_2.json', json_encode($this->body));
         return $this->sendToWa();
     }
 
@@ -200,6 +199,7 @@ class WaSender
         }
 
         if($code > 200) {
+            file_put_contents('wa_error_'.$this->conm->to.'.json', json_encode($this->errFromWa));
             $this->sendReporErrorBySendToWa($url, $code, $this->errFromWa, $this->body);
         }
 
@@ -387,7 +387,7 @@ class WaSender
         // [NOTA] aun asi se agregan por si los anteriores no responden
         $tunnelsAlt = [];
         $morePriory = [];
-        
+
         for ($r=0; $r < $rota; $r++) {
 
             // Tendrian que indicar que estan activos para tomarce como opcion
