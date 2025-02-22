@@ -63,7 +63,7 @@ class TrackProv {
         file_put_contents($filename, json_encode($this->data));
         unset($result['fails']);
       }
-      
+
       if(array_key_exists('idwap', $this->data)) {
         $this->sendToWhatsapp($idSendFile);
       }
@@ -82,9 +82,11 @@ class TrackProv {
     
     $this->waS->initConmutador();
     if($this->waS->conm != null) {
+      file_put_contents( 'wa_con_null.txt', '' );
       return;
     }
-
+    file_put_contents( 'wa_con_pasa.txt', '' );
+    
     for ($i=0; $i < $rota; $i++) {
       // Creamos un archivo que indica al sistema no procesar estatus
       file_put_contents(
@@ -93,6 +95,7 @@ class TrackProv {
       );
       $this->waS->setWaIdToConmutador($this->data['waIds'][$i]);
       $isOk = $this->waS->sendPreTemplate( $this->basicTemplateTrack($idFile) );
+      file_put_contents( 'wa_envi_'.$isOk.'.txt', '' );
     }
     
   }
