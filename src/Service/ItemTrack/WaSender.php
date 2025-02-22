@@ -386,7 +386,8 @@ class WaSender
         // Los tuneles que ya fueron usados
         // [NOTA] aun asi se agregan por si los anteriores no responden
         $tunnelsAlt = [];
-
+        $morePriory = [];
+        
         for ($r=0; $r < $rota; $r++) {
 
             // Tendrian que indicar que estan activos para tomarce como opcion
@@ -405,7 +406,6 @@ class WaSender
             ];
 
             $isPriory = false;
-            $morePriory = [];
             // Recorremos las url prioritarias para ver si la ruta a guardar lo es.
             for ($i=0; $i < $cantPriory; $i++) {
                 if(mb_strpos($tunel['url'], $priorys[$i]) !== false) {
