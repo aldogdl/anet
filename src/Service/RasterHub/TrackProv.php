@@ -60,9 +60,9 @@ class TrackProv {
 
     $link = '';
     if($msg->subEvento == 'cotDirect') {
-      $link = 'https://wa.me/'.$$waIdEmisor."?text=".urlencode($text);
+      $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
     }else{
-      $link = 'https://wa.me/'.$$waIdEmisor."?text=".urlencode($text);
+      $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
     }
     $this->waS->setWaIdToConmutador($msg->from);
     $this->waS->sendPreTemplate( $this->templateTrackLink($link, $file['body']) );
