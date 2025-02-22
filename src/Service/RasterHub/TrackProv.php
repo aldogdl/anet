@@ -29,40 +29,6 @@ class TrackProv {
   }
 
   /** */
-  public function exeResponse(WaMsgDto $msgDto, String $folderToBackup)
-  {
-    $this->waS->initConmutador();
-    if($this->waS->conm == null) {
-      return;
-    }
-    $this->waS->setWaIdToConmutador($msgDto->from);
-    
-    $content = [];
-    $filename = $folderToBackup .$msgDto->idDbSr. '.json';
-    try {
-      $content = json_decode(file_get_contents($filename), true);
-    } catch (\Throwable $th) {
-      // TODO Enviar mensaje al usuario.
-      return;
-    }
-
-    $link = '';
-    if($msgDto->subEvento == 'cotDirect') {
-
-      $url = 'https://wa.me/'.$this->data['body'].'?text=';
-      $terminoDeBusqueda = "Con respecto a tu Solicitud de Cotización, ".
-      "sobre la pieza: *".$content['body']."*\n\n";
-
-    }elseif($msgDto->subEvento == 'cotForm') {
-      $url = 'https://autoparnet.com/form/';
-      $terminoDeBusqueda = "algo";
-    }
-
-    $link = $url . urlencode($terminoDeBusqueda);
-    $isOk = $this->waS->sendPreTemplate( $this->templateTrackLink($link, $content) );
-  }
-
-  /** */
   public function exe(String $folderToBackup, String $folderFails) : array 
   {    
     $result = ['abort' => true, 'msg' => ''];
@@ -82,6 +48,7 @@ class TrackProv {
       $this->data['waIds'] = $this->contacts['waIds'];
     }
     $this->contacts = [];
+    file_put_contents('pruebita.json', json_encode($this->data));
 
     $this->data['cant'] = count($this->data['tokens']);
     if($this->data['cant'] == 0) {
@@ -96,6 +63,7 @@ class TrackProv {
         file_put_contents($filename, json_encode($this->data));
         unset($result['fails']);
       }
+      
       if(array_key_exists('idwap', $this->data)) {
         $this->sendToWhatsapp($idSendFile);
       }
