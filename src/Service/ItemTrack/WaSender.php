@@ -517,9 +517,10 @@ class WaSender
         "*Razón*: ".$error."\n".
         "*Path*:\n\n".
         $url."\n\n";
-        
-        $this->conm = new ConmDto($this->fSys->getConmuta());
-        $this->sendText($msg, $this->reporTo);
+        // TODO
+        // Esto esta detenido mientras se desarrolla
+        // $this->conm = new ConmDto($this->fSys->getConmuta());
+        // $this->sendText($msg, $this->reporTo);
     }
 
 }
