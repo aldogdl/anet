@@ -81,11 +81,9 @@ class TrackProv {
     }
     
     $this->waS->initConmutador();
-    if($this->waS->conm != null) {
-      file_put_contents( 'wa_con_null.txt', '' );
+    if($this->waS->conm == null) {
       return;
     }
-    file_put_contents( 'wa_con_pasa.txt', '' );
     
     for ($i=0; $i < $rota; $i++) {
       // Creamos un archivo que indica al sistema no procesar estatus
