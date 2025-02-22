@@ -47,7 +47,6 @@ class WaSender
         try {
             $this->conm = new ConmDto($this->fSys->getConmuta());
         } catch (\Throwable $th) {
-            file_put_contents( 'wa_getConm_err.txt', $th->getMessage() );
             $this->conm = null;
         }
     }

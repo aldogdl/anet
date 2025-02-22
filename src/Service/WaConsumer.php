@@ -113,7 +113,9 @@ class WaConsumer
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::COTPP) {
             $pp = new TrackProv(null, $this->waSender, [], []);
-
+            $pp->sentResponseByAction(
+                $this->fsys->getFolderTo('fbSended')
+            );
         }
 
         // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario

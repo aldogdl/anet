@@ -28,6 +28,47 @@ class TrackProv {
     $this->waS = $waS;
   }
 
+  /** 
+   * Metodo para enviarle al usuario el mensaje de link cuando quiere cotizar
+   * una pieza, esta accion fue por presionar un boton entre [ Directamente | Formulario ]
+   * [NOTA] El mensaje inicial fue enviado en la clase: PostController::sentNotification
+  */
+  public function sentResponseByAction(String $folderToBackup, WaMsgDto $msg) : void 
+  {
+    $this->waS->initConmutador();
+    if($this->waS->conm == null) {
+      return;
+    }
+
+    $filename = $msg->idDbSr;
+    if(!mb_strpos($filename, '::')) {
+      // TODO Mensaje al Cotizador acerca de:
+      // El obj $msg no contiene el nomnre del archivo donde estan los datos
+      // de la pieza a cotizar, la cual debe estar en: /public_html/fb_sended
+      return;
+    }
+    $file = json_decode(file_get_contents($folderToBackup.'/'.$filename.'.json'), true);
+    
+    if(!array_key_exists('ownWaId', $file)) {
+      // TODO No existe el campo del waId del Emisor
+      return;
+    }
+    $waIdEmisor = $this->waS->conm->waIdToPhone($file['ownWaId']);
+    $text = "Hola qué tal!!.\n".
+    "Con respecto a la solicitud de Cotización para\n".
+    "*".$file['body']."*\n\n";
+
+    $link = '';
+    if($msg->subEvento == 'cotDirect') {
+      $link = 'https://wa.me/'.$$waIdEmisor."?text=".urlencode($text);
+    }else{
+      $link = 'https://wa.me/'.$$waIdEmisor."?text=".urlencode($text);
+    }
+    $this->waS->setWaIdToConmutador($msg->from);
+    $this->waS->sendPreTemplate( $this->templateTrackLink($link, $file['body']) );
+    return;
+  }
+
   /** */
   public function exe(String $folderToBackup, String $folderFails) : array 
   {    
@@ -65,7 +106,11 @@ class TrackProv {
       }
 
       if(array_key_exists('idwap', $this->data)) {
+        // Si contiene el id de la imagen que se envio a whatsapp
+        // lo enviamos por ese medio
         $this->sendToWhatsapp($idSendFile);
+      }else{
+        // Si no se logró enviar la imagen a whatsapp se manda via push
       }
     }
 
@@ -92,8 +137,7 @@ class TrackProv {
         round(microtime(true) * 1000)
       );
       $this->waS->setWaIdToConmutador($this->data['waIds'][$i]);
-      $isOk = $this->waS->sendPreTemplate( $this->basicTemplateTrack($idFile) );
-      file_put_contents( 'wa_envi_'.$isOk.'.txt', '' );
+      $this->waS->sendPreTemplate( $this->basicTemplateTrack($idFile) );
     }
     
   }
@@ -121,14 +165,14 @@ class TrackProv {
               "type" => "reply",
               "reply" => [
                 "id" => 'cotDirect_'. $idFile,
-                "title" => "Directamente"
+                "title" => "[ x ] Directamente"
               ]
             ],
             [
               "type" => "reply",
               "reply" => [
                 "id" => 'cotForm_'. $idFile,
-                "title" => "Formulario"
+                "title" => "[ √ ] Formulario"
               ]
             ]
           ]
@@ -138,7 +182,7 @@ class TrackProv {
   }
 
   /** */
-  private function templateTrackLink(String $link, array $data): array {
+  private function templateTrackLink(String $link, String $pieza): array {
 
     return [
       "type" => "interactive",
@@ -151,7 +195,7 @@ class TrackProv {
         "body" => [
           "text" => "Presiona el Botón de la parte inferior " . 
           "para continuar cotizando la pieza \n" .
-          $data['body'] . "\n"
+          $pieza . "\n"
         ],
         "footer" => [
           "text" => "Un servicio más de RasterFy"
