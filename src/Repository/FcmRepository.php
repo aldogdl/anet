@@ -22,6 +22,54 @@ class FcmRepository extends ServiceEntityRepository
     }
 
     /**
+     * Este método actualiza la BD para indicar que un usuario acaba de
+     * iniciar sesion para whatsapp
+     * 
+     * @param String El identificador unico del usuario
+     */
+    public function setLogged(String $waId): array
+    {
+        $dql = 'SELECT f FROM '. Fcm::class .' f '.
+        'WHERE f.waId = :waId';
+        
+        $edit = false;
+        $fbms = $this->_em->createQuery($dql)->setParameter('waId', $waId)->execute();
+        $result = [];
+        $existe = [];
+        if($fbms) {
+            $rota = count($fbms);
+            for ($i=0; $i < $rota; $i++) {
+                if($fbms[$i]->getWaId() == $waId) {
+                    $edit = true;
+                    $token = $fbms[$i]->getTkfcm();
+                    if(!in_array($token, $existe)) {
+                        $result[] = ['slug' => $fbms[$i]->getSlug(), 'token' => $token];
+                    }
+                    $existe[] = $fbms[$i]->getTkfcm();
+                    $fbms[$i]->setIsLogged(true);
+                    $this->_em->persist($fbms[$i]);
+                }
+            }
+            if($edit) {
+                $this->_em->flush();
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Este método cierra la sesion de whatsapp a todos los registros
+     * 
+     * @param String El identificador unico del usuario
+     */
+    public function closeSessionWaAlls(): void
+    {
+        $dql = 'UPDATE '. Fcm::class .' f '.
+        'SET f.isLogged = false ';
+        $this->_em->createQuery($dql)->execute();
+    }
+
+    /**
      * Este método recupera la entidad Fcm basada en el ID de WhatsApp (waId) proporcionado.
      * 
      * @param string $waId El ID de WhatsApp para buscar.

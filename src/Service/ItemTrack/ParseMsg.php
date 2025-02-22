@@ -120,22 +120,22 @@ class ParseMsg {
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower($txt);
 
-            if(mb_strpos($txt, '/anet_') !== false) {
-                $txt = str_replace('/anet_', 'anet ', $txt);
+            // Estos son comandos realizados desde Whatsapp
+            if(mb_strpos($txt, '/raster_') !== false) {
+                $txt = str_replace('/raster_', '...', $txt);
             }
             
-            if(mb_strpos($txt, 'anet') !== false) {
-
+            if(mb_strpos($txt, '...') !== false) {
+                
                 $tipo = TypesWaMsgs::COMMAND;
-                $partes = explode('anet', $txt);
-                if(count($partes) > 1) {
-                    $subEvent = trim($partes[0]);
-                    $txt = trim($partes[1]);
-                }
-            }else{
-                if($this->isLoginMsg($txt)) {
+                $txt = str_replace('...', '', $txt);
+                $txt = mb_strtolower(trim($txt));
+                
+                if($txt == 'login') {
                     $tipo = TypesWaMsgs::LOGIN;
                     $subEvent = 'iniLogin';
+                } elseif($txt == '??') {
+                    $subEvent = trim($txt);
                 }
             }
         }
@@ -298,29 +298,6 @@ class ParseMsg {
             $cat,
             'stt'
         );
-    }
-
-    /** */
-    public function isLoginMsg(String $txtMsg): bool
-    {
-        $palClas = [];
-        if(mb_strpos($txtMsg, '_') !== false) {
-            $partes = explode('_', $txtMsg);
-        }else{
-            $partes = explode(' ', $txtMsg);
-        }
-
-        $rota = count($partes);
-        for ($i=0; $i < $rota; $i++) {
-            
-            $search = trim($partes[$i]);
-            if(in_array($search, $this->tokenLogin)) {
-                $palClas[] = $search;
-            }
-        }
-
-        $res = (count($palClas) * 100) / count($this->tokenLogin);
-        return ($res > 70) ? true : false;
     }
 
 }

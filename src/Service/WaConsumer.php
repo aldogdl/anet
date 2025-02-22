@@ -4,7 +4,8 @@ namespace App\Service;
 
 use App\Enums\TypesWaMsgs;
 
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
+use App\Service\Pushes;
 use App\Service\ItemTrack\HandlerQuote;
 use App\Service\ItemTrack\HandlerCMD;
 use App\Service\ItemTrack\HcFinisherCot;
@@ -14,19 +15,24 @@ use App\Service\ItemTrack\WaBtnNtgX;
 use App\Service\ItemTrack\WaSender;
 use App\Service\ItemTrack\WaInitSess;
 use App\Service\RasterHub\TrackProv;
+use App\Repository\FcmRepository;
 
 class WaConsumer
 {
     private WaSender $waSender;
-    private Fsys $fsys;
+    private MyFsys $fsys;
+    private Pushes $push;
+    private FcmRepository $fcmEm;
 
     /** 
      * Analizamos si el mensaje es parte de una cotizacion
     */
-    public function __construct(Fsys $sysFile, WaSender $waS)
+    public function __construct(FcmRepository $fbm, MyFsys $fSys, WaSender $waS, Pushes $push)
     {
-        $this->fsys = $sysFile;
+        $this->fsys = $fSys;
+        $this->fcmEm = $fbm;
         $this->waSender = $waS;
+        $this->push = $push;
     }
 
     /** */
@@ -87,7 +93,7 @@ class WaConsumer
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
 
-            $clase = new WaInitSess($this->fsys, $this->waSender, $obj);
+            $clase = new WaInitSess($this->fcmEm, $this->fsys, $this->waSender, $this->push, $obj);
             $clase->exe();
             return;
 
@@ -107,7 +113,7 @@ class WaConsumer
             return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::COTPP) {
             $pp = new TrackProv(null, $this->waSender, [], []);
-            
+
         }
 
         // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario

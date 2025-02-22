@@ -2,16 +2,16 @@
 
 namespace App\Service\ItemTrack;
 
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
 
 class ResetCot
 {
     private String $idDbSr;
     private String $waIdCot;
-    private Fsys $fSys;
+    private MyFsys $fSys;
 
     /** */
-    public function __construct(Fsys $fSys, String $idDbSr, String $waIdCot)
+    public function __construct(MyFsys $fSys, String $idDbSr, String $waIdCot)
     {
         $this->idDbSr = $idDbSr;
         $this->waIdCot = $waIdCot;

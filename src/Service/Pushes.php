@@ -33,6 +33,25 @@ class Pushes
     }
 
     /** 
+     * Enviamos un push al contacto que inicio sesion en whatsapp
+     * @param array $push
+     * @param String $timeInit
+    */
+    public function sendPushInitLogin(array $push, String $timeInit): void
+    {
+        $notification = Notification::create(
+            '🎟️ Inicio de Sesión',
+            'Sistema listo para envio de Oportunidades de Venta',
+            'https://autoparnet.com/ic_launcher.png'
+        );
+        $payload = ['time' => $timeInit, 'type' => 'initLogin'];
+        $rota = count($push);
+        for ($i=0; $i < $rota; $i++) { 
+            $result = $this->sendTo($push[$i]['token'], $notification, $payload);
+        }
+    }
+
+    /** 
      * Enviamos los push a multiples contactos
      * @param array $contacts
     */

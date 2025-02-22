@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\ItemTrack;
+namespace App\Service;
 
 use Symfony\Component\Finder\Finder;
 
@@ -10,17 +10,43 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use App\Dtos\WaMsgDto;
 
-class Fsys {
-
+class MyFsys
+{
     private Filesystem $filesystem;
     private ParameterBagInterface $params;
 
-    public function __construct(ParameterBagInterface $container)
+    public function __construct(ParameterBagInterface $contenedor)
     {
-        $this->params = $container;
+        $this->params = $contenedor;
         $this->filesystem = new Filesystem();
     }
     
+    /** */
+    public function updateFechaLoginTo(String $slug, String $waId): String
+    {
+        $filename = $slug . '.json';
+        $map = $this->getContent('dtaCtc', $filename);
+        $result = '';
+        if(array_key_exists('colabs', $map)) {
+            $colabs = $map['colabs'];
+            $has = array_search($waId, array_column($colabs, 'waId'));
+            if($has !== false) {
+                
+                $hoy = new \DateTime('now');
+                $result = $hoy->format('Y-m-d\TH:i:s.v');
+                $colabs[$has]['login'] = $result;
+
+                $hoy = $hoy->add(new \DateInterval('PT23H55M'));
+                $colabs[$has]['kduk'] = $hoy->format('Y-m-d\TH:i:s.v');
+                $colabs[$has]['stt'] = 1;
+
+                $map['colabs'] = $colabs;
+                $this->setContent('dtaCtc', $filename, $map);
+            }
+        }
+        return $result;
+    }
+
     /** */
     public function setStopStt(String $waIdCot): void
     {

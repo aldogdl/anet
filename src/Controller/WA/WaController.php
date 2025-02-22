@@ -16,7 +16,6 @@ class WaController extends AbstractController
     #[Route('wa/wh/{test}', methods: ['GET', 'POST'])]
     public function verifyWa(Request $req, WaConsumer $consumer, String $test = ''): Response
     {
-
         if($req->getMethod() == 'GET') {
 
             $verify = $req->query->get('hub_verify_token');

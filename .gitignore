@@ -37,6 +37,8 @@ public_html/error_log
 public_html/error.log
 public_html/*.json
 public_html/htacces.zip
+public_html/.htacces
+public_html/.htacces.back
 public_html/.well-known/
 public_html/bundles/
 public_html/fb_sended/

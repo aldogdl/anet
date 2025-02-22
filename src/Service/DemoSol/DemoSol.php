@@ -3,13 +3,13 @@
 namespace App\Service\DemoSol;
 
 use App\Dtos\WaMsgDto;
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
 
 class DemoSol {
 
-    private Fsys $fSys;
+    private MyFsys $fSys;
 
-    public function __construct(Fsys $fsys)
+    public function __construct(MyFsys $fsys)
     {
         $this->fSys = $fsys;
     }
@@ -51,7 +51,7 @@ class DemoSol {
         $demojson = $this->fSys->getContent('demos', 'demo_1.json');
         return [
             "waId"    => $waMsg->from,
-            "idItem"  => $waMsg->idItem,
+            "idItem"  => $waMsg->idDbSr,
             "ownSlug" => $demojson['own']['slug'],
             "wamid"   => $waMsg->context,
             "sended"  => (integer) microtime(true) * 1000,

@@ -51,8 +51,4 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
-    app.service.consumer:
-        class: App\Service\ItemTrack\Consumer
-        arguments:
-            - '@app.repository.ItemsRepository'
 

@@ -4,7 +4,7 @@ namespace App\Service\ItemTrack;
 
 use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
 use App\Service\ItemTrack\WaSender;
 use App\Service\ItemTrack\HcFotos;
 use App\Service\ItemTrack\HcDetalles;
@@ -14,12 +14,12 @@ use App\Service\ItemTrack\HcFinisherCot;
 class HandlerQuote
 {
     public WaMsgDto $waMsg;
-    public Fsys $fSys;
+    public MyFsys $fSys;
     public WaSender $waSender;
     public String $fileTmp = '';
 
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg)
+    public function __construct(MyFsys $fsys, WaSender $waS, WaMsgDto $msg)
     {
         $this->waMsg     = $msg;
         $this->fSys      = $fsys;

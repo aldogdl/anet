@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+use App\Service\MyFsys;
 use App\Service\Pushes;
 use App\Service\SecurityBasic;
 
@@ -54,19 +55,18 @@ class GetController extends AbstractController
 
     return $this->json($result);
 	}
-  
+
   /** 
   * Este controlador maneja laS preubas internas
   */
   #[Route('rfyform/pruebas', methods:['GET'])]
-	public function pruebasInternas(FcmRepository $fcmEm, Pushes $fcmSend): Response
+	public function pruebasInternas(FcmRepository $fcmEm, Pushes $fcmSend, MyFsys $fsys): Response
 	{
     $result = ['ok' => 'Si funk!!'];
-    // $result = $fcmEm->getContactsForSend([
-    //   "srcWaId" => "demo",
-    //   "type" => "publica"
-    // ]);
+    // $result = $fcmEm->setLogged('5213316195698');
+    // $fcmEm->closeSessionWaAlls();
+    $result = $fsys->updateFechaLoginTo('rasterfy', '5213316195698');
     return $this->json($result);
   }
-  
+
 }

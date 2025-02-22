@@ -4,14 +4,14 @@ namespace App\Service\ItemTrack;
 
 use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
 use App\Service\ItemTrack\WaSender;
 use App\Service\ItemTrack\WaInitSess;
 use App\Service\DemoSol\DemoSol;
 
 class HandlerCMD
 {
-    private Fsys $fSys;
+    private MyFsys $fSys;
     private WaSender $waSender;
     private WaMsgDto $waMsg;
     private array $cmds = [
@@ -34,7 +34,7 @@ class HandlerCMD
     ];
 
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg)
+    public function __construct(MyFsys $fsys, WaSender $waS, WaMsgDto $msg)
     {
         $this->fSys = $fsys;
         $this->waSender = $waS;
@@ -50,7 +50,7 @@ class HandlerCMD
 
             $this->waMsg->subEvento = 'iniLogin';
             $this->waMsg->tipoMsg = TypesWaMsgs::LOGIN;
-            $clase = new WaInitSess($this->fSys, $this->waSender, $this->waMsg);
+            $clase = new WaInitSess(null, $this->fSys, $this->waSender, $this->waMsg);
             $clase->exe();
             return;
 

@@ -4,19 +4,19 @@ namespace App\Service\ItemTrack;
 
 use App\Dtos\WaMsgDto;
 use App\Enums\TypesWaMsgs;
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
 use App\Service\ItemTrack\WaSender;
 
 class HcCosto
 {
-    private Fsys $fSys;
+    private MyFsys $fSys;
     private WaSender $waSender;
     private WaMsgDto $waMsg;
     private array $item;
     private String $txtValid = '';
 
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg, array $theItem)
+    public function __construct(MyFsys $fsys, WaSender $waS, WaMsgDto $msg, array $theItem)
     {
         $this->fSys     = $fsys;
         $this->waSender = $waS;

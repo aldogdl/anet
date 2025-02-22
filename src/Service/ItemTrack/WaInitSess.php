@@ -2,26 +2,34 @@
 
 namespace App\Service\ItemTrack;
 
+use App\Service\Pushes;
 use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
+use App\Repository\FcmRepository;
 
 class WaInitSess
 {
     public String $hasErr = '';
-
-    private WaMsgDto $waMsg;
-    private Fsys $fSys;
-    private WaSender $waSender;
     private String $fileTmp = '';
 
+    private WaMsgDto $waMsg;
+    private MyFsys $fSys;
+    private WaSender $waSender;
+    private Pushes $push;
+    private FcmRepository $fcmEm;
+    
     /** */
-    public function __construct(Fsys $fsys, WaSender $waS, WaMsgDto $msg)
+    public function __construct(
+        FcmRepository $fbm, MyFsys $fsys, WaSender $waS, Pushes $push, WaMsgDto $msg
+    )
     {
-        $this->waMsg     = $msg;
-        $this->fSys      = $fsys;
-        $this->waSender  = $waS;
-        $this->fileTmp   = $this->waMsg->from.'_'.$this->waMsg->subEvento.'.json';
+        $this->waMsg   = $msg;
+        $this->fSys    = $fsys;
+        $this->waSender= $waS;
+        $this->fcmEm   = $fbm;
+        $this->push    = $push;
+        $this->fileTmp = $this->waMsg->from.'_'.$this->waMsg->subEvento.'.json';
     }
 
     /** 
@@ -51,10 +59,22 @@ class WaInitSess
         } catch (\Throwable $th) {
             $date = new \DateTime('now');
         }
+
+        // Guardamos la marca de login en la BD de FB
+        $slugFrom = $this->fcmEm->setLogged($this->waMsg->from);
+        if(count($slugFrom) > 0) {
+            // Guardamos la marca de login en el archivo del expediente del usuario
+            $time = $this->fSys->updateFechaLoginTo($slugFrom[0]['slug'], $this->waMsg->from);
+            if($time != '') {
+                // Enviamos una notificacion push para que reaccione la app cliente
+                $this->push->sendPushInitLogin($slugFrom, $time);
+            }
+        }
+        
         $code = $this->waSender->sendText(
             "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana a las " . $date->format('h:i:s a')
         );
-        
+
         if($code >= 200 && $code <= 300) {
             
             $headers = $this->waMsg->toInit();

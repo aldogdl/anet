@@ -3,11 +3,11 @@
 namespace App\Service\ItemTrack;
 
 use App\Dtos\WaMsgDto;
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
 
 class BuilderTemplates {
 
-    private Fsys $fSys;
+    private MyFsys $fSys;
     private WaMsgDto $waMsg;
     private $opciones = array(
         array(
@@ -52,7 +52,7 @@ class BuilderTemplates {
         )
     );
     
-    public function __construct(Fsys $fsys, WaMsgDto $wamsg)
+    public function __construct(MyFsys $fsys, WaMsgDto $wamsg)
     {
         $this->fSys = $fsys;
         $this->waMsg = $wamsg;

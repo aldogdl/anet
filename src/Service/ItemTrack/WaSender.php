@@ -5,7 +5,7 @@ namespace App\Service\ItemTrack;
 use App\Dtos\ConmDto;
 use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
-use App\Service\ItemTrack\Fsys;
+use App\Service\MyFsys;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -21,7 +21,7 @@ class WaSender
     private bool $isTest;
     private String $reporTo = '523316195698';
 
-    public Fsys $fSys;
+    public MyFsys $fSys;
     public String $context;
     public String $wamidMsg;
     public String $errFromWa;
@@ -29,7 +29,7 @@ class WaSender
     public String $sseNotRouteActive = '';
     
     /** */
-    public function __construct(HttpClientInterface $client, ParameterBagInterface $container, Fsys $fsys)
+    public function __construct(HttpClientInterface $client, ParameterBagInterface $container, MyFsys $fsys)
     {
         $this->client   = $client;
         $this->fSys     = $fsys;
