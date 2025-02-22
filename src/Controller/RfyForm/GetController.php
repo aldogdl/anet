@@ -65,7 +65,7 @@ class GetController extends AbstractController
     $result = ['ok' => 'Si funk!!'];
     // $result = $fcmEm->setLogged('5213316195698');
     // $fcmEm->closeSessionWaAlls();
-    $result = $fsys->updateFechaLoginTo('rasterfy', '5213316195698');
+    // $result = $fsys->updateFechaLoginTo('rasterfy', '5213316195698');
     return $this->json($result);
   }
 

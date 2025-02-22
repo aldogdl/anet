@@ -44,7 +44,7 @@ class Pushes
             'Sistema listo para envio de Oportunidades de Venta',
             'https://autoparnet.com/ic_launcher.png'
         );
-        $payload = ['time' => $timeInit, 'type' => 'initLogin'];
+        $payload = ['time' => $timeInit, 'type' => 'iniLogin'];
         $rota = count($push);
         for ($i=0; $i < $rota; $i++) { 
             $result = $this->sendTo($push[$i]['token'], $notification, $payload);

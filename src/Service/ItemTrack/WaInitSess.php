@@ -49,16 +49,16 @@ class WaInitSess
         if($this->isAtendido()) {
             return;
         }
-        $this->fSys->setContent('/', $this->fileTmp, ['']);
-        
-        $this->hasErr = '';
-        $this->waSender->setConmutador($this->waMsg);
-
         try {
             $date = new \DateTime(strtotime($this->waMsg->creado));
         } catch (\Throwable $th) {
             $date = new \DateTime('now');
         }
+        $this->fSys->setContent('/', $this->fileTmp, [$date->format('Y-m-d\TH:i:s.v')]);
+        
+        $this->hasErr = '';
+        $this->waSender->setConmutador($this->waMsg);
+
 
         // Guardamos la marca de login en la BD de FB
         $slugFrom = $this->fcmEm->setLogged($this->waMsg->from);
@@ -70,7 +70,7 @@ class WaInitSess
                 $this->push->sendPushInitLogin($slugFrom, $time);
             }
         }
-        
+
         $code = $this->waSender->sendText(
             "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana a las " . $date->format('h:i:s a')
         );
