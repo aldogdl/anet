@@ -185,7 +185,8 @@ class WaSender
                     }
     
                 } catch (\Throwable $th) {
-    
+                    file_put_contents('wa_error_1'.$this->conm->to.'.json', json_encode([$th->getMessage()]));
+                    file_put_contents('wa_error_2'.$this->conm->to.'.json', json_encode([$response->getContent()]));
                     $this->errFromWa = $th->getMessage();
                     if(mb_strpos($this->errFromWa, '401') !== false) {
                         $this->errFromWa = 'Token de Whatsapp API caducado';
@@ -199,7 +200,6 @@ class WaSender
         }
 
         if($code > 200) {
-            file_put_contents('wa_error_'.$this->conm->to.'.json', json_encode($this->errFromWa));
             $this->sendReporErrorBySendToWa($url, $code, $this->errFromWa, $this->body);
         }
 
