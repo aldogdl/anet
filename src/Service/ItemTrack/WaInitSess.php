@@ -58,8 +58,7 @@ class WaInitSess
         
         $this->hasErr = '';
         $this->waSender->setConmutador($this->waMsg);
-
-
+        
         // Guardamos la marca de login en la BD de FB
         $slugFrom = $this->fcmEm->setLogged($this->waMsg->from);
         if(count($slugFrom) > 0) {
