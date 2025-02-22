@@ -54,7 +54,7 @@ class WaInitSess
         } catch (\Throwable $th) {
             $date = new \DateTime('now');
         }
-        $this->fSys->setContent('/', $this->fileTmp, [$date->format('Y-m-d\TH:i:s.v')]);
+        $this->fSys->setContent('/', $this->fileTmp, ['init' => $date->format('Y-m-d\TH:i:s.v')]);
         
         $this->hasErr = '';
         $this->waSender->setConmutador($this->waMsg);
