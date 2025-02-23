@@ -350,6 +350,31 @@ class MyFsys
     {
         $this->setContent($folder, $waId.'.json', $data);
     }
+    
+    /** 
+     * Cuando un cotizador presiona el boton de cotizar via formulario por medio
+     * de un mensaje de whatsapp guardamos un archivo con los datos del item
+     * para cuando abra la app se descarge este archivo y se hidrate el formulario
+    */
+    public function updateTokenWapi(String $token): array
+    {
+        $result = ['abort' => true, 'body' => ''];
+        $wapi = $this->getContent('tkwaconm', 'tkwaconm.json');
+        if(array_key_exists('modo', $wapi)) {
+
+            $waId[ $wapi['modo'] ]['tk'] = $token;
+            $fechaActual = new \DateTime();
+            $ahora = $fechaActual->format('Y-m-d\TH:i:s.v');
+            if(array_key_exists('dateUpdate', $waId[ $wapi['modo'] ])) {
+                $waId[ $wapi['modo'] ]['dateUpdate'] = $ahora;
+                $fechaActual->add(new \DateInterval('PT23H'));
+                $waId[ $wapi['modo'] ]['lastCheck'] = $fechaActual->format('Y-m-d\TH:i:s.v');
+            }
+            $this->setContent('tkwaconm', 'tkwaconm.json', $wapi);
+            $result = ['abort' => true, 'body' => ['time' => $ahora]];
+        }
+        return $result;
+    }
 
     /** 
      * Recuperamos los datos del item a cotizar desde la app, esto sucede

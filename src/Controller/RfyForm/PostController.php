@@ -13,6 +13,7 @@ use App\Service\SecurityBasic;
 use App\Repository\ItemsRepository;
 use App\Service\ItemTrack\WaSender;
 use App\Service\HeaderItem;
+use App\Service\MyFsys;
 use App\Service\Pushes;
 use App\Service\RasterHub\TrackProv;
 
@@ -37,6 +38,36 @@ class PostController extends AbstractController
       throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
     }
     return $content;
+  }
+
+  /** 
+   * Guardamos el token de Whats desde app
+  */
+  #[Route('rfyform/tkwapi/{key}', methods:['POST'])]
+	public function setTokenWapi(Request $req, SecurityBasic $sec, MyFsys $fsys, String $key): Response
+  {
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    $result = ['abort' => true, 'msg' => ''];
+    $data = [];
+    try {
+      $data = $this->toArray($req, 'data');
+    } catch (\Throwable $th) {
+      $data = $req->getContent();
+      if($data) {
+        $data = json_decode($data, true);
+      }else{
+        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+        return $this->json($result);
+      }
+    }
+
+    $result = $fsys->updateTokenWapi($data['token']);
+    
+    return $this->json($result);
   }
 
   /** 
@@ -165,8 +196,7 @@ class PostController extends AbstractController
   */
   #[Route('rfyform/item/{key}', methods:['POST'])]
 	public function sendProduct(
-    Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm,
-    FcmRepository $fbem, Pushes $push, String $key
+    Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm, String $key
   ): Response
 	{
 
