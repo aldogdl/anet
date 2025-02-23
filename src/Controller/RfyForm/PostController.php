@@ -51,7 +51,7 @@ class PostController extends AbstractController
       return $this->json($result);
     }
 
-    $result = ['abort' => true, 'msg' => ''];
+    $result = ['abort' => true, 'msg' => 'X Sin data'];
     $data = [];
     try {
       $data = $this->toArray($req, 'data');
@@ -64,7 +64,6 @@ class PostController extends AbstractController
         return $this->json($result);
       }
     }
-
     $result = $fsys->updateTokenWapi($data['token']);
     
     return $this->json($result);

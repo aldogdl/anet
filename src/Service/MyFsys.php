@@ -358,7 +358,7 @@ class MyFsys
     */
     public function updateTokenWapi(String $token): array
     {
-        $result = ['abort' => true, 'body' => ''];
+        $result = ['abort' => true, 'body' => 'X No se encontró archivo'];
         $wapi = $this->getContent('tkwaconm', 'tkwaconm.json');
         if(array_key_exists('modo', $wapi)) {
 
@@ -367,11 +367,11 @@ class MyFsys
             $ahora = $fechaActual->format('Y-m-d\TH:i:s.v');
             if(array_key_exists('dateUpdate', $waId[ $wapi['modo'] ])) {
                 $waId[ $wapi['modo'] ]['dateUpdate'] = $ahora;
-                $fechaActual->add(new \DateInterval('PT23H'));
+                $fechaActual = $fechaActual->add(new \DateInterval('PT23H'));
                 $waId[ $wapi['modo'] ]['lastCheck'] = $fechaActual->format('Y-m-d\TH:i:s.v');
             }
             $this->setContent('tkwaconm', 'tkwaconm.json', $wapi);
-            $result = ['abort' => true, 'body' => ['time' => $ahora]];
+            $result = ['abort' => false, 'body' => ['time' => $ahora]];
         }
         return $result;
     }
