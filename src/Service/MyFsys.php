@@ -364,16 +364,16 @@ class MyFsys
             return $result;
         }
         $wapi = json_decode($wapi, true);
-        
+
         if(array_key_exists('modo', $wapi)) {
 
-            $waId[ $wapi['modo'] ]['tk'] = $token;
+            $wapi[ $wapi['modo'] ]['tk'] = $token;
             $fechaActual = new \DateTime();
             $ahora = $fechaActual->format('Y-m-d\TH:i:s.v');
-            if(array_key_exists('dateUpdate', $waId[ $wapi['modo'] ])) {
-                $waId[ $wapi['modo'] ]['dateUpdate'] = $ahora;
+            if(array_key_exists('dateUpdate', $wapi[ $wapi['modo'] ])) {
+                $wapi[ $wapi['modo'] ]['dateUpdate'] = $ahora;
                 $fechaActual = $fechaActual->add(new \DateInterval('PT23H'));
-                $waId[ $wapi['modo'] ]['lastCheck'] = $fechaActual->format('Y-m-d\TH:i:s.v');
+                $wapi[ $wapi['modo'] ]['lastCheck'] = $fechaActual->format('Y-m-d\TH:i:s.v');
             }
             $this->setContent('tkwaconm', '', $wapi);
             $result = ['abort' => false, 'body' => ['time' => $ahora]];
