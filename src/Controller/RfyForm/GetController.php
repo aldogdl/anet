@@ -56,6 +56,21 @@ class GetController extends AbstractController
     return $this->json($result);
 	}
 
+  /**
+  * Este controlador recupera los datos del item que se pretende
+  * cotizar via formulario al haber presionado el boton de cotizar
+  * via Formulario en un mensaje de whatsapp.
+  */
+  #[Route('rfyform/has-cot/{waid}', methods:['GET'])]
+	public function hasCot(Request $req, MyFsys $fsys, String $waId): Response
+	{
+    $result = ['abort' => false, 'body' => []];
+    if($req->getMethod() == 'GET') {
+      $result = $fsys->getCotViaForm('waCotForm', $waId);
+    }
+    return $this->json($result);
+	}
+
   /** 
   * Este controlador maneja laS preubas internas
   */

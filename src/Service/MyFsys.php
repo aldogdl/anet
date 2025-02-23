@@ -342,6 +342,27 @@ class MyFsys
     }
 
     /** 
+     * Cuando un cotizador presiona el boton de cotizar via formulario por medio
+     * de un mensaje de whatsapp guardamos un archivo con los datos del item
+     * para cuando abra la app se descarge este archivo y se hidrate el formulario
+    */
+    public function setCotViaForm(String $folder, String $waId, array $data): void
+    {
+        $this->setContent($folder, $waId.'.json', $data);
+    }
+
+    /** 
+     * Recuperamos los datos del item a cotizar desde la app, esto sucede
+     * al haber presionado el btn de formulario en el msg de cotizar solicitud
+    */
+    public function getCotViaForm($folder, $waId): array
+    {
+        $content = $this->getContent($folder, $waId.'.json');
+        $this->delete($folder, $waId.'.json');
+        return ['abort' => false, 'body' => $content];
+    }
+
+    /** 
      * Uso interno para contruir el folder de destino
     */
     public function getFolderTo(String $folder): String

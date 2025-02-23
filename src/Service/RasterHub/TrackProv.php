@@ -59,21 +59,23 @@ class TrackProv {
     
     $waIdEmisor = $this->waS->conm->waIdToPhone($file['ownWaId']);
     file_put_contents('wa_no_'.$waIdEmisor.'.txt', '');
-    $text = "Hola qué tal!!.\n".
+    $text = "Hola qué tal!!.👍\n".
     "Con respecto a la solicitud de Cotización para\n".
-    "*".$file['body']."*\n\n";
+    "🚗 *".$file['body']."*\n\n";
     
     $link = '';
     if($msg->subEvento == 'cotDirect') {
       $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
     }else{
-      $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
+      $dataItem = [
+        ''
+      ];
+      $this->waS->fSys->setCotViaForm('waCotForm', $msg->from, $dataItem);
+      $link = 'https://autoparnet.com/form';
     }
-    file_put_contents('wa_link.txt', $link);
+
     $this->waS->setWaIdToConmutador($msg->from);
-    file_put_contents('wa_msg_.json', json_encode($this->templateTrackLink($link, $file['body'])));
-    $res = $this->waS->sendPreTemplate( $this->templateTrackLink($link, $file['body']) );
-    file_put_contents('wa_link_'.$res.'.txt', $link);
+    $this->waS->sendPreTemplate( $this->templateTrackLink($link, $file['body']) );
     return;
   }
 
@@ -209,12 +211,10 @@ class TrackProv {
           "text" => "Un servicio más de RasterFy"
         ],
         "action" => [
-          [
-            "name" => "cta_url",
-            "parameters" => [
-              "display_text" => "Presiona Aquí",
-              "url" => $link
-            ]
+          "name" => "cta_url",
+          "parameters" => [
+            "display_text" => "Presiona Aquí",
+            "url" => $link
           ]
         ]
       ]

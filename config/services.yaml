@@ -12,6 +12,7 @@ parameters:
     trackeds   : '%phtml%/trackeds/'
     tracking   : '%phtml%/tracking/'
     itemTrack  : '%phtml%/wa_item_track/'
+    waCotForm  : '%phtml%/wa_cot_form/'
     coolers    : '%phtml%/wa_coolers/'
     waSendmy   : '%phtml%/wa_sendmy/'
     waSttStop  : '%phtml%/wa_stt_stop/'
