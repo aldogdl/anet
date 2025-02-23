@@ -360,7 +360,11 @@ class MyFsys
     {
         $result = ['abort' => true, 'body' => 'X No se encontró archivo'];
         $wapi = $this->getContent('tkwaconm');
-        file_put_contents('pruess.json', json_encode($wapi));
+        if($wapi == '') {
+            return $result;
+        }
+        $wapi = json_decode($wapi, true);
+        
         if(array_key_exists('modo', $wapi)) {
 
             $waId[ $wapi['modo'] ]['tk'] = $token;
