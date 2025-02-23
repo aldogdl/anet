@@ -53,10 +53,10 @@ class TrackProv {
     
     if(!array_key_exists('ownWaId', $file)) {
       // TODO No existe el campo del waId del Emisor
-      file_put_contents('wa_no_waid.txt', '');
       return;
     }
     
+    file_put_contents('wa_file.json', json_encode($file));
     $waIdEmisor = $this->waS->conm->waIdToPhone($file['ownWaId']);
     file_put_contents('wa_no_'.$waIdEmisor.'.txt', '');
     $text = "Hola qué tal!!.👍\n".
