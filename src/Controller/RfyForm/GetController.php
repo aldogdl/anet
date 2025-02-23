@@ -61,7 +61,7 @@ class GetController extends AbstractController
   * cotizar via formulario al haber presionado el boton de cotizar
   * via Formulario en un mensaje de whatsapp.
   */
-  #[Route('rfyform/has-cot/{waid}', methods:['GET'])]
+  #[Route('rfyform/has-cot/{waId}', methods:['GET'])]
 	public function hasCot(Request $req, MyFsys $fsys, String $waId): Response
 	{
     $result = ['abort' => false, 'body' => []];
