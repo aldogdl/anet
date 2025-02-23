@@ -25,11 +25,18 @@ class ConmDto
     }
 
     /** */
-    public function waIdToPhone()
+    public function waIdToPhone(String $theWaId = ''): String
     {
+        if($theWaId != '') {
+            if(mb_strpos($theWaId, '521') !== false) {
+                return str_replace('521', '52', $theWaId);
+            }
+            return $theWaId;
+        }
         if(mb_strpos($this->waId, '521') !== false) {
             $this->to = str_replace('521', '52', $this->waId);
         }
+        return '';
     }
 
     /** */
