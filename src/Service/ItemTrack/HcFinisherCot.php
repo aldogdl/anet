@@ -145,7 +145,7 @@ class HcFinisherCot
             // actua en concecuencia.
             if($this->waMsg->subEvento == 'cleanCN') {
                 $body = "El sistema automatizado esta organizando ".
-                "tus oportunidades de venta 💰, *danos 5 segundos*".
+                "tus oportunidades de venta 💰, *danos 5 segundos* ".
                 "para continuar con tu solicitud. ¡Éxito!";
             }elseif($this->waMsg->subEvento == 'cleanNt') {
                 $body = "Hemos recibido tu indicación\n\n".
