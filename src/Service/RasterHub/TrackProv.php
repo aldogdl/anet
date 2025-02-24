@@ -37,13 +37,11 @@ class TrackProv {
   {
     $this->waS->initConmutador();
     if($this->waS->conm == null) {
-      file_put_contents('wa_conm_null.txt', '');
       return;
     }
     
     $filename = $msg->idDbSr;
     if(!mb_strpos($filename, '::')) {
-      file_put_contents('wa_mal formado.txt', '');
       // TODO Mensaje al Cotizador acerca de:
       // El obj $msg no contiene el nomnre del archivo donde estan los datos
       // de la pieza a cotizar, la cual debe estar en: /public_html/fb_sended
@@ -56,9 +54,8 @@ class TrackProv {
       return;
     }
     
-    file_put_contents('wa_file.json', json_encode($file));
     $waIdEmisor = $this->waS->conm->waIdToPhone($file['ownWaId']);
-    file_put_contents('wa_no_'.$waIdEmisor.'.txt', '');
+
     $text = "Hola qué tal!!.👍\n".
     "Con respecto a la solicitud de Cotización para\n".
     "🚗 *".$file['body']."*\n\n";
@@ -67,11 +64,16 @@ class TrackProv {
     if($msg->subEvento == 'cotDirect') {
       $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
     }else{
+
       $dataItem = [
-        ''
+        'ownWaId'=> $file['ownWaId'],
+        'ownSlug'=> $file['ownSlug'],
+        'idDbSr' => $file['idDbSr'],
+        'type'   => $file['type'],
       ];
-      $this->waS->fSys->setCotViaForm('waCotForm', $msg->from, $dataItem);
-      $link = 'https://autoparnet.com/form';
+
+      $this->waS->fSys->setCotViaForm('waCotForm', $msg->from.'.json', $dataItem);
+      $link = 'https://autoparnet.com/form/cotiza?waId='.$msg->from;
     }
 
     $this->waS->setWaIdToConmutador($msg->from);
@@ -99,7 +101,6 @@ class TrackProv {
       $this->data['waIds'] = $this->contacts['waIds'];
     }
     $this->contacts = [];
-    file_put_contents('pruebita.json', json_encode($this->data));
 
     $this->data['cant'] = count($this->data['tokens']);
     if($this->data['cant'] == 0) {
