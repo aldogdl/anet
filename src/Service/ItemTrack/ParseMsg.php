@@ -203,6 +203,9 @@ class ParseMsg {
             $btnAction = $this->waMsg[$this->waMsg['type']]['button_reply'];
             $partes = explode('_', $btnAction['id']);
             $subEvent = $partes[0];
+            if(mb_strpos($partes[1], 'demo') !== false) {
+                $partes = explode('-', $partes[1]);
+            }
             $idDbSr = $partes[1];
         }
 

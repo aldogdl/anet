@@ -24,7 +24,7 @@ class DemoSol {
             
             $item = new Items();
             $item = $item->fromMapItem($demojson);
-
+            $demojson = [];
             $body = $trackjson[$trackjson['type']]['body']['text'];
             $body = str_replace('{:token}', $item->buildTitle(), $body);
             $body = str_replace('{:detalles}', $item->getCondicion().'. Demostración', $body);
@@ -39,7 +39,7 @@ class DemoSol {
             $rota = count($btns);
             for ($i=0; $i < $rota; $i++) { 
                 $btns[$i][ $btns[$i]['type'] ]['id'] = str_replace(
-                    '{:uuid}', 'demo_'.$item->getId(), $btns[$i][ $btns[$i]['type'] ]['id']
+                    '{:uuid}', 'demo-'.$item->getId(), $btns[$i][ $btns[$i]['type'] ]['id']
                 );
             }
 
