@@ -206,6 +206,7 @@ class ParseMsg {
             if(mb_strpos($partes[1], 'demo') !== false) {
                 $partes = explode('-', $partes[1]);
                 $btnAction = 'demo';
+                $partes[1] = (integer) $partes[1];
             }
             $idDbSr = $partes[1];
         }

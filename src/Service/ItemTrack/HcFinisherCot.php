@@ -112,7 +112,7 @@ class HcFinisherCot
         // y tampoco se encontro en trackeds, por lo tanto el objetivo es enviar msg a comCore
         // para que limpie tambien los datos en SL en caso de inconcistencia.
         $itemFromCooler = ['idDbSr' => 0, 'cant' => 0];
-        $idDemo = (mb_strpos($this->waMsg->idDbSr, 'demo') === false) ? false : true;
+        $idDemo = (array_key_exists('demo', $this->item)) ? false : true;
         
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
             
