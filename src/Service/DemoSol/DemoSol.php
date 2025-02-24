@@ -39,7 +39,7 @@ class DemoSol {
             $rota = count($btns);
             for ($i=0; $i < $rota; $i++) { 
                 $btns[$i][ $btns[$i]['type'] ]['id'] = str_replace(
-                    '{:uuid}', 'demo_'.$item->getIdDbSr(), $btns[$i][ $btns[$i]['type'] ]['id']
+                    '{:uuid}', 'demo_'.$item->getId(), $btns[$i][ $btns[$i]['type'] ]['id']
                 );
             }
 
