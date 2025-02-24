@@ -56,7 +56,7 @@ class WaBtnCotNow
         if($this->isAtendido()) {
             return;
         }
-        $isDemo = (mb_strpos($this->waMsg->idDbSr, 'demo') === false) ? false : true;
+        $isDemo = (mb_strpos($this->waMsg->content, 'demo') === false) ? false : true;
 
         $exite = true;
         if(!$isDemo) {
