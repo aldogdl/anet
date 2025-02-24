@@ -115,7 +115,6 @@ class HcFinisherCot
         $idDemo = (array_key_exists('demo', $this->item)) ? true : false;
         
         if(mb_strpos($this->waMsg->subEvento, 'clean') === false && !$idDemo) {
-            
             // Si no es subEvento "clean" y tampoco es "DEMO"
             $this->waSender->fSys->setContent('trackeds', $this->item['idDbSr']."_".$this->item['waId'].'.json', $this->item);
             $this->waSender->fSys->delete('tracking', $this->item['waId'].'.json');
