@@ -190,6 +190,8 @@ class Items
 
         if($this->poss != '') {
             $lado = ($lado == '') ? ' '.$this->poss : ' '.$lado.' '.$this->poss;
+        }else{
+            $lado = ' '.$lado;
         }
         $anios = '';
         if(count($this->anios) > 0) {

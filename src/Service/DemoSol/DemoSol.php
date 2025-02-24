@@ -56,14 +56,14 @@ class DemoSol {
         return [
             "waId"    => $waMsg->from,
             "idItem"  => $waMsg->idDbSr,
-            "ownSlug" => $demojson['own']['slug'],
+            "ownSlug" => $demojson['ownSlug'],
             "wamid"   => $waMsg->context,
             "sended"  => (integer) microtime(true) * 1000,
             "attend"  => 0,
             "stt"     => 2,
             "current" => 'sfto',
             "next"    => 'sfto',
-            "mrk"     => $demojson['attrs']['marca'],
+            "mrk"     => $demojson['mrkId'],
             "track"   => [],
         ];
     }
