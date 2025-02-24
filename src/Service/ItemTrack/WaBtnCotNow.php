@@ -89,7 +89,7 @@ class WaBtnCotNow
                 $this->waSender->fSys->setContent('tracking', $this->waMsg->from.'.json', $baitDemo);
                 return;
             }
-            
+
             $this->waSender->fSys->putCotizando($this->waMsg);
             // Tomamos las cabeceras básicas para enviar a ComCore
             $headers = $this->waMsg->toStt(true);

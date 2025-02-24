@@ -39,7 +39,7 @@ class DemoSol {
             $rota = count($btns);
             for ($i=0; $i < $rota; $i++) { 
                 $btns[$i][ $btns[$i]['type'] ]['id'] = str_replace(
-                    '{:uuid}', 'demo-'.$to, $btns[$i][ $btns[$i]['type'] ]['id']
+                    '{:uuid}', 'demo_'.$item->getIdDbSr(), $btns[$i][ $btns[$i]['type'] ]['id']
                 );
             }
 
@@ -55,9 +55,10 @@ class DemoSol {
         $demojson = $this->fSys->getContent('waDemoCot', 'demo_1.json');
         return [
             "waId"    => $waMsg->from,
-            "idItem"  => $waMsg->idDbSr,
+            "idDbSr"  => $waMsg->idDbSr,
             "ownSlug" => $demojson['ownSlug'],
             "wamid"   => $waMsg->context,
+            "demo"    => '',
             "sended"  => (integer) microtime(true) * 1000,
             "attend"  => 0,
             "stt"     => 2,
