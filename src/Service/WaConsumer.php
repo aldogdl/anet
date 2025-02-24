@@ -111,6 +111,7 @@ class WaConsumer
             $clase = new HandlerCMD($this->fsys, $this->waSender, $obj);
             $clase->exe();
             return;
+
         }elseif ($obj->tipoMsg == TypesWaMsgs::COTPP) {
             $pp = new TrackProv(null, $this->waSender, [], []);
             $pp->sentResponseByAction( $this->fsys->getFolderTo('fbSended'), $obj );

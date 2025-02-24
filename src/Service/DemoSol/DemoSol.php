@@ -17,7 +17,7 @@ class DemoSol {
     /** */
     public function buildMsgTrackDemo(String $to): array
     {
-        $demojson = $this->fSys->getContent('demos', 'demo_1.json');
+        $demojson = $this->fSys->getContent('waDemoCot', 'demo_1.json');
         $trackjson = $this->fSys->getContent('waTemplates', '_track.json');
         if(array_key_exists('type', $trackjson)) {
 

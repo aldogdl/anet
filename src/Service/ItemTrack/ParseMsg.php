@@ -134,8 +134,8 @@ class ParseMsg {
                 if($txt == 'login') {
                     $tipo = TypesWaMsgs::LOGIN;
                     $subEvent = 'iniLogin';
-                } elseif($txt == '??') {
-                    $subEvent = trim($txt);
+                } elseif($txt == 'demo') {
+                    $subEvent = $txt;
                 }
             }
         }

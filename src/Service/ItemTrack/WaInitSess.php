@@ -21,14 +21,18 @@ class WaInitSess
     
     /** */
     public function __construct(
-        FcmRepository $fbm, MyFsys $fsys, WaSender $waS, Pushes $push, WaMsgDto $msg
+        ?FcmRepository $fbm, ?Pushes $push, MyFsys $fsys, WaSender $waS, WaMsgDto $msg
     )
     {
         $this->waMsg   = $msg;
         $this->fSys    = $fsys;
         $this->waSender= $waS;
-        $this->fcmEm   = $fbm;
-        $this->push    = $push;
+        if($fbm != null) {
+            $this->fcmEm = $fbm;
+        }
+        if($push != null) {
+            $this->push = $push;
+        }
         $this->fileTmp = $this->waMsg->from.'_'.$this->waMsg->subEvento.'.json';
     }
 

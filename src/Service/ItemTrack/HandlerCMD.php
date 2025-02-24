@@ -50,7 +50,7 @@ class HandlerCMD
 
             $this->waMsg->subEvento = 'iniLogin';
             $this->waMsg->tipoMsg = TypesWaMsgs::LOGIN;
-            $clase = new WaInitSess(null, $this->fSys, $this->waSender, $this->waMsg);
+            $clase = new WaInitSess(null, null, $this->fSys, $this->waSender, $this->waMsg);
             $clase->exe();
             return;
 
@@ -66,6 +66,7 @@ class HandlerCMD
             ];
             $this->waSender->sendMy($retornar);
             return;
+
         }elseif($this->waMsg->content == 'pausa' || $this->waMsg->content == 'pause') {
 
             $this->waSender->sendText(
@@ -79,6 +80,7 @@ class HandlerCMD
             ];
             $this->waSender->sendMy($retornar);
             return;
+
         }elseif($this->waMsg->content == 'play') {
 
             $this->waSender->sendText(
@@ -92,6 +94,7 @@ class HandlerCMD
             ];
             $this->waSender->sendMy($retornar);
             return;
+            
         }elseif(mb_strpos($this->waMsg->content, 'demo') !== false) {
             
             $demoSol = new DemoSol($this->fSys);
