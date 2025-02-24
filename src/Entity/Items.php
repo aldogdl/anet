@@ -159,7 +159,7 @@ class Items
         $this->generik   = $item['generik'];
         $this->matchs    = $item['matchs'];
         $this->calif     = $item['calif'];
-        $this->imgWa     = [];
+        $this->imgWa     = (array_key_exists('imgWa', $item)) ? $item['imgWa'] : [];
         $this->createdAt = $hoy;
         return $this;
     }
@@ -180,6 +180,24 @@ class Items
         ];
     }
 
+    /** */
+    public function buildTitle(): String
+    {
+        $lado = '';
+        if($this->lado != '') {
+            $lado = $this->lado;
+        }
+
+        if($this->poss != '') {
+            $lado = ($lado == '') ? ' '.$this->poss : ' '.$lado.' '.$this->poss;
+        }
+        $anios = '';
+        if(count($this->anios) > 0) {
+            $anios = implode(', ', $this->anios);
+            $anios = ' aplica a: '.$anios;
+        }
+        return $this->pieza.$lado.' para '.$this->marca.' '.$this->model.$anios;
+    }
 
     public function getId(): ?int
     {

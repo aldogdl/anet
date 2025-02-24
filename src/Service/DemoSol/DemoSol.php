@@ -3,6 +3,7 @@
 namespace App\Service\DemoSol;
 
 use App\Dtos\WaMsgDto;
+use App\Entity\Items;
 use App\Service\MyFsys;
 
 class DemoSol {
@@ -20,15 +21,18 @@ class DemoSol {
         $demojson = $this->fSys->getContent('waDemoCot', 'demo_1.json');
         $trackjson = $this->fSys->getContent('waTemplates', '_track.json');
         if(array_key_exists('type', $trackjson)) {
+            
+            $item = new Items();
+            $item = $item->fromMapItem($demojson);
 
             $body = $trackjson[$trackjson['type']]['body']['text'];
-            $body = str_replace('{:token}', $demojson['title'], $body);
-            $body = str_replace('{:detalles}', $demojson['detalles'].'. Demostración', $body);
+            $body = str_replace('{:token}', $item->buildTitle(), $body);
+            $body = str_replace('{:detalles}', $item->getCondicion().'. Demostración', $body);
             $trackjson[$trackjson['type']]['body']['text'] = $body;
             
             $trackjson[$trackjson['type']]['header'] = [
                 "type" => "image",
-                "image" => ["link" => "https://autoparnet.com/prod_pubs/demo_anet/demo_1.jpg"]
+                "image" => ["link" => $item->getThumbnail()]
             ];
 
             $btns = $trackjson[$trackjson['type']]['action']['buttons'];
@@ -48,7 +52,7 @@ class DemoSol {
     ///
     public function buildBaitDemo(WaMsgDto $waMsg): array
     {
-        $demojson = $this->fSys->getContent('demos', 'demo_1.json');
+        $demojson = $this->fSys->getContent('waDemoCot', 'demo_1.json');
         return [
             "waId"    => $waMsg->from,
             "idItem"  => $waMsg->idDbSr,
