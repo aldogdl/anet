@@ -175,15 +175,15 @@ class TrackProv {
             [
               "type" => "reply",
               "reply" => [
-                "id" => 'cotDirect_'. $idFile,
-                "title" => "[ x ] Directamente"
+                "id" => 'ntgapp_'. $idFile,
+                "title" => "NO Vendo la Marca"
               ]
             ],
             [
               "type" => "reply",
               "reply" => [
-                "id" => 'cotForm_'. $idFile,
-                "title" => "[ √ ] Formulario"
+                "id" => 'cotnowpp_'. $idFile,
+                "title" => "[ √ ] COTIZAR AHORA"
               ]
             ]
           ]
@@ -205,11 +205,10 @@ class TrackProv {
         ],
         "body" => [
           "text" => "Presiona el Botón de la parte inferior " . 
-          "para continuar cotizando la pieza \n" .
-          $pieza . "\n"
+          "para *CONTACTAR* al solicitante.\n"
         ],
         "footer" => [
-          "text" => "Un servicio más de RasterFy"
+          "text" => "Un servicio más de YonkesMX"
         ],
         "action" => [
           "name" => "cta_url",
