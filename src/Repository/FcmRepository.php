@@ -235,14 +235,12 @@ class FcmRepository extends ServiceEntityRepository
                 // filtramos a los que no venden la marca
                 $rota = count($noTengoLaMrk);
                 for ($i=0; $i < $rota; $i++) { 
-                    $add = false;
+                    $add = true;
                     $filtro = $noTengoLaMrk[$i]->getNvm();
                     if($filtro) {
-                        if(!in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
-                            $add = true;
+                        if(in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
+                            $add = false;
                         }
-                    }else{
-                        $add = true;
                     }
                     if($add) {
                         if(!in_array($noTengoLaMrk[$i]->getTkfcm(), $filtros)) {
@@ -288,7 +286,8 @@ class FcmRepository extends ServiceEntityRepository
             $filtros = array_map(function($obj) { return $obj->getTkfcm(); }, $mismos);
             $waIds = array_map(function($obj) { return $obj->getWaId(); }, $mismos);
         }
-
+        file_put_contents('wa_contacts_t.json', json_encode($filtros));
+        file_put_contents('wa_contacts_w.json', json_encode($waIds));
         $result = [
             'tokens' => array_unique($filtros),
             'waIds'  => array_unique($waIds),
