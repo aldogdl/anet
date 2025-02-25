@@ -39,7 +39,7 @@ class TrackProv {
     if($this->waS->conm == null) {
       return;
     }
-    
+    file_put_contents('wa_resp.json', json_encode($msg->toArray()));
     $filename = $msg->idDbSr;
     if(!mb_strpos($filename, '::')) {
       // TODO Mensaje al Cotizador acerca de:

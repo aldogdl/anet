@@ -113,6 +113,7 @@ class WaConsumer
             return;
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::COTPP) {
+            
             $pp = new TrackProv(null, $this->waSender, [], []);
             $pp->sentResponseByAction( $this->fsys->getFolderTo('fbSended'), $obj );
             return;

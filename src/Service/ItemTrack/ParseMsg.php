@@ -222,10 +222,10 @@ class ParseMsg {
             case 'ntga':
                 $tipo = TypesWaMsgs::NTGA;
                 break;
-            case 'cotDirect':
+            case 'ntgapp':
                 $tipo = TypesWaMsgs::COTPP;
                 break;
-            case 'cotForm':
+            case 'cotnowpp':
                 $tipo = TypesWaMsgs::COTPP;
                 break;
             default:
