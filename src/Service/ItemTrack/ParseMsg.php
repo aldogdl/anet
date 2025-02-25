@@ -117,22 +117,19 @@ class ParseMsg {
         $subEvent = '';
         if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {                                        
             
+            $code = '#';
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower($txt);
-            $txtAlternativo = json_decode('"' . $txt . '"');
-            if(mb_strpos($txtAlternativo, '...') !== false) {
-                $txt = $txtAlternativo;
-            }
-
+            
             // Estos son comandos realizados desde Whatsapp
             if(mb_strpos($txt, '/raster_') !== false) {
-                $txt = str_replace('/raster_', '...', $txt);
+                $txt = str_replace('/raster_', $code, $txt);
             }
             
-            if(mb_strpos($txt, '...') !== false) {
+            if(mb_strpos($txt, $code) !== false) {
                 
                 $tipo = TypesWaMsgs::COMMAND;
-                $txt = str_replace('...', '', $txt);
+                $txt = str_replace($code, '', $txt);
                 $txt = mb_strtolower(trim($txt));
                 
                 if($txt == 'login') {
