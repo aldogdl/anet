@@ -125,6 +125,10 @@ class ParseMsg {
                 $txt = str_replace('/raster_', '...', $txt);
             }
             
+            if(mb_strpos($txt, '\u') !== false) {
+                $txt = str_replace('\u2026', '...', $txt);
+            }
+
             if(mb_strpos($txt, '...') !== false) {
                 
                 $tipo = TypesWaMsgs::COMMAND;
