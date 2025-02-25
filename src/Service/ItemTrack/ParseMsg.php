@@ -119,16 +119,16 @@ class ParseMsg {
             
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower($txt);
+            $txtAlternativo = json_decode('"' . $txt . '"');
+            if(mb_strpos($txtAlternativo, '...') !== false) {
+                $txt = $txtAlternativo;
+            }
 
             // Estos son comandos realizados desde Whatsapp
             if(mb_strpos($txt, '/raster_') !== false) {
                 $txt = str_replace('/raster_', '...', $txt);
             }
             
-            if(mb_strpos($txt, '\u') !== false) {
-                $txt = str_replace('\u2026', '...', $txt);
-            }
-
             if(mb_strpos($txt, '...') !== false) {
                 
                 $tipo = TypesWaMsgs::COMMAND;
