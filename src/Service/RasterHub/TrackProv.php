@@ -91,15 +91,11 @@ class TrackProv {
     if(array_key_exists('slug', $this->contacts)) {
       // Si contiene slug, significa que se le enviará el msg a 1 persona
       $this->data['srcSlug'] = $this->contacts['slug'];
-      file_put_contents($filename, json_encode($this->data));
-      $this->data['tokens'] = $this->contacts['tokens'];
-      $this->data['waIds'] = $this->contacts['waIds'];
-    }else{
-      // Si NO contiene slug, significa que se le enviará el msg a varias personas
-      file_put_contents($filename, json_encode($this->data));
-      $this->data['tokens'] = $this->contacts['tokens'];
-      $this->data['waIds'] = $this->contacts['waIds'];
     }
+
+    file_put_contents($filename, json_encode($this->data));
+    $this->data['tokens'] = $this->contacts['tokens'];
+    $this->data['waIds'] = $this->contacts['waIds'];
     $this->contacts = [];
 
     $this->data['cant'] = count($this->data['tokens']);

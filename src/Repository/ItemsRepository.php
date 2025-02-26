@@ -35,9 +35,7 @@ class ItemsRepository extends ServiceEntityRepository
         }
     }
 
-    /** 
-     * 
-    */
+    /** */
     public function updateImgWa(array $data): void 
     {
         $id = (array_key_exists('idwap', $data)) ? $data['idwap'] : "0";
@@ -48,10 +46,7 @@ class ItemsRepository extends ServiceEntityRepository
         if($query == null) {
             return;
         }
-        $query->setImgWa([
-            'id' => $id,
-            'updateAt' => $data['created'],
-        ]);
+        $query->setImgWa(['id' => $id, 'updateAt' => $data['created']]);
         $this->add($query, true);
     }
 

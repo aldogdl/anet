@@ -146,7 +146,6 @@ class PostController extends AbstractController
     }
     $itemEm->updateImgWa($data);
 
-    file_put_contents('wa_data.json', json_encode($data));
     $contacts = $fcmEm->getContactsForSend($data);
     file_put_contents('wa_contacts.json', json_encode($contacts));
     if(count($contacts) == 0) {
