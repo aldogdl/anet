@@ -229,7 +229,9 @@ class FcmRepository extends ServiceEntityRepository
                                 $filtros[] = $$soloEstasVendo[$i]->getTkfcm();
                             }
                             if(!in_array($soloEstasVendo[$i]->getWaid(), $waIds)) {
-                                $waIds[] = $soloEstasVendo[$i]->getWaid();
+                                if($soloEstasVendo[$i]->getIsLogged()) {
+                                    $waIds[] = $soloEstasVendo[$i]->getWaid();
+                                }
                             }
                         }
                     }
@@ -238,7 +240,7 @@ class FcmRepository extends ServiceEntityRepository
                 // filtramos a los que no venden la marca
                 $rota = count($noTengoLaMrk);
                 for ($i=0; $i < $rota; $i++) {
-                    
+
                     $add = true;
                     $filtro = $noTengoLaMrk[$i]->getNvm();
                     if($filtro) {
@@ -251,7 +253,9 @@ class FcmRepository extends ServiceEntityRepository
                             $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
                         }
                         if(!in_array($noTengoLaMrk[$i]->getWaid(), $waIds)) {
-                            $waIds[] = $noTengoLaMrk[$i]->getWaid();
+                            if($noTengoLaMrk[$i]->getIsLogged()) {
+                                $waIds[] = $noTengoLaMrk[$i]->getWaid();
+                            }
                         }
                     }
                 }
