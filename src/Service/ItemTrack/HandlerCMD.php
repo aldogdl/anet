@@ -67,7 +67,7 @@ class HandlerCMD
             $this->waSender->sendMy($retornar);
             return;
 
-        }elseif($this->waMsg->content == 'pausa' || $this->waMsg->content == 'pause') {
+        } elseif($this->waMsg->content == 'pausa' || $this->waMsg->content == 'pause') {
 
             $this->waSender->sendText(
                 "😃👍 *SOLICITUD RECIBIDA*\n\n".
@@ -81,7 +81,7 @@ class HandlerCMD
             $this->waSender->sendMy($retornar);
             return;
 
-        }elseif($this->waMsg->content == 'play') {
+        } elseif($this->waMsg->content == 'play') {
 
             $this->waSender->sendText(
                 "😃👍 *REANUDANDO ENVÍOS*\n\n".
@@ -95,7 +95,7 @@ class HandlerCMD
             $this->waSender->sendMy($retornar);
             return;
             
-        }elseif(mb_strpos($this->waMsg->content, 'demo') !== false) {
+        } elseif(mb_strpos($this->waMsg->content, 'demo') !== false) {
             
             $demoSol = new DemoSol($this->fSys);
             $msgTrack = $demoSol->buildMsgTrackDemo($this->waMsg->from);
@@ -107,6 +107,9 @@ class HandlerCMD
                     "correctamente debido a una insidencia en la creación del mensaje."
                 );
             }
+            return;
+        } elseif(mb_strpos($this->waMsg->content, 'stt') !== false) {
+            $this->waSender->sendText("😃👍 *Sesión activa aún*");
             return;
         }
 

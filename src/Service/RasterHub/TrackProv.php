@@ -103,7 +103,7 @@ class TrackProv {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
         
-      // $result = $this->push->sendMultiple($this->data);
+      $result = $this->push->sendMultiple($this->data);
       if(array_key_exists('fails', $result)) {
         $filename = $folderFails .
         $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
