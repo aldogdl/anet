@@ -113,7 +113,18 @@ class WaConsumer
             return;
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::COTPP) {
-            
+
+            // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario
+            $this->fsys->delete('/', $obj->from.'_iniLogin.json');
+
+            if($obj->subEvento == 'ntgapp') {
+                $this->waSender->setConmutador($obj);
+                $this->waSender->sendText(
+                    "👍 Tu orden fué registrada con éxito ".
+                    "Ya no recibirás piezas de dicha marca."
+                );
+                return;
+            }
             $pp = new TrackProv(null, $this->waSender, [], []);
             $pp->sentResponseByAction( $this->fsys->getFolderTo('fbSended'), $obj );
             return;

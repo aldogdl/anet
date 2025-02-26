@@ -270,7 +270,7 @@ class FcmRepository extends ServiceEntityRepository
             // Buscar al cotizador quien realizó la solictud de cotizacion
             $dql = $this->getAllMiembrosByWaId($itemPush['srcWaId']);
             $contacts = $dql->getResult();
-            
+
             // Solo para reforzar que verdaderamente no halla slug que no
             // pertenezcan a la empresa que hizo la solicitud
 

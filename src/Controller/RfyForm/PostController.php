@@ -117,11 +117,12 @@ class PostController extends AbstractController
   }
 
   /** 
-   * Enviamos la notificacion de nueva publicacion a los contactos
+   * Enviamos la notificacion de nueva solicitud a los contactos
   */
   #[Route('rfyform/make_push/{key}', methods:['POST'])]
 	public function sentNotification(
-    Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, Pushes $push, String $key
+    Request $req, SecurityBasic $sec, FcmRepository $fcmEm, 
+    ItemsRepository $itemEm, WaSender $waS, Pushes $push, String $key
   ): Response
 	{
     
@@ -144,8 +145,9 @@ class PostController extends AbstractController
       }
     }
 
+    file_put_contents('wa_data.json', json_encode($data));
     $contacts = $fcmEm->getContactsForSend($data);
-    file_put_contents('wa_contacts.sjon', json_encode($contacts));
+    file_put_contents('wa_contacts.json', json_encode($contacts));
     if(count($contacts) == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
