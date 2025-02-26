@@ -144,6 +144,7 @@ class PostController extends AbstractController
         return $this->json($result);
       }
     }
+    $itemEm->updateImgWa($data);
 
     file_put_contents('wa_data.json', json_encode($data));
     $contacts = $fcmEm->getContactsForSend($data);
