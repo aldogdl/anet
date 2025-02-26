@@ -224,8 +224,11 @@ class FcmRepository extends ServiceEntityRepository
                     $filtro = $soloEstasVendo[$i]->getNvm();
                     if($filtro) {
                         if(in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
-                            if(!in_array($soloEstasVendo[$i]->getTkfcm(), $filtros)) {
-                                $filtros[] = $soloEstasVendo[$i]->getTkfcm();
+
+                            if(!in_array($$soloEstasVendo[$i]->getTkfcm(), $filtros)) {
+                                $filtros[] = $$soloEstasVendo[$i]->getTkfcm();
+                            }
+                            if(!in_array($soloEstasVendo[$i]->getWaid(), $waIds)) {
                                 $waIds[] = $soloEstasVendo[$i]->getWaid();
                             }
                         }
@@ -234,7 +237,8 @@ class FcmRepository extends ServiceEntityRepository
 
                 // filtramos a los que no venden la marca
                 $rota = count($noTengoLaMrk);
-                for ($i=0; $i < $rota; $i++) { 
+                for ($i=0; $i < $rota; $i++) {
+                    
                     $add = true;
                     $filtro = $noTengoLaMrk[$i]->getNvm();
                     if($filtro) {
@@ -245,6 +249,8 @@ class FcmRepository extends ServiceEntityRepository
                     if($add) {
                         if(!in_array($noTengoLaMrk[$i]->getTkfcm(), $filtros)) {
                             $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
+                        }
+                        if(!in_array($noTengoLaMrk[$i]->getWaid(), $waIds)) {
                             $waIds[] = $noTengoLaMrk[$i]->getWaid();
                         }
                     }
@@ -272,7 +278,6 @@ class FcmRepository extends ServiceEntityRepository
             $mismos = array_filter($contacts, function($contac) use ($waId) {
                 return $contac->getWaId() == $waId;
             });
-            
             if(count($mismos) > 0) {
                 $slug = $mismos[0]->getSlug();
             }
