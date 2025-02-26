@@ -229,7 +229,7 @@ class FcmRepository extends ServiceEntityRepository
                                 $filtros[] = $$soloEstasVendo[$i]->getTkfcm();
                             }
                             if(!in_array($soloEstasVendo[$i]->getWaid(), $waIds)) {
-                                if($soloEstasVendo[$i]->getIsLogged()) {
+                                if($soloEstasVendo[$i]->isIsLogged()) {
                                     $waIds[] = $soloEstasVendo[$i]->getWaid();
                                 }
                             }
@@ -253,7 +253,7 @@ class FcmRepository extends ServiceEntityRepository
                             $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
                         }
                         if(!in_array($noTengoLaMrk[$i]->getWaid(), $waIds)) {
-                            if($noTengoLaMrk[$i]->getIsLogged()) {
+                            if($noTengoLaMrk[$i]->isIsLogged()) {
                                 $waIds[] = $noTengoLaMrk[$i]->getWaid();
                             }
                         }
