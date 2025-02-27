@@ -108,8 +108,9 @@ class HandlerCMD
                 );
             }
             return;
+            
         } elseif(mb_strpos($this->waMsg->content, 'stt') !== false) {
-            $this->waSender->sendText("😃👍 *Sesión activa aún*");
+            $this->waSender->sendText("😃👍 *Sesión activa*");
             return;
         }
 

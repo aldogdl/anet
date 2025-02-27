@@ -29,17 +29,74 @@ class TrackProv {
   }
 
   /** 
+   * Construimos el mensaje y lo enviamos a los contactos
+   * [NOTA] Este metodo fue llamado en la clase: PostController::sentNotification
+  */
+  public function builderTrack(String $folderToBackup, String $folderFails) : array 
+  {
+    $result = ['abort' => true, 'msg' => ''];
+    $idSendFile = $this->data['type'] .'::'. $this->data['id'] .'::'.round(microtime(true) * 1000);
+    $filename = $folderToBackup .$idSendFile. '.json';
+    
+    if(array_key_exists('slug', $this->contacts)) {
+      // Si contiene slug, significa que se le enviará el msg a 1 persona
+      $this->data['srcSlug'] = $this->contacts['slug'];
+    }
+
+    // Guardamos el mensaje en el folder fb_sended, esta info es usada en el metodo:
+    // sentResponseByAction para recuperar los ids del item y enviar la respuesta segun
+    // la accion del usuario por medio de los botones del mensaje.
+    file_put_contents($filename, json_encode($this->data));
+
+    $this->data['tokens'] = $this->contacts['tokens'];
+    $this->data['waIds'] = $this->contacts['waIds'];
+    $this->contacts = [];
+
+    $this->data['cant'] = count($this->data['tokens']);
+    if($this->data['cant'] == 0) {
+      $result = ['abort' => true, 'msg' => 'X Sin contactos'];
+    }else{
+
+      // Enviamos el mensaje via PUSH a los contactos
+      $result = $this->push->sendMultiple($this->data);
+      
+      if(array_key_exists('fails', $result)) {
+        $filename = $folderFails .
+        $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
+        $this->data['fails'] = $result['fails'];
+        // Guardamos el mensaje en el folder fb_fails
+        file_put_contents($filename, json_encode($this->data));
+        unset($result['fails']);
+      }
+      
+      // En caso de que la imagen portada se halla indexado correctamente
+      // en los servidores de Whatsapp, enviamos el mensaje via Whatsapp a los contactos
+      if(array_key_exists('idwap', $this->data)) {
+        // Si contiene el id de la imagen que se envio a whatsapp
+        // lo enviamos por ese medio
+        $this->sendToWhatsapp($idSendFile);
+      }else{
+        // Si no se logró enviar la imagen a whatsapp se manda via push
+      }
+    }
+
+    return $result;
+  }
+
+  
+  /** 
    * Metodo para enviarle al usuario el mensaje de link cuando quiere cotizar
    * una pieza, esta accion fue por presionar un boton entre [ Directamente | Formulario ]
    * [NOTA] El mensaje inicial fue enviado en la clase: PostController::sentNotification
   */
   public function sentResponseByAction(String $folderToBackup, WaMsgDto $msg) : void 
   {
+
     $this->waS->initConmutador();
     if($this->waS->conm == null) {
       return;
     }
-    file_put_contents('wa_resp.json', json_encode($msg->toArray()));
+    file_put_contents('wa_resp_to_action.json', json_encode($msg->toArray()));
     $filename = $msg->idDbSr;
     if(!mb_strpos($filename, '::')) {
       // TODO Mensaje al Cotizador acerca de:
@@ -56,14 +113,16 @@ class TrackProv {
     
     $waIdEmisor = $this->waS->conm->waIdToPhone($file['ownWaId']);
 
-    $text = "Hola qué tal!!.👍\n".
-    "Con respecto a la solicitud de Cotización para\n".
-    "🚗 *".$file['body']."*\n\n";
     
     $link = '';
-    if($msg->subEvento == 'cotDirect') {
+    if($msg->subEvento == 'cotdirpp') {
+      $text = "Hola qué tal!!.👍\n".
+      "Con respecto a la solicitud de Cotización para\n".
+      "🚗 *".$file['body']."*\n\n";
       $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
     }else{
+
+      // Código del btn cotformpp;
 
       $dataItem = [
         'ownWaId'=> $file['ownWaId'],
@@ -72,59 +131,19 @@ class TrackProv {
         'type'   => $file['type'],
       ];
 
-      $this->waS->fSys->setCotViaForm('waCotForm', $msg->from.'.json', $dataItem);
+      $this->waS->fSys->setCotViaForm($msg->from.'.json', $dataItem);
       $link = 'https://autoparnet.com/form/cotiza?waId='.$msg->from;
     }
 
     $this->waS->setWaIdToConmutador($msg->from);
-    $this->waS->sendPreTemplate( $this->templateTrackLink($link, $file['body']) );
+    $this->waS->sendPreTemplate( $this->templateTrackLink($link) );
     return;
   }
 
-  /** */
-  public function exe(String $folderToBackup, String $folderFails) : array 
-  {    
-    $result = ['abort' => true, 'msg' => ''];
-    $idSendFile = $this->data['type'] .'::'. $this->data['id'] .'::'.round(microtime(true) * 1000);
-    $filename = $folderToBackup .$idSendFile. '.json';
-    
-    if(array_key_exists('slug', $this->contacts)) {
-      // Si contiene slug, significa que se le enviará el msg a 1 persona
-      $this->data['srcSlug'] = $this->contacts['slug'];
-    }
-
-    file_put_contents($filename, json_encode($this->data));
-    $this->data['tokens'] = $this->contacts['tokens'];
-    $this->data['waIds'] = $this->contacts['waIds'];
-    $this->contacts = [];
-
-    $this->data['cant'] = count($this->data['tokens']);
-    if($this->data['cant'] == 0) {
-      $result = ['abort' => true, 'msg' => 'X Sin contactos'];
-    }else{
-        
-      $result = $this->push->sendMultiple($this->data);
-      if(array_key_exists('fails', $result)) {
-        $filename = $folderFails .
-        $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
-        $this->data['fails'] = $result['fails'];
-        file_put_contents($filename, json_encode($this->data));
-        unset($result['fails']);
-      }
-
-      if(array_key_exists('idwap', $this->data)) {
-        // Si contiene el id de la imagen que se envio a whatsapp
-        // lo enviamos por ese medio
-        $this->sendToWhatsapp($idSendFile);
-      }else{
-        // Si no se logró enviar la imagen a whatsapp se manda via push
-      }
-    }
-
-    return $result;
-  }
-
-  /** */
+  /** 
+   * Enviamos el mensaje a los contactos por medio de Whatsapp
+   * [NOTA] Este metodo fue llamado en el metodo: builderTrack
+  */
   private function sendToWhatsapp(String $idFile): void
   {
     $rota = count($this->data['waIds']);
@@ -178,8 +197,15 @@ class TrackProv {
             [
               "type" => "reply",
               "reply" => [
-                "id" => 'cotnowpp_'. $idFile,
-                "title" => "[ √ ] COTIZAR AHORA"
+                "id" => 'cotdirpp_'. $idFile,
+                "title" => "[ X ] EN DIRECTO"
+              ]
+            ],
+            [
+              "type" => "reply",
+              "reply" => [
+                "id" => 'cotformpp_'. $idFile,
+                "title" => "[ √ ] YONQUESMX"
               ]
             ]
           ]
@@ -189,7 +215,7 @@ class TrackProv {
   }
 
   /** */
-  private function templateTrackLink(String $link, String $pieza): array {
+  private function templateTrackLink(String $link): array {
 
     return [
       "type" => "interactive",

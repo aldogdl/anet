@@ -144,6 +144,9 @@ class PostController extends AbstractController
         return $this->json($result);
       }
     }
+
+    // Si existe la clave 'idwap' es que se ha indexado correctamente la imagen
+    // en los servidores de Whatsapp, por lo que se guarda el id de la imagen en D.B.
     $itemEm->updateImgWa($data);
 
     $contacts = $fcmEm->getContactsForSend($data);
@@ -152,7 +155,7 @@ class PostController extends AbstractController
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
     }else{
       $track = new TrackProv($push, $waS, $data, $contacts);
-      $result = $track->exe(
+      $result = $track->builderTrack(
         $this->getParameter('fbSended'), $this->getParameter('fbFails')
       );
     }

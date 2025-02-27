@@ -346,9 +346,9 @@ class MyFsys
      * de un mensaje de whatsapp guardamos un archivo con los datos del item
      * para cuando abra la app se descarge este archivo y se hidrate el formulario
     */
-    public function setCotViaForm(String $folder, String $waId, array $data): void
+    public function setCotViaForm(String $waId, array $data): void
     {
-        $this->setContent($folder, $waId.'.json', $data);
+        $this->setContent('waCotForm', $waId.'.json', $data);
     }
     
     /** 

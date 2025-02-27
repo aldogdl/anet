@@ -225,14 +225,17 @@ class ParseMsg {
             case 'ntgapp':
                 $tipo = TypesWaMsgs::COTPP;
                 break;
-            case 'cotnowpp':
+            case 'cotdirpp':
+                $tipo = TypesWaMsgs::COTPP;
+                break;
+            case 'cotformpp':
                 $tipo = TypesWaMsgs::COTPP;
                 break;
             default:
                 $tipo = TypesWaMsgs::INTERACTIVE;
                 break;
         }
-
+        
         return new WaMsgDto(
             $this->isTest,
             $this->waMsg['from'],
