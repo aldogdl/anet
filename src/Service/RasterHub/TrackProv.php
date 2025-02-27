@@ -131,7 +131,7 @@ class TrackProv {
         'type'   => $file['type'],
       ];
 
-      $this->waS->fSys->setCotViaForm($msg->from.'.json', $dataItem);
+      $this->waS->fSys->setCotViaForm($msg->from, $dataItem);
       $link = 'https://autoparnet.com/form/cotiza?waId='.$msg->from;
     }
 
