@@ -124,15 +124,14 @@ class TrackProv {
 
       // Código del btn cotformpp;
 
-      $dataItem = [
-        'ownWaId'=> $file['ownWaId'],
-        'ownSlug'=> $file['ownSlug'],
-        'idDbSr' => $file['idDbSr'],
-        'type'   => $file['type'],
-      ];
+      // $dataItem = [
+      //   'ownWaId'=> $file['ownWaId'],
+      //   'ownSlug'=> $file['ownSlug'],
+      //   'idDbSr' => $file['idDbSr'],
+      // ];
+      // $this->waS->fSys->setCotViaForm($msg->from, $dataItem);
 
-      $this->waS->fSys->setCotViaForm($msg->from, $dataItem);
-      $link = 'https://autoparnet.com/form/cotiza?waId='.$msg->from;
+      $link = 'https://autoparnet.com/form?lookingForTheCot='.$msg->idDbSr;
     }
 
     $this->waS->setWaIdToConmutador($msg->from);
@@ -165,7 +164,6 @@ class TrackProv {
       $this->waS->setWaIdToConmutador($this->data['waIds'][$i]);
       $this->waS->sendPreTemplate( $this->basicTemplateTrack($idFile) );
     }
-    
   }
 
   /** */
@@ -201,13 +199,13 @@ class TrackProv {
                 "title" => "[ X ] EN DIRECTO"
               ]
             ],
-            [
-              "type" => "reply",
-              "reply" => [
-                "id" => 'cotformpp_'. $idFile,
-                "title" => "[ √ ] YONQUESMX"
-              ]
-            ]
+            // [
+            //   "type" => "reply",
+            //   "reply" => [
+            //     "id" => 'cotformpp_'. $idFile,
+            //     "title" => "[ √ ] YONQUESmx"
+            //   ]
+            // ]
           ]
         ]
       ]

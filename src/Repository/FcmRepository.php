@@ -190,6 +190,26 @@ class FcmRepository extends ServiceEntityRepository
         return;
     }
 
+    /** */
+    private function checkCurrentTokenAndUpdate(array $data) {
+
+        $q = 'SELECT f FROM '. Fcm::class .' f '.
+        'WHERE f.waId = :waId AND f.device = :device';
+        $obj = $this->_em->createQuery($q)
+            ->setParameters(['waId' => $data['ownWaId'], 'device' => $data['device']])
+            ->execute();
+        if($obj) {
+            $rota = count($obj);
+            for ($i=0; $i < $rota; $i++) {
+                if($obj[$i]->getTkfcm() != $data['tk_current']) {
+                    $obj[$i]->setTkfcm($data['tk_current']);
+                    $this->_em->persist($obj[$i]);
+                }
+            }
+            $this->_em->flush();
+        }
+    }
+
     /** 
      * Tomamos todos los cotizadores excepto el dueño al remitente enviado
      * por parametro, para enviar las notificaciones.
@@ -202,6 +222,10 @@ class FcmRepository extends ServiceEntityRepository
         $waIds = [];
         $slug = '';
         if($itemPush['type'] == 'solicita') {
+
+            if(array_key_exists('tk_current', $itemPush)) {
+                $dql = $this->checkCurrentTokenAndUpdate($itemPush);
+            }
 
             // Buscar todos los cotizadores diferentes al dueño del ITEM
             $dql = $this->getAllByWaIdExcept($itemPush['ownWaId']);
@@ -225,8 +249,8 @@ class FcmRepository extends ServiceEntityRepository
                     if($filtro) {
                         if(in_array($itemPush['idMrk'], array_column($filtro, 'idMrk'))) {
 
-                            if(!in_array($$soloEstasVendo[$i]->getTkfcm(), $filtros)) {
-                                $filtros[] = $$soloEstasVendo[$i]->getTkfcm();
+                            if(!in_array($soloEstasVendo[$i]->getTkfcm(), $filtros)) {
+                                $filtros[] = $soloEstasVendo[$i]->getTkfcm();
                             }
                             if(!in_array($soloEstasVendo[$i]->getWaid(), $waIds)) {
                                 if($soloEstasVendo[$i]->isIsLogged()) {
