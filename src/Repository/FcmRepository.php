@@ -199,14 +199,18 @@ class FcmRepository extends ServiceEntityRepository
             ->setParameters(['waId' => $data['ownWaId'], 'device' => $data['device']])
             ->execute();
         if($obj) {
+            $flush = false;
             $rota = count($obj);
             for ($i=0; $i < $rota; $i++) {
                 if($obj[$i]->getTkfcm() != $data['tk_current']) {
                     $obj[$i]->setTkfcm($data['tk_current']);
                     $this->_em->persist($obj[$i]);
+                    $flush = true;
                 }
             }
-            $this->_em->flush();
+            if($flush) {
+                $this->_em->flush();
+            }
         }
     }
 
