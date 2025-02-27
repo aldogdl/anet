@@ -169,6 +169,13 @@ class TrackProv {
   /** */
   private function basicTemplateTrack(String $idFile): array
   {
+            // [
+            //   "type" => "reply",
+            //   "reply" => [
+            //     "id" => 'cotformpp_'. $idFile,
+            //     "title" => "[ √ ] YONQUESmx"
+            //   ]
+            // ]
     return [
       "type" => "interactive",
       "interactive" => [
@@ -198,14 +205,7 @@ class TrackProv {
                 "id" => 'cotdirpp_'. $idFile,
                 "title" => "[ X ] EN DIRECTO"
               ]
-            ],
-            // [
-            //   "type" => "reply",
-            //   "reply" => [
-            //     "id" => 'cotformpp_'. $idFile,
-            //     "title" => "[ √ ] YONQUESmx"
-            //   ]
-            // ]
+            ]
           ]
         ]
       ]

@@ -125,7 +125,7 @@ class PostController extends AbstractController
     ItemsRepository $itemEm, WaSender $waS, Pushes $push, String $key
   ): Response
 	{
-    
+
     if(!$sec->isValid($key)) {
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
       return $this->json($result);
