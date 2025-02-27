@@ -59,7 +59,7 @@ class TrackProv {
 
       // Enviamos el mensaje via PUSH a los contactos
       $result = $this->push->sendMultiple($this->data);
-      
+      file_put_contents('wa_tok1.txt', '');
       if(array_key_exists('fails', $result)) {
         $filename = $folderFails .
         $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
@@ -145,7 +145,9 @@ class TrackProv {
   */
   private function sendToWhatsapp(String $idFile): void
   {
+    file_put_contents('wa_seg1.txt', '');
     $rota = count($this->data['waIds']);
+    file_put_contents('wa_seg1.'.$rota.'txt', '');
     if($rota == 0) {
       return;
     }
@@ -154,6 +156,7 @@ class TrackProv {
     if($this->waS->conm == null) {
       return;
     }
+    file_put_contents('wa_seg3.'.$rota.'txt', '');
     
     for ($i=0; $i < $rota; $i++) {
       // Creamos un archivo que indica al sistema no procesar estatus
