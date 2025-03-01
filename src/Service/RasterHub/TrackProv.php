@@ -58,23 +58,23 @@ class TrackProv {
     }else{
 
       // Enviamos el mensaje via PUSH a los contactos
-      $result = $this->push->sendMultiple($this->data);
-      file_put_contents('wa_tok1.txt', '');
-      if(array_key_exists('fails', $result)) {
-        $filename = $folderFails .
-        $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
-        $this->data['fails'] = $result['fails'];
-        // Guardamos el mensaje en el folder fb_fails
-        file_put_contents($filename, json_encode($this->data));
-        unset($result['fails']);
-      }
+      // $result = $this->push->sendMultiple($this->data);
+      // file_put_contents('wa_tok1.txt', '');
+      // if(array_key_exists('fails', $result)) {
+      //   $filename = $folderFails .
+      //   $this->data['type'] .'_'. round(microtime(true) * 1000) . '.json';
+      //   $this->data['fails'] = $result['fails'];
+      //   // Guardamos el mensaje en el folder fb_fails
+      //   file_put_contents($filename, json_encode($this->data));
+      //   unset($result['fails']);
+      // }
       
       // En caso de que la imagen portada se halla indexado correctamente
       // en los servidores de Whatsapp, enviamos el mensaje via Whatsapp a los contactos
       if(array_key_exists('idwap', $this->data)) {
         // Si contiene el id de la imagen que se envio a whatsapp
         // lo enviamos por ese medio
-        $this->sendToWhatsapp($idSendFile);
+        // $this->sendToWhatsapp($idSendFile);
       }else{
         // Si no se logró enviar la imagen a whatsapp se manda via push
       }
