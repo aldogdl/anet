@@ -74,7 +74,7 @@ class TrackProv {
       if(array_key_exists('idwap', $this->data)) {
         // Si contiene el id de la imagen que se envio a whatsapp
         // lo enviamos por ese medio
-        <!-- $this->sendToWhatsapp($idSendFile); -->
+        // $this->sendToWhatsapp($idSendFile);
       }else{
         // Si no se logró enviar la imagen a whatsapp se manda via push
       }
