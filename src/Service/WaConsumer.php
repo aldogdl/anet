@@ -47,9 +47,8 @@ class WaConsumer
 
         // Esto es solo para desarrollo
         if($obj->tipoMsg != TypesWaMsgs::STT) {
-            $t = time();
-            file_put_contents('message_'.$t.'.json', json_encode($message));
-            file_put_contents('message_process_'.$t.'.json', json_encode($obj->toArray()));
+            file_put_contents('message_'.$obj->from.'.json', json_encode($message));
+            file_put_contents('message_process_'.$obj->from.'.json', json_encode($obj->toArray()));
         }
 
         if($obj->tipoMsg == TypesWaMsgs::STT) {
@@ -63,8 +62,10 @@ class WaConsumer
                     $this->fsys->delete('waSttStop', $obj->from.'.txt');
                     return;
                 }
-                $this->waSender->setConmutador($obj);
-                $this->waSender->sendMy($obj->toStt());
+
+                // Por el momento no se requieren procesar los status
+                // $this->waSender->setConmutador($obj);
+                // $this->waSender->sendMy($obj->toStt());
 
             }else{
 
