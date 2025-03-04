@@ -32,6 +32,7 @@ class ParseMsg {
     {
         $this->isTest = $isTest;
         $this->isQC = false;
+
         if(array_key_exists('entry', $this->waMsg)) {
 
             if(count($this->waMsg['entry']) > 1) {
@@ -107,21 +108,27 @@ class ParseMsg {
     /** */
     private function isQCMsg(): void
     {
+        $txt = '';
         if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
-            $txt = mb_strtolower($txt);
-            if(mb_strpos($txt, $this->code) !== false) {
-                
-                $partes = explode(' ', $txt);
-                $rota = count($partes);
-                if($rota > 0) {
-                    if($partes[0] == $this->code) {
-                        if($partes[0].$partes[1] == $this->code.'qc') {
-                            $this->isQC = true;
-                        }
-                    }else if($partes[0] == $this->code.'qc') {
+        }
+
+        if(array_key_exists('caption', $this->waMsg[$this->waMsg['type']])) {
+            $txt = $this->waMsg[$this->waMsg['type']]['caption'];
+        }
+
+        $txt = mb_strtolower($txt);
+        if(mb_strpos($txt, $this->code) !== false) {
+            
+            $partes = explode(' ', $txt);
+            $rota = count($partes);
+            if($rota > 0) {
+                if($partes[0] == $this->code) {
+                    if($partes[0].$partes[1] == $this->code.'qc') {
                         $this->isQC = true;
                     }
+                }else if($partes[0] == $this->code.'qc') {
+                    $this->isQC = true;
                 }
             }
         }
