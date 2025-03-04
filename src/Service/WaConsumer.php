@@ -54,7 +54,8 @@ class WaConsumer
                 "LA PIEZA, MODELO, MARCA y Año\n".
                 "A continuación te muestro un Ejemplo."
             );
-            $this->waSender->sendPreTemplate(new ExampleQC()->build());
+            $example = new ExampleQC();
+            $this->waSender->sendPreTemplate($example->build());
             return;
         }
         // Esto es solo para desarrollo
