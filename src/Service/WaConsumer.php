@@ -45,19 +45,21 @@ class WaConsumer
             // TODO Guardar en el folder de analizar
             return;
         }
+
         if($obj->tipoMsg != TypesWaMsgs::IMAGE && $parser->isQC) {
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "⚠️ *QUIÉN CON?*...\n".
-                "Para solicitar Autopartes a la RED es necesario enviar una fotografía ".
-                "de referencia y en los comentarios indicar...\n".
-                "LA PIEZA, MODELO, MARCA y Año\n".
+                "Para solicitar Autopartes a la RED, es necesario enviar una fotografía ".
+                "de referencia, y en los comentarios de la foto, indicar:\n".
+                "*PIEZA, MODELO, MARCA, Año y características*\n".
                 "A continuación te muestro un Ejemplo."
             );
             $example = new ExampleQC();
             $this->waSender->sendPreTemplate($example->build());
             return;
         }
+
         // Esto es solo para desarrollo
         if($obj->tipoMsg != TypesWaMsgs::STT) {
             file_put_contents('message_'.$obj->from.'.json', json_encode($message));
@@ -94,6 +96,9 @@ class WaConsumer
             }
             return;
 
+        }elseif ($obj->tipoMsg == TypesWaMsgs::IMAGE && $parser->isQC) {
+
+            return;
         }elseif ($obj->tipoMsg == TypesWaMsgs::DOC) {
 
             $this->waSender->setConmutador($obj);
@@ -166,6 +171,7 @@ class WaConsumer
             $handler = new HandlerQuote($this->fsys, $this->waSender, $obj);
             $handler->exe();
             return;
+
         }elseif ($this->fsys->existe('/', 'conv_free_'.$obj->from.'.json')) {
             
             // dd('Hay conversacion libre');
