@@ -64,7 +64,7 @@ class ItemsRepository extends ServiceEntityRepository
         }else{
             $dql = $dql . 'WHERE it.'.$campo.' = :valor';
         }
-        
+
         $valores = ['valor' => $value];
         // TODO $extras que recupere items con condiciones extras ej: mayor_que un tiempo
         if(array_key_exists('mayor_que', $params)) {

@@ -10,12 +10,11 @@ use App\Enums\TypesWaMsgs;
 */
 class ParseMsg {
 
+    private String $code = '#';
     private bool $isTest;
     private array $waMsg;
     private String $recibido;
-    private array $tokenLogin = [
-        'hola', 'autoparnet', 'autoparnet,', 'atenderte.', 'piezas', 'necesitas', 'necesitas?'
-    ];
+    public bool $isQC;
 
     /** */
     public function __construct(array $message)
@@ -47,7 +46,6 @@ class ParseMsg {
 
                 $this->waMsg = $this->waMsg['changes'][0]['value'];
                 if(array_key_exists('statuses', $this->waMsg)) {
-
                     $this->waMsg = $this->waMsg['statuses'][0];
                     return $this->extractMsgTypeStatus();
                 }
@@ -68,11 +66,14 @@ class ParseMsg {
     /**
      * Cuando no es un status el mensaje lo analizamos aqui
     */
-    function extractMessageType(): WaMsgDto
+    function extractMessageType(): ?WaMsgDto
     {
         if(!array_key_exists('type', $this->waMsg)) {
             return null;
         }
+
+        // Detectar si es un QuienCon
+        $this->isQC();
 
         switch ($this->waMsg['type']) {
             case 'interactive':
@@ -103,6 +104,30 @@ class ParseMsg {
     }
 
     /** */
+    private function isQC(): void
+    {
+        $this->isQC = false;
+        if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {
+            $txt = $this->waMsg[$this->waMsg['type']]['body'];
+            $txt = mb_strtolower($txt);
+            if(mb_strpos($txt, $this->code) !== false) {
+                
+                $partes = explode(' ', $txt);
+                $rota = count($partes);
+                if($rota > 0) {
+                    if($partes[0] == $this->code) {
+                        if($partes[0].$partes[1] == $this->code.'qc') {
+                            $this->isQC = true;
+                        }
+                    }else if($partes[0] == $this->code.'qc') {
+                        $this->isQC = true;
+                    }
+                }
+            }
+        }
+    }
+
+    /** */
     function extractText(): WaMsgDto
     {
         $txt = 'Error, no se recibió ningún texto';
@@ -117,19 +142,18 @@ class ParseMsg {
         $subEvent = '';
         if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {                                        
             
-            $code = '#';
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower($txt);
             
             // Estos son comandos realizados desde Whatsapp
             if(mb_strpos($txt, '/raster_') !== false) {
-                $txt = str_replace('/raster_', $code, $txt);
+                $txt = str_replace('/raster_', $this->code, $txt);
             }
             
-            if(mb_strpos($txt, $code) !== false) {
+            if(mb_strpos($txt, $this->code) !== false) {
                 
                 $tipo = TypesWaMsgs::COMMAND;
-                $txt = str_replace($code, '', $txt);
+                $txt = str_replace($this->code, '', $txt);
                 $txt = mb_strtolower(trim($txt));
                 
                 if($txt == 'login') {

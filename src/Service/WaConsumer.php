@@ -16,6 +16,7 @@ use App\Service\ItemTrack\WaSender;
 use App\Service\ItemTrack\WaInitSess;
 use App\Service\RasterHub\TrackProv;
 use App\Repository\FcmRepository;
+use App\Service\RasterHub\ExampleQC;
 
 class WaConsumer
 {
@@ -44,7 +45,18 @@ class WaConsumer
             // TODO Guardar en el folder de analizar
             return;
         }
-
+        if($parser->isQC && $obj->tipoMsg != TypesWaMsgs::IMAGE) {
+            $this->waSender->setConmutador($obj);
+            $this->waSender->sendText(
+                "⚠️ *QUIÉN CON?*...\n".
+                "Para solicitar Autopartes a la RED es necesario enviar una fotografía ".
+                "de referencia y en los comentarios indicar...\n".
+                "LA PIEZA, MODELO, MARCA y Año\n".
+                "A continuación te muestro un Ejemplo."
+            );
+            $this->waSender->sendPreTemplate(new ExampleQC()->build());
+            return;
+        }
         // Esto es solo para desarrollo
         if($obj->tipoMsg != TypesWaMsgs::STT) {
             file_put_contents('message_'.$obj->from.'.json', json_encode($message));
