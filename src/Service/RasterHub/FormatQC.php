@@ -11,7 +11,7 @@ class FormatQC
     {
         $body = mb_strtolower($msg->content['caption']);
         $idFile = time() * 1000;
-        $partes = explode('', $body);
+        $partes = explode(' ', $body);
         $rota = count($partes);
         $cuerpo = [];
         for ($i=0; $i < $rota; $i++) { 
