@@ -113,7 +113,6 @@ class TrackProv {
     
     $waIdEmisor = $this->waS->conm->waIdToPhone($file['ownWaId']);
 
-    
     $link = '';
     if($msg->subEvento == 'cotdirpp') {
       $text = "Hola qué tal!!.👍\n".
