@@ -21,9 +21,13 @@ class FormatQC
             if($partes[$i] == '#qc') {
                 continue;
             }
+            if($partes[$i] == 'qc') {
+                continue;
+            }
+            $cuerpo[] = $partes[$i];
         }
 
-        $body = implode(' ', $partes);
+        $body = implode(' ', $cuerpo);
 
         return [
             "type" => "interactive",
