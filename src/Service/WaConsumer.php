@@ -45,7 +45,7 @@ class WaConsumer
             // TODO Guardar en el folder de analizar
             return;
         }
-        if($parser->isQC && $obj->tipoMsg != TypesWaMsgs::IMAGE) {
+        if($obj->tipoMsg != TypesWaMsgs::IMAGE && $parser->isQC) {
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "⚠️ *QUIÉN CON?*...\n".

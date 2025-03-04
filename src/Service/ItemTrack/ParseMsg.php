@@ -31,6 +31,7 @@ class ParseMsg {
     public function parse(bool $isTest) : WaMsgDto | null
     {
         $this->isTest = $isTest;
+        $this->isQC = false;
         if(array_key_exists('entry', $this->waMsg)) {
 
             if(count($this->waMsg['entry']) > 1) {
@@ -73,7 +74,7 @@ class ParseMsg {
         }
 
         // Detectar si es un QuienCon
-        $this->isQC();
+        $this->isQCMsg();
 
         switch ($this->waMsg['type']) {
             case 'interactive':
@@ -104,9 +105,8 @@ class ParseMsg {
     }
 
     /** */
-    private function isQC(): void
+    private function isQCMsg(): void
     {
-        $this->isQC = false;
         if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower($txt);
