@@ -29,9 +29,9 @@ class SendQC
         $this->waSender->setConmutador($this->msg);
         $template = $this->build();
         if(count($template) == 0) {
-
             $this->waSender->sendText(
-                'U olvidaste el comando *#qc* o tu mensaje es inválido'
+                '📵 Ocurrió un error al procesar tu solicitud, por favor '.
+                'inténtalo nuevamente por favor.'
             );
             return;
         }
@@ -78,13 +78,6 @@ class SendQC
                 ],
                 "action" => [
                     "buttons" => [
-                        [
-                            "type" => "reply",
-                            "reply" => [
-                                "id" => 'ntgapp_'. $idFile,
-                                "title" => "NO Vendo la Marca"
-                            ]
-                        ],
                         [
                             "type" => "reply",
                             "reply" => [

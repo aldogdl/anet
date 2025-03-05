@@ -158,6 +158,14 @@ class WaConsumer
         
         $hasCotProgress = $this->fsys->existe('tracking', $obj->from.'.json');
 
+        if(!$hasCotProgress && $obj->tipoMsg == TypesWaMsgs::IMAGE) {
+            $this->waSender->setConmutador($obj);
+            $this->waSender->sendText(
+                '📵 U olvidaste el comando *#qc* o tu mensaje es inválido'
+            );
+            return;
+        }
+
         if($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
 
             $clase = new WaBtnCotNow($this->waSender, $obj);
