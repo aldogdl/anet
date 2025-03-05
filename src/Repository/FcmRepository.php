@@ -323,8 +323,7 @@ class FcmRepository extends ServiceEntityRepository
             $filtros = array_map(function($obj) { return $obj->getTkfcm(); }, $mismos);
             $waIds = array_map(function($obj) { return $obj->getWaId(); }, $mismos);
         }
-        file_put_contents('wa_contacts_t.json', json_encode($filtros));
-        file_put_contents('wa_contacts_w.json', json_encode($waIds));
+
         $result = [
             'tokens' => array_unique($filtros),
             'waIds'  => array_unique($waIds),

@@ -17,7 +17,7 @@ use App\Service\ItemTrack\WaInitSess;
 use App\Service\RasterHub\TrackProv;
 use App\Repository\FcmRepository;
 use App\Service\RasterHub\ExampleQC;
-use App\Service\RasterHub\FormatQC;
+use App\Service\RasterHub\SendQC;
 
 class WaConsumer
 {
@@ -98,10 +98,11 @@ class WaConsumer
             return;
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::IMAGE && $parser->isQC) {
-            $this->waSender->setConmutador($obj);
-            $format = new FormatQC();
-            $this->waSender->sendPreTemplate($format->build($obj));
+
+            $sendQC = new SendQC($this->fcmEm, $this->fsys, $this->waSender);
+            $sendQC->exe($obj);
             return;
+
         }elseif ($obj->tipoMsg == TypesWaMsgs::DOC) {
 
             $this->waSender->setConmutador($obj);
