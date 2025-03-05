@@ -89,7 +89,7 @@ class SendQC
                             "type" => "reply",
                             "reply" => [
                                 "id" => 'cotdirpp_'. $idFile,
-                                "title" => "[ X ] EN DIRECTO"
+                                "title" => "[√] COTIZAR AHORA"
                             ]
                         ]
                     ]
