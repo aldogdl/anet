@@ -43,7 +43,7 @@ class WaInitSess
     public function isAtendido(): bool {
 
         $fecha = $this->waSender->fSys->getContent('/', $this->fileTmp);
-        $fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fecha);
+        $fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fecha['init']);
         $fechaDateTime->sub(new \DateInterval('PT5M'));
 
         $fechaActual = new \DateTime();
