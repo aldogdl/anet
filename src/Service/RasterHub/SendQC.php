@@ -71,7 +71,7 @@ class SendQC
                     "image" => ["id" => $this->msg->content['id']]
                 ],
                 "body" => [
-                    "text" => "🚘 Quién con:\n"."*".trim($body)."*". "\n"
+                    "text" => "📣 *QUIÉN CON* ❓:\n"."🚘 *".trim(mb_strtoupper($body))."*". "\n"
                 ],
                 "footer" => [
                     "text" => "¿Cómo quieres Cotizar?"
