@@ -36,6 +36,7 @@ class SendQC
         $contacts = $dql->getResult();
         $rota = count($contacts);
         if($rota > 0) {
+
             $this->waSender->initConmutador();
             if($this->waSender->conm == null) {
                 return;
@@ -58,7 +59,7 @@ class SendQC
                     }
                 }
             }
-
+            file_put_contents('wa_enviaods.json', json_encode($sendeds));
             $this->waSender->setWaIdToConmutador($this->msg->from);
             $this->waSender->sendText('🙂👍 Mensaje enviado a la RED con éxito');
         }
