@@ -157,7 +157,7 @@ class ParseMsg {
             
             // Estos son comandos realizados desde Whatsapp
             if(mb_strpos($txt, 'login') !== false) {
-                $txt = str_replace('\/login', $this->code.'ok', $txt);
+                $txt = $this->code.'ok';
             }
 
             if(mb_strpos($txt, $this->code) !== false) {
