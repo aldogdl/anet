@@ -163,7 +163,7 @@ class ParseMsg {
                 $txt = str_replace($this->code, '', $txt);
                 $txt = mb_strtolower(trim($txt));
                 
-                if($txt == 'login') {
+                if($txt == 'login' || $txt == 'ok') {
                     $tipo = TypesWaMsgs::LOGIN;
                     $subEvent = 'iniLogin';
                 } elseif($txt == 'demo') {
