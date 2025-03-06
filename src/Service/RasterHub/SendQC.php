@@ -35,11 +35,7 @@ class SendQC
         $dql = $this->fcmEm->getAllByWaIdExcept($this->msg->from);
         $contacts = $dql->getResult();
         $rota = count($contacts);
-        $prueb = [];
-        for ($i=0; $i < count($contacts); $i++) { 
-            $prueb[] = $contacts[$i]->getWaId();
-        }
-        file_put_contents('wa_contacs.json', json_encode($prueb));
+
         if($rota > 0) {
 
             $this->waSender->initConmutador();
@@ -56,11 +52,19 @@ class SendQC
                 $sendeds[] = $contacts[$i]->getWaId();
                 $this->waSender->setWaIdToConmutador($contacts[$i]->getWaId());
                 if($contacts[$i]->isLogged()) {
-                    $this->waSender->sendPreTemplate($template);
+                    try {
+                        $this->waSender->sendPreTemplate($template);
+                    } catch (\Throwable $th) {
+                        continue;
+                    }
                 }else{
                     if(!$this->waSender->fSys->existe('waRemOk', $this->msg->from.'.json')) {
-                        $this->waSender->sendTemplateRememberLogin();
-                        $this->waSender->fSys->setContent('waRemOk', $this->msg->from.'.json', []);
+                        try {
+                            $this->waSender->sendTemplateRememberLogin();
+                            $this->waSender->fSys->setContent('waRemOk', $this->msg->from.'.json', []);
+                        } catch (\Throwable $th) {
+                            continue;
+                        }
                     }
                 }
             }
