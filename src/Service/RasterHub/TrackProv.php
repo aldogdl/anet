@@ -100,6 +100,10 @@ class TrackProv {
     }
 
     $file = json_decode(file_get_contents($folderToBackup.'/'.$filename.'.json'), true);
+    if(count($file) == 0) {
+      return;
+    }
+    
     if(!array_key_exists('ownWaId', $file)) {
       // TODO No existe el campo del waId del Emisor
       return;
