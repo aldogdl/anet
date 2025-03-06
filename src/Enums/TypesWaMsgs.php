@@ -13,8 +13,9 @@ enum TypesWaMsgs: String
     case BTNCOTNOW = 'btnCotNow';
     case NTG = 'ntg';
     case NTGA = 'ntga';
-    case COTDIRECT = 'cotDirect';
-    // Action Cotizacion de Proveedor a Proveedor
-    case COTPP = 'cotPP';
+    // Action Cotizacion de Proveedor a Proveedor (Whatsapp puro)
+    case COTNOWFRM = 'cotNowFrm';
+    // Action Cotizacion de Proveedor a Proveedor (Formulario App)
+    case COTNOWWA = 'cotNowWa';
     case COMMAND = 'cmd';
 }

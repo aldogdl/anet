@@ -196,6 +196,7 @@ class ParseMsg {
                 $idContext = $this->waMsg['context']['id'];
             }
         }
+
         $mime = '';
         if(array_key_exists('mime_type', $this->waMsg[$this->waMsg['type']])) {                                        
             $partes = explode('/', $this->waMsg[$this->waMsg['type']]['mime_type']);
@@ -231,7 +232,8 @@ class ParseMsg {
         // Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
         // que se necesita enviar como respuesta inmendiata a este
         $subEvent = '';
-        if(array_key_exists('button_reply', $this->waMsg[$this->waMsg['type']])) {                                        
+        if(array_key_exists('button_reply', $this->waMsg[$this->waMsg['type']])) {  
+                                                  
             $btnAction = $this->waMsg[$this->waMsg['type']]['button_reply'];
             $partes = explode('_', $btnAction['id']);
             $subEvent = $partes[0];
@@ -253,14 +255,13 @@ class ParseMsg {
             case 'ntga':
                 $tipo = TypesWaMsgs::NTGA;
                 break;
-            case 'ntgapp':
-                $tipo = TypesWaMsgs::COTPP;
+            case 'cotNowFrm':
+                // Cotizar ahora canal via Formulario App
+                $tipo = TypesWaMsgs::COTNOWFRM;
                 break;
-            case 'cotdirpp':
-                $tipo = TypesWaMsgs::COTPP;
-                break;
-            case 'cotformpp':
-                $tipo = TypesWaMsgs::COTPP;
+            case 'cotNowWa':
+                // Cotizar ahora canal via Whatsapp puro
+                $tipo = TypesWaMsgs::COTNOWWA;
                 break;
             default:
                 $tipo = TypesWaMsgs::INTERACTIVE;

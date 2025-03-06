@@ -51,7 +51,7 @@ class WaConsumer
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 "⚠️ *QUIÉN CON?*...\n".
-                "Para solicitar Autopartes a la RED, es necesario enviar una fotografía ".
+                "Para solicitar Autopartes a la RED, es necesario *enviar una fotografía* ".
                 "de referencia, y en los comentarios de la foto, indicar:\n".
                 "*PIEZA, MODELO, MARCA, Año y características*\n".
                 "A continuación te muestro un Ejemplo."
@@ -97,12 +97,6 @@ class WaConsumer
             }
             return;
 
-        }elseif ($obj->tipoMsg == TypesWaMsgs::IMAGE && $parser->isQC) {
-
-            $sendQC = new SendQC($this->fcmEm, $this->fsys, $this->waSender);
-            $sendQC->exe($obj);
-            return;
-
         }elseif ($obj->tipoMsg == TypesWaMsgs::DOC) {
 
             $this->waSender->setConmutador($obj);
@@ -135,22 +129,6 @@ class WaConsumer
             $clase->exe();
             return;
 
-        }elseif ($obj->tipoMsg == TypesWaMsgs::COTPP) {
-
-            // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario
-            $this->fsys->delete('/', $obj->from.'_iniLogin.json');
-
-            if($obj->subEvento == 'ntgapp') {
-                $this->waSender->setConmutador($obj);
-                $this->waSender->sendText(
-                    "👍 Tu orden fué registrada con éxito ".
-                    "Ya no recibirás piezas de dicha marca."
-                );
-                return;
-            }
-            $pp = new TrackProv(null, $this->waSender, [], []);
-            $pp->sentResponseByAction( $this->fsys->getFolderTo('fbSended'), $obj );
-            return;
         }
 
         // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario
@@ -158,15 +136,29 @@ class WaConsumer
         
         $hasCotProgress = $this->fsys->existe('tracking', $obj->from.'.json');
 
-        if(!$hasCotProgress && $obj->tipoMsg == TypesWaMsgs::IMAGE) {
+        //
+        if ($obj->tipoMsg == TypesWaMsgs::IMAGE && $parser->isQC) {
+
+            $sendQC = new SendQC($this->fcmEm, $this->waSender);
+            $sendQC->exe($obj);
+            return;
+
+        } elseif(!$hasCotProgress && $obj->tipoMsg == TypesWaMsgs::IMAGE) {
+            // Si no hay una cotizacion en cuerso, pero es una imagen lo que se está recibiendo
+            // la tratamos como si fuera un mensaje de tipo #qc (Quien Con) mal formado
             $this->waSender->setConmutador($obj);
             $this->waSender->sendText(
                 '📵 U olvidaste el comando *#qc* o tu mensaje es inválido'
             );
             return;
-        }
 
-        if($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
+        }elseif ($obj->tipoMsg == TypesWaMsgs::COTNOWFRM || $obj->tipoMsg == TypesWaMsgs::COTNOWWA) {
+
+            $pp = new TrackProv(null, $this->waSender, [], []);
+            $pp->sentResponseByAction($obj);
+            return;
+
+        }elseif($obj->tipoMsg == TypesWaMsgs::BTNCOTNOW) {
 
             $clase = new WaBtnCotNow($this->waSender, $obj);
             $clase->exe($hasCotProgress);
@@ -179,14 +171,9 @@ class WaConsumer
         }
         
         if($hasCotProgress) {
-            
             $handler = new HandlerQuote($this->fsys, $this->waSender, $obj);
             $handler->exe();
             return;
-
-        }elseif ($this->fsys->existe('/', 'conv_free_'.$obj->from.'.json')) {
-            
-            // dd('Hay conversacion libre');
         }
 
         $this->waSender->setConmutador($obj);

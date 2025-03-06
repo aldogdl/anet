@@ -5,19 +5,16 @@ namespace App\Service\RasterHub;
 use App\Dtos\WaMsgDto;
 use App\Repository\FcmRepository;
 use App\Service\ItemTrack\WaSender;
-use App\Service\MyFsys;
 
 class SendQC
 {
     private WaSender $waSender;
-    private MyFsys $fsys;
     private FcmRepository $fcmEm;
     private WaMsgDto $msg;
 
     /** */
-    public function __construct(FcmRepository $fbm, MyFsys $fSys, WaSender $waS)
+    public function __construct(FcmRepository $fbm, WaSender $waS)
     {
-        $this->fsys = $fSys;
         $this->fcmEm = $fbm;
         $this->waSender = $waS;
     }
@@ -42,11 +39,15 @@ class SendQC
     public function build() : array
     {
         $body = mb_strtolower($this->msg->content['caption']);
-        $idFile = time() * 1000;
         $partes = explode(' ', $body);
         $rota = count($partes);
         $cuerpo = [];
-
+        
+        $id = round(microtime(true) * 1000);
+        $idSendFile = 'cmdqc::'. $id .'::'.$this->msg->from;
+        $folderToBackup = $this->waSender->fSys->getFolderTo('fbSended');
+        $filename = $folderToBackup .$idSendFile. '.json';
+                
         for ($i=0; $i < $rota; $i++) { 
             if($partes[$i] == '#') {
                 continue;
@@ -61,7 +62,18 @@ class SendQC
         }
 
         $body = implode(' ', $cuerpo);
+        $msgSended = [
+            "id" => $id,
+            "title" => "📣 QUIÉN CON❓",
+            "body" => $body,
+            "ownWaId" => $this->msg->from,
+            "idDbSr" => $idSendFile,
+            "type" => "cotiza_qc",
+            "thubmnail" => $this->msg->content['id'],
+            "created" => date('Y-m-d\TH:i:s'),
+        ];
 
+        file_put_contents($filename, json_encode($msgSended));
         return [
             "type" => "interactive",
             "interactive" => [
@@ -71,17 +83,17 @@ class SendQC
                     "image" => ["id" => $this->msg->content['id']]
                 ],
                 "body" => [
-                    "text" => "📣 *QUIÉN CON* ❓:\n"."🚘 *".trim(mb_strtoupper($body))."*". "\n"
+                    "text" => "📣 QUIÉN CON❓:\n"."🚘 *".trim(mb_strtoupper($body))."*". "\n"
                 ],
                 "footer" => [
-                    "text" => "¿Cómo quieres Cotizar?"
+                    "text" => "Si cuentas con la pieza, presiona *Cotizar Ahora*"
                 ],
                 "action" => [
                     "buttons" => [
                         [
                             "type" => "reply",
                             "reply" => [
-                                "id" => 'cotdirpp_'. $idFile,
+                                "id" => 'cotNowWa_'. $idSendFile,
                                 "title" => "[√] COTIZAR AHORA"
                             ]
                         ]
