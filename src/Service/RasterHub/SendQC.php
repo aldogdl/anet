@@ -35,7 +35,11 @@ class SendQC
         $dql = $this->fcmEm->getAllByWaIdExcept($this->msg->from);
         $contacts = $dql->getResult();
         $rota = count($contacts);
-        file_put_contents('wa_contacs.json', json_encode($contacts));
+        $prueb = [];
+        for ($i=0; $i < count($contacts); $i++) { 
+            $prueb[] = $contacts[$i]->getWaId();
+        }
+        file_put_contents('wa_contacs.json', json_encode($prueb));
         if($rota > 0) {
 
             $this->waSender->initConmutador();
