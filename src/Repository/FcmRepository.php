@@ -283,7 +283,7 @@ class FcmRepository extends ServiceEntityRepository
                             $filtros[] = $noTengoLaMrk[$i]->getTkfcm();
                         }
                         if(!in_array($noTengoLaMrk[$i]->getWaid(), $waIds)) {
-                            if($noTengoLaMrk[$i]->isIsLogged()) {
+                            if($noTengoLaMrk[$i]->isLogged()) {
                                 $waIds[] = $noTengoLaMrk[$i]->getWaid();
                             }
                         }
