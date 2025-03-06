@@ -91,6 +91,25 @@ class WaSender
             $this->body = $tmp;
             return $this->sendToWa();
         }
+        return 500;
+    }
+
+    /** 
+     * Usado para enviar msg que vienen de las templates prefabricadas
+    */
+    public function sendTemplateRememberLogin(): int
+    {
+        $this->type = 'template';
+        $this->body = [
+            'template' => [
+                "name" => "recordatorio_ok",
+                "language" => [
+                    "code" => "es_MX"
+                ]
+            ]
+        ];
+        $this->wrapBody();
+        return $this->sendToWa();
     }
 
     /** 

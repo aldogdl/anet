@@ -42,7 +42,14 @@ class SendQC
             }
             for ($i=0; $i < $rota; $i++) { 
                 $this->waSender->setWaIdToConmutador($contacts[$i]->getWaId());
-                $this->waSender->sendPreTemplate($template);
+                if($contacts[$i]->isLogged()) {
+                    $this->waSender->sendPreTemplate($template);
+                }else{
+                    if(!$this->waSender->fSys->existe('waRemOk', $this->msg->from.'.json')) {
+                        $this->waSender->sendTemplateRememberLogin();
+                        $this->waSender->fSys->setContent('waRemOk', $this->msg->from.'.json', []);
+                    }
+                }
             }
         }
     }
