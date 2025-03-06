@@ -89,13 +89,7 @@ class TrackProv {
    * [NOTA] El mensaje inicial fue enviado en la clase: PostController::sentNotification
   */
   public function sentResponseByAction(WaMsgDto $msg) : void 
-  {
-
-    $this->waS->initConmutador();
-    if($this->waS->conm == null) {
-      return;
-    }
-    
+  {  
     $folderToBackup = $this->waS->fSys->getFolderTo('fbSended');
     $filename = $msg->idDbSr;
     if(!mb_strpos($filename, '::')) {
@@ -104,37 +98,22 @@ class TrackProv {
       // de la pieza a cotizar, la cual debe estar en: /public_html/fb_sended
       return;
     }
+
     $file = json_decode(file_get_contents($folderToBackup.'/'.$filename.'.json'), true);
-    
     if(!array_key_exists('ownWaId', $file)) {
       // TODO No existe el campo del waId del Emisor
       return;
     }
-    
-    $waIdEmisor = $this->waS->conm->waIdToPhone($file['ownWaId']);
 
-    $link = '';
-    if($msg->subEvento == 'cotdirpp') {
-      $text = "Hola qué tal!!.👍\n".
-      "Con respecto a la solicitud de Cotización para\n".
-      "🚗 *".$file['body']."*\n\n";
-      $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
-    }else{
-
-      // Código del btn cotformpp;
-
-      // $dataItem = [
-      //   'ownWaId'=> $file['ownWaId'],
-      //   'ownSlug'=> $file['ownSlug'],
-      //   'idDbSr' => $file['idDbSr'],
-      // ];
-      // $this->waS->fSys->setCotViaForm($msg->from, $dataItem);
-
-      $link = 'https://autoparnet.com/form?lookingForTheCot='.$msg->idDbSr;
+    $this->waS->initConmutador();
+    if($this->waS->conm == null) {
+      return;
     }
-
-    $this->waS->setWaIdToConmutador($msg->from);
-    $this->waS->sendPreTemplate( $this->templateTrackLink($link) );
+    $link = $this->buildTemplateCotizarAhora($msg, $file['body']);
+    if($link != null) {
+      $this->waS->setWaIdToConmutador($msg->from);
+      $this->waS->sendPreTemplate( $this->templateTrackLink($link) );
+    }
     return;
   }
 
@@ -142,29 +121,16 @@ class TrackProv {
    * Metodo para construir el boton para contactar al solicitante cuando se presionó
    * el boton de cotizar ahora.
   */
-  public function buildTemplateCotizarAhora(String $folderToBackup, WaMsgDto $msg) : void 
+  public function buildTemplateCotizarAhora(WaMsgDto $msg, String $body) : String 
   {
-    $filename = $msg->idDbSr;
-    if(!mb_strpos($filename, '::')) {
-      // TODO Mensaje al Cotizador acerca de:
-      // El obj $msg no contiene el nomnre del archivo donde estan los datos
-      // de la pieza a cotizar, la cual debe estar en: /public_html/fb_sended
-      return;
-    }
-    $file = json_decode(file_get_contents($folderToBackup.'/'.$filename.'.json'), true);
-    
-    if(!array_key_exists('ownWaId', $file)) {
-      // TODO No existe el campo del waId del Emisor
-      return;
-    }
-    
-    $waIdEmisor = $this->waS->conm->waIdToPhone($file['ownWaId']);
-
     $link = '';
-    if($msg->subEvento == 'cotdirpp') {
+    $waIdEmisor = $this->waS->conm->waIdToPhone($msg->from);
+    if($msg->subEvento == 'cotNowWa') {
+
       $text = "Hola qué tal!!.👍\n".
       "Con respecto a la solicitud de Cotización para\n".
-      "🚗 *".$file['body']."*\n\n";
+      "🚗 *".$body."*\n";
+
       $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
     }else{
 
@@ -182,7 +148,7 @@ class TrackProv {
 
     $this->waS->setWaIdToConmutador($msg->from);
     $this->waS->sendPreTemplate( $this->templateTrackLink($link) );
-    return;
+    return $link;
   }
 
   /** 
