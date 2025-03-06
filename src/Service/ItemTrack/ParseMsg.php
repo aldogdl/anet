@@ -154,7 +154,7 @@ class ParseMsg {
             
             $txt = $this->waMsg[$this->waMsg['type']]['body'];
             $txt = mb_strtolower(trim($txt));
-            
+
             // Estos son comandos realizados desde Whatsapp
             if(mb_strpos($txt, 'login') !== false) {
                 $txt = $this->code.'ok';
