@@ -40,7 +40,14 @@ class SendQC
             if($this->waSender->conm == null) {
                 return;
             }
+
+            $sendeds = [];
             for ($i=0; $i < $rota; $i++) { 
+
+                if(in_array($contacts[$i]->getWaId(), $sendeds)) {
+                    continue;
+                }
+                $sendeds[] = $contacts[$i]->getWaId();
                 $this->waSender->setWaIdToConmutador($contacts[$i]->getWaId());
                 if($contacts[$i]->isLogged()) {
                     $this->waSender->sendPreTemplate($template);
@@ -51,7 +58,7 @@ class SendQC
                     }
                 }
             }
-            $this->waSender->fSys->setContent('waRemOk', $this->msg->from.'.json', []);
+
             $this->waSender->setWaIdToConmutador($this->msg->from);
             $this->waSender->sendText('🙂👍 Mensaje enviado a la RED con éxito');
         }
