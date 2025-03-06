@@ -44,10 +44,10 @@ class SendQC
         $cuerpo = [];
         
         $id = round(microtime(true) * 1000);
-        $idSendFile = 'cmdqc::'. $id .'::'.$this->msg->from;
+        $idSendFile = 'cmdqc::'.$id.'::'.$this->msg->from;
         $folderToBackup = $this->waSender->fSys->getFolderTo('fbSended');
-        $filename = $folderToBackup .$idSendFile. '.json';
-                
+        $filename = $folderToBackup."/".$idSendFile.'.json';
+
         for ($i=0; $i < $rota; $i++) { 
             if($partes[$i] == '#') {
                 continue;
