@@ -9,6 +9,7 @@ enum TypesWaMsgs: String
     case LOGIN = 'login';
     case IMAGE = 'image';
     case TEXT = 'text';
+    case BUTTON = 'button';
     case INTERACTIVE = 'interactive';
     case BTNCOTNOW = 'btnCotNow';
     case NTG = 'ntg';

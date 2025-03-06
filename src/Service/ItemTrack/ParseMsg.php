@@ -78,6 +78,9 @@ class ParseMsg {
         $this->isQCMsg();
 
         switch ($this->waMsg['type']) {
+            case 'button':
+                return $this->extractDataFromButton();
+                break;
             case 'interactive':
                 return $this->extractInteractive();
                 break;
@@ -215,6 +218,43 @@ class ParseMsg {
             $this->waMsg[$this->waMsg['type']],
             $mime,
             'sfto'
+        );
+    }
+
+    /** */
+    function extractDataFromButton(): WaMsgDto
+    {
+        $btnAction = 'Error, no se recibió ningún Botón';
+        $idContext = '';
+        if(array_key_exists('context', $this->waMsg)) {
+            $idContext = $this->waMsg['context']['id'];
+        }
+
+        $tipo = TypesWaMsgs::BUTTON;
+        // Todo mensaje interactivo debe incluir en su ID como primer elemento el mensaje
+        // que se necesita enviar como respuesta inmendiata a este
+        $subEvent = '';
+        if(array_key_exists('payload', $this->waMsg[$this->waMsg['type']])) {  
+                                                  
+            $btnAction = $this->waMsg[$this->waMsg['type']]['payload'];
+            if(mb_strpos($btnAction, 'QUIERO Recibir') !== false) {
+                $tipo = TypesWaMsgs::LOGIN;
+                $subEvent = 'iniLogin';
+            }
+        }
+
+        return new WaMsgDto(
+            $this->isTest,
+            $this->waMsg['from'],
+            $this->waMsg['id'],
+            "",
+            $idContext,
+            $this->waMsg['timestamp'],
+            $this->recibido,
+            $tipo,
+            $btnAction,
+            "delivered",
+            $subEvent
         );
     }
 
