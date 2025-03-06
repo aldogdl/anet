@@ -23,7 +23,6 @@ class SendQC
     public function exe(WaMsgDto $msg) : void 
     {
         $this->msg = $msg;
-        $this->waSender->setConmutador($this->msg);
         $template = $this->build();
         if(count($template) == 0) {
             $this->waSender->sendText(
@@ -32,11 +31,24 @@ class SendQC
             );
             return;
         }
-        $this->waSender->sendPreTemplate($template);
+        
+        $dql = $this->fcmEm->getAllByWaIdExcept($this->msg->from);
+        $contacts = $dql->getResult();
+        $rota = count($contacts);
+        if($rota > 0) {
+            $this->waSender->initConmutador();
+            if($this->waSender->conm == null) {
+                return;
+            }
+            for ($i=0; $i < $rota; $i++) { 
+                $this->waSender->setWaIdToConmutador($contacts[$i]->getWaId());
+                $this->waSender->sendPreTemplate($template);
+            }
+        }
     }
 
     /** */
-    public function build() : array
+    private function build() : array
     {
         $body = mb_strtolower($this->msg->content['caption']);
         $partes = explode(' ', $body);
@@ -72,8 +84,8 @@ class SendQC
             "thubmnail" => $this->msg->content['id'],
             "created" => date('Y-m-d\TH:i:s'),
         ];
-
         file_put_contents($filename, json_encode($msgSended));
+
         return [
             "type" => "interactive",
             "interactive" => [

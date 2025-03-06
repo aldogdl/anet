@@ -72,17 +72,10 @@ class WaConsumer
             // Si no hay un archivo de Stop STT enviamos los STT a RasterX
             if(!$this->fsys->existe('/', $obj->from.'_stopstt.json')) {
 
-                // Tecnica para proveedor a proveedor todos los mensajes
-                // enviados se ignoran los status
-                if($this->fsys->existe('waSttStop', $obj->from.'.txt')) {
-                    $this->fsys->delete('waSttStop', $obj->from.'.txt');
-                    return;
-                }
-
                 // Por el momento no se requieren procesar los status
                 // $this->waSender->setConmutador($obj);
                 // $this->waSender->sendMy($obj->toStt());
-
+                return;
             }else{
 
                 // Si es un STT y hay un archivo de Costo, es que acaba de ser
@@ -128,7 +121,6 @@ class WaConsumer
             $clase = new HandlerCMD($this->fsys, $this->waSender, $obj);
             $clase->exe();
             return;
-
         }
 
         // Borramos el archivo de inicio de sesion, ya que ha estas alturas no es necesario

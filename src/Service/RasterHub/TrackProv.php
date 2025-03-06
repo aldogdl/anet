@@ -168,11 +168,6 @@ class TrackProv {
     }
     
     for ($i=0; $i < $rota; $i++) {
-      // Creamos un archivo que indica al sistema no procesar estatus
-      file_put_contents(
-        'wa_stt_stop/'.$this->data['waIds'][$i].'.txt',
-        round(microtime(true) * 1000)
-      );
       $this->waS->setWaIdToConmutador($this->data['waIds'][$i]);
       $this->waS->sendPreTemplate( $this->basicTemplateTrack($idFile) );
     }

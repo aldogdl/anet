@@ -35,10 +35,23 @@ class Fcm
 
     #[ORM\Column]
     private ?bool $isLogged = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $loggedAt = null;
+
+    #[ORM\Column]
+    private ?bool $useApp = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $useAppAt = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $userCat = null;
    
     public function __construct()
     {
         $this->mrnta = 'd';
+        $this->useApp = false;
         $this->nvm = [];
     }
 
@@ -128,7 +141,7 @@ class Fcm
         return $this;
     }
 
-    public function isIsLogged(): ?bool
+    public function isLogged(): ?bool
     {
         return $this->isLogged;
     }
@@ -136,6 +149,54 @@ class Fcm
     public function setIsLogged(bool $isLogged): static
     {
         $this->isLogged = $isLogged;
+
+        return $this;
+    }
+
+    public function getLoggedAt(): ?\DateTimeImmutable
+    {
+        return $this->loggedAt;
+    }
+
+    public function setLoggedAt(?\DateTimeImmutable $loggedAt): static
+    {
+        $this->loggedAt = $loggedAt;
+
+        return $this;
+    }
+
+    public function isUseApp(): ?bool
+    {
+        return $this->useApp;
+    }
+
+    public function setUseApp(bool $useApp): static
+    {
+        $this->useApp = $useApp;
+
+        return $this;
+    }
+
+    public function getUseAppAt(): ?\DateTimeImmutable
+    {
+        return $this->useAppAt;
+    }
+
+    public function setUseAppAt(?\DateTimeImmutable $useAppAt): static
+    {
+        $this->useAppAt = $useAppAt;
+
+        return $this;
+    }
+
+    public function getUserCat(): ?string
+    {
+        return $this->userCat;
+    }
+
+    public function setUserCat(string $userCat): static
+    {
+        $this->userCat = $userCat;
 
         return $this;
     }

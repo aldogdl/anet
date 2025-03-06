@@ -15,7 +15,6 @@ parameters:
     coolers    : '%phtml%/wa_coolers/'
     waSendmy   : '%phtml%/wa_sendmy/'
     waDemoCot  : '%phtml%/wa_demo_cot/'
-    waSttStop  : '%phtml%/wa_stt_stop/'
     
     cnxFile    : '%scm%cnx_file.json'
     verapps    : '%scm%versions.json'
