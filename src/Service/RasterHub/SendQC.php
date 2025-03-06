@@ -70,7 +70,6 @@ class SendQC
             }
 
             if(count($sendeds) > 0) {
-                file_put_contents('wa_enviaods.json', json_encode($sendeds));
                 $this->waSender->setWaIdToConmutador($this->msg->from);
                 $this->waSender->sendText('🙂👍 Mensaje enviado a la RED con éxito');
             }
