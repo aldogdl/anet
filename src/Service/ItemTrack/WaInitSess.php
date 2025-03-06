@@ -43,16 +43,16 @@ class WaInitSess
     public function isAtendido(): bool {
 
         $fecha = $this->waSender->fSys->getContent('/', $this->fileTmp);
-        $fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fecha['init']);
-        $fechaDateTime->sub(new \DateInterval('PT5M'));
+        if(array_key_exists('init', $fecha)) {
 
-        $fechaActual = new \DateTime();
-        $diff = $fechaActual->diff($fechaDateTime);
-        if ($diff->h >= 24) {
-            return false;
-        } else {
-            return false;
+            $fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fecha['init']);
+            $fechaDateTime->sub(new \DateInterval('PT5M'));
+    
+            $fechaActual = new \DateTime();
+            $diff = $fechaActual->diff($fechaDateTime);
+            return ($diff->h >= 24) ? false : true;
         }
+        return false;
     }
 
     /** 
