@@ -103,7 +103,8 @@ class PostController extends AbstractController
       unset($data['meta']);
     }
     
-    $res = $fcmEm->setDataToken($data);
+    // Guardamos la marca de login en la BD de FB
+    $res = $fcmEm->setLoggedFromApp($data);
     $result['msg'] = $res;
     if(strpos($res, 'X') === false) {
       $result['abort'] = false;

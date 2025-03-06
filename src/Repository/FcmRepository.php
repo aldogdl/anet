@@ -22,22 +22,62 @@ class FcmRepository extends ServiceEntityRepository
     }
 
     /**
+     * Este método establece el token de datos basado en la información
+     * proporcionada.
+     * 
+     * @param array $data Un array asociativo que contiene 'waId' y 'device'.
+     * @return String
+     */
+    public function setLoggedFromApp(array $data): String
+    {
+        $result = 'X Error inesperado';
+        $obj = $this->getTokenByWaIdAndDevice($data['waId'], $data['device']);
+        if($obj != null) {
+            if($obj->getTkfcm() != $data['token']) {
+                $obj->setTkfcm($data['token']);
+                $result = 'Actualizado con éxito';
+            }
+        }else{
+            $clase = new Fcm();
+            $obj = $clase->fromJson($data);
+            $result = 'Guardado con éxito';
+        }
+        
+        if($obj) {
+            try {
+                $obj->setUseApp(true);
+                $obj->setUseAppAt(new \DateTimeImmutable());
+                $this->_em->persist($obj);
+                $this->_em->flush();
+            } catch (\Throwable $th) {
+                $result = 'X '.$th->getMessage();
+            }
+        }
+        
+        return $result;
+    }
+
+    /**
      * Este método actualiza la BD para indicar que un usuario acaba de
      * iniciar sesion para whatsapp
      * 
-     * @param String El identificador unico del usuario
+     * @param String $waId El identificador unico del usuario
+     * @param String $initAt La fecha y hora del inicio
      */
-    public function setLogged(String $waId): array
+    public function setLoggedFromWhats(String $waId, String $initAt): array
     {
+        $result = [];
+
         $dql = 'SELECT f FROM '. Fcm::class .' f '.
         'WHERE f.waId = :waId';
-        
-        $edit = false;
         $fbms = $this->_em->createQuery($dql)->setParameter('waId', $waId)->execute();
-        $result = [];
-        $existe = [];
+                
         if($fbms) {
+
+            $existe = [];
+            $edit = false;
             $rota = count($fbms);
+            $fechHra = \DateTimeImmutable::createFromFormat('Y-m-d\TH:i:s.v', $initAt);
             for ($i=0; $i < $rota; $i++) {
                 if($fbms[$i]->getWaId() == $waId) {
                     $edit = true;
@@ -47,6 +87,7 @@ class FcmRepository extends ServiceEntityRepository
                     }
                     $existe[] = $fbms[$i]->getTkfcm();
                     $fbms[$i]->setIsLogged(true);
+                    $fbms[$i]->setLoggedAt($fechHra);
                     $this->_em->persist($fbms[$i]);
                 }
             }
@@ -113,45 +154,6 @@ class FcmRepository extends ServiceEntityRepository
         return $this->_em->createQuery($dql)->setParameter('waId', $waId);
     }
     
-    /**
-     * Este método establece el token de datos basado en la información
-     * proporcionada.
-     * 
-     * @param array $data Un array asociativo que contiene 'waId' y 'device'.
-     * @return String
-     */
-    public function setDataToken(array $data): String
-    {
-        $result = 'X Error inesperado';
-        $save = false;
-        $obj = $this->getTokenByWaIdAndDevice($data['waId'], $data['device']);
-        if($obj != null) {
-            if($obj->getTkfcm() != $data['token']) {
-                $obj->setTkfcm($data['token']);
-                $result = 'Actualizado con éxito';
-                $save = true;
-            }else{
-                $result = 'Encontrado y Sin Acciones';
-            }
-        }else{
-            $clase = new Fcm();
-            $obj = $clase->fromJson($data);
-            $result = 'Guardado con éxito';
-            $save = true;
-        }
-
-        if($obj && $save) {
-            try {
-                $this->_em->persist($obj);
-                $this->_em->flush();
-            } catch (\Throwable $th) {
-                $result = 'X '.$th->getMessage();
-            }
-        }
-        
-        return $result;
-    }
-
     /**
      * Este método guarda los registros de no vendo la marca
      * 

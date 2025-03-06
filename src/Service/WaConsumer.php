@@ -103,7 +103,7 @@ class WaConsumer
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
 
-            $clase = new WaInitSess($this->fcmEm, $this->push, $this->fsys, $this->waSender, $obj);
+            $clase = new WaInitSess($this->fcmEm, $this->push, $this->waSender, $obj);
             $clase->exe();
             return;
 

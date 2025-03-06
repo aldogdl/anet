@@ -5,7 +5,6 @@ namespace App\Service\ItemTrack;
 use App\Service\Pushes;
 use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
-use App\Service\MyFsys;
 use App\Repository\FcmRepository;
 
 class WaInitSess
@@ -14,18 +13,16 @@ class WaInitSess
     private String $fileTmp = '';
 
     private WaMsgDto $waMsg;
-    private MyFsys $fSys;
     private WaSender $waSender;
     private Pushes $push;
     private FcmRepository $fcmEm;
     
     /** */
     public function __construct(
-        ?FcmRepository $fbm, ?Pushes $push, MyFsys $fsys, WaSender $waS, WaMsgDto $msg
+        ?FcmRepository $fbm, ?Pushes $push, WaSender $waS, WaMsgDto $msg
     )
     {
         $this->waMsg   = $msg;
-        $this->fSys    = $fsys;
         $this->waSender= $waS;
         if($fbm != null) {
             $this->fcmEm = $fbm;
@@ -43,7 +40,20 @@ class WaInitSess
      * -- Con la estrategia de crear un archivo como recibido el msg de inicio de sesion
      * evitamos el problema descrito.
     */
-    public function isAtendido(): bool { return $this->fSys->existe('/', $this->fileTmp); }
+    public function isAtendido(): bool {
+
+        $fecha = $this->waSender->fSys->getContent('/', $this->fileTmp);
+        $fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fecha);
+        $fechaDateTime->sub(new \DateInterval('PT5M'));
+
+        $fechaActual = new \DateTime();
+        $diff = $fechaActual->diff($fechaDateTime);
+        if ($diff->h >= 24) {
+            return false;
+        } else {
+            return false;
+        }
+    }
 
     /** 
      * [V6]
@@ -53,56 +63,32 @@ class WaInitSess
         if($this->isAtendido()) {
             return;
         }
+
         try {
             $date = new \DateTime(strtotime($this->waMsg->creado));
         } catch (\Throwable $th) {
             $date = new \DateTime('now');
         }
-        $this->fSys->setContent('/', $this->fileTmp, ['init' => $date->format('Y-m-d\TH:i:s.v')]);
+        $fechHra = $date->format('Y-m-d\TH:i:s.v');
+        $this->waSender->fSys->setContent('/', $this->fileTmp, ['init' => $fechHra]);
+        
+        // Guardamos la marca de login en la BD de FB
+        $slugFrom = $this->fcmEm->setLoggedFromWhats($this->waMsg->from, $fechHra);
+        if(count($slugFrom) > 0) {
+            // Guardamos la marca de login en el archivo del expediente del usuario
+            $this->waSender->fSys->updateFechaLoginTo($slugFrom[0]['slug'], $this->waMsg->from, $fechHra);
+            // Enviamos una notificacion push para que reaccione la app cliente
+            $this->push->sendPushInitLogin($slugFrom, $fechHra);
+        }
         
         $this->hasErr = '';
         $this->waSender->setConmutador($this->waMsg);
-        
-        // Guardamos la marca de login en la BD de FB
-        $slugFrom = $this->fcmEm->setLogged($this->waMsg->from);
-        if(count($slugFrom) > 0) {
-            // Guardamos la marca de login en el archivo del expediente del usuario
-            $time = $this->fSys->updateFechaLoginTo($slugFrom[0]['slug'], $this->waMsg->from);
-            if($time != '') {
-                // Enviamos una notificacion push para que reaccione la app cliente
-                $this->push->sendPushInitLogin($slugFrom, $time);
-            }
-        }
-
         $code = $this->waSender->sendText(
             "🎟️ Ok, enterados. Te avisamos que tu sesión caducará mañana a las " . $date->format('h:i:s a')
         );
 
         if($code >= 200 && $code <= 300) {
-            
             $headers = $this->waMsg->toInit();
-            // Revisar si hay alguna cotizacion en curso
-            $has = $this->fSys->hasCotizando($this->waMsg);
-            if(!$has) {
-                // Buscar en el cooler del cotizador que inicio sesion un item dispuesto
-                $itemResult = $this->fSys->getNextItemForSend($this->waMsg, '');
-                $wamid = '';
-                if($itemResult['idDbSr'] != 0) {
-                    
-                    $headers = HeaderDto::sendedIdDbSr($headers, $itemResult['idDbSr']);
-                    $code = $this->waSender->sendTemplate($itemResult['idDbSr']);
-                    if($code == 200) {
-                        $wamid = $this->waSender->wamidMsg;
-                    }else{
-                        $wamid = 'X ' .$this->waSender->errFromWa;
-                    }
-                    $headers = HeaderDto::sendedWamid($headers, $wamid);
-                }
-            }else{
-                // TODO... SE encontró un item pendiente de cotizar
-                // Reenviarselo al cotizador para continuar su proceso
-            }
-
             $this->waSender->sendMy(['header' => $headers]);
         }
     }

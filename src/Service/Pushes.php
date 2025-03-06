@@ -47,7 +47,7 @@ class Pushes
         $payload = ['time' => $timeInit, 'type' => 'iniLogin'];
         $rota = count($push);
         for ($i=0; $i < $rota; $i++) { 
-            $result = $this->sendTo($push[$i]['token'], $notification, $payload);
+            $this->sendTo($push[$i]['token'], $notification, $payload);
         }
     }
 

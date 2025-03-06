@@ -22,7 +22,7 @@ class MyFsys
     }
     
     /** */
-    public function updateFechaLoginTo(String $slug, String $waId): String
+    public function updateFechaLoginTo(String $slug, String $waId, String $fechHra): String
     {
         $filename = $slug . '.json';
         $map = $this->getContent('dtaCtc', $filename);
@@ -32,12 +32,11 @@ class MyFsys
             $has = array_search($waId, array_column($colabs, 'waId'));
             if($has !== false) {
                 
-                $hoy = new \DateTime('now');
-                $result = $hoy->format('Y-m-d\TH:i:s.v');
-                $colabs[$has]['login'] = $result;
+                $fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fechHra);
+                $fechaDateTime->add(new \DateInterval('PT23H55M'));
 
-                $hoy = $hoy->add(new \DateInterval('PT23H55M'));
-                $colabs[$has]['kduk'] = $hoy->format('Y-m-d\TH:i:s.v');
+                $colabs[$has]['login'] = $fechHra;
+                $colabs[$has]['kduk'] = $fechaDateTime->format('Y-m-d\TH:i:s.v');
                 $colabs[$has]['stt'] = 1;
 
                 $map['colabs'] = $colabs;
