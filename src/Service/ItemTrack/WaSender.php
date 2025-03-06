@@ -95,7 +95,7 @@ class WaSender
     }
 
     /** 
-     * Usado para enviar msg que vienen de las templates prefabricadas
+     * Usado para enviar msg que vienen de las templates prefabricadas.
     */
     public function sendTemplateRememberLogin(): int
     {

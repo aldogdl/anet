@@ -156,10 +156,10 @@ class ParseMsg {
             $txt = mb_strtolower($txt);
             
             // Estos son comandos realizados desde Whatsapp
-            if(mb_strpos($txt, '/raster_') !== false) {
-                $txt = str_replace('/raster_', $this->code, $txt);
+            if(mb_strpos($txt, '\/login') !== false) {
+                $txt = str_replace('/login', $this->code.'ok', $txt);
             }
-            
+
             if(mb_strpos($txt, $this->code) !== false) {
                 
                 $tipo = TypesWaMsgs::COMMAND;
