@@ -77,7 +77,7 @@ class GetController extends AbstractController
       // Para poder recuperar todos los items que no ha descargado el solicitante
       // la tecnica es crear un archivo json para saber cuales items ya descargo
       $recovery = $fsys->getContent('prodSols', $waIdPedido.'.json');
-      if($recovery != null || count($recovery) == 0) {
+      if($recovery == null || count($recovery) == 0) {
         $recovery = [];
       }
       // Los items estan organizados en el archivo con pares clave-valor
@@ -98,6 +98,7 @@ class GetController extends AbstractController
     }
 
     $result = $paginator->pagine($query, $limit, $arrayType, $offset);
+    file_put_contents('results.json', json_encode($result));
     if($result['paging']['results'] > 0 && $waIdPedido != '') {
       for ($i=0; $i < $result['paging']['results']; $i++) {
         $recovery[$milisegundos][] = $result['result'][$i]['id'];
