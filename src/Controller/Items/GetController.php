@@ -102,7 +102,7 @@ class GetController extends AbstractController
       for ($i=0; $i < $result['paging']['results']; $i++) {
         $recovery[$milisegundos][] = $result['result'][$i]['id'];
       }
-      $fsys->getContent('prodSols', $params['fromWaId'].'.json', $recovery);
+      $fsys->setContent('prodSols', $params['fromWaId'].'.json', $recovery);
     }
     return $this->json($result);
 	}
