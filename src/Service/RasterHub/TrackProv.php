@@ -133,7 +133,7 @@ class TrackProv {
 
       $text = "Hola qué tal!!.👍\n".
       "Con respecto a la solicitud de Cotización para:\n".
-      "🚗 *".mb_strtoupper($body)."*\n".
+      "🚗 *".trim(mb_strtoupper($body))."*\n".
       "Te envío Fotos y Costo:\n";
 
       $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
