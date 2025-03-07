@@ -86,7 +86,7 @@ class GetController extends AbstractController
         $recovery = $recovery[$milisegundos];
       }
       $query = $itemEm->getItemsCompleteByType($type, $waIdPedido, $recovery);
-      file_put_contents('query.txt', $query);
+      file_put_contents('query.txt', $query->getDQL());
       $limit = 10;
       $arrayType = 'max';
     }else{
