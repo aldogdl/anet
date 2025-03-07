@@ -105,8 +105,12 @@ class GetController extends AbstractController
       for ($i=0; $i < $result['paging']['results']; $i++) {
         $downs[] = $result['result'][$i]['id'];
       }
-
-      $recovery[$milisegundos] = $downs;
+      if(array_key_exists($milisegundos, $recovery)) {
+        $currents = $recovery[$milisegundos];
+        $recovery[$milisegundos] = array_merge($downs, $currents);
+      }else{
+        $recovery[$milisegundos] = $downs;
+      }
       $fsys->setContent('prodSols', $params['fromWaId'].'.json', $recovery);
     }
     return $this->json($result);
