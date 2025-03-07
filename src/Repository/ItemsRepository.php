@@ -98,12 +98,20 @@ class ItemsRepository extends ServiceEntityRepository
     public function getItemsCompleteByType(String $type, String $waIdFrom = '', array $estosNo = []): \Doctrine\ORM\Query
     {
         $dql = 'SELECT it FROM '.Items::class.' it '.
-        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo AND it.id NOT IN (:estos_no) '.
-        'ORDER BY it.id DESC';
-        
-        return $this->_em->createQuery($dql)->setParameters([
-            'tipo' => $type, 'waIdFrom' => $waIdFrom, 'estos_no' => $estosNo
-        ]);
+        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo ';
+        $hasEstosNo = count($estosNo);
+        if($hasEstosNo > 0) {
+            $dql .= 'AND it.id NOT IN (:estos_no)';
+        }
+        $dql .= 'ORDER BY it.id DESC';
+
+        $query = $this->_em->createQuery($dql);
+        $query->setParameter('waIdFrom', $waIdFrom);
+        $query->setParameter('tipo', $type);
+        if($hasEstosNo > 0) {
+            $query->setParameter('estos_no', $estosNo);
+        }
+        return $query;
     }
 
     /** */

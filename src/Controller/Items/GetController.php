@@ -86,6 +86,7 @@ class GetController extends AbstractController
         $recovery = $recovery[$milisegundos];
       }
       $query = $itemEm->getItemsCompleteByType($type, $waIdPedido, $recovery);
+      file_put_contents('query.txt', $query);
       $limit = 10;
       $arrayType = 'max';
     }else{
@@ -98,7 +99,6 @@ class GetController extends AbstractController
     }
 
     $result = $paginator->pagine($query, $limit, $arrayType, $offset);
-    file_put_contents('results.json', json_encode($result));
     if($result['paging']['results'] > 0 && $waIdPedido != '') {
       for ($i=0; $i < $result['paging']['results']; $i++) {
         $recovery[$milisegundos][] = $result['result'][$i]['id'];
