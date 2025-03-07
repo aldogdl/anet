@@ -81,12 +81,13 @@ class GetController extends AbstractController
       if($recovery == null || count($recovery) == 0) {
         $recovery = [];
       }
+      $estosNo = [];
       // Los items estan organizados en el archivo con pares clave-valor
       // donde la clave es la fecha de hoy apartir de las 5 am.
       if(array_key_exists($milisegundos, $recovery)) {
-        $recovery = $recovery[$milisegundos];
+        $estosNo = $recovery[$milisegundos];
       }
-      $query = $itemEm->getItemsCompleteByType($type, $waIdPedido, $recovery);
+      $query = $itemEm->getItemsCompleteByType($type, $waIdPedido, $estosNo);
       $limit = 10;
       $arrayType = 'max';
     }else{
