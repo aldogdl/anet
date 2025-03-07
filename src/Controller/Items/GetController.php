@@ -2,7 +2,6 @@
 
 namespace App\Controller\Items;
 
-use App\Dtos\HeaderDto;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,6 +11,7 @@ use App\Repository\ItemsRepository;
 use App\Repository\PaginatorQuery;
 use App\Service\ItemTrack\WaSender;
 use App\Service\HeaderItem;
+use App\Service\MyFsys;
 
 class GetController extends AbstractController
 {
@@ -56,7 +56,7 @@ class GetController extends AbstractController
    * Recuperación y gestion para los item de tipo solicitud
   */
   #[Route('items/type/{type}', methods:['GET', 'DELETE'])]
-	public function itemsTypeSolicitud(Request $req, ItemsRepository $itemEm, String $type): Response
+	public function itemsTypeSolicitud(Request $req, ItemsRepository $itemEm, MyFsys $fsys, String $type): Response
 	{
     $paginator = new PaginatorQuery();
     $result = ['paging' => ['total' => 0], 'result' => []];
@@ -64,11 +64,28 @@ class GetController extends AbstractController
     $limit = 20;
     $arrayType = 'min';
     $params = $req->query->all();
-    // Quien es el que solicito la lista, si viene este parametro
-    // Significa que se recupera los ultimos 20 items tipo solicitud
+    $recovery = [];
+    $waIdPedido = '';
+    $fecha_hoy = strtotime('today 5:00:00');
+    $milisegundos = (new \DateTime())->getTimestamp() * 1000 - $fecha_hoy * 1000;
+    // Quien es el que solicitó la lista, si viene este parametro
+    // Significa que se recuperan los ultimos 20 items tipo solicitud
     // excepto los que coincidan con waId que requiere la lista.
     if(array_key_exists('fromWaId', $params)) {
-      $query = $itemEm->getItemsCompleteByType($type, $params['fromWaId']);
+
+      $waIdPedido = $params['fromWaId'];
+      // Para poder recuperar todos los items que no ha descargado el solicitante
+      // la tecnica es crear un archivo json para saber cuales items ya descargo
+      $recovery = $fsys->getContent('prodSols', $waIdPedido.'.json');
+      if($recovery != null || count($recovery) == 0) {
+        $recovery = [];
+      }
+      // Los items estan organizados en el archivo con pares clave-valor
+      // donde la clave es la fecha de hoy apartir de las 5 am.
+      if(array_key_exists($milisegundos, $recovery)) {
+        $recovery = $recovery[$milisegundos];
+      }
+      $query = $itemEm->getItemsCompleteByType($type, $waIdPedido, $recovery);
       $limit = 10;
       $arrayType = 'max';
     }else{
@@ -81,6 +98,12 @@ class GetController extends AbstractController
     }
 
     $result = $paginator->pagine($query, $limit, $arrayType, $offset);
+    if($result['paging']['results'] > 0 && $waIdPedido != '') {
+      for ($i=0; $i < $result['paging']['results']; $i++) {
+        $recovery[$milisegundos][] = $result['result'][$i]['id'];
+      }
+      $fsys->getContent('prodSols', $params['fromWaId'].'.json', $recovery);
+    }
     return $this->json($result);
 	}
 

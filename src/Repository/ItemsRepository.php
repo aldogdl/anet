@@ -95,13 +95,15 @@ class ItemsRepository extends ServiceEntityRepository
      * Tomamos una lista de Items con todos los campos donde el waId paraso por
      * parametro sean diferentes a este, tomando los items que pertenecen a otros usuarios
     */
-    public function getItemsCompleteByType(String $type, String $waIdFrom = ''): \Doctrine\ORM\Query
+    public function getItemsCompleteByType(String $type, String $waIdFrom = '', array $estosNo = []): \Doctrine\ORM\Query
     {
         $dql = 'SELECT it FROM '.Items::class.' it '.
-        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo '.
+        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo AND it.id NOT IN (:estos_no) '.
         'ORDER BY it.id DESC';
-
-        return $this->_em->createQuery($dql)->setParameters(['tipo' => $type, 'waIdFrom' => $waIdFrom]);
+        
+        return $this->_em->createQuery($dql)->setParameters([
+            'tipo' => $type, 'waIdFrom' => $waIdFrom, 'estos_no' => $estosNo
+        ]);
     }
 
     /** */
