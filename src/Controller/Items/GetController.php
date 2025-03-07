@@ -68,7 +68,7 @@ class GetController extends AbstractController
     $waIdPedido = '';
     $fecha_hoy = strtotime('today 5:00:00');
     $milisegundos = $fecha_hoy * 1000;
-    
+
     // Quien es el que solicitó la lista, si viene este parametro
     // Significa que se recuperan los ultimos 20 items tipo solicitud
     // excepto los que coincidan con waId que requiere la lista.
@@ -99,10 +99,13 @@ class GetController extends AbstractController
     }
 
     $result = $paginator->pagine($query, $limit, $arrayType, $offset);
+    $downs = [];
     if($result['paging']['results'] > 0 && $waIdPedido != '') {
       for ($i=0; $i < $result['paging']['results']; $i++) {
-        $recovery[$milisegundos][] = $result['result'][$i]['id'];
+        $downs[] = $result['result'][$i]['id'];
       }
+
+      $recovery[$milisegundos] = $downs;
       $fsys->setContent('prodSols', $params['fromWaId'].'.json', $recovery);
     }
     return $this->json($result);
