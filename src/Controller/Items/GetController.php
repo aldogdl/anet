@@ -67,7 +67,8 @@ class GetController extends AbstractController
     $recovery = [];
     $waIdPedido = '';
     $fecha_hoy = strtotime('today 5:00:00');
-    $milisegundos = (new \DateTime())->getTimestamp() * 1000 - $fecha_hoy * 1000;
+    $milisegundos = $fecha_hoy * 1000;
+    
     // Quien es el que solicitó la lista, si viene este parametro
     // Significa que se recuperan los ultimos 20 items tipo solicitud
     // excepto los que coincidan con waId que requiere la lista.
@@ -86,7 +87,6 @@ class GetController extends AbstractController
         $recovery = $recovery[$milisegundos];
       }
       $query = $itemEm->getItemsCompleteByType($type, $waIdPedido, $recovery);
-      file_put_contents('query.txt', $query->getDQL());
       $limit = 10;
       $arrayType = 'max';
     }else{

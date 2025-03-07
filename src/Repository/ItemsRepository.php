@@ -101,7 +101,7 @@ class ItemsRepository extends ServiceEntityRepository
         'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo ';
         $hasEstosNo = count($estosNo);
         if($hasEstosNo > 0) {
-            $dql .= 'AND it.id NOT IN (:estos_no)';
+            $dql .= 'AND it.id NOT IN (:estos_no) ';
         }
         $dql .= 'ORDER BY it.id DESC';
 
