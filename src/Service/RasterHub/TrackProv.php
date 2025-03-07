@@ -113,10 +113,10 @@ class TrackProv {
     if($this->waS->conm == null) {
       return;
     }
-    $link = $this->buildTemplateCotizarAhora($msg, $file['body']);
-    if($link != null) {
+    $link = $this->buildTemplateCotizarAhora($msg, $file['ownWaId'], $file['body']);
+    if(count($link) > 0) {
       $this->waS->setWaIdToConmutador($msg->from);
-      $this->waS->sendPreTemplate( $this->templateTrackLink($link) );
+      $this->waS->sendPreTemplate( $link );
     }
     return;
   }
@@ -125,10 +125,10 @@ class TrackProv {
    * Metodo para construir el boton para contactar al solicitante cuando se presionó
    * el boton de cotizar ahora.
   */
-  public function buildTemplateCotizarAhora(WaMsgDto $msg, String $body) : String 
+  public function buildTemplateCotizarAhora(WaMsgDto $msg, String $waIdTo, String $body) : array 
   {
     $link = '';
-    $waIdEmisor = $this->waS->conm->waIdToPhone($msg->from);
+    $waIdEmisor = $this->waS->conm->waIdToPhone($waIdTo);
     if($msg->subEvento == 'cotNowWa') {
 
       $text = "Hola qué tal!!.👍\n".
@@ -150,9 +150,7 @@ class TrackProv {
       $link = 'https://autoparnet.com/form?lookingForTheCot='.$msg->idDbSr;
     }
 
-    $this->waS->setWaIdToConmutador($msg->from);
-    $this->waS->sendPreTemplate( $this->templateTrackLink($link) );
-    return $link;
+    return $this->templateTrackLink($link);
   }
 
   /** 
