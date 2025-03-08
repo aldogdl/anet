@@ -98,7 +98,7 @@ class ItemsRepository extends ServiceEntityRepository
     public function getItemsCompleteByType(String $type, String $waIdFrom = '', array $estosNo = []): \Doctrine\ORM\Query
     {
         $dql = 'SELECT it FROM '.Items::class.' it '.
-        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo ';
+        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo AND it.idCot == 0';
         $hasEstosNo = count($estosNo);
         if($hasEstosNo > 0) {
             $dql .= 'AND it.id NOT IN (:estos_no) ';
