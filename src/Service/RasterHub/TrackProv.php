@@ -143,7 +143,7 @@ class TrackProv {
       $file = [];
       $link = 'https://autoparnet.com/form/cotiza/item?idItem='.$file['idItem'].'&idDbSr='.$file['idDbSr'];
     }
-    
+
     $tmp = new TemplatesTrack();
     return $tmp->templateTrackLink($link);
   }
@@ -177,7 +177,7 @@ class TrackProv {
       [
         "type" => "reply",
         "reply" => [
-          "id" => 'cotNowFrm_'. $idFile,
+          "id" => 'cotNowWa_'. $idFile,
           "title" => "[X] EN DIRECTO"
         ]
       ]
@@ -187,7 +187,7 @@ class TrackProv {
       $botones[] = [
         "type" => "reply",
         "reply" => [
-          "id" => 'cotformpp_'. $idFile,
+          "id" => 'cotNowFrm_'. $idFile,
           "title" => "[√] FORMULARIO"
         ]
       ];
