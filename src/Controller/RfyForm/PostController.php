@@ -118,53 +118,6 @@ class PostController extends AbstractController
   }
 
   /** 
-   * Enviamos la notificacion de nueva solicitud a los contactos
-  */
-  #[Route('rfyform/make_push/{key}', methods:['POST'])]
-	public function sentNotification(
-    Request $req, SecurityBasic $sec, FcmRepository $fcmEm, 
-    ItemsRepository $itemEm, WaSender $waS, Pushes $push, String $key
-  ): Response
-	{
-
-    if(!$sec->isValid($key)) {
-      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
-      return $this->json($result);
-    }
-
-    $result = ['abort' => true, 'msg' => ''];
-    $data = [];
-    try {
-      $data = $this->toArray($req, 'data');
-    } catch (\Throwable $th) {
-      $data = $req->getContent();
-      if($data) {
-        $data = json_decode($data, true);
-      }else{
-        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
-        return $this->json($result);
-      }
-    }
-
-    // Si existe la clave 'idwap' es que se ha indexado correctamente la imagen
-    // en los servidores de Whatsapp, por lo que se guarda el id de la imagen en D.B.
-    $itemEm->updateImgWa($data);
-
-    $contacts = $fcmEm->getContactsForSend($data);
-
-    if(count($contacts) == 0) {
-      $result = ['abort' => true, 'msg' => 'X Sin contactos'];
-    }else{
-      $track = new TrackProv($push, $waS, $data, $contacts);
-      $result = $track->builderTrack(
-        $this->getParameter('fbSended'), $this->getParameter('fbFails')
-      );
-    }
-
-    return $this->json($result);
-  }
-
-  /** 
    * Guardamos la info de ntga y enviamos un sse si el item es de RasterFy
   */
   #[Route('rfyform/ntga/{key}', methods:['POST'])]
@@ -251,5 +204,52 @@ class PostController extends AbstractController
     return $this->json($result);
 
 	}
+
+  /** 
+   * Enviamos la notificacion de nueva solicitud a los contactos
+  */
+  #[Route('rfyform/make_push/{key}', methods:['POST'])]
+	public function sentNotification(
+    Request $req, SecurityBasic $sec, FcmRepository $fcmEm, 
+    ItemsRepository $itemEm, WaSender $waS, Pushes $push, String $key
+  ): Response
+	{
+
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    $result = ['abort' => true, 'msg' => ''];
+    $data = [];
+    try {
+      $data = $this->toArray($req, 'data');
+    } catch (\Throwable $th) {
+      $data = $req->getContent();
+      if($data) {
+        $data = json_decode($data, true);
+      }else{
+        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+        return $this->json($result);
+      }
+    }
+
+    // Si existe la clave 'idwap' es que se ha indexado correctamente la imagen
+    // en los servidores de Whatsapp, por lo que se guarda el id de la imagen en D.B.
+    $itemEm->updateImgWa($data);
+
+    $contacts = $fcmEm->getContactsForSend($data);
+
+    if(count($contacts) == 0) {
+      $result = ['abort' => true, 'msg' => 'X Sin contactos'];
+    }else{
+      $track = new TrackProv($push, $waS, $data, $contacts);
+      $result = $track->builderTrack(
+        $this->getParameter('fbSended'), $this->getParameter('fbFails')
+      );
+    }
+
+    return $this->json($result);
+  }
 
 }

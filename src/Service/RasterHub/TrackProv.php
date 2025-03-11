@@ -103,7 +103,7 @@ class TrackProv {
     if(count($file) == 0) {
       return;
     }
-    
+
     if(!array_key_exists('ownWaId', $file)) {
       // TODO No existe el campo del waId del Emisor
       return;
@@ -139,19 +139,13 @@ class TrackProv {
       $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
     }else{
 
-      // Código del btn cotformpp;
-
-      // $dataItem = [
-      //   'ownWaId'=> $file['ownWaId'],
-      //   'ownSlug'=> $file['ownSlug'],
-      //   'idDbSr' => $file['idDbSr'],
-      // ];
-      // $this->waS->fSys->setCotViaForm($msg->from, $dataItem);
-
-      $link = 'https://autoparnet.com/form?lookingForTheCot='.$msg->idDbSr;
+      // Código del btn cotformpp
+      $file = [];
+      $link = 'https://autoparnet.com/form/cotiza/item?idItem='.$file['idItem'].'&idDbSr='.$file['idDbSr'];
     }
-
-    return $this->templateTrackLink($link);
+    
+    $tmp = new TemplatesTrack();
+    return $tmp->templateTrackLink($link);
   }
 
   /** 
@@ -177,15 +171,28 @@ class TrackProv {
   }
 
   /** */
-  private function basicTemplateTrack(String $idFile): array
+  private function basicTemplateTrack(String $idFile, String $from = 'form'): array
   {
-            // [
-            //   "type" => "reply",
-            //   "reply" => [
-            //     "id" => 'cotformpp_'. $idFile,
-            //     "title" => "[ √ ] YONQUESmx"
-            //   ]
-            // ]
+    $botones = [
+      [
+        "type" => "reply",
+        "reply" => [
+          "id" => 'cotNowFrm_'. $idFile,
+          "title" => "[X] EN DIRECTO"
+        ]
+      ]
+    ];
+
+    if($from == 'form') {
+      $botones[] = [
+        "type" => "reply",
+        "reply" => [
+          "id" => 'cotformpp_'. $idFile,
+          "title" => "[√] FORMULARIO"
+        ]
+      ];
+    }
+
     return [
       "type" => "interactive",
       "interactive" => [
@@ -198,47 +205,10 @@ class TrackProv {
           "text" => $this->data['title'] . $this->data['body'] . "\n"
         ],
         "footer" => [
-          "text" => "¿Cómo quieres Cotizar?"
+          "text" => "¿Cómo quieres Cotizar? Vía:"
         ],
         "action" => [
-          "buttons" => [
-            [
-              "type" => "reply",
-              "reply" => [
-                "id" => 'cotNowFrm_'. $idFile,
-                "title" => "[ X ] EN DIRECTO"
-              ]
-            ]
-          ]
-        ]
-      ]
-    ];
-  }
-
-  /** */
-  private function templateTrackLink(String $link): array {
-
-    return [
-      "type" => "interactive",
-      "interactive" => [
-        "type" => "cta_url",
-        "header" => [
-          "type" => "text",
-          "text" => "Atendiendo a tu Solicitud!"
-        ],
-        "body" => [
-          "text" => "Presiona el Botón de la parte inferior " . 
-          "para *CONTACTAR* al solicitante.\n"
-        ],
-        "footer" => [
-          "text" => "Un servicio más de YonkesMX"
-        ],
-        "action" => [
-          "name" => "cta_url",
-          "parameters" => [
-            "display_text" => "Presiona Aquí",
-            "url" => $link
-          ]
+          "buttons" => $botones
         ]
       ]
     ];

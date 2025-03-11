@@ -31,7 +31,7 @@ class SendQC
             );
             return;
         }
-        
+
         $dql = $this->fcmEm->getAllByWaIdExcept($this->msg->from);
         $contacts = $dql->getResult();
         $rota = count($contacts);
@@ -103,6 +103,7 @@ class SendQC
         }
 
         $body = implode(' ', $cuerpo);
+
         $msgSended = [
             "id" => $id,
             "title" => "📣 QUIÉN CON❓",
@@ -114,34 +115,9 @@ class SendQC
             "created" => date('Y-m-d\TH:i:s'),
         ];
         file_put_contents($filename, json_encode($msgSended));
-
-        return [
-            "type" => "interactive",
-            "interactive" => [
-                "type" => "button",
-                "header" => [
-                    "type" => "image",
-                    "image" => ["id" => $this->msg->content['id']]
-                ],
-                "body" => [
-                    "text" => "📣 QUIÉN CON❓:\n"."🚘 *".trim(mb_strtoupper($body))."*". "\n"
-                ],
-                "footer" => [
-                    "text" => "Si cuentas con la pieza, presiona *Cotizar Ahora*"
-                ],
-                "action" => [
-                    "buttons" => [
-                        [
-                            "type" => "reply",
-                            "reply" => [
-                                "id" => 'cotNowWa_'. $idSendFile,
-                                "title" => "[√] COTIZAR AHORA"
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        
+        $tm = new TemplatesTrack();
+        return $tm->forTrackOnlyBtnCotizar($this->msg->content['id'], $body, $idSendFile);
     }
 
 }

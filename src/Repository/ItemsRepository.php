@@ -52,8 +52,7 @@ class ItemsRepository extends ServiceEntityRepository
 
     /** */
     public function getItemByCampoValor(array $params): \Doctrine\ORM\Query
-    {   
-        
+    {
         $campo = $params['field'];
         $value = $params['value'];
         
