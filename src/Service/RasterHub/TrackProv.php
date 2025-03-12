@@ -90,7 +90,7 @@ class TrackProv {
    * [NOTA] El mensaje inicial fue enviado en la clase: PostController::sentNotification
   */
   public function sentResponseByAction(WaMsgDto $msg) : void 
-  {  
+  {
     $folderToBackup = $this->waS->fSys->getFolderTo('fbSended');
     $filename = $msg->idDbSr;
     if(!mb_strpos($filename, '::')) {
@@ -116,8 +116,9 @@ class TrackProv {
     }
 
     $waIdTo = $this->waS->conm->waIdToPhone($file['ownWaId']);
+
     $tmp = new TemplatesTrack();
-    $link = $tmp->buildTemplateLinkAction($msg, $waIdTo, $file['body']);
+    $link = $tmp->buildTemplateLinkAction($msg, $waIdTo, $file);
     if(count($link) > 0) {
       $this->waS->setWaIdToConmutador($msg->from);
       $this->waS->sendPreTemplate($link);
