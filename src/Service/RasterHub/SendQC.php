@@ -105,14 +105,14 @@ class SendQC
         $body = implode(' ', $cuerpo);
 
         $msgSended = [
-            "id" => $id,
-            "title" => "📣 QUIÉN CON❓",
-            "body" => $body,
-            "ownWaId" => $this->msg->from,
-            "idDbSr" => $idSendFile,
-            "type" => "cotiza_qc",
+            "id"        => $id,
+            "title"     => "📣 QUIÉN CON❓",
+            "body"      => $body,
+            "ownWaId"   => $this->msg->from,
+            "idDbSr"    => $idSendFile,
+            "type"      => "cotiza_qc",
             "thubmnail" => $this->msg->content['id'],
-            "created" => date('Y-m-d\TH:i:s'),
+            "created"   => date('Y-m-d\TH:i:s'),
         ];
         file_put_contents($filename, json_encode($msgSended));
         

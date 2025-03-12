@@ -10,22 +10,34 @@ class TemplatesTrack
     public function forTrackOnlyBtnCotizar(
         String $idImg, String $body, String $idBtn, String $from = 'qc'
     ) {
+
+        $foot = "Si cuentas con la pieza, presiona *Cotizar Ahora*";
         $botones = [
             [
                 "type" => "reply",
                 "reply" => [
                     "id" => 'cotNowWa_'. $idBtn,
-                    "title" => "[X] EN DIRECTO"
+                    "title" => "[√] COTIZAR AHORA"
                 ]
             ]
         ];
-    
+
         if($from == 'form') {
-            $botones[] = [
-                "type" => "reply",
-                "reply" => [
-                "id" => 'cotNowFrm_'. $idBtn,
-                "title" => "[√] FORMULARIO"
+            $foot = "Selecciona la vía por la que deseas *Cotizar Ahora*";
+            $botones = [
+                [
+                    "type" => "reply",
+                    "reply" => [
+                        "id" => 'cotNowWa_'. $idBtn,
+                        "title" => "[!] EN DIRECTO"
+                    ]
+                ],
+                [
+                    "type" => "reply",
+                    "reply" => [
+                        "id" => 'cotNowFrm_'. $idBtn,
+                        "title" => "[√] FORMULARIO"
+                    ]
                 ]
             ];
         }
@@ -43,7 +55,7 @@ class TemplatesTrack
                     "🚘 *".trim(mb_strtoupper($body))."*\n"
                 ],
                 "footer" => [
-                    "text" => "Si cuentas con la pieza, presiona *Cotizar Ahora*"
+                    "text" => $foot
                 ],
                 "action" => [
                     "buttons" => $botones
