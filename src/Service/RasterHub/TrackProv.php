@@ -4,6 +4,7 @@ namespace App\Service\RasterHub;
 
 use App\Dtos\WaMsgDto;
 use App\Service\ItemTrack\WaSender;
+use App\Service\RasterHub\TemplatesTrack;
 use App\Service\Pushes;
 
 /**
@@ -36,7 +37,7 @@ class TrackProv {
   {
     $result = ['abort' => true, 'msg' => ''];
     $idSendFile = $this->data['type'] .'::'. $this->data['id'] .'::'.round(microtime(true) * 1000);
-    $filename = $folderToBackup .$idSendFile. '.json';
+    $filename = $folderToBackup . $idSendFile. '.json';
     
     if(array_key_exists('slug', $this->contacts)) {
       // Si contiene slug, significa que se le enviará el msg a 1 persona
@@ -100,7 +101,7 @@ class TrackProv {
     }
 
     $file = json_decode(file_get_contents($folderToBackup.'/'.$filename.'.json'), true);
-    if(count($file) == 0) {
+    if($file == null || count($file) == 0) {
       return;
     }
 
@@ -113,39 +114,15 @@ class TrackProv {
     if($this->waS->conm == null) {
       return;
     }
-    $link = $this->buildTemplateCotizarAhora($msg, $file['ownWaId'], $file['body']);
+
+    $waIdTo = $this->waS->conm->waIdToPhone($file['ownWaId']);
+    $tmp = new TemplatesTrack();
+    $link = $tmp->buildTemplateLinkAction($msg, $waIdTo, $file['body']);
     if(count($link) > 0) {
       $this->waS->setWaIdToConmutador($msg->from);
-      $this->waS->sendPreTemplate( $link );
+      $this->waS->sendPreTemplate($link);
     }
     return;
-  }
-
-  /** 
-   * Metodo para construir el boton para contactar al solicitante cuando se presionó
-   * el boton de cotizar ahora.
-  */
-  public function buildTemplateCotizarAhora(WaMsgDto $msg, String $waIdTo, String $body) : array 
-  {
-    $link = '';
-    $waIdEmisor = $this->waS->conm->waIdToPhone($waIdTo);
-    if($msg->subEvento == 'cotNowWa') {
-
-      $text = "Hola qué tal!!.👍\n".
-      "Con respecto a la solicitud de Cotización para:\n".
-      "🚗 *".trim(mb_strtoupper($body))."*\n".
-      "Te envío Fotos y Costo:\n";
-
-      $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
-    }else{
-
-      // Código del btn cotformpp
-      $file = [];
-      $link = 'https://autoparnet.com/form/cotiza/item?idItem='.$file['idItem'].'&idDbSr='.$file['idDbSr'];
-    }
-
-    $tmp = new TemplatesTrack();
-    return $tmp->templateTrackLink($link);
   }
 
   /** 
@@ -164,54 +141,14 @@ class TrackProv {
       return;
     }
     
+    $tmp = new TemplatesTrack();
+    $tmplate = $tmp->forTrackOnlyBtnCotizar(
+      $this->data['idwap'], $this->data['body'], $idFile, 'form'
+    );
     for ($i=0; $i < $rota; $i++) {
       $this->waS->setWaIdToConmutador($this->data['waIds'][$i]);
-      $this->waS->sendPreTemplate( $this->basicTemplateTrack($idFile) );
+      $this->waS->sendPreTemplate($tmplate);
     }
-  }
-
-  /** */
-  private function basicTemplateTrack(String $idFile, String $from = 'form'): array
-  {
-    $botones = [
-      [
-        "type" => "reply",
-        "reply" => [
-          "id" => 'cotNowWa_'. $idFile,
-          "title" => "[X] EN DIRECTO"
-        ]
-      ]
-    ];
-
-    if($from == 'form') {
-      $botones[] = [
-        "type" => "reply",
-        "reply" => [
-          "id" => 'cotNowFrm_'. $idFile,
-          "title" => "[√] FORMULARIO"
-        ]
-      ];
-    }
-
-    return [
-      "type" => "interactive",
-      "interactive" => [
-        "type" => "button",
-        "header" => [
-          "type" => "image",
-          "image" => ["id" => $this->data['idwap']]
-        ],
-        "body" => [
-          "text" => $this->data['title'] . $this->data['body'] . "\n"
-        ],
-        "footer" => [
-          "text" => "¿Cómo quieres Cotizar? Vía:"
-        ],
-        "action" => [
-          "buttons" => $botones
-        ]
-      ]
-    ];
   }
 
 }

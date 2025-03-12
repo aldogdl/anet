@@ -2,11 +2,35 @@
 
 namespace App\Service\RasterHub;
 
+use App\Dtos\WaMsgDto;
+
 class TemplatesTrack
 {
+    
     /** */
-    public function forTrackOnlyBtnCotizar(String $idImg, String $body, String $idBtn)
-    {
+    public function forTrackOnlyBtnCotizar(
+        String $idImg, String $body, String $idBtn, String $from = 'qc'
+    ) {
+        $botones = [
+            [
+                "type" => "reply",
+                "reply" => [
+                    "id" => 'cotNowWa_'. $idBtn,
+                    "title" => "[X] EN DIRECTO"
+                ]
+            ]
+        ];
+    
+        if($from == 'form') {
+            $botones[] = [
+                "type" => "reply",
+                "reply" => [
+                "id" => 'cotNowFrm_'. $idBtn,
+                "title" => "[√] FORMULARIO"
+                ]
+            ];
+        }
+      
         return [
             "type" => "interactive",
             "interactive" => [
@@ -16,26 +40,43 @@ class TemplatesTrack
                     "image" => ["id" => $idImg]
                 ],
                 "body" => [
-                    "text" => "📣 QUIÉN CON❓:\n"."🚘 *".trim(mb_strtoupper($body))."*". "\n"
+                    "text" => "📣 QUIÉN CON❓:\n".
+                    "🚘 *".trim(mb_strtoupper($body))."*\n"
                 ],
                 "footer" => [
                     "text" => "Si cuentas con la pieza, presiona *Cotizar Ahora*"
                 ],
                 "action" => [
-                    "buttons" => [
-                        [
-                            "type" => "reply",
-                            "reply" => [
-                                "id" => 'cotNowWa_'. $idBtn,
-                                "title" => "[√] COTIZAR AHORA"
-                            ]
-                        ]
-                    ]
+                    "buttons" => $botones
                 ]
             ]
         ];
     }
 
+  /** 
+   * Metodo para construir el boton para contactar al solicitante cuando se presionó
+   * el boton de cotizar ahora.
+  */
+  public function buildTemplateLinkAction(WaMsgDto $msg, String $waIdEmisor, String $body) : array 
+  {
+    $link = '';
+    if($msg->subEvento == 'cotNowWa') {
+
+      $text = "Hola qué tal!!.👍\n".
+      "Con respecto a la solicitud de Cotización para:\n".
+      "🚘 *".trim(mb_strtoupper($body))."*\n".
+      "Te envío Fotos y Costo:\n";
+
+      $link = 'https://wa.me/'.$waIdEmisor."?text=".urlencode($text);
+    }else{
+      // Código del btn cotformpp
+      $file = [];
+      $link = 'https://autoparnet.com/form/cotiza/item?idItem='.$file['idItem'].'&idDbSr='.$file['idDbSr'];
+    }
+
+    $tmp = new TemplatesTrack();
+    return $tmp->templateTrackLink($link);
+  }
 
   /** */
   public function templateTrackLink(String $link): array {
