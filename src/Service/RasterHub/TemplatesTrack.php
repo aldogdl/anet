@@ -29,7 +29,7 @@ class TemplatesTrack
                     "type" => "reply",
                     "reply" => [
                         "id" => 'cotNowWa_'. $idBtn,
-                        "title" => "[!] EN DIRECTO"
+                        "title" => "[->] EN DIRECTO"
                     ]
                 ],
                 [
@@ -41,7 +41,7 @@ class TemplatesTrack
                 ]
             ];
         }
-      
+
         return [
             "type" => "interactive",
             "interactive" => [
