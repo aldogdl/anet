@@ -2,13 +2,14 @@
 
 namespace App\Controller\RfyForm;
 
-use App\Repository\FcmRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+use App\Repository\FcmRepository;
 use App\Service\SecurityBasic;
 use App\Repository\ItemsRepository;
 use App\Service\ItemTrack\WaSender;
@@ -252,4 +253,85 @@ class PostController extends AbstractController
     return $this->json($result);
   }
 
+  /**
+   * Endpoint para subir Archivos
+   */
+  #[Route('rfyform/file/{key}', methods: ['GET', 'POST', 'DELETE'])]
+  public function rfyFile(Request $req, SecurityBasic $sec, String $key): Response
+  {
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    if($req->getMethod() == 'GET') {
+      return $this->json(['abort' => true, 'body' => 'Método no permitido'], 401);
+    }
+      
+    if($req->getMethod() == 'DELETE') {
+
+      $datos = json_decode($req->getContent(), true);
+
+    }elseif($req->getMethod() == 'POST') {
+
+      $datos = $this->toArray($req, 'datos');
+      if (json_last_error() !== JSON_ERROR_NONE) {
+        return $this->json(['abort' => true, 'body' => 'Error en los datos'], 400);
+      }
+    }
+
+    $carpeta = $datos['folder'] ?? null;
+    $filename = $datos['filename'] ?? null;
+    if (!$carpeta || !$filename) {
+      return $this->json(['abort' => true, 'body' => 'Faltan datos'], 400);
+    }
+
+    if($carpeta == 'meta_data') {
+      $subPath = '/rfy/'.$carpeta;
+    }else{
+      $subPath = '/rfy/inv_images/'.$carpeta;
+    }
+    $rutaCarpeta = $this->getParameter('kernel.project_dir') . '/public_html'. $subPath;
+
+    if (!file_exists($rutaCarpeta)) {
+      try {
+          mkdir($rutaCarpeta, 0755, true);
+      } catch (\Throwable $th) {
+          return $this->json(['abort' => true, 'body' => 'Error al crear carpeta' . $subPath], 400);
+      }
+    }
+
+    if($req->getMethod() == 'DELETE') {
+      try {
+          unlink($rutaCarpeta.'/'.$filename);
+      } catch (\Throwable $th) {
+          return $this->json([], 400);
+      }
+      return $this->json([], 201);
+    }
+    
+    if($req->getMethod() == 'POST') {
+
+      if($carpeta == 'meta_data') {
+          file_put_contents($rutaCarpeta.'/'.$filename, json_encode($datos['meta']));
+      }else{
+
+          $foto = $req->files->get('foto');
+          if (!$foto instanceof UploadedFile) {
+              return $this->json(['abort' => true, 'body' => 'No se ha subido ningúna foto'], 401);
+          }
+          
+          $foto->move($rutaCarpeta, $filename);
+      }
+
+      return $this->json([
+          'abort' => false,
+          'body' => 'Archivo subido correctamente',
+          'foto' => $filename,
+          'url' => $subPath.'/'.$filename
+      ], 201);
+    }
+
+    return $this->json(['abort' => true, 'body' => 'Método no permitido'], 405);
+  }
 }
