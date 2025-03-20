@@ -49,6 +49,7 @@ class FcmRepository extends ServiceEntityRepository
                 $obj->setUseAppAt(new \DateTimeImmutable());
                 $this->_em->persist($obj);
                 $this->_em->flush();
+                $result = 'Actualizado con éxito';
             } catch (\Throwable $th) {
                 $result = 'X '.$th->getMessage();
             }
