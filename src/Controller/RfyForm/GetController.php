@@ -15,6 +15,16 @@ use App\Service\SecurityBasic;
 class GetController extends AbstractController
 {
   /**
+  * Desde la app revisamos si hay conexion al servidor para
+  * revisar tambien si existe conexión a internet.
+  */
+  #[Route('rfyform/test-connection', methods:['GET'])]
+	public function testConection(): Response
+  {
+    return $this->json(['abort' => false, 'msg' => '']);
+  }
+
+  /**
   * Este controlador maneja la funcionalidad de notificaciones push.
   * Valida la clave de seguridad, recupera el token del dispositivo y
   * envía una notificación push de prueba.
