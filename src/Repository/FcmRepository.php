@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Fcm;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,6 +41,7 @@ class FcmRepository extends ServiceEntityRepository
         }else{
             $clase = new Fcm();
             $obj = $clase->fromJson($data);
+            file_put_contents('nuevo_login.json', json_encode($data));
             $result = 'Guardado con éxito';
         }
         
@@ -47,6 +49,8 @@ class FcmRepository extends ServiceEntityRepository
             try {
                 $obj->setUseApp(true);
                 $obj->setUseAppAt(new \DateTimeImmutable());
+                $obj->setIsLogged(true);
+                $obj->setLoggedAt(new \DateTimeImmutable());
                 $this->_em->persist($obj);
                 $this->_em->flush();
                 $result = 'Actualizado con éxito';
