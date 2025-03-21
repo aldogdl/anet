@@ -41,10 +41,9 @@ class FcmRepository extends ServiceEntityRepository
         }else{
             $clase = new Fcm();
             $obj = $clase->fromJson($data);
-            file_put_contents('nuevo_login.json', json_encode($data));
             $result = 'Guardado con éxito';
         }
-        
+
         if($obj) {
             try {
                 $obj->setUseApp(true);
