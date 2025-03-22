@@ -53,6 +53,7 @@ class Fcm
         $this->mrnta = 'd';
         $this->useApp = false;
         $this->nvm = [];
+        $this->userCat= 'undefined';
     }
 
     /** */
@@ -61,6 +62,7 @@ class Fcm
         $this->slug   = $data['slug'];
         $this->device = $data['device'];
         $this->tkfcm  = $data['token'];
+
         return $this;
     }
 
