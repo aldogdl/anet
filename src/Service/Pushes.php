@@ -53,15 +53,13 @@ class Pushes
 
     /** 
      * Enviamos los push a multiples contactos
-     * @param array $contacts
+     * @param array $push
     */
     public function sendMultiple(array $push): array
     {
         $thubm = 'https://autoparnet.com/ic_launcher.png';
         if(array_key_exists('thubmnail', $push)) {
-            if(mb_strpos($push['thubmnail'], 'autojoya') !== false) {
-                $thubm = $push['thubmnail'];
-            }
+            $thubm = $push['thubmnail'];
         }
         $notification = Notification::create($push['title'], $push['body'], $thubm);
         $payload = ['idDbSr' => $push['idDbSr'], 'type' => $push['type']];
@@ -74,6 +72,16 @@ class Pushes
         $fails = [];
         for ($i=0; $i < $push['cant']; $i++) {
             if($push['tokens'][$i] != '') {
+                // Cuando se trata de una respuesta a una solicitud es decir
+                // una cotizacion, se envia el push a todos los colaboradores
+                //  de la empresa, para distinguir quien necesita recuperar el
+                // item de la solicitud, se agrega un campo adicional llamado recovery
+                // que indica si el colaborador necesita recuperar el item de la solicitud
+                if(array_key_exists('srcIdDbSr', $push)) {
+                    if($push['type'] == 'publica' && $push['srcWaId'] != $push['waIds'][$i]) {
+                        $payload['recovery'] = $push['srcIdDbSr'];
+                    }
+                }
                 $result = $this->sendTo($push['tokens'][$i], $notification, $payload);
                 if(array_key_exists('fails', $result)) {
                     $fails[] = $result['fails'];

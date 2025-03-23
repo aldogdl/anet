@@ -207,7 +207,7 @@ class PostController extends AbstractController
 	}
 
   /** 
-   * Enviamos la notificacion de nueva solicitud a los contactos
+   * Enviamos la notificacion de nueva solicitud o cotizacion a los contactos
   */
   #[Route('rfyform/make_push/{key}', methods:['POST'])]
 	public function sentNotification(

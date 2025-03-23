@@ -31,7 +31,7 @@ class TrackProv {
 
   /** 
    * Construimos el mensaje y lo enviamos a los contactos
-   * [NOTA] Este metodo fue llamado en la clase: PostController::sentNotification
+   * @see PostController/sentNotification
   */
   public function builderTrack(String $folderToBackup, String $folderFails) : array 
   {
@@ -52,7 +52,7 @@ class TrackProv {
     $this->data['tokens'] = $this->contacts['tokens'];
     $this->data['waIds'] = $this->contacts['waIds'];
     $this->contacts = [];
-
+    
     $this->data['cant'] = count($this->data['tokens']);
     if($this->data['cant'] == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
@@ -77,7 +77,7 @@ class TrackProv {
         // lo enviamos por ese medio
         $this->sendToWhatsapp($idSendFile);
       }else{
-        // Si no se logró enviar la imagen a whatsapp se manda via push
+        // Si no se logró enviar la imagen a whatsapp que hacer?
       }
     }
 
