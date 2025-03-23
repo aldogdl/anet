@@ -302,32 +302,11 @@ class FcmRepository extends ServiceEntityRepository
             }
 
             // Buscar al cotizador quien realizó la solictud de cotizacion
-            $dql = $this->getAllMiembrosByWaId($itemPush['srcWaId']);
-            $contacts = $dql->getResult();
+            $contacts = $this->getTokenByWaIdAndDevice($itemPush['srcWaId'], $itemPush['device']);
+            if($contacts == null) { return []; }
 
-            // Solo para reforzar que verdaderamente no halla slug que no
-            // pertenezcan a la empresa que hizo la solicitud
-
-            // En este bloque lo que hacemos es que del resultado buscamos el
-            // primer registro que tenga el waId que recibimos por parametro
-            // con la finalidad de obtener su slug y poder filtrar a todos
-            // los que tengan el mismo slug.
-            $waId = $itemPush['srcWaId'];
-            $mismos = array_filter($contacts, function($contac) use ($waId) {
-                return $contac->getWaId() == $waId;
-            });
-            if(count($mismos) > 0) {
-                $slug = $mismos[0]->getSlug();
-            }
-            if($slug == '') { return []; }
-            $mismos = array_filter($contacts, function($contac) use ($slug) {
-                return $contac->getSlug() == $slug;
-            });
-
-            // Ya habiendo filtrado todos los registros con el mismo slug
-            // lo que hacemos es extraer todos sus tokens
-            $filtros = array_map(function($obj) { return $obj->getTkfcm(); }, $mismos);
-            $waIds = array_map(function($obj) { return $obj->getWaId(); }, $mismos);
+            $filtros = [$contacts->getTkfcm()];
+            $waIds = [$contacts->getWaId()];
         }
 
         $result = [
