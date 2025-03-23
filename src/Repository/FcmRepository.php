@@ -130,6 +130,20 @@ class FcmRepository extends ServiceEntityRepository
     }
 
     /**
+     * Este método recupera todos los registros de un mismo waId
+     * 
+     * @param string $waId El ID de WhatsApp para buscar.
+     * @return array Todos los registros que coincidan con el waId
+     */
+    public function getTokensByWaId(String $waId): array
+    {
+        $dql = 'SELECT f FROM '. Fcm::class .' f '.
+        'WHERE f.waId = :waId';
+        
+        return $this->_em->createQuery($dql)->setParameter('waId', $waId)->getResult();
+    }
+
+    /**
      * Este método recupera todos los miembros de una empresa por medio del 
      * waId del solicitante.
      * 
@@ -302,11 +316,15 @@ class FcmRepository extends ServiceEntityRepository
             }
 
             // Buscar al cotizador quien realizó la solictud de cotizacion
-            $contacts = $this->getTokenByWaIdAndDevice($itemPush['srcWaId'], $itemPush['device']);
-            if($contacts == null) { return []; }
-
-            $filtros = [$contacts->getTkfcm()];
-            $waIds = [$contacts->getWaId()];
+            $contacts = $this->getTokensByWaId($itemPush['srcWaId']);
+            $rota = count($contacts);
+            $filtros = [];
+            $waIds = [];
+            if($rota == 0) { return []; }
+            for ($i=0; $i < $rota; $i++) {
+                $filtros[] = $contacts[$i]->getTkfcm();
+                $waIds[] = $contacts[$i]->getWaId();
+            }
         }
 
         $result = [

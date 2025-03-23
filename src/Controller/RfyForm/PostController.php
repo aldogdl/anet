@@ -240,6 +240,7 @@ class PostController extends AbstractController
     $itemEm->updateImgWa($data);
 
     $contacts = $fcmEm->getContactsForSend($data);
+    file_put_contents($data['type'].'.json', json_encode($contacts));
 
     if(count($contacts) == 0) {
       $result = ['abort' => true, 'msg' => 'X Sin contactos'];
