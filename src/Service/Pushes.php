@@ -72,6 +72,7 @@ class Pushes
         $fails = [];
         for ($i=0; $i < $push['cant']; $i++) {
             if($push['tokens'][$i] != '') {
+                
                 $result = $this->sendTo($push['tokens'][$i], $notification, $payload);
                 if(array_key_exists('fails', $result)) {
                     $fails[] = $result['fails'];
