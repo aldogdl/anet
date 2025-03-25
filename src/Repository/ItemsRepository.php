@@ -94,15 +94,27 @@ class ItemsRepository extends ServiceEntityRepository
      * Tomamos una lista de Items con todos los campos donde el waId paraso por
      * parametro sean diferentes a este, tomando los items que pertenecen a otros usuarios
     */
-    public function getItemsCompleteByType(String $type, String $waIdFrom = '', array $estosNo = []): \Doctrine\ORM\Query
+    public function getItemsCompleteByType(String $type, String $waIdFrom = '', array $estosNo = [], bool $isForSinc = false): \Doctrine\ORM\Query
     {
-        $dql = 'SELECT it FROM '.Items::class.' it '.
-        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo AND it.idCot = 0 ';
-        $hasEstosNo = count($estosNo);
-        if($hasEstosNo > 0) {
-            $dql .= 'AND it.id NOT IN (:estos_no) ';
+        $hasEstosNo = 0;
+
+        if($isForSinc) {
+            // Si $isForSinc es true, recuperamos los items de quien hizo esta solicitud ya
+            // que se trata de una sincronizacion de items en otro dispositivo
+            if($type == 'solicita') {
+                $dql = 'SELECT it FROM '.Items::class.' it '.
+                'WHERE it.ownWaId = :waIdFrom AND it.type = :tipo AND it.idCot = 0 '.
+                'ORDER BY it.id DESC';
+            }
+        }else{
+            $dql = 'SELECT it FROM '.Items::class.' it '.
+            'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo AND it.idCot = 0 ';
+            $hasEstosNo = count($estosNo);
+            if($hasEstosNo > 0) {
+                $dql .= 'AND it.id NOT IN (:estos_no) ';
+            }
+            $dql .= 'ORDER BY it.id DESC';
         }
-        $dql .= 'ORDER BY it.id DESC';
 
         $query = $this->_em->createQuery($dql);
         $query->setParameter('waIdFrom', $waIdFrom);

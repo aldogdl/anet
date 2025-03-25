@@ -39,9 +39,17 @@ security:
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
     role_hierarchy:
+        # Personas que pueden solicitar refacciones (Buscar)
         ROLE_SOLZ:
+        # Personas que pueden cotizar refacciones (Vender)
         ROLE_COTZ:  [ROLE_SOLZ]
-        ROLE_AVO:   [ROLE_COTZ]
+        # Empleados que acaban de entrar a la empresa
+        ROLE_AVOJ:
+        # Empleados con mucha experiencia que pueden ayudar a calidad
+        # y en ocaciones a negociar con proveedores
+        ROLE_AVOS:
+        # Empleados con mucha experiencia y confianza para negociar con proveedores
+        ROLE_AVOA:
         ROLE_MAIN:   [ROLE_AVO]
         ROLE_EVAL:  [ROLE_AVO]
         ROLE_ADMIN: [ROLE_EVAL]
