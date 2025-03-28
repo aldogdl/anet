@@ -41,18 +41,15 @@ class PostController extends AbstractController
     return $content;
   }
 
-  /** 
-   * Guardamos el token de Whats desde app
+  /**
+  * Desde la app checamos si hay conexion al servidor
+  * aprovechando para guardar los metadatos del dispositivo
   */
-  #[Route('rfyform/tkwapi/{key}', methods:['POST'])]
-	public function setTokenWapi(Request $req, SecurityBasic $sec, MyFsys $fsys, String $key): Response
+  #[Route('rfyform/test-connection', methods:['POST'])]
+	public function testConection(Request $req): Response
   {
-    if(!$sec->isValid($key)) {
-      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
-      return $this->json($result);
-    }
-
-    $result = ['abort' => true, 'msg' => 'X Sin data'];
+    // Las metas es informacion que cada dispoitivo usado por el usuario nos envia
+    // para conocer sus caracteristicas con finalidad de ofrecer un mejor soporte.
     $data = [];
     try {
       $data = $this->toArray($req, 'data');
@@ -65,8 +62,42 @@ class PostController extends AbstractController
         return $this->json($result);
       }
     }
+
+    if(array_key_exists('meta', $data)) {
+      $folderMetas = $this->getParameter('sseMetas');
+      $filename = $data['slug'].'_'.$data['waId'].'.json';
+      file_put_contents($folderMetas.'/'.$filename, json_encode($data['meta']));
+    }
+
+    return $this->json(['abort' => false, 'msg' => 'ok']);
+  }
+
+  /**
+   * Guardamos el token de Whats desde app
+  */
+  #[Route('rfyform/tkwapi/{key}', methods:['POST'])]
+	public function setTokenWapi(Request $req, SecurityBasic $sec, MyFsys $fsys, String $key): Response
+  {
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    $data = [];
+    $result = ['abort' => true, 'msg' => 'X Sin data'];
+    try {
+      $data = $this->toArray($req, 'data');
+    } catch (\Throwable $th) {
+      $data = $req->getContent();
+      if($data) {
+        $data = json_decode($data, true);
+      }else{
+        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+        return $this->json($result);
+      }
+    }
+
     $result = $fsys->updateTokenWapi($data['token']);
-    
     return $this->json($result);
   }
 
@@ -94,16 +125,7 @@ class PostController extends AbstractController
         return $this->json($result);
       }
     }
-    
-    // Las metas es informacion que cada dispoitivo usado por el usuario nos envia
-    // para conocer sus caracteristicas con finalidad de ofrecer un mejor soporte.
-    if(array_key_exists('meta', $data)) {
-      $folderMetas = $this->getParameter('sseMetas');
-      $filename = $data['slug'].'_'.$data['waId'].'.json';
-      file_put_contents($folderMetas.'/'.$filename, json_encode($data['meta']));
-      unset($data['meta']);
-    }
-    
+
     // Guardamos la marca de login en la BD de FB
     $res = $fcmEm->setLoggedFromApp($data);
     $result['msg'] = $res;
@@ -111,7 +133,7 @@ class PostController extends AbstractController
       $result['abort'] = false;
       if(array_key_exists('isInit', $data) && $data['isInit'] != 'debug') {
         // TODO
-        $waS->sendMy([]);
+        // $waS->sendMy([]);
       }
     }
 
