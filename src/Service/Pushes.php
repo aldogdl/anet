@@ -32,7 +32,7 @@ class Pushes
     public function test(String $token): array
     {
         $notification = Notification::create(
-            "👌 Test RasterFy",
+            "👌 Test Yonkeros",
             "Notificación Web Push Éxitosa",
             'https://autoparnet.com/ic_launcher.png'
         );
