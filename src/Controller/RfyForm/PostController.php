@@ -45,9 +45,13 @@ class PostController extends AbstractController
   * Desde la app checamos si hay conexion al servidor
   * aprovechando para guardar los metadatos del dispositivo
   */
-  #[Route('rfyform/test-connection', methods:['POST'])]
-	public function testConection(Request $req): Response
+  #[Route('rfyform/test-connection/{key}', methods:['POST'])]
+	public function testConection(Request $req, SecurityBasic $sec, String $key): Response
   {
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
     // Las metas es informacion que cada dispoitivo usado por el usuario nos envia
     // para conocer sus caracteristicas con finalidad de ofrecer un mejor soporte.
     $data = [];
