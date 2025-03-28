@@ -66,11 +66,10 @@ class PostController extends AbstractController
     if(array_key_exists('meta', $data)) {
       $folderMetas = $this->getParameter('sseMetas');
       if(array_key_exists('dev_full', $data['meta'])) {
-        $filename = $data['slug'].'_'.$data['waId'].'_'.$data['waId'].'.json';
+        $filename = $data['slug'].'_'.$data['meta']['dev_full'].'_'.$data['waId'].'.json';
       }else{
-        $filename = $data['slug'].'_'.$data['dev_full'].'_'.$data['waId'].'.json';
+        $filename = $data['slug'].'_'.$data['waId'].'.json';
       }
-      $filename = $data['slug'].'_'.$data['waId'].'_'.$data['waId'].'.json';
       file_put_contents($folderMetas.'/'.$filename, json_encode($data['meta']));
     }
 
