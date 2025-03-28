@@ -17,6 +17,13 @@ class Pushes
     {
         $this->messaging = $messaging;
     }
+    
+    /** */
+    public function isSubscripted(String $token): array
+    {
+        $appInstance = $this->messaging->getAppInstance($token);
+        return $appInstance->rawData();
+    }
 
     /** 
      * Metodo para realizar pruebas de funcionamineto del servicio push

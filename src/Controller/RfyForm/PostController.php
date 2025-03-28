@@ -52,6 +52,7 @@ class PostController extends AbstractController
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
       return $this->json($result);
     }
+
     // Las metas es informacion que cada dispoitivo usado por el usuario nos envia
     // para conocer sus caracteristicas con finalidad de ofrecer un mejor soporte.
     $data = [];
@@ -143,6 +144,42 @@ class PostController extends AbstractController
         // TODO
         // $waS->sendMy([]);
       }
+    }
+
+    return $this->json($result);
+  }
+
+  /** 
+  * Este controlador revisa la subscripción de un token a un determinado tema
+  */
+  #[Route('rfyform/subs-topic/{key}', methods:['POST'])]
+	public function checkSubsTopic(Request $req, SecurityBasic $sec, Pushes $push, String $key): Response
+	{
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    $result = ['abort' => true, 'msg' => ''];
+    $data = [];
+    try {
+      $data = $this->toArray($req, 'data');
+    } catch (\Throwable $th) {
+      $data = $req->getContent();
+      if($data) {
+        $data = json_decode($data, true);
+      }else{
+        $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+        return $this->json($result);
+      }
+    }
+
+    try {
+      $res = $push->isSubscripted($data['token']);
+      $result['abort'] = false;
+      $result['body'] = $res;
+    } catch (\Throwable $th) {
+      $result['msg'] = $th->getMessage();
     }
 
     return $this->json($result);
