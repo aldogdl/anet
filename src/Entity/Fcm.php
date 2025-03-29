@@ -58,6 +58,8 @@ class Fcm
     {
         $this->mrnta = 'd';
         $this->useApp = false;
+        $this->isSubBuscar = true;
+        $this->isSubVender = false;
         $this->nvm = [];
         $this->userCat= 'undefined';
     }
