@@ -114,7 +114,7 @@ class PostController extends AbstractController
    * Guardamos el token FCM
   */
   #[Route('rfyform/tkfcm/{key}', methods:['POST'])]
-	public function setTokenFCM(Request $req, SecurityBasic $sec, FcmRepository $fcmEm, WaSender $waS, String $key): Response
+	public function setTokenFCM(Request $req, SecurityBasic $sec, FcmRepository $fcmEm, Pushes $push, String $key): Response
 	{
     if(!$sec->isValid($key)) {
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
@@ -135,6 +135,23 @@ class PostController extends AbstractController
       }
     }
 
+    // [SUBSCRIPCION]
+    // En caso de que el dispositivo sea web, subscribimos al usuario a los temas correspondientes.
+    // ya que en la web no se pueden subscribir los clientes a temas.
+    if(array_key_exists('dev', $data)) {
+      if(mb_strpos($data['dev'], 'web') !== false) {
+        $res = $push->subcriptToTopics($data);
+        if(!$res['abort']) {
+          if(array_key_exists('buscar', $res)) {
+            $data['buscar'] = $res['buscar'];
+          }
+          if(array_key_exists('vender', $res)) {
+            $data['vender'] = $res['vender'];
+          }
+        }
+      }
+    }
+    
     // Guardamos la marca de login en la BD de FB
     $res = $fcmEm->setLoggedFromApp($data);
     $result['msg'] = $res;

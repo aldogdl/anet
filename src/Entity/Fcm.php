@@ -70,7 +70,12 @@ class Fcm
         $this->slug   = $data['slug'];
         $this->device = $data['device'];
         $this->tkfcm  = $data['token'];
-
+        if(array_key_exists('buscar', $data)) {
+            $this->isSubBuscar = $data['buscar'];
+        }
+        if(array_key_exists('vender', $data)) {
+            $this->isSubVender = $data['vender'];
+        }
         return $this;
     }
 

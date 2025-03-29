@@ -36,6 +36,12 @@ class FcmRepository extends ServiceEntityRepository
         if($obj != null) {
             if($obj->getTkfcm() != $data['token']) {
                 $obj->setTkfcm($data['token']);
+                if(array_key_exists('buscar', $data)) {
+                    $obj->setIsSubBuscar($data['buscar']);
+                }
+                if(array_key_exists('vender', $data)) {
+                    $obj->setIsSubVender($data['vender']);
+                }
                 $result = 'Actualizado con éxito';
             }
         }else{

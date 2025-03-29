@@ -19,6 +19,25 @@ class Pushes
     }
     
     /** */
+    public function subcriptToTopics(array $data): array
+    {
+        $topics = ['buscar'];
+        if(array_key_exists('can_vender', $data)) {
+            $topics[] = 'vender';
+        }
+        $abort = true;
+        $buscar = false;
+        $vender = false;
+        try {
+            $result = $this->messaging->subscribeToTopics($topics, $data['token']);
+            $data['subs'] = $result;
+            file_put_contents('subscript_topic.json', json_encode($data));
+            $abort = false;
+        } catch (\Throwable $th) {}
+        return ['abort' => $abort, 'buscar' => $buscar, 'vender' => $vender];
+    }
+
+    /** */
     public function isSubscripted(String $token): array
     {
         $appInstance = $this->messaging->getAppInstance($token);
