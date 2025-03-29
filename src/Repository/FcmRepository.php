@@ -34,15 +34,16 @@ class FcmRepository extends ServiceEntityRepository
         $msg = 'X Error inesperado';
         $obj = $this->getTokenByWaIdAndDevice($data['waId'], $data['device']);
         if($obj != null) {
+            $msg = 'Registro encontrado';
             if($obj->getTkfcm() != $data['token']) {
                 $obj->setTkfcm($data['token']);
-                if(array_key_exists('buscar', $data)) {
-                    $obj->setIsSubBuscar($data['buscar']);
-                }
-                if(array_key_exists('vender', $data)) {
-                    $obj->setIsSubVender($data['vender']);
-                }
                 $msg = 'Actualizado con éxito';
+            }
+            if(array_key_exists('buscar', $data)) {
+                $obj->setIsSubBuscar($data['buscar']);
+            }
+            if(array_key_exists('vender', $data)) {
+                $obj->setIsSubVender($data['vender']);
             }
         }else{
             $clase = new Fcm();

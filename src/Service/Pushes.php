@@ -25,7 +25,7 @@ class Pushes
         if(array_key_exists('can_vender', $data)) {
             $topics[] = 'vender';
         }
-        $abort = true;
+        $abort  = true;
         $buscar = false;
         $vender = false;
         try {
@@ -33,7 +33,10 @@ class Pushes
             $data['subs'] = $result;
             file_put_contents('subscript_topic.json', json_encode($data));
             $abort = false;
-        } catch (\Throwable $th) {}
+        } catch (\Throwable $th) {
+            $data['error'] = $th->getMessage();
+            file_put_contents('subscript_topic_e.json', json_encode($data));
+        }
         return ['abort' => $abort, 'buscar' => $buscar, 'vender' => $vender];
     }
 
