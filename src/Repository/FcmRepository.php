@@ -27,11 +27,11 @@ class FcmRepository extends ServiceEntityRepository
      * proporcionada.
      * 
      * @param array $data Un array asociativo que contiene 'waId' y 'device'.
-     * @return String
+     * @return array
      */
-    public function setLoggedFromApp(array $data): String
+    public function setLoggedFromApp(array $data): array
     {
-        $result = 'X Error inesperado';
+        $msg = 'X Error inesperado';
         $obj = $this->getTokenByWaIdAndDevice($data['waId'], $data['device']);
         if($obj != null) {
             if($obj->getTkfcm() != $data['token']) {
@@ -42,14 +42,20 @@ class FcmRepository extends ServiceEntityRepository
                 if(array_key_exists('vender', $data)) {
                     $obj->setIsSubVender($data['vender']);
                 }
-                $result = 'Actualizado con éxito';
+                $msg = 'Actualizado con éxito';
             }
         }else{
             $clase = new Fcm();
             $obj = $clase->fromJson($data);
-            $result = 'Guardado con éxito';
+            $msg = 'Guardado con éxito';
         }
 
+        $result['abort'] = false;
+        $result['msg'] = $msg;
+        $result['subs'] = [
+            'buscar' => $obj->isIsSubBuscar(),
+            'vender' => $obj->isIsSubVender()
+        ];
         if($obj) {
             try {
                 $obj->setUseApp(true);
@@ -58,9 +64,9 @@ class FcmRepository extends ServiceEntityRepository
                 $obj->setLoggedAt(new \DateTimeImmutable());
                 $this->_em->persist($obj);
                 $this->_em->flush();
-                $result = 'Actualizado con éxito';
             } catch (\Throwable $th) {
-                $result = 'X '.$th->getMessage();
+                $result['abort'] = true;
+                $result['msg'] = 'X '.$th->getMessage();
             }
         }
         

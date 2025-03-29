@@ -121,7 +121,6 @@ class PostController extends AbstractController
       return $this->json($result);
     }
 
-    $result = ['abort' => true, 'msg' => ''];
     $data = [];
     try {
       $data = $this->toArray($req, 'data');
@@ -153,16 +152,7 @@ class PostController extends AbstractController
     }
     
     // Guardamos la marca de login en la BD de FB
-    $res = $fcmEm->setLoggedFromApp($data);
-    $result['msg'] = $res;
-    if(strpos($res, 'X') === false) {
-      $result['abort'] = false;
-      if(array_key_exists('isInit', $data) && $data['isInit'] != 'debug') {
-        // TODO
-        // $waS->sendMy([]);
-      }
-    }
-
+    $result = $fcmEm->setLoggedFromApp($data);
     return $this->json($result);
   }
 
