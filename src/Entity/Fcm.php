@@ -47,6 +47,12 @@ class Fcm
 
     #[ORM\Column(length: 50)]
     private ?string $userCat = null;
+
+    #[ORM\Column]
+    private ?bool $isSubBuscar = null;
+
+    #[ORM\Column]
+    private ?bool $isSubVender = null;
    
     public function __construct()
     {
@@ -199,6 +205,30 @@ class Fcm
     public function setUserCat(string $userCat): static
     {
         $this->userCat = $userCat;
+
+        return $this;
+    }
+
+    public function isIsSubBuscar(): ?bool
+    {
+        return $this->isSubBuscar;
+    }
+
+    public function setIsSubBuscar(bool $isSubBuscar): static
+    {
+        $this->isSubBuscar = $isSubBuscar;
+
+        return $this;
+    }
+
+    public function isIsSubVender(): ?bool
+    {
+        return $this->isSubVender;
+    }
+
+    public function setIsSubVender(bool $isSubVender): static
+    {
+        $this->isSubVender = $isSubVender;
 
         return $this;
     }
