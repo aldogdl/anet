@@ -30,12 +30,20 @@ class Pushes
         $vender = false;
         try {
             $result = $this->messaging->subscribeToTopics($topics, $data['token']);
-            $data['subs'] = $result;
-            file_put_contents('subscript_topic.json', json_encode($data));
+            if(array_key_exists('buscar', $result)) {
+                if($result['buscar'][$data['token']] == 'OK') {
+                    $buscar = true;
+                }
+            }
+            if(array_key_exists('vender', $result)) {
+                if($result['vender'][$data['token']] == 'OK') {
+                    $vender = true;
+                }
+            }
+            $data['subs'] = ['buscar' => $buscar, 'vender' => $vender];
             $abort = false;
         } catch (\Throwable $th) {
             $data['error'] = $th->getMessage();
-            file_put_contents('subscript_topic_e.json', json_encode($data));
         }
         return ['abort' => $abort, 'buscar' => $buscar, 'vender' => $vender];
     }
