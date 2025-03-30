@@ -137,8 +137,8 @@ class PostController extends AbstractController
     // [SUBSCRIPCION]
     // En caso de que el dispositivo sea web, subscribimos al usuario a los temas correspondientes.
     // ya que en la web no se pueden subscribir los clientes a temas.
-    if(array_key_exists('dev', $data)) {
-      if(mb_strpos($data['dev'], 'web') !== false) {
+    if(array_key_exists('device', $data)) {
+      if(mb_strpos($data['device'], 'web') !== false) {
         $res = $push->subcriptToTopics($data);
         if(!$res['abort']) {
           if(array_key_exists('buscar', $res)) {
