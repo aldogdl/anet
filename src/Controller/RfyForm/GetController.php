@@ -73,6 +73,16 @@ class GetController extends AbstractController
 	}
 
   /** 
+  * BORRAR
+  */
+  #[Route('rfyform/test-connection', methods:['GET'])]
+	public function testConnection(): Response
+	{
+    $result = ['ok' => 'Si funk!!'];
+    return $this->json($result);
+  }
+
+  /** 
   * Este controlador maneja laS preubas internas
   */
   #[Route('rfyform/pruebas', methods:['GET'])]
