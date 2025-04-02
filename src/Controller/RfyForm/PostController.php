@@ -313,18 +313,22 @@ class PostController extends AbstractController
     // en los servidores de Whatsapp, por lo que se guarda el id de la imagen en D.B.
     $itemEm->updateImgWa($data);
 
-    $contacts = $fcmEm->getContactsForSend($data);
-    file_put_contents($data['type'].'data.json', json_encode($data));
-    file_put_contents($data['type'].'.json', json_encode($contacts));
+    // $contacts = $fcmEm->getContactsForSend($data);
+    file_put_contents($data['type'].'_data.json', json_encode($data));
+    // file_put_contents($data['type'].'_contacts.json', json_encode($contacts));
 
-    if(count($contacts) == 0) {
-      $result = ['abort' => true, 'msg' => 'X Sin contactos'];
-    }else{
-      $track = new TrackProv($push, $waS, $data, $contacts);
-      $result = $track->builderTrack(
-        $this->getParameter('fbSended'), $this->getParameter('fbFails')
-      );
-    }
+    $track = new TrackProv($push, $waS, $data, []);
+    $result = $track->builderTrack(
+      $this->getParameter('fbSended'), $this->getParameter('fbFails')
+    );
+    // if(count($contacts) == 0) {
+    //   $result = ['abort' => true, 'msg' => 'X Sin contactos'];
+    // }else{
+    //   $track = new TrackProv($push, $waS, $data, $contacts);
+    //   $result = $track->builderTrack(
+    //     $this->getParameter('fbSended'), $this->getParameter('fbFails')
+    //   );
+    // }
 
     return $this->json($result);
   }

@@ -38,6 +38,9 @@ class TrackProv {
     $result = ['abort' => true, 'msg' => ''];
     $idSendFile = $this->data['type'] .'::'. $this->data['id'] .'::'.round(microtime(true) * 1000);
     $filename = $folderToBackup . $idSendFile. '.json';
+    // Enviamos el mensaje via PUSH a los contactos
+    $result = $this->push->sendToTopic($this->data, 'buscar');
+    return ['abort' => false, 'msg' => 'ok'];
     
     if(array_key_exists('slug', $this->contacts)) {
       // Si contiene slug, significa que se le enviará el msg a 1 persona

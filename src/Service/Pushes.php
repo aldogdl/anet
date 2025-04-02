@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Exception\MessagingException;
 use Kreait\Firebase\Messaging\CloudMessage;
 
 use Kreait\Firebase\Messaging\AndroidConfig;
@@ -10,8 +11,8 @@ use Kreait\Firebase\Messaging\Notification;
 
 class Pushes
 {
-    private $messaging;
-    private $channel = 'RASCHANNEL';
+    private Messaging $messaging;
+    private String $channel = 'RASCHANNEL';
 
     public function __construct(Messaging $messaging)
     {
@@ -86,6 +87,40 @@ class Pushes
         for ($i=0; $i < $rota; $i++) { 
             $this->sendTo($push[$i]['token'], $notification, $payload);
         }
+    }
+
+    /** 
+     * Enviamos un mensaje a un tema
+     * @param array $push
+    */
+    public function sendToTopic(array $push, String $topic): array
+    {
+        $thubm = 'https://autoparnet.com/ic_launcher.png';
+        if(array_key_exists('thubmnail', $push)) {
+            $thubm = $push['thubmnail'];
+        }
+
+        $notification = Notification::create($push['title'], $push['body'], $thubm);
+        $payload = ['idDbSr' => $push['idDbSr'], 'type' => $push['type']];
+        if(array_key_exists('srcIdDbSr', $push)) {
+            if($push['srcIdDbSr'] > 0) {
+                $payload['srcIdDbSr'] = $push['srcIdDbSr'];
+            }
+        }
+
+        $message = CloudMessage::new()
+            ->withNotification($notification)
+            ->withData($payload)
+            ->toTopic($topic);
+
+        try {
+            $result = $this->messaging->send($message);
+        } catch (MessagingException $e) {
+            // ...
+            $result = ['error' => $e->getMessage()];
+        }
+        file_put_contents('sent_msg.json', json_encode($result));
+        return $result;
     }
 
     /** 
