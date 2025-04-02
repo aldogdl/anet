@@ -39,13 +39,11 @@ class ItemsRepository extends ServiceEntityRepository
     public function updateImgWa(array $data): void 
     {
         $id = (array_key_exists('idwap', $data)) ? $data['idwap'] : "0";
-        if($id == "0") {
-            return;
-        }
         $query = $this->_em->find(Items::class, $data['idDbSr']);
         if($query == null) {
             return;
         }
+        $query->setStt(3);
         $query->setImgWa(['id' => $id, 'updateAt' => $data['created']]);
         $this->add($query, true);
     }
