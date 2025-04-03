@@ -17,16 +17,20 @@ class SincronizerItem
     /** */
     public function build(array $data): void
     {
-        $timestamp = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
+        $timestamp = mktime(0, 0, 0, date('m'), date('d'), date('Y')).'';
         // Recuperamos el archivo
         $content = $this->fSys->getContent('sincDev', $data['ownWaId'].'.json');
         if(count($content) == 0) {
             $content = [
-                $timestamp.'' => [$data['id']]
+                'publica' => [],
+                'solicita' => [$timestamp => [$data['id']]]
             ];
         }else{
-            if(array_key_exists($timestamp, $content)) {
-                $content[$timestamp][] = $data['id'];
+            if($data['type'] == 'publica') {
+                // Publica => son respuestas de una solicitud
+                $content[$data['type']][$data['idCot']][] = $data['id'];
+            }else{
+                $content[$data['type']][$timestamp][] = $data['id'];
             }
         }
         $this->fSys->setContent('sincDev', $data['ownWaId'].'.json', $content);
