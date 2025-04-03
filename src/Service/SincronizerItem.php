@@ -24,6 +24,10 @@ class SincronizerItem
             $content = [
                 $timestamp.'' => [$data['id']]
             ];
+        }else{
+            if(array_key_exists($timestamp, $content)) {
+                $content[$timestamp][] = $data['id'];
+            }
         }
         $this->fSys->setContent('respCots', $data['ownWaId'].'.json', $content);
     }
