@@ -20,7 +20,7 @@ class SincronizerItem
         $timestamp = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
         // Recuperamos el archivo
         $content = $this->fSys->getContent('respCots', $data['ownWaId'].'.json');
-        if($content == '') {
+        if(count($content) == 0) {
             $content = [
                 $timestamp.'' => [$data['id']]
             ];
