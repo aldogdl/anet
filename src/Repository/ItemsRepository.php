@@ -53,7 +53,7 @@ class ItemsRepository extends ServiceEntityRepository
     {
         $campo = $params['field'];
         $value = $params['value'];
-        
+
         $dql = 'SELECT it FROM ' . Items::class . ' it ';
         if(mb_strpos($value, ',')) {
             $value = explode(',', $value);            

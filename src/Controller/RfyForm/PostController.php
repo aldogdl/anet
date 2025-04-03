@@ -17,6 +17,7 @@ use App\Service\HeaderItem;
 use App\Service\MyFsys;
 use App\Service\Pushes;
 use App\Service\RasterHub\TrackProv;
+use App\Service\SincronizerItem;
 
 class PostController extends AbstractController
 {
@@ -226,11 +227,11 @@ class PostController extends AbstractController
   }
 
   /**
-   * Guardamos el item enviado desde RasForm
+   * Guardamos el item enviado desde Yonkeros App
   */
   #[Route('rfyform/item/{key}', methods:['POST'])]
 	public function sendProduct(
-    Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm, String $key
+    Request $req, WaSender $wh, SecurityBasic $sec, ItemsRepository $itemEm, MyFsys $fs, String $key
   ): Response
 	{
 
@@ -265,6 +266,9 @@ class PostController extends AbstractController
     $data['id']        = $id;
     $data['source']    = 'form';
     $data['checkinSR'] = date("Y-m-d\TH:i:s.v");
+
+    $sinc = new SincronizerItem($fs);
+    $sinc->build($data);
 
     if(!$isDebug) {
       $builder = new HeaderItem();
