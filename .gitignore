@@ -17,7 +17,7 @@ config/saf.json
 public_html/wa_get_imgs/
 public_html/request.log
 public_html/cotiza/
-public_html/resp_cots/
+public_html/sinc_dev/
 public_html/prod_pubs/
 public_html/prod_sols/
 public_html/prod_track/

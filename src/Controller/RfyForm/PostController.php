@@ -47,7 +47,7 @@ class PostController extends AbstractController
   * aprovechando para guardar los metadatos del dispositivo
   */
   #[Route('rfyform/test-connection/{key}', methods:['POST'])]
-	public function testConection(Request $req, SecurityBasic $sec, String $key): Response
+	public function testConection(Request $req, SecurityBasic $sec, MyFsys $fsys, String $key): Response
   {
     if(!$sec->isValid($key)) {
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
@@ -78,8 +78,10 @@ class PostController extends AbstractController
       }
       file_put_contents($folderMetas.'/'.$filename, json_encode($data['meta']));
     }
-
-    return $this->json(['abort' => false, 'msg' => 'ok']);
+    
+    $dic = $fsys->getContent('appData', 'brands_rfy.json');
+    $mmc = $fsys->getContent('appData', 'dicc.json');
+    return $this->json(['abort' => false, 'dic' => $dic, 'mmc' => $mmc, 'msg' => 'ok']);
   }
 
   /**
