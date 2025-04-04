@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use App\Service\MyFsys;
 use App\Service\Pushes;
 use App\Service\SecurityBasic;
+use App\Service\SincronizerItem;
 
 class GetController extends AbstractController
 {
@@ -71,6 +72,24 @@ class GetController extends AbstractController
     }
     return $this->json($result);
 	}
+
+  /** 
+  * Sincronizacion de dispositivos recuperamos las claves
+  */
+  #[Route('rfyform/sinc-dev/{waId}/{key}', methods:['GET'])]
+	public function getSincDev(SecurityBasic $sec, MyFsys $fsys, String $waId, String $key): Response
+	{
+    $result = ['abort' => false, 'msg' => ''];
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+
+    $sinc = new SincronizerItem($fsys);
+    $sinc->get($waId);
+
+    return $this->json($result);
+  }
 
   /** 
   * BORRAR
