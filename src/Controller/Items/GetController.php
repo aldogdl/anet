@@ -68,7 +68,6 @@ class GetController extends AbstractController
     $waIdPedido = '';
     $fecha_hoy = strtotime('today 5:00:00');
     $milisegundos = $fecha_hoy * 1000;
-    $isForSinc = false;
     
     // Quien es el que solicitó la lista, si viene este parametro
     // Significa que se recuperan los ultimos 20 items tipo solicitud
@@ -76,27 +75,21 @@ class GetController extends AbstractController
     if(array_key_exists('fromWaId', $params)) {
 
       $waIdPedido = $params['fromWaId'];
-      if(mb_strpos($waIdPedido, '_sinc') !== false) {
-        $isForSinc = true;
-        $waIdPedido = explode('_sinc', $waIdPedido)[0];
-      }
-
       $estosNo = [];
-      if(!$isForSinc) {
-        // Para poder recuperar todos los items que no ha descargado el solicitante
-        // la tecnica es crear un archivo json para saber cuales items ya descargo
-        $recovery = $fsys->getContent('prodSols', $waIdPedido.'.json');
-        if($recovery == null || count($recovery) == 0) {
-          $recovery = [];
-        }
-        // Los items estan organizados en el archivo con pares clave-valor
-        // donde la clave es la fecha de hoy apartir de las 5 am.
-        if(array_key_exists($milisegundos, $recovery)) {
-          $estosNo = $recovery[$milisegundos];
-        }
+
+      // Para poder recuperar todos los items que no ha descargado el solicitante
+      // la tecnica es crear un archivo json para saber cuales items ya descargo
+      $recovery = $fsys->getContent('prodSols', $waIdPedido.'.json');
+      if($recovery == null || count($recovery) == 0) {
+        $recovery = [];
+      }
+      // Los items estan organizados en el archivo con pares clave-valor
+      // donde la clave es la fecha de hoy apartir de las 5 am.
+      if(array_key_exists($milisegundos, $recovery)) {
+        $estosNo = $recovery[$milisegundos];
       }
 
-      $query = $itemEm->getItemsCompleteByType($type, $waIdPedido, $estosNo, $isForSinc);
+      $query = $itemEm->getItemsCompleteByType($type, $waIdPedido, $estosNo);
       $limit = 10;
       $arrayType = 'max';
 
