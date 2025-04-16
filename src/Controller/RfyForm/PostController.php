@@ -434,12 +434,12 @@ class PostController extends AbstractController
     file_put_contents('x_data_1.txt', $req->query->get('folder'));
     file_put_contents('x_data_2.txt', $req->query->get('filename'));
     file_put_contents('x_data_3.txt', $req->query->all());
-    file_put_contents('x_data_4.jpg', $req->attributes->all());
-    file_put_contents('x_data_5.jpg', $req->headers->all());
-    file_put_contents('x_data_6.jpg', $req->getFormat(null));
-    file_put_contents('x_data_7.jpg', $req->getRequestFormat());
-    file_put_contents('x_data_8.jpg', $req->getCharsets());
-    file_put_contents('x_data_9.jpg', $req->getMimeType($req->getFormat(null)));
+    file_put_contents('x_data_4.txt', $req->attributes->all());
+    file_put_contents('x_data_5.txt', $req->headers->all());
+    file_put_contents('x_data_6.txt', $req->getFormat(null));
+    file_put_contents('x_data_7.txt', $req->getRequestFormat());
+    file_put_contents('x_data_8.txt', $req->getCharsets());
+    file_put_contents('x_data_9.txt', $req->getMimeType($req->getFormat(null)));
     file_put_contents('x_data_91.jpg', $req->getContent());
     // $carpeta = $datos['folder'] ?? null;
     // $filename = $datos['filename'] ?? null;
