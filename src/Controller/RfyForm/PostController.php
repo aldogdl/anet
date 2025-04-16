@@ -432,8 +432,6 @@ class PostController extends AbstractController
       return $this->json($result);
     }
 
-    file_put_contents('x_headers.txt', $req->headers->keys());
-    
     if($req->getMethod() == 'POST') {
 
       $carpeta = $req->query->get('folder') ?? null;
@@ -460,13 +458,11 @@ class PostController extends AbstractController
       $foto = '';
 
       return $this->json([
-        'abort' => false,
-        'body' => 'Archivo subido correctamente',
-        'foto' => $filename,
-        'url' => $subPath.'/'.$filename
+        'abort' => false, 'body' => 'Archivo subido correctamente',
+        'foto' => $filename, 'url' => $subPath.'/'.$filename
       ], 201);
     }
 
-    return $this->json(['abort' => true, 'body' => 'Método no permitido'], 405);
+    return $this->json(['abort' => true, 'body' => 'Error al subir imagen'], 405);
   }
 }
