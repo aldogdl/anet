@@ -431,9 +431,11 @@ class PostController extends AbstractController
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
       return $this->json($result);
     }
-    file_put_contents('x_data_1.txt', $req->getContentType());
-    file_put_contents('x_data_2.txt', $req->getContent());
-    file_put_contents('x_data_3.txt', $req->isXmlHttpRequest());
+    file_put_contents('x_data_1.txt', $req->files->all());
+    file_put_contents('x_data_2.txt', $req->query->all());
+    file_put_contents('x_data_3.txt', $req->request->all());
+    file_put_contents('x_data_4.txt', $req->getContentType());
+    file_put_contents('x_data_5.jpg', $req->getContent());
     // $carpeta = $datos['folder'] ?? null;
     // $filename = $datos['filename'] ?? null;
     // if (!$carpeta || !$filename) {
