@@ -353,7 +353,7 @@ class PostController extends AbstractController
     if($req->getMethod() == 'GET') {
       return $this->json(['abort' => true, 'body' => 'Método no permitido'], 401);
     }
-      
+
     if($req->getMethod() == 'DELETE') {
 
       $datos = json_decode($req->getContent(), true);
@@ -417,6 +417,55 @@ class PostController extends AbstractController
           'url' => $subPath.'/'.$filename
       ], 201);
     }
+
+    return $this->json(['abort' => true, 'body' => 'Método no permitido'], 405);
+  }
+
+  /**
+   * Endpoint para subir Archivos
+   */
+  #[Route('rfyform/file-iso/{key}', methods: ['POST'])]
+  public function ynkFile(Request $req, SecurityBasic $sec, String $key): Response
+  {
+    if(!$sec->isValid($key)) {
+      $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
+      return $this->json($result);
+    }
+    file_put_contents('x_data_1.txt', $req->getContentType());
+    file_put_contents('x_data_2.txt', $req->getContent());
+    file_put_contents('x_data_3.txt', $req->isXmlHttpRequest());
+    // $carpeta = $datos['folder'] ?? null;
+    // $filename = $datos['filename'] ?? null;
+    // if (!$carpeta || !$filename) {
+    //   return $this->json(['abort' => true, 'body' => 'Faltan datos'], 400);
+    // }
+    // $subPath = '/rfy/inv_images/'.$carpeta;
+    // $rutaCarpeta = $this->getParameter('kernel.project_dir') . '/public_html'. $subPath;
+
+    // if (!file_exists($rutaCarpeta)) {
+    //   try {
+    //       mkdir($rutaCarpeta, 0755, true);
+    //   } catch (\Throwable $th) {
+    //       return $this->json(['abort' => true, 'body' => 'Error al crear carpeta' . $subPath], 400);
+    //   }
+    // }
+
+    // if($req->getMethod() == 'POST') {
+
+    //   $foto = $req->files->get('foto');
+    //   if (!$foto instanceof UploadedFile) {
+    //     return $this->json(['abort' => true, 'body' => 'No se ha subido ningúna foto'], 401);
+    //   }
+      
+    //   $foto->move($rutaCarpeta, $filename);
+
+    //   return $this->json([
+    //       'abort' => false,
+    //       'body' => 'Archivo subido correctamente',
+    //       'foto' => $filename,
+    //       'url' => $subPath.'/'.$filename
+    //   ], 201);
+    // }
 
     return $this->json(['abort' => true, 'body' => 'Método no permitido'], 405);
   }
