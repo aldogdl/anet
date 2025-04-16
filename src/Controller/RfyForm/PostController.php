@@ -437,7 +437,7 @@ class PostController extends AbstractController
       $carpeta = $req->query->get('folder') ?? null;
       $filename = $req->query->get('filename') ?? null;
       if (!$carpeta || !$filename) {
-        return $this->json(['abort' => true, 'body' => 'Faltan datos'], 400);
+        return $this->json(['abort' => true, 'body' => 'X Faltan datos'], 400);
       }
       $subPath = '/rfy/inv_images/'.$carpeta;
       $rutaCarpeta = $this->getParameter('kernel.project_dir') . '/public_html'. $subPath;
@@ -446,23 +446,30 @@ class PostController extends AbstractController
         try {
             mkdir($rutaCarpeta, 0755, true);
         } catch (\Throwable $th) {
-            return $this->json(['abort' => true, 'body' => 'Error al crear carpeta' . $subPath], 400);
+            return $this->json(['abort' => true, 'body' => 'X Error al crear carpeta' . $subPath], 400);
         }
       }
 
       $foto = $req->getContent();
       if ($foto == '') {
-        return $this->json(['abort' => true, 'body' => 'No se ha subido ningúna foto'], 401);
+        return $this->json(['abort' => true, 'body' => 'X No se ha subido ningúna foto'], 401);
       }
-      file_put_contents($rutaCarpeta.'/'.$filename, $foto);
+      
+      try {
+        file_put_contents($rutaCarpeta.'/'.$filename, $foto);
+      } catch (\Throwable $th) {
+        //throw $th;
+        return $this->json([
+          'abort' => false, 'body' => $th->getMessage(), 'uuid' => $req->query->get('uuid')
+        ], 501);
+      }
       $foto = '';
 
       return $this->json([
-        'abort' => false, 'body' => 'Archivo subido correctamente',
-        'foto' => $filename, 'url' => $subPath.'/'.$filename
+        'abort' => false, 'body' => 'ok', 'uuid' => $req->query->get('uuid')
       ], 201);
     }
 
-    return $this->json(['abort' => true, 'body' => 'Error al subir imagen'], 405);
+    return $this->json(['abort' => true, 'body' => 'X Error al subir imagen'], 405);
   }
 }
