@@ -454,11 +454,10 @@ class PostController extends AbstractController
       if ($foto == '') {
         return $this->json(['abort' => true, 'body' => 'X No se ha subido ningúna foto'], 401);
       }
-      
+
       try {
         file_put_contents($rutaCarpeta.'/'.$filename, $foto);
       } catch (\Throwable $th) {
-        //throw $th;
         return $this->json([
           'abort' => false, 'body' => $th->getMessage(), 'uuid' => $req->query->get('uuid')
         ], 501);
