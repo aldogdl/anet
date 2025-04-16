@@ -431,48 +431,41 @@ class PostController extends AbstractController
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
       return $this->json($result);
     }
-    file_put_contents('x_data_1.txt', $req->query->get('folder'));
-    file_put_contents('x_data_2.txt', $req->query->get('filename'));
-    file_put_contents('x_data_3.txt', $req->query->all());
-    file_put_contents('x_data_4.txt', $req->attributes->all());
-    file_put_contents('x_data_5.txt', $req->headers->all());
-    file_put_contents('x_data_6.txt', $req->getFormat(null));
-    file_put_contents('x_data_7.txt', $req->getRequestFormat());
-    file_put_contents('x_data_8.txt', $req->getCharsets());
-    file_put_contents('x_data_9.txt', $req->getMimeType($req->getFormat(null)));
-    file_put_contents('x_data_91.jpg', $req->getContent());
-    // $carpeta = $datos['folder'] ?? null;
-    // $filename = $datos['filename'] ?? null;
-    // if (!$carpeta || !$filename) {
-    //   return $this->json(['abort' => true, 'body' => 'Faltan datos'], 400);
-    // }
-    // $subPath = '/rfy/inv_images/'.$carpeta;
-    // $rutaCarpeta = $this->getParameter('kernel.project_dir') . '/public_html'. $subPath;
 
-    // if (!file_exists($rutaCarpeta)) {
-    //   try {
-    //       mkdir($rutaCarpeta, 0755, true);
-    //   } catch (\Throwable $th) {
-    //       return $this->json(['abort' => true, 'body' => 'Error al crear carpeta' . $subPath], 400);
-    //   }
-    // }
+    file_put_contents('x_headers.txt', $req->headers->keys());
+    
+    if($req->getMethod() == 'POST') {
 
-    // if($req->getMethod() == 'POST') {
+      $carpeta = $req->query->get('folder') ?? null;
+      $filename = $req->query->get('filename') ?? null;
+      if (!$carpeta || !$filename) {
+        return $this->json(['abort' => true, 'body' => 'Faltan datos'], 400);
+      }
+      $subPath = '/rfy/inv_images/'.$carpeta;
+      $rutaCarpeta = $this->getParameter('kernel.project_dir') . '/public_html'. $subPath;
+  
+      if (!file_exists($rutaCarpeta)) {
+        try {
+            mkdir($rutaCarpeta, 0755, true);
+        } catch (\Throwable $th) {
+            return $this->json(['abort' => true, 'body' => 'Error al crear carpeta' . $subPath], 400);
+        }
+      }
 
-    //   $foto = $req->files->get('foto');
-    //   if (!$foto instanceof UploadedFile) {
-    //     return $this->json(['abort' => true, 'body' => 'No se ha subido ningúna foto'], 401);
-    //   }
-      
-    //   $foto->move($rutaCarpeta, $filename);
+      $foto = $req->getContent();
+      if ($foto == '') {
+        return $this->json(['abort' => true, 'body' => 'No se ha subido ningúna foto'], 401);
+      }
+      file_put_contents($rutaCarpeta.'/'.$filename, $foto);
+      $foto = '';
 
-    //   return $this->json([
-    //       'abort' => false,
-    //       'body' => 'Archivo subido correctamente',
-    //       'foto' => $filename,
-    //       'url' => $subPath.'/'.$filename
-    //   ], 201);
-    // }
+      return $this->json([
+        'abort' => false,
+        'body' => 'Archivo subido correctamente',
+        'foto' => $filename,
+        'url' => $subPath.'/'.$filename
+      ], 201);
+    }
 
     return $this->json(['abort' => true, 'body' => 'Método no permitido'], 405);
   }
