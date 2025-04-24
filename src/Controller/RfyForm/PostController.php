@@ -425,7 +425,9 @@ class PostController extends AbstractController
    * Endpoint para subir Archivos
    */
   #[Route('rfyform/file-iso/{key}', methods: ['POST'])]
-  public function ynkFile(Request $req, SecurityBasic $sec, String $key): Response
+  public function ynkFile(
+    Request $req, SecurityBasic $sec, WaSender $wh, String $key
+  ): Response
   {
     if(!$sec->isValid($key)) {
       $result = ['abort' => true, 'msg' => 'X Permiso denegado'];
@@ -436,6 +438,8 @@ class PostController extends AbstractController
 
       $carpeta = $req->query->get('folder') ?? null;
       $filename = $req->query->get('filename') ?? null;
+      $upWa = ($req->query->has('upWa')) ? $req->query->get('upWa') : '';
+
       if (!$carpeta || !$filename) {
         return $this->json(['abort' => true, 'body' => 'X Faltan datos'], 400);
       }
@@ -462,8 +466,12 @@ class PostController extends AbstractController
           'abort' => false, 'body' => $th->getMessage(), 'uuid' => $req->query->get('uuid')
         ], 501);
       }
-      $foto = '';
+      
+      if($upWa != null) {
+        $wh->indexImage($rutaCarpeta.'/'.$filename, $foto);
+      }
 
+      $foto = '';
       return $this->json([
         'abort' => false, 'body' => 'ok', 'uuid' => $req->query->get('uuid')
       ], 201);
@@ -471,4 +479,5 @@ class PostController extends AbstractController
 
     return $this->json(['abort' => true, 'body' => 'X Error al subir imagen'], 405);
   }
+  
 }

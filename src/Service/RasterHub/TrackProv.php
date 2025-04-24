@@ -38,7 +38,18 @@ class TrackProv {
     $result = ['abort' => true, 'msg' => ''];
     $idSendFile = $this->data['type'] .'::'. $this->data['id'] .'::'.round(microtime(true) * 1000);
     $filename = $folderToBackup . $idSendFile. '.json';
+
     // Enviamos el mensaje via PUSH a los contactos
+    if($this->data['type'] == 'publica') {
+      if(array_key_exists('srcIdDbSr', $this->data)) {
+        if($this->data['srcIdDbSr'] != 0) {
+          // Enviar un mensaje de cotizacion solo al solicitante
+          // y al cotizador para aprovechar el push y sincronizar
+        }
+      }
+      return ['abort' => false, 'msg' => 'ok'];
+    }
+
     $result = $this->push->sendToTopic($this->data, 'buscar');
     return ['abort' => false, 'msg' => 'ok'];
     

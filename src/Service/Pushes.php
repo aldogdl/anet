@@ -102,6 +102,10 @@ class Pushes
 
         $notification = Notification::create($push['title'], $push['body'], $thubm);
         $payload = ['idDbSr' => $push['idDbSr'], 'type' => $push['type']];
+        if(array_key_exists('srcWaId', $push)) {
+            $payload['src'] = $push['device'].'-'.$push['srcWaId'];
+        }
+
         if(array_key_exists('srcIdDbSr', $push)) {
             if($push['srcIdDbSr'] > 0) {
                 $payload['srcIdDbSr'] = $push['srcIdDbSr'];
@@ -119,7 +123,6 @@ class Pushes
             // ...
             $result = ['error' => $e->getMessage()];
         }
-        file_put_contents('sent_msg.json', json_encode($result));
         return $result;
     }
 

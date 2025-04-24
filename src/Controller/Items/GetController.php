@@ -123,7 +123,6 @@ class GetController extends AbstractController
   #[Route('item', methods:['GET', 'DELETE'])]
 	public function item(Request $req, ItemsRepository $itemEm): Response
 	{
-    file_put_contents('wllegaste.txt', '');
     $params = $req->query->all();
     if(count($params) != 0) {
       if(array_key_exists('field', $params) && array_key_exists('value', $params)) {

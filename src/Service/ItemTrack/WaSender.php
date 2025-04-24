@@ -542,4 +542,16 @@ class WaSender
         // $this->sendText($msg, $this->reporTo);
     }
 
+    /** Indxamos la imagen a whats */
+    public function indexImage(String $pathToImage, $img): array
+    {
+        $this->initConmutador();
+        if($this->conm != null) {
+            $this->client->request(
+                'POST', $this->conm->uriToWhatsapp.'/media'
+            );
+        }
+        return [];
+    }
+
 }
