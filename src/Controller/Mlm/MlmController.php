@@ -17,7 +17,6 @@ class MlmController extends AbstractController
     #[Route('mlm/code/', methods: ['GET', 'POST'])]
     public function verifyMlm(Request $req): Response
     {
-        file_put_contents('mlm_simple_'.time().'.json', '');
         $state = $req->query->get('state');
 
         if(mb_strpos($state, ':') !== false) {
@@ -30,10 +29,10 @@ class MlmController extends AbstractController
                 file_put_contents('mlm_'.$slug.'.json', json_encode([
                     'code' => $code, 'action' => $action, 'slug' => $slug
                 ]));
-                return new Response(file_get_contents('shop/index.html'));
+                return new Response(file_get_contents('shop/mlm_exito.html'));
             }
         }
-        return new Response('Bienvenido a ANET->MLM', 200);
+        return new Response('Bienvenido a ANY->MLM', 200);
     }
 
     /**
@@ -52,8 +51,8 @@ class MlmController extends AbstractController
     }
 
     /**
-     * Al vincular mlm con anetShop se crea un json con los datos de dicha
-     * vinculacion por lo tanto se recuperan desde la app AnetShop y se
+     * Al vincular mlm con anyShop se crea un json con los datos de dicha
+     * vinculacion por lo tanto se recuperan desde la app AnyShop y se
      * eliminan inmediatamente.
      */
     #[Route('mlm/get-code-auth/{slug}/', methods: ['GET'])]
