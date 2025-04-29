@@ -17,6 +17,7 @@ class MlmController extends AbstractController
     #[Route('mlm/code/', methods: ['GET', 'POST'])]
     public function verifyMlm(Request $req): Response
     {
+        file_put_contents('mlm_simple_'.time().'.json', '');
         $state = $req->query->get('state');
 
         if(mb_strpos($state, ':') !== false) {
@@ -72,7 +73,7 @@ class MlmController extends AbstractController
     /**
      * Endpoint para la verificacion de conección
      */
-    #[Route('mlm/code/notifications/', methods: ['GET', 'POST'])]
+    #[Route('mlm/notifications/', methods: ['GET', 'POST'])]
     public function notisMlm(Request $req): Response
     {
         file_put_contents('mlm_simple_'.time().'.json', '');
