@@ -29,8 +29,8 @@ class DataSimpleMlm {
             $this->getCredentialsMlm();
         }
         if($this->conm == null) {
-            $this->errFromMlm = 'Archivo de credenciales no encontrado';
-            return [];
+            $this->errFromMlm = 'X Archivo de credenciales no encontrado';
+            return $bodyResult;
         }
 
         $url = 'https://api.mercadolibre.com/oauth/token';
@@ -58,23 +58,24 @@ class DataSimpleMlm {
                 $code = 200;
                 $bodyResult = json_decode($response->getContent(), true);
             }else {
-                $this->errFromMlm = $response->getContent();
+                $this->errFromMlm = 'X ' . $response->getContent();
             }
 
         } catch (\Throwable $th) {
             
             $this->errFromMlm = $th->getMessage();
             if($code == 401) {
-                $this->errFromMlm = 'Error no manejado';
+                $this->errFromMlm = 'X Error no manejado';
             }else if(mb_strpos($this->errFromMlm, '400') !== false) {
-                $this->errFromMlm = 'Mensaje mal formado';
+                $this->errFromMlm = 'X Mensaje mal formado';
             }else if(mb_strpos($this->errFromMlm, 'timeout') !== false) {
-                $this->errFromMlm = 'Se superó el tiempo de espera';
+                $this->errFromMlm = 'X Se superó el tiempo de espera';
             }
         }
         
         if($this->errFromMlm != '') {
             $bodyResult['error'] = $this->errFromMlm;
+            $this->errFromMlm = '';
         }
 
         return $bodyResult;
