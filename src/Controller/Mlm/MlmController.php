@@ -45,10 +45,10 @@ class MlmController extends AbstractController
     public function mlmParseCodeToken(Request $req, DataSimpleMlm $mlm, String $slug): Response
     {
         if($req->getMethod() == 'GET') {
-            
+
             $path = 'mlm_'.$slug.'.txt';
             if(!is_file($path)) {
-                return new Response(404);
+                return $this->json(['abort' => false, 'body' => 'Aun no llega'], 404);
             }
 
             try {
@@ -60,13 +60,13 @@ class MlmController extends AbstractController
                         return $this->json($isOk);
                     }
                 }
-                return new Response(210);
+                return $this->json(['abort' => true, 'body' => 'X Error en los datos'], 404);
             } catch (\Throwable $th) {
-                return new Response(500);
+                return $this->json(['abort' => true, 'body' => 'X ' . $th->getMessage()], 500);
             }
         }
-
-        return new Response(400);
+        
+        return $this->json(['abort' => true, 'body' => 'X Error desconocido'], 500);
     }
 
 }
