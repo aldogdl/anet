@@ -1,6 +1,5 @@
 parameters:
     phtml      : '%kernel.project_dir%/public_html'
-    dtaCtc     : '%phtml%/ctcs/'
     scm        : '%phtml%/scm/'
     appData    : '%phtml%/rfy/data/'
     sse        : '%phtml%/sse/'
@@ -18,11 +17,13 @@ parameters:
     waSendmy   : '%phtml%/wa_sendmy/'
     waDemoCot  : '%phtml%/wa_demo_cot/'
     waRemOk    : '%phtml%/wa_rem_ok/'
+    dtaCtc     : '%phtml%/ctcs/'
+    dtaCtcLog  : '%dtaCtc%/log'
+    anyMlm     : '%scm%/any_mlm.json'
     
     cnxFile    : '%scm%cnx_file.json'
     verapps    : '%scm%versions.json'
     tkwaconm   : '%scm%tkwaconm.json'
-    anetMlm    : '%phtml%/anet_mlm.json'
 
     getWaToken : '%env(resolve:WA_TOKEN)%'
     sufixUri   : '%env(resolve:SUFIX_URI)%'
@@ -34,7 +35,6 @@ parameters:
     reqRadec   : '%phtml%/req_radec/'
     waTemplates: '%phtml%/wa_templates/'
     waAnalizar : '%phtml%/wa_analizar/'
-    dtaCtcLog  : '%dtaCtc%/log'
     sseNotRouteActive: '%phtml%/sse_not_route/'
     sseMetas   : '%phtml%/sse_metas/'
     sseFails   : '%phtml%/sse_fails/'
