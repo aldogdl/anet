@@ -122,7 +122,7 @@ class DataSimpleMlm {
     {
         $result = $this->recoveryToken($code);
         if(array_key_exists('error', $result)) {
-            $result = ['abort' => true, 'body' => $result['error']];
+            return ['abort' => true, 'body' => ['error' => $result['error']]];
         }
         $saved = $this->setCodeTokenMlm($result, $slug);
         return ($saved) ? $saved : $result;
