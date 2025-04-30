@@ -48,7 +48,7 @@ class MlmController extends AbstractController
 
             $path = 'mlm_'.$slug.'.txt';
             if(!is_file($path)) {
-                return $this->json(['abort' => false, 'body' => 'Aun no llega'], 404);
+                return $this->json(['abort' => false, 'body' => ['error' => 'X Aun no llega']]);
             }
 
             try {
@@ -60,13 +60,13 @@ class MlmController extends AbstractController
                         return $this->json($isOk);
                     }
                 }
-                return $this->json(['abort' => true, 'body' => 'X Error en los datos'], 404);
+                return $this->json(['abort' => true, 'body' => ['error' => 'X Error en los datos']]);
             } catch (\Throwable $th) {
-                return $this->json(['abort' => true, 'body' => 'X ' . $th->getMessage()], 500);
+                return $this->json(['abort' => true, 'body' => ['error' => 'X ' . $th->getMessage()]]);
             }
         }
         
-        return $this->json(['abort' => true, 'body' => 'X Error desconocido'], 500);
+        return $this->json(['abort' => true, 'body' => ['error' => 'X Error desconocido']]);
     }
 
 }
