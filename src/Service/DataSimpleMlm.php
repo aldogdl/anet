@@ -110,7 +110,20 @@ class DataSimpleMlm {
         }
 
         if(array_key_exists('colabs', $result)) {
+            $colabs = $result['colabs'];
             unset($result['colabs']);
+            $rota = count($colabs);
+            for($i = 0; $i < $rota; $i++) {
+                if(!array_key_exists('roles', $colabs[$i])) {
+                    continue;
+                }
+                if(in_array('ROLE_MAIN', $colabs[$i]['roles'])) {
+                    $result = array_merge($result, $colabs[$i]);
+                }
+            }
+            if(!array_key_exists('waId', $result)) {
+                $result = array_merge($result, $colabs[0]);
+            }
         }
         return $result;
     }
