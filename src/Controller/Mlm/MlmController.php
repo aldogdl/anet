@@ -45,7 +45,12 @@ class MlmController extends AbstractController
     public function mlmParseCodeToken(Request $req, DataSimpleMlm $mlm, String $slug): Response
     {
         if($req->getMethod() == 'GET') {
+            
             $path = 'mlm_'.$slug.'.txt';
+            if(!is_file($path)) {
+                return new Response(404);
+            }
+
             try {
                 $code = file_get_contents($path);
                 if($code) {
