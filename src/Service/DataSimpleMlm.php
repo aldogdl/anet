@@ -69,13 +69,13 @@ class DataSimpleMlm {
         } catch (\Throwable $th) {
             
             $this->errFromMlm = $th->getMessage();
-            if($code == 401) {
-                $this->errFromMlm = 'X Error no manejado';
-            }else if(mb_strpos($this->errFromMlm, '400') !== false) {
-                $this->errFromMlm = 'X Mensaje mal formado';
-            }else if(mb_strpos($this->errFromMlm, 'timeout') !== false) {
-                $this->errFromMlm = 'X Se superó el tiempo de espera';
-            }
+            // if($code == 401) {
+            //     $this->errFromMlm = 'X Error no manejado';
+            // }else if(mb_strpos($this->errFromMlm, '400') !== false) {
+            //     $this->errFromMlm = 'X Mensaje mal formado';
+            // }else if(mb_strpos($this->errFromMlm, 'timeout') !== false) {
+            //     $this->errFromMlm = 'X Se superó el tiempo de espera';
+            // }
         }
         
         if($this->errFromMlm != '') {
