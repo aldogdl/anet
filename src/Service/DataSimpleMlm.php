@@ -205,7 +205,7 @@ class DataSimpleMlm {
      * @param array $data
      * @param String $waId
     */
-    private function setCodeTokenMlm(array $data, String $slug) : array
+    public function setCodeTokenMlm(array $data, String $slug) : array
     {
         $result = [];
         
