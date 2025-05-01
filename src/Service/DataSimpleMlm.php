@@ -4,6 +4,11 @@ namespace App\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Component\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Component\HttpClient\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as ExceptionHttpExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface as HttpClientExceptionHttpExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface as ExceptionTransportExceptionInterface;
 
 class DataSimpleMlm {
 
@@ -45,7 +50,8 @@ class DataSimpleMlm {
             $dataSend['code'] = $codeTk;
             $dataSend['redirect_uri'] = 'https://autoparnet.com/mlm/code/';
         }
-        
+        $dataSend['url'] = $this->url;
+        file_put_contents('w_sabee.json', json_encode($dataSend));
         try {
 
             $response = $this->client->request('POST', $this->url,
@@ -66,18 +72,17 @@ class DataSimpleMlm {
                 $this->errFromMlm = 'X ' . $response->getContent();
             }
 
+        } catch (HttpClientExceptionHttpExceptionInterface $e) {
+            // Maneja errores HTTP específicos (por ejemplo, 400, 401, 404, etc.)
+            $this->errFromMlm = 'Error HTTP: ' . $e->getCode() . ' ' . $e->getMessage();
+        } catch (ExceptionTransportExceptionInterface $e) {
+            // Maneja errores de transporte (por ejemplo, errores de conexión, timeout, etc.)
+            $this->errFromMlm = 'Error de transporte: ' . $e->getMessage();
         } catch (\Throwable $th) {
-            
-            $this->errFromMlm = $th->getMessage();
-            // if($code == 401) {
-            //     $this->errFromMlm = 'X Error no manejado';
-            // }else if(mb_strpos($this->errFromMlm, '400') !== false) {
-            //     $this->errFromMlm = 'X Mensaje mal formado';
-            // }else if(mb_strpos($this->errFromMlm, 'timeout') !== false) {
-            //     $this->errFromMlm = 'X Se superó el tiempo de espera';
-            // }
+            // Maneja cualquier otro tipo de error
+            $this->errFromMlm = 'Error desconocido: ' . $th->getMessage();
         }
-        
+
         if($this->errFromMlm != '') {
             $bodyResult['error'] = $this->errFromMlm;
             $this->errFromMlm = '';
