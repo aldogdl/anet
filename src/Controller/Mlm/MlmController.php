@@ -58,10 +58,11 @@ class MlmController extends AbstractController
     }
 
     /**
-     * Endpoint para la verificacion de conección
+     * Endpoint para actualizar los datos lock provenientes desde la app
+     * del catalogo
      */
-    #[Route('mlm/set-token-fromapp/{slug}', methods: ['POST'])]
-    public function setNewTokenMlmFromApp(Request $req, DataSimpleMlm $mlm, String $slug): Response
+    #[Route('mlm/set-token-fromapp', methods: ['POST'])]
+    public function setNewTokenMlmFromApp(Request $req, DataSimpleMlm $mlm): Response
     {
         $data = [];
         try {
