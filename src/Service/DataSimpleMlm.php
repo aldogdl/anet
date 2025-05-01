@@ -54,7 +54,7 @@ class DataSimpleMlm {
                         'accept' => 'application/json',
                         'Content-Type' => 'application/x-www-form-urlencoded',
                     ],
-                    'body' => $dataSend
+                    'body' => http_build_query($dataSend)
                 ]
             );
 
@@ -160,7 +160,7 @@ class DataSimpleMlm {
             return ['abort' => true, 'body' => ['error' => $this->errFromMlm]];
         }
         $saved = $this->setCodeTokenMlm($result, $slug);
-        return ($saved) ? $saved : $result;
+        return ['abort' => false, 'body' => ($saved) ? $saved : $result];
     }
 
     /** 
