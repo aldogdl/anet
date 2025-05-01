@@ -11,7 +11,7 @@ class DataSimpleMlm {
     private $client;
     public String $errFromMlm = '';
     public ?array $conm;
-    private String $url = 'https://api.mercadolibre.com.mx/oauth/token';
+    private String $url = 'https://api.mercadolibre.com/oauth/token';
 
     /** */
 	public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
