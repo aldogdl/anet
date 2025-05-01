@@ -11,6 +11,7 @@ class DataSimpleMlm {
     private $client;
     public String $errFromMlm = '';
     public ?array $conm;
+    private String $url = 'https://api.mercadolibre.com.mx/oauth/token';
 
     /** */
 	public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
@@ -21,7 +22,7 @@ class DataSimpleMlm {
 	}
     
     /** Realizar Solciitud a MeLi */
-    private function recoveryToken(String $codeTk) : array
+    private function recoveryToken(String $codeTk, bool $isRefresh = false) : array
     {
         $code  = 401;
         $bodyResult = [];
@@ -33,24 +34,27 @@ class DataSimpleMlm {
             $this->errFromMlm = 'X Archivo de credenciales no encontrado';
             return $bodyResult;
         }
-
-        $url = 'https://api.mercadolibre.com/oauth/token';
-
+        $dataSend = [
+            'grant_type' => ($isRefresh) ? 'refresh_token' : 'authorization_code',
+            'client_id'  => $this->conm['appId'],
+            'client_secret' => $this->conm['appTk'],
+        ];
+        if($isRefresh) {
+            $dataSend['refresh_token'] = $this->conm['refreshTk'];
+        }else {
+            $dataSend['code'] = $codeTk;
+            $dataSend['redirect_uri'] = 'https://autoparnet.com/mlm/code/';
+        }
+        
         try {
 
-            $response = $this->client->request('POST', $url,
+            $response = $this->client->request('POST', $this->url,
                 [
                     'headers' => [
                         'accept' => 'application/json',
                         'Content-Type' => 'application/x-www-form-urlencoded',
                     ],
-                    'body' => [
-                        'grant_type' => 'authorization_code',
-                        'client_id' => $this->conm['appId'],
-                        'client_secret' => $this->conm['appTk'],
-                        'code' => $codeTk,
-                        'redirect_uri' => 'https://autoparnet.com/mlm/code/',
-                    ]
+                    'body' => $dataSend
                 ]
             );
 
@@ -137,6 +141,23 @@ class DataSimpleMlm {
         $result = $this->recoveryToken($code);
         if(array_key_exists('error', $result)) {
             return ['abort' => true, 'body' => ['error' => $result['error']]];
+        }else if($this->errFromMlm != '') {
+            return ['abort' => true, 'body' => ['error' => $this->errFromMlm]];
+        }
+        $saved = $this->setCodeTokenMlm($result, $slug);
+        return ($saved) ? $saved : $result;
+    }
+
+    /** 
+     * Refresh token
+    */
+    public function refreshTokenMlm(String $slug) : array
+    {
+        $result = $this->recoveryToken('refresh', true);
+        if(array_key_exists('error', $result)) {
+            return ['abort' => true, 'body' => ['error' => $result['error']]];
+        }else if($this->errFromMlm != '') {
+            return ['abort' => true, 'body' => ['error' => $this->errFromMlm]];
         }
         $saved = $this->setCodeTokenMlm($result, $slug);
         return ($saved) ? $saved : $result;
@@ -144,16 +165,16 @@ class DataSimpleMlm {
 
     /** 
      * Recuperamos las credenciales del usuario para MeLi
-     * @param String $waId
+     * @param String $Slug
     */
-    public function getCodesUser(String $waId, bool $compress = true) : array {
+    public function getCodesUser(String $slug, bool $compress = true) : array {
 
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
         }
 
-        $pathTo = $pathTo .'/'. $waId . '.json';
+        $pathTo = $pathTo .'/'. $slug . '.json';
         if(is_file($pathTo)) {
 
             $res = '';

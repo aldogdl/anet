@@ -5,33 +5,11 @@ namespace App\Controller\Mlm;
 use App\Service\DataSimpleMlm;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
 class MlmController extends AbstractController
 {
-    
-  /**
-   * Obtenemos el request contenido decodificado como array
-   *
-   * @throws JsonException When the body cannot be decoded to an array
-   */
-    public function toArray(Request $req, String $campo): array
-    {
-        $content = $req->request->get($campo);
-        try {
-        $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-        throw new JsonException(sprintf('No se puede decodificar el body, "%s".', get_debug_type($content)));
-        }
-
-        if (!\is_array($content)) {
-        throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
-        }
-        return $content;
-    }
-
     /**
      * Endpoint para la verificacion de conección
      */
@@ -61,28 +39,14 @@ class MlmController extends AbstractController
      * Endpoint para actualizar los datos lock provenientes desde la app
      * del catalogo
      */
-    #[Route('mlm/set-token-fromapp', methods: ['POST'])]
-    public function setNewTokenMlmFromApp(Request $req, DataSimpleMlm $mlm): Response
+    #[Route('mlm/refresh-token-mlm/{slug}', methods: ['GET'])]
+    public function refreshTokenMlm(Request $req, DataSimpleMlm $mlm, String $slug): Response
     {
-        $data = [];
-        try {
-            $data = $this->toArray($req, 'data');
-        } catch (\Throwable $th) {
-            $data = $req->getContent();
-            if($data) {
-                $data = json_decode($data, true);
-            }else{
-                return $this->json(['body' => ['error' => 'X No se logró decodificar correctamente los datos de la request.']]);
-            }
-        }
-        
-        if(count($data) > 0) {
-            if(array_key_exists('slug', $data)) {
-                $res = $mlm->setCodeTokenMlm($data, $data['slug']);
-                if(array_key_exists('token', $res)) {
-                    return $this->json(['body' => ['result' => 'ok']]);
-                }
-            }
+        $res = $mlm->refreshTokenMlm($slug);
+        if(array_key_exists('token', $res)) {
+            return $this->json(['body' => $res]);
+        }else if(array_key_exists('error', $res)) {
+            return $this->json(['body' => ['error' => $res['error']]]);
         }
         return $this->json(['body' => ['error' => 'X Error no controlado']]);
     }
