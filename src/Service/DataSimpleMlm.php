@@ -16,7 +16,8 @@ class DataSimpleMlm {
 	public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
 	{
 		$this->params = $container;
-        $this->client   = $client;
+        $this->client = $client;
+        $this->conm   = null;
 	}
     
     /** Realizar Solciitud a MeLi */

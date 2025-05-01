@@ -50,7 +50,7 @@ security:
         ROLE_AVOS:
         # Empleados con mucha experiencia y confianza para negociar con proveedores
         ROLE_AVOA:
-        ROLE_MAIN:   [ROLE_AVO]
+        ROLE_MAIN:  [ROLE_AVO]
         ROLE_EVAL:  [ROLE_AVO]
         ROLE_ADMIN: [ROLE_EVAL]
         ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
