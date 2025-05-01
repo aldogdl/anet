@@ -43,12 +43,10 @@ class MlmController extends AbstractController
     public function refreshTokenMlm(Request $req, DataSimpleMlm $mlm, String $slug): Response
     {
         $res = $mlm->refreshTokenMlm($slug);
-        if(array_key_exists('token', $res)) {
-            return $this->json(['body' => $res]);
-        }else if(array_key_exists('error', $res)) {
+        if(array_key_exists('error', $res)) {
             return $this->json(['body' => ['error' => $res['error']]]);
         }
-        return $this->json(['body' => ['error' => 'X Error no controlado']]);
+        return $this->json(['body' => $res]);
     }
 
     /**
