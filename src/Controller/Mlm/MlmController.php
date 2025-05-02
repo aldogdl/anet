@@ -39,10 +39,10 @@ class MlmController extends AbstractController
      * Endpoint para actualizar los datos lock provenientes desde la app
      * del catalogo
      */
-    #[Route('mlm/refresh-token-mlm/{slug}', methods: ['GET'])]
-    public function refreshTokenMlm(Request $req, DataSimpleMlm $mlm, String $slug): Response
+    #[Route('mlm/refresh-token-mlm/{slug}/{refreshTk}', methods: ['GET'])]
+    public function refreshTokenMlm(DataSimpleMlm $mlm, String $slug, String $refreshTk): Response
     {
-        $res = $mlm->refreshTokenMlm($slug);
+        $res = $mlm->refreshTokenMlm($slug, $refreshTk);
         return $this->json($res);
     }
 

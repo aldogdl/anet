@@ -4,11 +4,8 @@ namespace App\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Component\HttpClient\Exception\TransportExceptionInterface;
-use Symfony\Component\HttpClient\Exception\HttpExceptionInterface;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface as ExceptionHttpExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface as HttpClientExceptionHttpExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface as ExceptionTransportExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class DataSimpleMlm {
 
@@ -45,7 +42,7 @@ class DataSimpleMlm {
             'client_secret' => $this->conm['appTk'],
         ];
         if($isRefresh) {
-            $dataSend['refresh_token'] = $this->conm['refreshTk'];
+            $dataSend['refresh_token'] = $codeTk;
         }else {
             $dataSend['code'] = $codeTk;
             $dataSend['redirect_uri'] = 'https://autoparnet.com/mlm/code/';
@@ -72,10 +69,10 @@ class DataSimpleMlm {
                 $this->errFromMlm = 'X ' . $response->getContent();
             }
 
-        } catch (HttpClientExceptionHttpExceptionInterface $e) {
+        } catch (HttpExceptionInterface $e) {
             // Maneja errores HTTP específicos (por ejemplo, 400, 401, 404, etc.)
             $this->errFromMlm = 'Error HTTP: ' . $e->getCode() . ' ' . $e->getMessage();
-        } catch (ExceptionTransportExceptionInterface $e) {
+        } catch (TransportExceptionInterface $e) {
             // Maneja errores de transporte (por ejemplo, errores de conexión, timeout, etc.)
             $this->errFromMlm = 'Error de transporte: ' . $e->getMessage();
         } catch (\Throwable $th) {
@@ -156,9 +153,9 @@ class DataSimpleMlm {
     /** 
      * Refresh token
     */
-    public function refreshTokenMlm(String $slug) : array
+    public function refreshTokenMlm(String $slug, String $refreshTk) : array
     {
-        $result = $this->recoveryToken('refresh', true);
+        $result = $this->recoveryToken($refreshTk, true);
         if(array_key_exists('error', $result)) {
             return ['abort' => true, 'body' => ['error' => $result['error']]];
         }else if($this->errFromMlm != '') {
