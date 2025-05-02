@@ -47,8 +47,7 @@ class DataSimpleMlm {
             $dataSend['code'] = $codeTk;
             $dataSend['redirect_uri'] = 'https://autoparnet.com/mlm/code/';
         }
-        $dataSend['url'] = $this->url;
-        file_put_contents('w_sabee.json', json_encode($dataSend));
+        
         try {
 
             $response = $this->client->request('POST', $this->url,
@@ -84,7 +83,8 @@ class DataSimpleMlm {
             $bodyResult['error'] = $this->errFromMlm;
             $this->errFromMlm = '';
         }
-
+        $dataSend['url'] = $this->url;
+        file_put_contents('w_sabee.json', json_encode($dataSend));
         return $bodyResult;
     }
 
