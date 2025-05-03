@@ -22,7 +22,7 @@ class DataSimpleMlm {
         $this->client = $client;
         $this->conm   = null;
 	}
-    
+
     /** Realizar Solciitud a MeLi */
     private function recoveryToken(String $codeTk, bool $isRefresh = false) : array
     {
@@ -84,7 +84,6 @@ class DataSimpleMlm {
             $this->errFromMlm = '';
         }
         $dataSend['url'] = $this->url;
-        file_put_contents('w_sabee.json', json_encode($dataSend));
         return $bodyResult;
     }
 
@@ -247,6 +246,25 @@ class DataSimpleMlm {
                 'updatedAt' => (integer) microtime(true) * 1000,
             ];
             file_put_contents($pathTo, json_encode($result));
+        }
+        
+        return $result;
+    }
+    
+    /** 
+     * Eliminamos los datos del usuario MLM por motivos que se
+     * desvinculo de la app
+     * @param String $waId
+    */
+    public function desvincularMlm(String $slug) : String
+    {
+        $result = 'ok';
+        $pathTo = $this->params->get('dtaCtcLog');
+        if(!is_dir($pathTo)) { mkdir($pathTo); }
+        try {
+            unlink($pathTo .'/'. $slug . '.json');
+        } catch (\Throwable $th) {
+            $result = $th->getMessage(); 
         }
         
         return $result;
