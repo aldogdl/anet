@@ -51,7 +51,7 @@ class MlmController extends AbstractController
      * vinculacion por lo tanto se recuperan desde la app AnyShop y se
      * eliminan inmediatamente.
      */
-    #[Route('mlm/parse-cot-token/{slug}/', methods: ['GET', 'DELETE'])]
+    #[Route('mlm/parse-cot-token/{slug}/', methods: ['DELETE', 'GET'])]
     public function mlmParseCodeToken(Request $req, DataSimpleMlm $mlm, String $slug): Response
     {
 
