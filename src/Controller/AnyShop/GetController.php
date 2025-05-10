@@ -18,5 +18,4 @@ class GetController extends AbstractController
 
     return $this->json($mlm->getDataOwn($slug));
   }
-
 }
