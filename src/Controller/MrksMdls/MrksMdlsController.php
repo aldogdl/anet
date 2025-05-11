@@ -66,4 +66,18 @@ class MrksMdlsController extends AbstractController
         return $this->json(['hola' => 'Bienvenido', 'en que podemos atenderte?']);
     }
 
+    /** */
+    #[Route('/up-file', methods: ['POST'])]
+    public function upFile(Request $req): Response
+    {
+        $data = $req->getContent();
+        if($data) {
+            $data = json_decode($data, true);
+            file_put_contents($data['filename'], json_encode($data['content']));
+        }else{
+            $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+            return $this->json($result);
+        }
+        return $this->json(['body' => 'ok']);
+    }
 }
