@@ -72,10 +72,17 @@ class MrksMdlsController extends AbstractController
     {
         $data = $req->getContent();
         if($data) {
-            $data = json_decode($data, true);
-            file_put_contents($data['filename'], json_encode($data['content']));
+            try {
+                $data = json_decode($data, true);
+            } catch (\Throwable $th) {
+                $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+                return $this->json($result);
+            }
+            if(array_key_exists('filename', $data)) {
+                file_put_contents($data['filename'], json_encode($data['content']));
+            }
         }else{
-            $result['msg']  = 'X No se logró decodificar correctamente los datos de la request.';
+            $result['msg']  = 'X Error inesperado.';
             return $this->json($result);
         }
         return $this->json(['body' => 'ok']);
