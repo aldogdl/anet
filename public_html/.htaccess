@@ -32,10 +32,20 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^form/(.*)$ /form/index.html [L]
 
+RewriteCond %{REQUEST_URI} ^/app/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^app/(.*)$ /app/index.html [L]
+
 RewriteCond %{REQUEST_URI} ^/catalogo/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^catalogo/(.*)$ /catalogo/index.html [L]
+
+RewriteCond %{REQUEST_URI} ^/shop/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^shop/(.*)$ /shop/index.html [L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
