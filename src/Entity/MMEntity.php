@@ -93,4 +93,17 @@ class MMEntity
 
         return $this;
     }
+
+    /** */
+    public function fromJson(array $json): static
+    {
+        $this->name = $json['name'];
+        $this->idMrk = $json['idMrk'];
+        $this->variants = $json['variants'];
+        $this->scrape = (array_key_exists('scrape', $json)) ? $json['scrape'] : [];
+        $this->extras = $json['extras'];
+        return $this;
+    }
+
+
 }

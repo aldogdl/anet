@@ -20,4 +20,40 @@ class MMEntityRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, MMEntity::class);
     }
+
+    /** */
+    public function getMarcaById(int $id) : \Doctrine\ORM\Query
+    {
+        $dql = 'SELECT m FROM '. MMEntity::class .' m '.
+        'WHERE m.id = :id';
+        return $this->_em->createQuery($dql)->setParameter('id', $id);
+    }
+    
+    /** */
+    public function existMarcaByName(String $name) : bool
+    {
+        $dql = 'SELECT COUNT(m.id) FROM '. MMEntity::class .' m '.
+        'WHERE m.name = :name';
+
+        return $this->_em->createQuery($dql)
+            ->setParameter('name', $name)
+            ->getSingleScalarResult() > 0;
+    }
+
+    /** */
+    public function setMarca(array $marca) : array
+    {
+        $obj = new MMEntity();
+        $obj = $obj->fromJson($marca);
+        if(!$this->existMarcaByName($obj->getName())) {
+            try {
+                $this->_em->persist($obj);
+                $this->_em->flush();
+            } catch (\Throwable $th) {
+                return $this->json(['abort' => true, 'body' => $th->getMessage()]);
+            }
+        }
+
+        return ['abort' => false, 'body' => 'Guardao con éxito'];
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Controller\Any;
 
+use App\Repository\MMEntityRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -31,17 +32,18 @@ class MMController extends AbstractController
         return $content;
     }
 
+    /** */
     #[Route('/marcas', methods: ['get', 'post', 'delete'])]
-    public function marcas(Request $req): Response
+    public function marcas(Request $req, MMEntityRepository $repo): Response
     {
         if($req->getMethod() == 'POST') {
             $data = $req->getContent();
             if($data) {
                 $data = json_decode($data, true);
-                return $this->json(['abort' => false, 'body', '$recibidos'.count($data)]);
+                return $this->json($repo->setMarca($data));
             }
         }
-        return $this->json(['hola' => 'Bienvenido', 'en que podemos atenderte?']);
+        return $this->json(['abort' => true, 'body' => 'Error inesperado']);
     }
 
 }
