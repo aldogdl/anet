@@ -33,15 +33,17 @@ class MMController extends AbstractController
     }
 
     /** */
-    #[Route('/marcas', methods: ['get', 'post', 'delete'])]
+    #[Route('/elements', methods: ['get', 'post', 'delete'])]
     public function marcas(Request $req, MMEntityRepository $repo): Response
     {
-        if($req->getMethod() == 'POST') {
+        if( $req->getMethod() == 'POST' ) {
             $data = $req->getContent();
             if($data) {
-                $data = json_decode($data, true);
-                return $this->json($repo->setMarca($data));
+                return $this->json($repo->setMM( json_decode($data, true) ));
             }
+        } elseif( $req->getMethod() == 'GET' ) {
+            $idMrk = $req->query->get('idMrk');
+            return $this->json($repo->getMM( $idMrk ));
         }
         return $this->json(['abort' => true, 'body' => 'Error inesperado']);
     }
