@@ -54,7 +54,7 @@ class MMEntityRepository extends ServiceEntityRepository
             $dql = $dql . '';
         }
 
-        $dql = $dql . 'ORDER BY m.id ASC';
+        $dql = $dql . ' ORDER BY m.id ASC';
         if($idMrk != null) {
             return $this->_em->createQuery($dql)
                 ->setParameter('idMrk', $idMrk)->getArrayResult();

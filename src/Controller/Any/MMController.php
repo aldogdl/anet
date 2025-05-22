@@ -34,7 +34,7 @@ class MMController extends AbstractController
 
     /** */
     #[Route('/elements', methods: ['get', 'post', 'delete'])]
-    public function marcas(Request $req, MMEntityRepository $repo): Response
+    public function mmElements(Request $req, MMEntityRepository $repo): Response
     {
         if( $req->getMethod() == 'POST' ) {
             $data = $req->getContent();
