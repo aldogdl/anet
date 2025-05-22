@@ -51,7 +51,7 @@ class MMEntityRepository extends ServiceEntityRepository
         if($idMrk != null) {
             $dql = $dql . 'WHERE m.idMrk = :idMrk';
         }else{
-            $dql = $dql . '';
+            $dql = $dql . 'WHERE m.idMrk = 0';
         }
 
         $dql = $dql . ' ORDER BY m.id ASC';
