@@ -42,25 +42,16 @@ class ItemController extends AbstractController
             $data = $req->getContent();
             if($data) {
                 $res = $repo->setPub( json_decode($data, true) );
-                if(!$res['abort']) {
+                if(!$res['abort'] && $res['action'] == 'add') {
                     $items = $fsys->get(AnyPath::$PRODPUBS, $res['body']['os'].'+items.json');
                     $items['v'] = round(microtime(true) * 1000);
-                    
-                    if($res['action'] == 'add') {
-                        $items['r'][] = $res['body'];
-                    }else{
-                        $has = array_search($res['body']['s'], array_column($items['r'], 's'));
-                        if($has !== false) {
-                            $items['r'][$has] = $res['body'];
-                        }
-                    }
+                    $items['r'][] = $res['body'];
                     $items = $fsys->set(AnyPath::$PRODPUBS, $items, $res['body']['os'].'+items.json');
                 }
-                return $this->json(['abort' => false, "body" => 'Guardao con éxito']);
+                return $this->json(['abort' => false, "id" => $res['body']['id'], "body" => 'Guardao con éxito']);
             }
         } elseif( $req->getMethod() == 'GET' ) {
-            $idMrk = $req->query->get('idMrk');
-            return $this->json($repo->getMM( $idMrk ));
+            
         }
         return $this->json(['abort' => true, 'body' => 'Error inesperado']);
     }
