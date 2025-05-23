@@ -238,6 +238,7 @@ class DataSimpleMlm {
 
             $pathTo = $pathTo .'/'. $slug . '.json';
             $result = [
+                'slug'   => $slug,
                 'token'  => $data['access_token'],
                 'userId' => $data['user_id'],
                 'expire' => $data['expires_in'],

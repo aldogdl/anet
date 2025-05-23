@@ -16,6 +16,7 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class MMEntityRepository extends ServiceEntityRepository
 {
+    
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, MMEntity::class);
@@ -81,4 +82,5 @@ class MMEntityRepository extends ServiceEntityRepository
 
         return ['abort' => false, 'body' => 'Guardao con éxito'];
     }
+
 }
