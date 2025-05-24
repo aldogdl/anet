@@ -32,6 +32,24 @@ class Fsys {
     }
     
     /** */
+    public function getDiccionary(): array
+    {
+        $path = Path::canonicalize($this->params->get(AnyPath::$DICC));
+        if($this->filesystem->exists($path)) {
+            $content = file_get_contents($path);
+            if($content) {
+                $bytes = mb_strlen($content);
+                $decode = json_decode($content, true);
+                if($bytes > 1700) {
+                    file_put_contents($path, json_encode($decode));
+                }
+                return $decode;
+            }
+        }
+        return [];
+    }
+    
+    /** */
     public function get(String $path, ?String $filename) : array
     {
         $path = $this->_parsePath($path, $filename);

@@ -56,4 +56,11 @@ class ItemController extends AbstractController
         return $this->json(['abort' => true, 'body' => 'Error inesperado']);
     }
 
+    /** */
+    #[Route('/dicc', methods: ['get'])]
+    public function getDicc(Fsys $fsys): Response
+    {
+        return $this->json($fsys->getDiccionary());
+    }
+
 }

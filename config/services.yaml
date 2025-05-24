@@ -23,6 +23,7 @@ parameters:
     dtaCtc     : '%phtml%/ctcs/'
     dtaCtcLog  : '%dtaCtc%/log'
     anyMlm     : '%scm%/any_mlm.json'
+    dictionary : '%scm%/dicc.json'
     
     cnxFile    : '%scm%cnx_file.json'
     verapps    : '%scm%versions.json'
