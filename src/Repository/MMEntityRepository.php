@@ -69,7 +69,6 @@ class MMEntityRepository extends ServiceEntityRepository
                 ];
             }
         }
-        file_put_contents($tipo.'_slim.json', json_encode($result));
         return $result;
     }
     
