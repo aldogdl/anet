@@ -43,6 +43,37 @@ class MMEntityRepository extends ServiceEntityRepository
     }
     
     /** 
+     * Recuperamos todos los elementos de manera slim
+    */
+    public function getMMSlim(String $tipo) : array
+    {
+        $dql = 'SELECT m FROM '. MMEntity::class .' m ';
+        if($tipo == 'models') {
+            $dql = $dql . 'WHERE m.idMrk != 0';
+        }else{
+            $dql = $dql . 'WHERE m.idMrk = 0';
+        }
+
+        $dql = $dql . ' ORDER BY m.name ASC';
+        $res = $this->_em->createQuery($dql)->getArrayResult();
+        
+        $result = [];
+        $rota = count($res);
+        if($rota > 0) {
+            for ($i=0; $i < $rota; $i++) { 
+                $result[] = [
+                    'i' => $res[$i]['id'],
+                    'im'=> $res[$i]['idMrk'],
+                    'n' => $res[$i]['name'],
+                    'v' => $res[$i]['variants'],
+                ];
+            }
+        }
+        file_put_contents($tipo.'_slim.json', json_encode($result));
+        return $result;
+    }
+    
+    /** 
      * Recuperamos todos los elementos en caso de que $idMrk == null
      * se refiere a las marcas en caso contrario son modelos
     */

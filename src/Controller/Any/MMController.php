@@ -48,4 +48,15 @@ class MMController extends AbstractController
         return $this->json(['abort' => true, 'body' => 'Error inesperado']);
     }
 
+    /** */
+    #[Route('/mm-slim', methods: ['get'])]
+    public function mmGetModelsSlim(Request $req, MMEntityRepository $repo): Response
+    {
+        if( $req->getMethod() == 'GET' ) {
+            $tipo = $req->query->get('tipo');
+            return $this->json($repo->getMMSlim( $tipo ));
+        }
+        return $this->json(['abort' => true, 'body' => 'Error inesperado']);
+    }
+
 }
