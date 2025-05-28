@@ -2,6 +2,7 @@
 
 namespace App\Controller\Any;
 
+use Symfony\Component\Filesystem\Path;
 use App\Repository\ItemPubRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
@@ -63,4 +64,48 @@ class ItemController extends AbstractController
         return $this->json($fsys->getDiccionary());
     }
 
+    /**
+     * Endpoint para subir las imagenes desde el form del catalogo
+     */
+    #[Route('/image', methods: ['POST'])]
+    public function imagesUP(Request $req): Response
+    {
+        if($req->getMethod() != 'POST') {
+            return $this->json(['abort' => true, 'body' => 'X No se ha subido la foto'], 401);
+        }
+        
+        $slug = $req->request->get('slug') ?? null;
+        $idSrcItm = $req->request->get('idSrc') ?? null;
+        $key = $req->request->get('key') ?? null;
+        $file = $req->files->get('file');
+
+        if (!$slug || !$idSrcItm || !$key || !$file) {
+            return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
+        }
+
+        $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
+        $path = Path::canonicalize($prodSols.'/'.$slug.'/'.$idSrcItm);
+
+        if (!file_exists($path)) {
+            try {
+                mkdir($path, 0755, true);
+            } catch (\Throwable $th) {
+                return $this->json(['abort' => true, 'body' => 'X Error al crear carpeta' . $path], 402);
+            }
+        }
+        
+        try {
+            $filename = basename($key);
+            $file->move($path, $filename);
+        } catch (\Throwable $e) {
+            return $this->json(['abort' => true, 'body' => 'Error al mover archivo: '.$e->getMessage()], 500);
+        }
+
+        return $this->json([
+            'abort' => false,
+            'body' => 'Imagen guardada correctamente',
+            'filename' => $filename,
+        ]);
+    }
+  
 }
