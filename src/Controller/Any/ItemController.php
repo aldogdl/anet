@@ -78,6 +78,7 @@ class ItemController extends AbstractController
         $idSrcItm = $req->request->get('idSrc') ?? null;
         $key = $req->request->get('key') ?? null;
         $file = $req->files->get('file');
+        $getTunnel = $req->request->get('tunels') ?? 'no';
 
         if (!$slug || !$idSrcItm || !$key || !$file) {
             return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
@@ -101,11 +102,19 @@ class ItemController extends AbstractController
             return $this->json(['abort' => true, 'body' => 'Error al mover archivo: '.$e->getMessage()], 500);
         }
 
-        return $this->json([
+        $results = [
             'abort' => false,
             'body' => 'Imagen guardada correctamente',
             'filename' => $filename,
-        ]);
+        ];
+        if($getTunnel == 'si') {
+            $ngkf = $this->getParameter(AnyPath::$NGKF);
+            $path = Path::canonicalize($ngkf);
+            if (file_exists($path)) {
+                $results['tunnels'] = json_decode(file_get_contents($path), true);
+            }
+        }
+        return $this->json($results);
     }
   
 }

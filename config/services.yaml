@@ -25,6 +25,7 @@ parameters:
     anyMlm     : '%scm%/any_mlm.json'
     dictionary : '%scm%/dicc.json'
     
+    ngile      : '%scm%ng_file.json'
     cnxFile    : '%scm%cnx_file.json'
     verapps    : '%scm%versions.json'
     tkwaconm   : '%scm%tkwaconm.json'
