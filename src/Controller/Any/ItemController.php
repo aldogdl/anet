@@ -60,7 +60,7 @@ class ItemController extends AbstractController
                 }
 
                 $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-                $path = Path::canonicalize($prodSols.'/'.$slug.'/'.$userWaId);
+                $path = Path::canonicalize($prodSols.'/'.$slug.'/sols.json');
                 if (!file_exists($path)) {
                     file_put_contents($path, json_encode([
                         $userWaId => [
