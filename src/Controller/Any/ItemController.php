@@ -36,6 +36,70 @@ class ItemController extends AbstractController
     }
 
     /** */
+    #[Route('/sol', methods: ['get', 'post', 'delete'])]
+    public function itemSol(Request $req, ItemPubRepository $repo, Fsys $fsys): Response
+    {
+    
+        if( $req->getMethod() == 'POST' ) {
+
+            $data = json_decode($req->getContent(), true);
+
+            if($data) {
+
+                if (!$data || !isset($data['sl'], $data['sols'])) {
+                    return $this->json(['abort' => true, 'body' => 'Datos incompletos'], 400);
+                }
+                $slug = $data['sl'];
+                $userName = $data['us'];
+                $userWaId = $data['wi'];
+                $userMail = (array_key_exists('ma', $data)) ? $data['ma'] : '';
+                $solicitud = $data['sols'];
+
+                if (!$slug || !$userWaId || $solicitud) {
+                    return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
+                }
+
+                $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
+                $path = Path::canonicalize($prodSols.'/'.$slug.'/'.$userWaId);
+                if (!file_exists($path)) {
+                    file_put_contents($path, json_encode([
+                        $userWaId => [
+                            'name' => $userName,
+                            'mail' => $userMail,
+                            'sols' => [$solicitud],
+                        ]
+                    ]));
+                    return $this->json(['abort' => false, "body" => 'Guardao con éxito']);
+                }
+                
+                $sols = json_decode(file_get_contents($path), true);
+                if(!array_key_exists($userWaId, $sols)) {
+                    $sols[$userWaId] = [
+                        'name' => $userName,
+                        'mail' => $userMail,
+                        'sols' => [$solicitud],
+                    ];
+                    file_put_contents($path, json_encode($sols));
+                    return $this->json(['abort' => false, "body" => 'Guardao con éxito']);
+                }
+                
+                if(array_key_exists('notiff', $data)) {
+                    // TODO 
+                    // No se logro enviar la notificacion desde el cliente hacia el core
+                }
+                if($sols[$userWaId]['name'] == $userName) {
+                    $sols[$userWaId]['sols'][] = $solicitud;
+                    file_put_contents($path, json_encode($sols));
+                    return $this->json(['abort' => false, "body" => 'Guardao con éxito']);
+                }
+            }
+        } elseif( $req->getMethod() == 'GET' ) {
+            
+        }
+        return $this->json(['abort' => true, 'body' => 'Error inesperado']);
+    }
+
+    /** */
     #[Route('/pub', methods: ['get', 'post', 'delete'])]
     public function itemPub(Request $req, ItemPubRepository $repo, Fsys $fsys): Response
     {
