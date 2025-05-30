@@ -55,7 +55,7 @@ class ItemController extends AbstractController
                 $userMail = (array_key_exists('ma', $data)) ? $data['ma'] : '';
                 $solicitud = $data['sols'];
 
-                if (!$slug || !$userWaId || $solicitud) {
+                if (!$slug || !$userWaId || !$solicitud) {
                     return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
                 }
 
