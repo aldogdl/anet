@@ -35,6 +35,60 @@ class ItemController extends AbstractController
         return $content;
     }
 
+    /**
+     * Endpoint para subir las imagenes desde el form del catalogo
+     */
+    #[Route('/image', methods: ['POST'])]
+    public function imagesUP(Request $req): Response
+    {
+        if($req->getMethod() != 'POST') {
+            return $this->json(['abort' => true, 'body' => 'X No se ha subido la foto'], 401);
+        }
+        
+        $slug = $req->request->get('slug') ?? null;
+        $idSrcItm = $req->request->get('idSrc') ?? null;
+        $key = $req->request->get('key') ?? null;
+        $file = $req->files->get('file');
+        $getTunnel = $req->request->get('tunels') ?? 'no';
+
+        if (!$slug || !$idSrcItm || !$key || !$file) {
+            return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
+        }
+
+        $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
+        $path = Path::canonicalize($prodSols.'/'.$slug.'/'.$idSrcItm);
+
+        if (!file_exists($path)) {
+            try {
+                mkdir($path, 0755, true);
+            } catch (\Throwable $th) {
+                return $this->json(['abort' => true, 'body' => 'X Error al crear carpeta' . $path], 402);
+            }
+        }
+        
+        try {
+            $uploadedFile = $req->files->get('file');
+            $originalFilename = basename($uploadedFile->getClientOriginalName());
+            $uploadedFile->move($path, $originalFilename);
+        } catch (\Throwable $e) {
+            return $this->json(['abort' => true, 'body' => 'Error al mover archivo: '.$e->getMessage()], 500);
+        }
+
+        $results = [
+            'abort' => false,
+            'body' => 'Imagen guardada correctamente',
+            'filename' => $originalFilename,
+        ];
+        if($getTunnel == 'si') {
+            $ngkf = $this->getParameter(AnyPath::$NGKF);
+            $path = Path::canonicalize($ngkf);
+            if (file_exists($path)) {
+                $results['tunnels'] = json_decode(file_get_contents($path), true);
+            }
+        }
+        return $this->json($results);
+    }
+
     /** */
     #[Route('/sol', methods: ['get', 'post', 'delete'])]
     public function itemSol(Request $req, ItemPubRepository $repo, Fsys $fsys): Response
@@ -126,59 +180,6 @@ class ItemController extends AbstractController
     public function getDicc(Fsys $fsys): Response
     {
         return $this->json($fsys->getDiccionary());
-    }
-
-    /**
-     * Endpoint para subir las imagenes desde el form del catalogo
-     */
-    #[Route('/image', methods: ['POST'])]
-    public function imagesUP(Request $req): Response
-    {
-        if($req->getMethod() != 'POST') {
-            return $this->json(['abort' => true, 'body' => 'X No se ha subido la foto'], 401);
-        }
-        
-        $slug = $req->request->get('slug') ?? null;
-        $idSrcItm = $req->request->get('idSrc') ?? null;
-        $key = $req->request->get('key') ?? null;
-        $file = $req->files->get('file');
-        $getTunnel = $req->request->get('tunels') ?? 'no';
-
-        if (!$slug || !$idSrcItm || !$key || !$file) {
-            return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
-        }
-
-        $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-        $path = Path::canonicalize($prodSols.'/'.$slug.'/'.$idSrcItm);
-
-        if (!file_exists($path)) {
-            try {
-                mkdir($path, 0755, true);
-            } catch (\Throwable $th) {
-                return $this->json(['abort' => true, 'body' => 'X Error al crear carpeta' . $path], 402);
-            }
-        }
-        
-        try {
-            $filename = basename($key);
-            $file->move($path, $filename);
-        } catch (\Throwable $e) {
-            return $this->json(['abort' => true, 'body' => 'Error al mover archivo: '.$e->getMessage()], 500);
-        }
-
-        $results = [
-            'abort' => false,
-            'body' => 'Imagen guardada correctamente',
-            'filename' => $filename,
-        ];
-        if($getTunnel == 'si') {
-            $ngkf = $this->getParameter(AnyPath::$NGKF);
-            $path = Path::canonicalize($ngkf);
-            if (file_exists($path)) {
-                $results['tunnels'] = json_decode(file_get_contents($path), true);
-            }
-        }
-        return $this->json($results);
     }
   
 }
