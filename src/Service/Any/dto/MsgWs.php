@@ -40,7 +40,7 @@ class MsgWs
             'type'  => $this->type,
             'value' => $this->value,
             'body'  => $this->body,
-        ]);        
+        ], JSON_UNESCAPED_UNICODE);        
     }
 
     /** */
