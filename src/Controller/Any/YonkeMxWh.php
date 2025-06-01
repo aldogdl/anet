@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/yonke-mx')]
-class MMController extends AbstractController
+class YonkeMxWh extends AbstractController
 {
     /**
      * Obtenemos el request contenido decodificado como array
