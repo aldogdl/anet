@@ -38,9 +38,23 @@ class YonkeMxWh extends AbstractController
         if( $req->getMethod() == 'POST' ) {
             file_put_contents('de_wa_post.json', $req->getContent());
         } elseif( $req->getMethod() == 'GET' ) {
-            file_put_contents('de_wa_get.json', $req->getContent());
+
+            $verify = $req->query->get('hub_verify_token');
+            if($verify == 'any2536_1975&appws') {
+    
+                $mode = $req->query->get('hub_mode');
+                if($mode == 'subscribe') {
+                    $challenge = $req->query->get('hub_challenge');
+                    file_put_contents('de_wa_get.json', json_encode([
+                        'mode' => $mode, 
+                        'verify' => $verify, 
+                        'challenge' => $challenge, 
+                    ]));
+                    return new Response($challenge);
+                }
+            }
         }
-        return new Response('any2536_1975&appws');
+        return new Response(400);
     }
 
 }
