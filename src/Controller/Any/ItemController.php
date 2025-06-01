@@ -148,7 +148,24 @@ class ItemController extends AbstractController
                 }
             }
         } elseif( $req->getMethod() == 'GET' ) {
-            
+
+            $slug = $req->query->get('slug') ?? '';
+            $ownWaid = $req->query->get('ownWaid') ?? '';
+            if(!$slug || !$ownWaid) {
+                return $this->json([]);
+            }
+
+            $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
+            $path = Path::canonicalize($prodSols.'/'.$slug.'/sols.json');
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+                if($content) {
+                    $content = json_decode($content, true);
+                    return (array_key_exists($ownWaid, $content))
+                        ? $this->json($content[$ownWaid]['sols']) : [];
+                }
+            }
+            return $this->json([]);
         }
         return $this->json(['abort' => true, 'body' => 'Error inesperado']);
     }
