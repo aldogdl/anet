@@ -41,7 +41,7 @@ class YonkeMxWh extends AbstractController
             $msg = new MsgWs(json_decode($req->getContent(), true));
             if($msg->type == 'stt') { return new Response(200); }
             
-            file_put_contents('wa_post_'.$msg->time.'.json', $msg->toJson());
+            file_put_contents('wa_post_'.uniqid().'.json', $msg->toJson());
 
         } elseif( $req->getMethod() == 'GET' ) {
 
