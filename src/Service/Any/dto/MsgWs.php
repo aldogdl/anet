@@ -25,7 +25,7 @@ class MsgWs
                     $this->name = $msg['contacts']['profile']['name'];
                 }
             }
-            $this->extraer($msg['messages']);
+            $this->extraer($msg['messages'][0]);
         }
     }
 
