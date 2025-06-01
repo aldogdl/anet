@@ -2,6 +2,7 @@
 
 namespace App\Controller\Any;
 
+use App\Service\Any\dto\MsgWs;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -36,7 +37,12 @@ class YonkeMxWh extends AbstractController
     public function webhookWa(Request $req): Response
     {
         if( $req->getMethod() == 'POST' ) {
-            file_put_contents('de_wa_post.json', $req->getContent());
+
+            $msg = new MsgWs(json_decode($req->getContent(), true));
+            if($msg->type == 'stt') { return new Response(200); }
+            
+            file_put_contents('wa_post_'.$msg->time.'.json', $msg->toJson());
+
         } elseif( $req->getMethod() == 'GET' ) {
 
             $verify = $req->query->get('hub_verify_token');
