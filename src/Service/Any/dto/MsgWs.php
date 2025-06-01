@@ -21,8 +21,8 @@ class MsgWs
             $this->status($msg['statuses']);
         }else{
             if(array_key_exists('contacts', $msg)) {
-                if(array_key_exists('profile', $msg['contacts'])) {
-                    $this->name = $msg['contacts']['profile']['name'];
+                if(array_key_exists('profile', $msg['contacts'][0])) {
+                    $this->name = $msg['contacts'][0]['profile']['name'];
                 }
             }
             $this->extraer($msg['messages'][0]);
