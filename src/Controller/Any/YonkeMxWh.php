@@ -40,7 +40,7 @@ class YonkeMxWh extends AbstractController
         } elseif( $req->getMethod() == 'GET' ) {
             file_put_contents('de_wa_get.json', $req->getContent());
         }
-        return $this->json([]);
+        return new Response('any2536_1975&appws');
     }
 
 }
