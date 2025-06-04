@@ -67,11 +67,14 @@ class UsComRepository extends ServiceEntityRepository
         $has = $this->getUserByWaId($obj->getUsWaId(), $obj->getDev());
         if($has) {
             $has->setTkfb($obj->getTkfb());
+        }else{
+            
         }
 
         $fechaLimite = (new DateTimeImmutable())->sub(new DateInterval('PT23H55M'));
         if($has->getLastAt() < $fechaLimite) {
             // Han pasado más de 23h55m desde la fecha
+            $has = $has->setStt(0);
         }
     }
 }
