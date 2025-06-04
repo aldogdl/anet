@@ -73,6 +73,7 @@ class UsCom
 
     public function fromJson(array $data) : static {
 
+        $this->dev = $data['dev'];
         $this->ownApp = $data['ownApp'];
         $this->usWaId = $data['usWaId'];
         $this->usName = $data['usName'];
