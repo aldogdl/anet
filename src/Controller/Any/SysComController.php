@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/sys-com')]
-class SysCom extends AbstractController
+class SysComController extends AbstractController
 {
     /**
      * Obtenemos el request contenido decodificado como array
@@ -40,11 +40,15 @@ class SysCom extends AbstractController
     public function updateTkFb(Request $req, UsComRepository $em): Response
     {
         if( $req->getMethod() == 'POST' ) {
-
-            $obj = new UsCom();
-            $obj->fromJson(json_decode($req->getContent(), true));
-            $res = $em->updateTkFb($obj);
-            return $this->json($res);
+            $data = json_decode($req->getContent(), true);
+            if(array_key_exists('dev', $data)) {
+                $obj = new UsCom();
+                $obj->fromJson($data);
+                $res = $em->updateTkFb($obj);
+                return $this->json($res);
+            }else{
+                return new Response(500);
+            }
         }
         return new Response(400);
     }
@@ -55,6 +59,7 @@ class SysCom extends AbstractController
     {
         $data = json_decode($req->getContent(), true);
         if(array_key_exists('code', $data)) {
+
             $how = file_get_contents('report.txt');
             $token = $em->getTokenByWaId($how);
             $notif = Notification::create('Refuerzo de Solicitud', $data['code'], '');
