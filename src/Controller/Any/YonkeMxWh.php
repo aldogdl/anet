@@ -65,19 +65,4 @@ class YonkeMxWh extends AbstractController
         return new Response(400);
     }
 
-    /** */
-    #[Route('/push-core', methods: ['post'])]
-    public function sendPushToCore(Request $req, Pushes $push): Response 
-    {
-        $data = json_decode($req->getContent(), true);
-        if(array_key_exists('code', $data)) {
-            $token = 'eVBlv8SKQ8unIoAL5sSPX7:APA91bGvWurbuo1oXDvdQSe_y19Py-F4llMo-70Vx04iWYDTwXPW16Egq_rSj8scTkbcTl4QVY9uZcyRcUQwsCvJCtJxN0ePfVt4apdNQ09mkqzSnOF-LeE';
-            $notif = Notification::create('Refuerzo de Solicitud', $data['code'], '');
-            $result = $push->sendTo($token, $notif, ['ownApp' => $data['slugApp']]);
-            if(array_key_exists('sended', $result)) {
-                return $this->json(['abort' => false, 'id' => $result['sended']['name']]);
-            }
-        }
-        return $this->json(['abort' => true]);
-    }
 }

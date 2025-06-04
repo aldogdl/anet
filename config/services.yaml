@@ -23,6 +23,7 @@ parameters:
     dtaCtc     : '%phtml%/ctcs/'
     dtaCtcLog  : '%dtaCtc%/log'
     anyMlm     : '%scm%/any_mlm.json'
+    report     : '%scm%/report.txt'
     dictionary : '%scm%/dicc.json'
     
     ngile      : '%scm%ng_file.json'

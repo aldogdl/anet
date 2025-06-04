@@ -53,14 +53,17 @@ class SysComController extends AbstractController
         return new Response(400);
     }
 
-    /** */
+    /** 
+     * Si el cliente falla en enviar desde el FRM la notif a core, este mismo
+     * hace reintentos para que core este enterado del nuevo item
+    */
     #[Route('/push-core', methods: ['post'])]
     public function sendPushToCore(Request $req, UsComRepository $em, Pushes $push): Response 
     {
         $data = json_decode($req->getContent(), true);
         if(array_key_exists('code', $data)) {
 
-            $how = file_get_contents('report.txt');
+            $how = file_get_contents($this->getParameter('report'));
             $token = $em->getTokenByWaId($how);
             $notif = Notification::create('Refuerzo de Solicitud', $data['code'], '');
             $result = $push->sendTo($token, $notif, ['ownApp' => $data['slugApp']]);
@@ -71,4 +74,5 @@ class SysComController extends AbstractController
         
         return $this->json([]);
     }
+
 }
