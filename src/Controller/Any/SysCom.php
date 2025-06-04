@@ -2,7 +2,8 @@
 
 namespace App\Controller\Any;
 
-use App\Service\Any\dto\MsgWs;
+use App\Entity\UsCom;
+use App\Repository\UsComRepository;
 use App\Service\Pushes;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,8 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/yonke-mx')]
-class YonkeMxWh extends AbstractController
+#[Route('/sys-com')]
+class SysCom extends AbstractController
 {
     /**
      * Obtenemos el request contenido decodificado como array
@@ -35,32 +36,14 @@ class YonkeMxWh extends AbstractController
     }
 
     /** */
-    #[Route('/wh', methods: ['get', 'post'])]
-    public function webhookWa(Request $req): Response
+    #[Route('/update-tkfb', methods: ['post'])]
+    public function updateTkFb(Request $req, UsComRepository $em): Response
     {
         if( $req->getMethod() == 'POST' ) {
 
-            $msg = new MsgWs(json_decode($req->getContent(), true));
-            if($msg->type == 'stt') { return new Response(200); }
-            
-            file_put_contents('wa_post_'.uniqid().'.json', $msg->toJson());
-
-        } elseif( $req->getMethod() == 'GET' ) {
-
-            $verify = $req->query->get('hub_verify_token');
-            if($verify == 'any2536_1975&appws') {
-    
-                $mode = $req->query->get('hub_mode');
-                if($mode == 'subscribe') {
-                    $challenge = $req->query->get('hub_challenge');
-                    file_put_contents('de_wa_get.json', json_encode([
-                        'mode' => $mode, 
-                        'verify' => $verify, 
-                        'challenge' => $challenge, 
-                    ]));
-                    return new Response($challenge);
-                }
-            }
+            $obj = new UsCom();
+            $obj->fromJson(json_decode($req->getContent(), true));
+            $em->updateTkFb($obj);
         }
         return new Response(400);
     }

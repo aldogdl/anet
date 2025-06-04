@@ -147,6 +147,7 @@ class ItemController extends AbstractController
                     return $this->json(['abort' => false, "body" => 'Guardao con éxito']);
                 }
             }
+            
         } elseif( $req->getMethod() == 'GET' ) {
 
             $slug = $req->query->get('slug') ?? '';

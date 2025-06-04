@@ -165,7 +165,7 @@ class Pushes
     }
 
     /** */
-    private function sendTo(String $contact, Notification $notification, array $payload): array
+    public function sendTo(String $contact, Notification $notification, array $payload): array
     {
         $payload['click_action'] = 'FLUTTER_NOTIFICATION_CLICK';
         $config = AndroidConfig::fromArray([

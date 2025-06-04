@@ -33,6 +33,7 @@ public_html/desc_mlm.txt
 public_html/wa_analizar/
 
 ###>Revision V6###
+config/*.json
 public_html/error_log
 public_html/error.log
 public_html/*.json
