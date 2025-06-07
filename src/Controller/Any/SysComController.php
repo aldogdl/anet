@@ -4,6 +4,7 @@ namespace App\Controller\Any;
 
 use App\Entity\UsCom;
 use App\Repository\UsComRepository;
+use App\Service\Any\Fsys\AnyPath;
 use App\Service\Pushes;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Path;
 
 #[Route('/sys-com')]
 class SysComController extends AbstractController
@@ -75,4 +77,21 @@ class SysComController extends AbstractController
         return $this->json([]);
     }
 
+    /** desde el core subimos los datos de com-int */
+    #[Route('/set-comint', methods: ['post'])]
+    public function setComInt(Request $req): Response 
+    {
+        if($req->getMethod() == 'POST') {
+            $header = $req->headers->get('any-token') ?? '';
+            if($header == $this->getParameter('getAnToken')) {
+                $data = $req->getContent();
+                if($data) {
+                    $scm = $this->getParameter(AnyPath::$COMMLOC);
+                    file_put_contents(Path::canonicalize($scm), $data);
+                    return $this->json(['abort' => false]);
+                }
+            }
+        }
+        return $this->json(['abort' => true]);
+    }
 }
