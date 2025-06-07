@@ -78,8 +78,8 @@ class SysComController extends AbstractController
     }
 
     /** desde el core subimos los datos de com-int */
-    #[Route('/set-comint', methods: ['post'])]
-    public function setComInt(Request $req): Response 
+    #[Route('/set-comloc', methods: ['post'])]
+    public function setComLoc(Request $req): Response 
     {
         if($req->getMethod() == 'POST') {
             $header = $req->headers->get('any-token') ?? '';
