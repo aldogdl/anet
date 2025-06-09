@@ -186,7 +186,8 @@ class DataShopDto {
     function cifrar($data) {
 
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($this->metodo));
-        $cifrado = openssl_encrypt(json_encode($data), $this->metodo, $this->clave, OPENSSL_RAW_DATA, $iv);
+        $key = hash('sha256', $this->clave, true);
+        $cifrado = openssl_encrypt(json_encode($data), $this->metodo, $key, OPENSSL_RAW_DATA, $iv);
         return base64_encode($iv . $cifrado);
     }
 
