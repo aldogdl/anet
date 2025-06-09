@@ -37,6 +37,7 @@ parameters:
     getAnToken : '%env(resolve:ANET_TOKEN)%'
     getShopCTk : '%env(resolve:SHOP_TOKEN)%'
     anetCnx    : '%env(resolve:ANET_CNX)%'
+    certWebFb  : '%env(resolve:CERT_WEBFB)%'
 
     # Revisar... posiblemente borrar
     reqRadec   : '%phtml%/req_radec/'

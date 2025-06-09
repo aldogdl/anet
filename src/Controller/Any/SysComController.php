@@ -2,6 +2,7 @@
 
 namespace App\Controller\Any;
 
+use App\Dtos\DataShopDto;
 use App\Entity\UsCom;
 use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
@@ -35,6 +36,39 @@ class SysComController extends AbstractController
             throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
         }
         return $content;
+    }
+
+    /** */
+    #[Route('/get-data-any/{slug}', methods: ['get'])]
+    public function getDataAnyShop(Request $req, DataShopDto $shop, String $slug): Response
+    {
+        if($req->getMethod() != 'GET') {
+            return $this->json(['body' => 'Ok, gracias'], 400);
+        }
+        $dev = $req->query->get('dev') ?? '';
+        if(!$slug || !$dev) {
+            return $this->json(['abort' => true, 'body' => 'Faltan datos en el parametro'], 403);
+        }
+        $res = $shop->exec($slug, $dev);
+        return $this->json($res);
+    }
+
+    /** */
+    #[Route('/set-user-form', methods: ['post'])]
+    public function setUserFromForm(Request $req, UsComRepository $em): Response
+    {
+        if($req->getMethod() != 'POST') {
+            return $this->json(['body' => 'Ok, gracias'], 400);
+        }
+        $data = $req->getContent();
+        if($data) {
+            $data = json_decode($data, true);
+            if(array_key_exists('n', $data)) {
+                $id = $em->setUserFromForm($data);
+                return $this->json(['abort' => false, 'body' => $id]);
+            }
+        }
+        return $this->json(['abort' => true], 403);
     }
 
     /** */
@@ -77,7 +111,7 @@ class SysComController extends AbstractController
         return $this->json([]);
     }
 
-    /** desde el core subimos los datos de com-int */
+    /** Desde el core subimos los datos de com-int */
     #[Route('/set-comloc', methods: ['post'])]
     public function setComLoc(Request $req): Response 
     {
@@ -94,4 +128,5 @@ class SysComController extends AbstractController
         }
         return $this->json(['abort' => true]);
     }
+
 }

@@ -25,6 +25,9 @@ class UsCom
     #[ORM\Column(length: 50)]
     private ?string $usName = null;
     
+    #[ORM\Column(length: 100)]
+    private ?string $usEmail = null;
+
     /** El role del usuario de la app, dueño del este registro y de este token */
     #[ORM\Column(length: 15)]
     private ?string $role = null;
@@ -48,10 +51,14 @@ class UsCom
     #[ORM\Column(length: 20)]
     private ?string $dev = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $usPlace = null;
+
     public function __construct()
     {
         $this->usWaId = '';
         $this->usName = '';
+        $this->usEmail = '';
         $this->role = 'c';
         $this->topic = '';
         $this->stt = 0;
@@ -63,6 +70,7 @@ class UsCom
             'ownApp' => $this->ownApp,
             'usWaId' => $this->usWaId,
             'usName' => $this->usName,
+            'usEmail'=> $this->usEmail,
             'role'   => $this->role,
             'topic'  => $this->topic,
             'stt'    => $this->stt,
@@ -77,6 +85,7 @@ class UsCom
         $this->ownApp = $data['ownApp'];
         $this->usWaId = $data['usWaId'];
         $this->usName = $data['usName'];
+        $this->usEmail = (array_key_exists('usMail', $data)) ? $data['usMail'] : '';
         $this->role = $data['role'];
         $this->lastAt = new \DateTimeImmutable("now");
         $this->tkfb = $data['tkfb'];
@@ -120,6 +129,18 @@ class UsCom
     public function setUsName(string $usName): static
     {
         $this->usName = $usName;
+
+        return $this;
+    }
+
+    public function getUsEmail(): ?string
+    {
+        return $this->usEmail;
+    }
+
+    public function setUsEmail(string $usEmail): static
+    {
+        $this->usEmail = $usEmail;
 
         return $this;
     }
@@ -195,4 +216,17 @@ class UsCom
 
         return $this;
     }
+
+    public function getUsPlace(): ?string
+    {
+        return $this->usPlace;
+    }
+
+    public function setUsPlace(string $usPlace): static
+    {
+        $this->usPlace = $usPlace;
+
+        return $this;
+    }
+
 }
