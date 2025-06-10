@@ -49,35 +49,40 @@ class UsComRepository extends ServiceEntityRepository
         }
     }
     
-    /** Recuperamos a un usuario segun su id y su dev */
-    public function getUserByWaIdAndDev(String $waId, String $dev): ?UsCom
+    /** 
+     * Recuperamos a los usuarios que coincidan con el waId y el
+     * tipo de dispositivo al cual estan conectador
+     */
+    public function getByWaIdAndDev(String $waId, String $dev): array
     {
         $dql = 'SELECT u FROM ' . UsCom::class . ' u '.
-        'WHERE u.usWaId = :waId AND u.dev = :dev';
+        'WHERE u.usWaId = :waId AND u.dev = :dev '.
+        'ORDER BY u.lastAt DESC';
 
         $res = $this->_em->createQuery($dql)->setParameters(['waId' => $waId, 'dev' => $dev])->execute();
         if ($res) {
-            return $res[0];
+            return $res;
         }
-        return null;
+        return [];
     }
     
     /** 
      * Recuperamos a un usuario segun su id, dispositivo y el slug del yonkero dueño de la app
      */
-    public function getUserByWaIdDevAndOwnApp(String $waId, String $dev, String $ownApp): ?UsCom
+    public function getByWaIdDevAndOwnApp(String $waId, String $dev, String $ownApp): array
     {
         $dql = 'SELECT u FROM ' . UsCom::class . ' u '.
-        'WHERE u.usWaId = :waId AND u.dev = :dev AND u.ownApp = :ownApp';
+        'WHERE u.usWaId = :waId AND u.dev = :dev AND u.ownApp = :ownApp '.
+        'ORDER BY u.lastAt DESC ';
 
         $res = $this->_em->createQuery($dql)->setParameters([
             'waId' => $waId, 'dev' => $dev, 'ownApp' => $ownApp
         ])->execute();
 
         if ($res) {
-            return $res[0];
+            return $res;
         }
-        return null;
+        return [];
     }
     
     /** 
@@ -133,35 +138,58 @@ class UsComRepository extends ServiceEntityRepository
         return '';
     }
 
-    /** */
-    public function updateTkFb(UsCom $obj): array
+    /** 
+     * Borramos todos los usuario que coincidan con la lista de Strings de IKU
+     * Evitando que un usuario pueda tener varios registros con el mismo WaId
+     * desde el mismo dispositivo
+    */
+    public function deleteAllByIku(array $ikus): void
     {
-        $has = $this->getUserByWaIdAndDev($obj->getUsWaId(), $obj->getDev());
-        if($has) {
-            $has->setTkfb($obj->getTkfb());
+        $dql = 'DELETE FROM '.UsCom::class.' u WHERE u.iku IN (:ikus)';
+        $this->_em->createQuery($dql)->setParameter('ikus', $ikus)->execute();
+    }
+
+    /** */
+    public function updateDataCom(UsCom $obj): ?UsCom
+    {
+        $updateReg = false;
+        if($obj->getRole() == 'b') {
+            $users = $this->getByWaIdAndDev($obj->getUsWaId(), $obj->getDev());            
         }else{
-            $has = $obj;
+            $users = $this->getByWaIdDevAndOwnApp($obj->getUsWaId(), $obj->getDev(), $obj->getOwnApp());
         }
 
+        $rota = count($users);
+        if($rota == 0) {
+            $has = $obj;
+        } elseif ($rota == 1) {
+            $has = $users[0];
+            $updateReg = true;
+        }else{
+            $has = $users[0];
+            $ikus = [];
+            for ($i=0; $i < $rota; $i++) { 
+                if($i > 0) {
+                    $ikus[] = $users[$i]->getIku(); 
+                }
+            }
+            if(count($ikus) > 0) {
+                $this->deleteAllByIku($ikus);
+            }
+            $updateReg = true;
+        }
+
+        if($updateReg) {
+            $has->setTkfb($obj->getTkfb());
+            $has->setStt($obj->getStt());
+        }
+        
         $fechaLimite = (new DateTimeImmutable())->sub(new DateInterval('PT23H55M'));
         if($has->getLastAt() < $fechaLimite) {
             // Han pasado más de 23h 55m desde la fecha
             $has = $has->setStt(0);
         }
-        $has = $this->add($has);
-        return ['id' => $has->getId(), 'stt' => $has->getStt()];
-    }
-
-    /** 
-     * Desde el frm de anyShop, guardamos los datos del usuario
-    */
-    public function setUserFromForm(array $data): int
-    {
-        $obj = $this->getUserByWaIdDevAndOwnApp($data['w'], $data['pl'], $data['s']);
-        if($obj) {
-
-        }
-        return 0;
+        return $this->add($has);
     }
 
 }

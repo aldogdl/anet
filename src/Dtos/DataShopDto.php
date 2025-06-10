@@ -2,6 +2,7 @@
 
 namespace App\Dtos;
 
+use App\Entity\UsCom;
 use App\Repository\UsComRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -28,7 +29,7 @@ class DataShopDto {
     }
 
     /** */
-    public function exec(array $data) : array
+    public function getSimpleData(array $data) : array
     {
         $this->slug = $data['slug'];
         $this->dev = $data['dev'];
@@ -38,28 +39,6 @@ class DataShopDto {
         if($this->error != '') {
             return $this->returnErr();
         }
-        $encript = false;
-        if(array_key_exists('iku', $data)) {
-
-            // Datos de ml
-            $this->dataOwnMl();
-            if($this->error != '') {
-                return $this->returnErr();
-            }
-            // Datos de comunicacion del dueño
-            $this->dataOwnCom();
-            if($this->error != '') {
-                return $this->returnErr();
-            }
-            // Datos del conmutador
-            $this->dataConmutador();
-            if($this->error != '') {
-                return $this->returnErr();
-            }
-            $this->user['fwb'] = $this->params->get('certWebFb');
-            $encript = true;
-        }
-
         try {
             $this->user['ng'] = json_decode(
                 file_get_contents(
@@ -68,11 +47,48 @@ class DataShopDto {
             );
         } catch (\Throwable $th) {}
 
-        // dd($this->user);
-        if($encript) {
-            return ['abort' => false, 'body' => $this->cifrar($this->user)];
-        }
         return ['abort' => false, 'body' => $this->user];
+    }
+
+    /** */
+    public function getMetaBussiness(UsCom $usCom) : array
+    {
+        $this->slug = $usCom->getOwnApp();
+        $this->dev = $usCom->getDev();
+        // Datos de ml
+        $this->dataOwnMl();
+        if($this->error != '') {
+            return $this->returnErr();
+        }
+
+        return $this->prepareMetaData($usCom);
+    }
+
+    /** */
+    public function getMetaCustomer(UsCom $usCom) : array
+    {
+        $this->slug = $usCom->getOwnApp();
+        $this->dev = $usCom->getDev();
+        return $this->prepareMetaData($usCom);
+    }
+
+    /** */
+    private function prepareMetaData(UsCom $usCom) : array
+    {
+        // Datos de comunicacion del dueño
+        $this->user['iku']  = $usCom->getIku();
+        $this->user['tkfb'] = $usCom->getTkfb();
+        $this->user['stt']  = $usCom->getStt();
+        $this->user['login']= $usCom->getStt();
+
+        // Datos del conmutador
+        $this->dataConmutador();
+        if($this->error != '') {
+            return $this->returnErr();
+        }
+        $this->user['fwb'] = $this->params->get('certWebFb');
+        dd($this->user);
+        return ['abort' => false, 'body' => $this->cifrar($this->user)];
     }
 
     /** Datos de shop from file */
@@ -112,7 +128,9 @@ class DataShopDto {
                     $colabs[] = $data['colabs'][$i];
                 }
             }
+
             $this->user['colabs'] = $colabs;
+            $this->dataComAndColabs();
 
         } catch (\Throwable $th) {
             $this->error = 'X No existe la empresa '.$this->slug;
@@ -140,7 +158,7 @@ class DataShopDto {
     }
 
     /** */
-    private function dataOwnCom(): void
+    private function dataComAndColabs(): void
     {
         $usersWaIds = [$this->user['waId']];
         $rota = count($this->user['colabs']);

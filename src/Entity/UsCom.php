@@ -83,15 +83,17 @@ class UsCom
     }
 
     public function fromJson(array $data) : static {
-
-        $this->dev = $data['dev'];
+        $this->iku    = $data['iku'];
+        $this->dev    = $data['dev'];
+        $this->stt    = $data['stt'];
         $this->ownApp = $data['ownApp'];
         $this->usWaId = $data['usWaId'];
         $this->usName = $data['usName'];
-        $this->usEmail = (array_key_exists('usMail', $data)) ? $data['usMail'] : '';
-        $this->role = $data['role'];
+        $this->usPlace= $data['usPlace'];
+        $this->role   = $data['role'];
+        $this->tkfb   = $data['tkfb'];
         $this->lastAt = new \DateTimeImmutable("now");
-        $this->tkfb = $data['tkfb'];
+        $this->usEmail= (array_key_exists('usMail', $data)) ? $data['usMail'] : '';
         return $this;
     }
 

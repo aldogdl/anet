@@ -34,7 +34,7 @@ class SysComController extends AbstractController
         if(!array_key_exists('slug', $data) || !array_key_exists('dev', $data)) {
             return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
         }
-        $res = $shop->exec($data);
+        $res = $shop->getSimpleData($data);
         return $this->json($res);
     }
 
@@ -60,16 +60,30 @@ class SysComController extends AbstractController
     }
 
     /** */
-    #[Route('/update-tkfb', methods: ['post'])]
-    public function updateTkFb(Request $req, UsComRepository $em): Response
+    #[Route('/update-data-com', methods: ['post'])]
+    public function updateDataCom(Request $req, UsComRepository $em, DataShopDto $shop): Response
     {
         if( $req->getMethod() == 'POST' ) {
-            $data = json_decode($req->getContent(), true);
+            $data = $req->getContent();
+            if(!$data) {
+                return new Response(500);
+            }
+
+            $data = json_decode($data, true);
             if(array_key_exists('dev', $data)) {
                 $obj = new UsCom();
                 $obj->fromJson($data);
-                $res = $em->updateTkFb($obj);
-                return $this->json($res);
+                $obj = $em->updateDataCom($obj);
+                if($obj != null) {
+                    if($obj->getRole() == 'b') {
+                        $data = $shop->getMetaBussiness($obj);
+                    }else{
+                        $data = $shop->getMetaCustomer($obj);
+                    }
+                    return $this->json(['abort' => false, 'body' => $data]);
+                }else{
+                    return $this->json(['abort' => true, 'body' => []]);
+                }
             }else{
                 return new Response(500);
             }
