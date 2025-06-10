@@ -80,7 +80,7 @@ class SysComController extends AbstractController
                     }else{
                         $data = $shop->getMetaCustomer($obj);
                     }
-                    return $this->json(['abort' => false, 'body' => $data]);
+                    return $this->json($data);
                 }else{
                     return $this->json(['abort' => true, 'body' => []]);
                 }
