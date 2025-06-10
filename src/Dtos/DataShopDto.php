@@ -87,7 +87,6 @@ class DataShopDto {
             return $this->returnErr();
         }
         $this->user['fwb'] = $this->params->get('certWebFb');
-        dd($this->user);
         return ['abort' => false, 'body' => $this->cifrar($this->user)];
     }
 
