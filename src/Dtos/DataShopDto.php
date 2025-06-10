@@ -63,7 +63,7 @@ class DataShopDto {
         } catch (\Throwable $th) {}
 
         $this->user['fwb'] = $this->params->get('certWebFb');
-        // dd($this->user);
+        dd($this->user);
         return ['abort' => false, 'body' => $this->cifrar($this->user)];
     }
 
@@ -183,7 +183,7 @@ class DataShopDto {
     }
 
     // Función para cifrar datos
-    function cifrar($data) {
+    private function cifrar($data) {
 
         $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($this->metodo));
         $key = hash('sha256', $this->clave, true);
@@ -192,7 +192,7 @@ class DataShopDto {
     }
 
     // Función para descifrar datos
-    function descifrar($base64) {
+    private function descifrar($base64) {
         $datos = base64_decode($base64);
         $iv_len = openssl_cipher_iv_length($this->metodo);
         $iv = substr($datos, 0, $iv_len);

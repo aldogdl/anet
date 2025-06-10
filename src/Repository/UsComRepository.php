@@ -99,7 +99,7 @@ class UsComRepository extends ServiceEntityRepository
 
             if(!array_key_exists($data[$i]['usWaId'], $results)) {
                 $results[$data[$i]['usWaId']] = [
-                    "id"     => $data[$i]['id'],
+                    "iku"    => $data[$i]['iku'],
                     "tk"     => $data[$i]['tkfb'],
                     "stt"    => $data[$i]['stt'],
                     "dev"    => $data[$i]['dev'],

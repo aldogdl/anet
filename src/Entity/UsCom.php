@@ -54,6 +54,9 @@ class UsCom
     #[ORM\Column(length: 50)]
     private ?string $usPlace = null;
 
+    #[ORM\Column(length: 25)]
+    private ?string $iku = null;
+
     public function __construct()
     {
         $this->usWaId = '';
@@ -225,6 +228,18 @@ class UsCom
     public function setUsPlace(string $usPlace): static
     {
         $this->usPlace = $usPlace;
+
+        return $this;
+    }
+
+    public function getIku(): ?string
+    {
+        return $this->iku;
+    }
+
+    public function setIku(string $iku): static
+    {
+        $this->iku = $iku;
 
         return $this;
     }
