@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\IkuGenerator;
+namespace App\Service\Any\IkuGenerator;
 
 class GeneratorIKU
 {
