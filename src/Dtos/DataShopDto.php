@@ -179,7 +179,7 @@ class DataShopDto {
             $code = json_decode(file_get_contents($this->params->get('tkwaconm')), true);
         } catch (\Throwable $th) {}
         
-        $this->user['conm'] = $code;
+        $this->user['conm'] = $code[$code['modo']];
     }
 
     // Función para cifrar datos
