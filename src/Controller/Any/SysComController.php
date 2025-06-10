@@ -6,7 +6,7 @@ use App\Dtos\DataShopDto;
 use App\Entity\UsCom;
 use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
-use App\Service\IkuGenerator\GeneratorIKU;
+use App\Service\Any\IkuGenerator\GeneratorIku;
 use App\Service\Pushes;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
@@ -64,7 +64,7 @@ class SysComController extends AbstractController
         $data = $req->getContent();
         if($data) {
             $data = json_decode($data, true);
-            $ikuGenerator = new GeneratorIKU();
+            $ikuGenerator = new GeneratorIku();
             $iku = $ikuGenerator->generate();
             $data['iku'] = $iku;
             if(array_key_exists('n', $data)) {

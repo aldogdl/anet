@@ -2,9 +2,8 @@
 
 namespace App\Service\Any\IkuGenerator;
 
-class GeneratorIKU
+class GeneratorIku
 {
-    
     private string $alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     private int $defaultSize = 12;
 

@@ -141,7 +141,7 @@ class DataShopDto {
         // Primero actualizamos los datos del role principal
         if(array_key_exists($this->user['waId'], $data)) {
 
-            $this->user['id'] = $data[$this->user['waId']]['id'];
+            $this->user['iku'] = $data[$this->user['waId']]['iku'];
             $this->user['tkfb'] = $data[$this->user['waId']]['tk'];
             $this->user['stt'] = $data[$this->user['waId']]['stt'];
             $this->user['login'] = $data[$this->user['waId']]['stt'];
@@ -158,7 +158,7 @@ class DataShopDto {
             
             $key = $this->user['colabs'][$i]['waId'];
             if(array_key_exists($key, $data)) {
-                $this->user['colabs'][$i]['id'] = $data[$key]['id'];
+                $this->user['colabs'][$i]['iku'] = $data[$key]['iku'];
                 $this->user['colabs'][$i]['tkfb'] = $data[$key]['tkfb'];
                 $this->user['colabs'][$i]['stt'] = $data[$key]['stt'];
                 $this->user['colabs'][$i]['login'] = $data[$key]['stt'];
