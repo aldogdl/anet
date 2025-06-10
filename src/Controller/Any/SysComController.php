@@ -19,38 +19,22 @@ use Symfony\Component\Filesystem\Path;
 #[Route('/sys-com')]
 class SysComController extends AbstractController
 {
-    /**
-     * Obtenemos el request contenido decodificado como array
-     *
-     * @throws JsonException When the body cannot be decoded to an array
-     */
-    public function toArray(Request $req, String $campo): array
+    /** Datos para any shop */
+    #[Route('/get-data-any', methods: ['post'])]
+    public function getDataAnyShop(Request $req, DataShopDto $shop): Response
     {
-        $content = $req->request->get($campo);
-        try {
-            $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw new JsonException(sprintf('No se puede decodificar el body, "%s".', get_debug_type($content)));
-        }
-
-        if (!\is_array($content)) {
-            throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
-        }
-        return $content;
-    }
-
-    /** */
-    #[Route('/get-data-any/{slug}', methods: ['get'])]
-    public function getDataAnyShop(Request $req, DataShopDto $shop, String $slug): Response
-    {
-        if($req->getMethod() != 'GET') {
+        if($req->getMethod() != 'POST') {
             return $this->json(['body' => 'Ok, gracias'], 400);
         }
-        $dev = $req->query->get('dev') ?? '';
-        if(!$slug || !$dev) {
-            return $this->json(['abort' => true, 'body' => 'Faltan datos en el parametro'], 403);
+        $data = $req->getContent();
+        if(!$data) {
+            return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
         }
-        $res = $shop->exec($slug, $dev);
+        $data = json_decode($data, true);
+        if(!array_key_exists('slug', $data) || !array_key_exists('dev', $data)) {
+            return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+        }
+        $res = $shop->exec($data);
         return $this->json($res);
     }
 

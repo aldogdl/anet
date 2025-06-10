@@ -28,30 +28,36 @@ class DataShopDto {
     }
 
     /** */
-    public function exec(String $slug, String $dev) : array {
-        
-        $this->slug = $slug;
-        $this->dev = $dev;
+    public function exec(array $data) : array
+    {
+        $this->slug = $data['slug'];
+        $this->dev = $data['dev'];
 
         // Datos de la empresa
         $this->dataOwnApp();
         if($this->error != '') {
             return $this->returnErr();
         }
-        // Datos de ml
-        $this->dataOwnMl();
-        if($this->error != '') {
-            return $this->returnErr();
-        }
-        // Datos de comunicacion del dueño
-        $this->dataOwnCom();
-        if($this->error != '') {
-            return $this->returnErr();
-        }
-        // Datos del conmutador
-        $this->dataConmutador();
-        if($this->error != '') {
-            return $this->returnErr();
+        $encript = false;
+        if(array_key_exists('iku', $data)) {
+
+            // Datos de ml
+            $this->dataOwnMl();
+            if($this->error != '') {
+                return $this->returnErr();
+            }
+            // Datos de comunicacion del dueño
+            $this->dataOwnCom();
+            if($this->error != '') {
+                return $this->returnErr();
+            }
+            // Datos del conmutador
+            $this->dataConmutador();
+            if($this->error != '') {
+                return $this->returnErr();
+            }
+            $this->user['fwb'] = $this->params->get('certWebFb');
+            $encript = true;
         }
 
         try {
@@ -62,12 +68,14 @@ class DataShopDto {
             );
         } catch (\Throwable $th) {}
 
-        $this->user['fwb'] = $this->params->get('certWebFb');
         // dd($this->user);
-        return ['abort' => false, 'body' => $this->cifrar($this->user)];
+        if($encript) {
+            return ['abort' => false, 'body' => $this->cifrar($this->user)];
+        }
+        return ['abort' => false, 'body' => $this->user];
     }
 
-    ///
+    /** Datos de shop from file */
     private function dataOwnApp(): void
     {
         $this->error = '';
@@ -87,17 +95,20 @@ class DataShopDto {
 
             $rota = count($data['colabs']);
             $colabs = [];
-            for ($i=0; $i < $rota; $i++) { 
+            for ($i=0; $i < $rota; $i++) {
+                $pass = $this->cifrar($data['colabs'][$i]['pass']);
                 if(in_array('ROLE_MAIN', $data['colabs'][$i]['roles'])) {
-                    $this->user['waId'] = $data['colabs'][$i]['waId'];
-                    $this->user['contacto'] = $data['colabs'][$i]['nombre'].' '.$data['colabs'][$i]['fullName'];
-                    $this->user['pass'] = $data['colabs'][$i]['pass'];
+                    // [NOTA] El IKU del usuario lo tomamos al momento de recuperar
+                    // sus datos en la tabla de UsCom mas adelante
+                    $this->user['waId']  = $data['colabs'][$i]['waId'];
+                    $this->user['pass']  = $pass;
                     $this->user['roles'] = $data['colabs'][$i]['roles'];
                     $this->user['login'] = $data['colabs'][$i]['login'];
-                    $this->user['kduk'] = $data['colabs'][$i]['kduk'];
-                    $this->user['stt'] = $data['colabs'][$i]['stt'];
+                    $this->user['kduk']  = $data['colabs'][$i]['kduk'];
+                    $this->user['stt']   = $data['colabs'][$i]['stt'];
+                    $this->user['contacto'] = $data['colabs'][$i]['nombre'].' '.$data['colabs'][$i]['fullName'];
                 }else{
-                    $data['colabs'][$i]['pass'] = $data['colabs'][$i]['pass'];
+                    $data['colabs'][$i]['pass'] = $pass;
                     $colabs[] = $data['colabs'][$i];
                 }
             }
