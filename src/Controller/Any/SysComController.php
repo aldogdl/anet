@@ -42,27 +42,6 @@ class SysComController extends AbstractController
     }
 
     /** */
-    #[Route('/set-user-form', methods: ['post'])]
-    public function setUserFromForm(Request $req, UsComRepository $em): Response
-    {
-        if($req->getMethod() != 'POST') {
-            return $this->json(['body' => 'Ok, gracias'], 400);
-        }
-        $data = $req->getContent();
-        if($data) {
-            $data = json_decode($data, true);
-            $ikuGenerator = new GeneratorIku();
-            $iku = $ikuGenerator->generate();
-            $data['iku'] = $iku;
-            if(array_key_exists('n', $data)) {
-                $id = $em->setUserFromForm($data);
-                return $this->json(['abort' => false, 'body' => $id]);
-            }
-        }
-        return $this->json(['abort' => true], 403);
-    }
-
-    /** */
     #[Route('/update-data-com', methods: ['post'])]
     public function updateDataCom(Request $req, UsComRepository $em, DataShopDto $shop): Response
     {
@@ -74,8 +53,10 @@ class SysComController extends AbstractController
 
             $data = json_decode($data, true);
             if(array_key_exists('dev', $data)) {
+
                 $obj = new UsCom();
                 $obj->fromJson($data);
+                
                 $obj = $em->updateDataCom($obj);
                 if($obj != null) {
                     if($obj->getRole() == 'b') {

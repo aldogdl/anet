@@ -46,17 +46,17 @@ class ItemController extends AbstractController
         }
         
         $slug = $req->request->get('slug') ?? null;
-        $idSrcItm = $req->request->get('idSrc') ?? null;
+        $ikuItem = $req->request->get('ikuItem') ?? null;
         $key = $req->request->get('key') ?? null;
         $file = $req->files->get('file');
         $getTunnel = $req->request->get('tunels') ?? 'no';
 
-        if (!$slug || !$idSrcItm || !$key || !$file) {
+        if (!$slug || !$ikuItem || !$key || !$file) {
             return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
         }
 
         $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-        $path = Path::canonicalize($prodSols.'/'.$slug.'/'.$idSrcItm);
+        $path = Path::canonicalize($prodSols.'/'.$slug.'/'.$ikuItem);
 
         if (!file_exists($path)) {
             try {
@@ -67,9 +67,8 @@ class ItemController extends AbstractController
         }
         
         try {
-            $uploadedFile = $req->files->get('file');
-            $originalFilename = basename($uploadedFile->getClientOriginalName());
-            $uploadedFile->move($path, $originalFilename);
+            $originalFilename = basename($file->getClientOriginalName());
+            $file->move($path, $originalFilename);
         } catch (\Throwable $e) {
             return $this->json(['abort' => true, 'body' => 'Error al mover archivo: '.$e->getMessage()], 500);
         }
