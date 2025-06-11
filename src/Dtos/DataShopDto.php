@@ -63,7 +63,7 @@ class DataShopDto {
             );
         } catch (\Throwable $th) {}
 
-        return $this->user;
+        return ['abort' => false, 'body' => $this->user];
     }
 
     /** */
@@ -244,7 +244,6 @@ class DataShopDto {
                 $this->user['colabs'][$i]['iku'] = $data[$key]['iku'];
                 $this->user['colabs'][$i]['tkfb'] = $data[$key]['tkfb'];
                 $this->user['colabs'][$i]['stt'] = $data[$key]['stt'];
-                $this->user['colabs'][$i]['login'] = $data[$key]['stt'];
                 $fechaLimite = (new \DateTimeImmutable())->sub(new \DateInterval('PT23H55M'));
                 if($data[$key]['lastAt'] < $fechaLimite) {
                     $this->user['colabs'][$i]['login'] = 0;
