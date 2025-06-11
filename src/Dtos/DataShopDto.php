@@ -39,6 +39,7 @@ class DataShopDto {
     {
         $this->slug = $data['slug'];
         $this->dev = $data['dev'];
+        
         if(array_key_exists('pnew', $data)) {
             $this->pass = $data['pnew'];
         }
@@ -132,13 +133,15 @@ class DataShopDto {
             $getter = false;
             $rota = count($data['colabs']);
             for ($i=0; $i < $rota; $i++) {
-
+                
                 $pass = $data['colabs'][$i]['pass'];
+                
                 $passEncript = $this->cifrar($pass);
                 if($this->pass != '') {
                     if($pass == $this->pass) {
                         $colabMain = $data['colabs'][$i];
                         $colabMain['pass'] = $passEncript;
+                        $colabMain['stt'] = 2;
                         $getter = true;
                         continue;
                     }
@@ -158,6 +161,7 @@ class DataShopDto {
             }
 
             if($colabMain) {
+                
                 // [NOTA] El IKU del usuario lo tomamos al momento de recuperar
                 // sus datos en la tabla de UsCom mas adelante
                 if($this->iku != '') {
@@ -223,12 +227,11 @@ class DataShopDto {
             }else{
                 $this->user['tkfb'] = $data[$this->user['waId']]['tk'];
             }
-            $this->user['stt'] = $data[$this->user['waId']]['stt'];
+
             $this->user['login'] = $data[$this->user['waId']]['stt'];
             $fechaLimite = (new \DateTimeImmutable())->sub(new \DateInterval('PT23H55M'));
             if($data[$this->user['waId']]['lastAt'] < $fechaLimite) {
                 // Han pasado más de 23h 55m desde la fecha
-                $this->user['stt'] = 0;
                 $this->user['login'] = 0;
             }
         }
@@ -244,7 +247,6 @@ class DataShopDto {
                 $this->user['colabs'][$i]['login'] = $data[$key]['stt'];
                 $fechaLimite = (new \DateTimeImmutable())->sub(new \DateInterval('PT23H55M'));
                 if($data[$key]['lastAt'] < $fechaLimite) {
-                    $this->user['colabs'][$i]['stt'] = 0;
                     $this->user['colabs'][$i]['login'] = 0;
                 }
             }
