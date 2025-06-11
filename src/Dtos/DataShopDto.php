@@ -95,7 +95,6 @@ class DataShopDto {
         $this->user['iku']  = $usCom->getIku();
         $this->user['tkfb'] = $usCom->getTkfb();
         $this->user['stt']  = $usCom->getStt();
-        $this->user['login']= $usCom->getStt();
 
         // Datos del conmutador
         $this->dataConmutador();
@@ -228,7 +227,6 @@ class DataShopDto {
                 $this->user['tkfb'] = $data[$this->user['waId']]['tk'];
             }
 
-            $this->user['login'] = $data[$this->user['waId']]['stt'];
             $fechaLimite = (new \DateTimeImmutable())->sub(new \DateInterval('PT23H55M'));
             if($data[$this->user['waId']]['lastAt'] < $fechaLimite) {
                 // Han pasado más de 23h 55m desde la fecha
