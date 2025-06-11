@@ -26,14 +26,17 @@ class SysComController extends AbstractController
         if($req->getMethod() != 'POST') {
             return $this->json(['body' => 'Ok, gracias'], 400);
         }
+
         $data = $req->getContent();
         if(!$data) {
             return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
         }
+
         $data = json_decode($data, true);
         if(!array_key_exists('slug', $data) || !array_key_exists('dev', $data)) {
             return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
         }
+
         $res = $shop->getSimpleData($data);
         return $this->json($res);
     }
@@ -82,10 +85,10 @@ class SysComController extends AbstractController
                     }
                     return $this->json($data);
                 }else{
-                    return $this->json(['abort' => true, 'body' => []]);
+                    return $this->json(['abort' => true, 'body' => 'X Error 401, Inténtalo nuevamente']);
                 }
             }else{
-                return new Response(500);
+                return $this->json(['abort' => true, 'body' => 'X Faltaron datos, Inténtalo nuevamente']);
             }
         }
         return new Response(400);

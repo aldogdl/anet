@@ -88,7 +88,7 @@ class UsComRepository extends ServiceEntityRepository
     /** 
      * Recuperamos los datos de contacto de todos los colaboradores de un Yonek
      */
-    public function getDataComColabs(String $ownApp, array $waIds, String $dev): array
+    public function getDataComColabs(String $ownApp, array $waIds): array
     {
         $dql = 'SELECT u FROM ' . UsCom::class . ' u '.
         'WHERE u.usWaId IN(:waIds) AND u.ownApp = :ownApp '.
@@ -101,7 +101,7 @@ class UsComRepository extends ServiceEntityRepository
         $results = [];
         $rota = count($data);
         for ($i=0; $i < $rota; $i++) {
-
+            // Creamos un map para evitar duplicidad
             if(!array_key_exists($data[$i]['usWaId'], $results)) {
                 $results[$data[$i]['usWaId']] = [
                     "iku"    => $data[$i]['iku'],
@@ -111,8 +111,9 @@ class UsComRepository extends ServiceEntityRepository
                     "role"   => $data[$i]['role'],
                     "usWaId" => $data[$i]['usWaId'],
                     "usName" => $data[$i]['usName'],
-                    "lastAt" => $data[$i]['lastAt'],
                     "usPlace"=> $data[$i]['usPlace'],
+                    "usEmail" => $data[$i]['usEmail'],
+                    "lastAt" => $data[$i]['lastAt'],
                 ];
             }
         }
@@ -147,6 +148,17 @@ class UsComRepository extends ServiceEntityRepository
     {
         $dql = 'DELETE FROM '.UsCom::class.' u WHERE u.iku IN (:ikus)';
         $this->_em->createQuery($dql)->setParameter('ikus', $ikus)->execute();
+    }
+
+    /** 
+     * Actualizamos solo el token del usuario que coincida con si iku
+    */
+    public function updateOnlyToken(String $token, String $iku): void
+    {
+        $dql = 'UPDATE ' . UsCom::class . ' u SET u.tkfb = :token WHERE u.iku = :iku';
+        $this->_em->createQuery($dql)->setParameters([
+            'iku' => $iku, 'token' => $token
+        ])->execute();
     }
 
     /** */
