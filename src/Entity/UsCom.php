@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UsComRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: UsComRepository::class)]

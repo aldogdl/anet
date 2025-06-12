@@ -4,6 +4,7 @@ namespace App\Controller\Any;
 
 use Symfony\Component\Filesystem\Path;
 use App\Repository\ItemPubRepository;
+use App\Repository\SolsRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,26 +16,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/any-item')]
 class ItemController extends AbstractController
 {
-    /**
-     * Obtenemos el request contenido decodificado como array
-     *
-     * @throws JsonException When the body cannot be decoded to an array
-     */
-    public function toArray(Request $req, String $campo): array
-    {
-        $content = $req->request->get($campo);
-        try {
-            $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw new JsonException(sprintf('No se puede decodificar el body, "%s".', get_debug_type($content)));
-        }
-
-        if (!\is_array($content)) {
-            throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
-        }
-        return $content;
-    }
-
     /**
      * Endpoint para subir las imagenes desde el form del catalogo
      */
@@ -90,80 +71,43 @@ class ItemController extends AbstractController
 
     /** */
     #[Route('/sol', methods: ['get', 'post', 'delete'])]
-    public function itemSol(Request $req, ItemPubRepository $repo, Fsys $fsys): Response
+    public function itemSol(Request $req, SolsRepository $em): Response
     {
-    
         if( $req->getMethod() == 'POST' ) {
 
-            $data = json_decode($req->getContent(), true);
-
+            $data = $req->getContent();
+            
             if($data) {
-
-                if (!$data || !isset($data['sl'], $data['sols'])) {
+                
+                $data = json_decode($data, true);
+                if (!$data || !array_key_exists('sol', $data) || !isset($data['sl'], $data['sol'])) {
                     return $this->json(['abort' => true, 'body' => 'Datos incompletos'], 400);
                 }
-                $slug = $data['sl'];
-                $userName = $data['us'];
-                $userWaId = $data['wi'];
-                $userMail = (array_key_exists('ma', $data)) ? $data['ma'] : '';
-                $solicitud = $data['sols'];
 
-                if (!$slug || !$userWaId || !$solicitud) {
-                    return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
+                $newId = $em->setSol($data);
+                if($newId == 0) {
+                    return $this->json(['abort' => true, 'body' => 'Inténtalo nuevamente'], 403);
                 }
-
-                $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-                $path = Path::canonicalize($prodSols.'/'.$slug.'/sols.json');
-                if (!file_exists($path)) {
-                    file_put_contents($path, json_encode([
-                        $userWaId => [
-                            'name' => $userName,
-                            'mail' => $userMail,
-                            'sols' => [$solicitud],
-                        ]
-                    ]));
-                    return $this->json(['abort' => false, "body" => 'Guardao con éxito']);
-                }
-                
-                $sols = json_decode(file_get_contents($path), true);
-                if(!array_key_exists($userWaId, $sols)) {
-                    $sols[$userWaId] = [
-                        'name' => $userName,
-                        'mail' => $userMail,
-                        'sols' => [$solicitud],
-                    ];
-                    file_put_contents($path, json_encode($sols));
-                    return $this->json(['abort' => false, "body" => 'Guardao con éxito']);
-                }
-                
                 if(array_key_exists('notiff', $data)) {
                     // TODO 
                     // No se logro enviar la notificacion desde el cliente hacia el core
                 }
-                if($sols[$userWaId]['name'] == $userName) {
-                    $sols[$userWaId]['sols'][] = $solicitud;
-                    file_put_contents($path, json_encode($sols));
-                    return $this->json(['abort' => false, "body" => 'Guardao con éxito']);
-                }
+                return $this->json(['abort' => false, 'body' => $newId]);
             }
             
         } elseif( $req->getMethod() == 'GET' ) {
 
+            // Si viene el slug
             $slug = $req->query->get('slug') ?? '';
-            $ownWaid = $req->query->get('ownWaid') ?? '';
-            if(!$slug || !$ownWaid) {
+            // Si viene el ciku es que es un colaborador que quiere sus solicitudes
+            $cIku = $req->query->get('ciku') ?? '';
+            // El iku del usuario que quiere sus solicitudes
+            $usIku = $req->query->get('usiku') ?? '';
+            if(!$slug) {
                 return $this->json([]);
             }
-
-            $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-            $path = Path::canonicalize($prodSols.'/'.$slug.'/sols.json');
-            if (file_exists($path)) {
-                $content = file_get_contents($path);
-                if($content) {
-                    $content = json_decode($content, true);
-                    return (array_key_exists($ownWaid, $content))
-                        ? $this->json($content[$ownWaid]['sols']) : [];
-                }
+            if($usIku) {
+                $res = $em->getMiSolicitudes($slug, $usIku);
             }
             return $this->json([]);
         }
