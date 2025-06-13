@@ -3,14 +3,13 @@
 namespace App\Controller\Any;
 
 use Symfony\Component\Filesystem\Path;
-use App\Repository\ItemPubRepository;
+use App\Repository\PubsRepository;
 use App\Repository\SolsRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/any-item')]
@@ -116,19 +115,23 @@ class ItemController extends AbstractController
 
     /** */
     #[Route('/pub', methods: ['get', 'post', 'delete'])]
-    public function itemPub(Request $req, ItemPubRepository $repo, Fsys $fsys): Response
+    public function itemPub(Request $req, PubsRepository $repo, Fsys $fsys): Response
     {
         if( $req->getMethod() == 'POST' ) {
             $data = $req->getContent();
             if($data) {
-                $res = $repo->setPub( json_decode($data, true) );
-                if(!$res['abort'] && $res['action'] == 'add') {
-                    $items = $fsys->get(AnyPath::$PRODPUBS, $res['body']['os'].'+items.json');
-                    $items['v'] = round(microtime(true) * 1000);
-                    $items['r'][] = $res['body'];
-                    $items = $fsys->set(AnyPath::$PRODPUBS, $items, $res['body']['os'].'+items.json');
+                $data = json_decode($data, true);
+                if(array_key_exists('list', $data)) {
+                    $res = $repo->setPubs($data);
+                    if($res != 0) {
+                        return $this->json(['abort' => false, "body" => $res]);
+                    }
+                }else{
+                    $res = $repo->setPub($data);
+                    if($res != 0) {
+                        return $this->json(['abort' => false, "id" => $res, "body" => 'Guardado con éxito']);
+                    }
                 }
-                return $this->json(['abort' => false, "id" => $res['body']['id'], "body" => 'Guardao con éxito']);
             }
         } elseif( $req->getMethod() == 'GET' ) {
             

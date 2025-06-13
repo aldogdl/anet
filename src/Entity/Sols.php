@@ -22,15 +22,17 @@ class Sols
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?UsCom $iku = null;
-
     #[ORM\Column(length: 15)]
     private ?string $appWaId = null;
 
     #[ORM\Column(length: 25)]
     private ?string $appSlug = null;
+
+    #[ORM\Column(length: 25)]
+    private ?string $iku = null;
+
+    #[ORM\Column(length: 25)]
+    private ?string $ikuOwn = null;
 
     public function __construct()
     {
@@ -79,18 +81,6 @@ class Sols
         return $this;
     }
 
-    public function getIku(): ?UsCom
-    {
-        return $this->iku;
-    }
-
-    public function setIku(?UsCom $iku): static
-    {
-        $this->iku = $iku;
-
-        return $this;
-    }
-
     public function getAppWaId(): ?string
     {
         return $this->appWaId;
@@ -111,6 +101,30 @@ class Sols
     public function setAppSlug(string $appSlug): static
     {
         $this->appSlug = $appSlug;
+
+        return $this;
+    }
+
+    public function getIku(): ?string
+    {
+        return $this->iku;
+    }
+
+    public function setIku(string $iku): static
+    {
+        $this->iku = $iku;
+
+        return $this;
+    }
+
+    public function getIkuOwn(): ?string
+    {
+        return $this->ikuOwn;
+    }
+
+    public function setIkuOwn(string $ikuOwn): static
+    {
+        $this->ikuOwn = $ikuOwn;
 
         return $this;
     }

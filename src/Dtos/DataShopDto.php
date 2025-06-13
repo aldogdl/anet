@@ -38,7 +38,7 @@ class DataShopDto {
     public function getSimpleData(array $data) : array
     {
         $this->slug = $data['slug'];
-        $this->dev = $data['dev'];
+        $this->dev = (array_key_exists('dev', $data)) ? $data['dev'] : '';
         
         if(array_key_exists('pnew', $data)) {
             $this->pass = $data['pnew'];

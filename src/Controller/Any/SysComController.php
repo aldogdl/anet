@@ -29,7 +29,7 @@ class SysComController extends AbstractController
 
         $data = $req->getContent();
         if(!$data) {
-            return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+            return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
         }
 
         $data = json_decode($data, true);

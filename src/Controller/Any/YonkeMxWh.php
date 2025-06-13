@@ -3,37 +3,14 @@
 namespace App\Controller\Any;
 
 use App\Service\Any\dto\MsgWs;
-use App\Service\Pushes;
-use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Exception\JsonException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/yonke-mx')]
 class YonkeMxWh extends AbstractController
 {
-    /**
-     * Obtenemos el request contenido decodificado como array
-     *
-     * @throws JsonException When the body cannot be decoded to an array
-     */
-    public function toArray(Request $req, String $campo): array
-    {
-        $content = $req->request->get($campo);
-        try {
-            $content = json_decode($content, true, 512, \JSON_BIGINT_AS_STRING | \JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
-            throw new JsonException(sprintf('No se puede decodificar el body, "%s".', get_debug_type($content)));
-        }
-
-        if (!\is_array($content)) {
-            throw new JsonException(sprintf('El contenido JSON esperaba un array, "%s" para retornar.', get_debug_type($content)));
-        }
-        return $content;
-    }
-
     /** */
     #[Route('/wh', methods: ['get', 'post'])]
     public function webhookWa(Request $req): Response
@@ -61,6 +38,16 @@ class YonkeMxWh extends AbstractController
                     return new Response($challenge);
                 }
             }
+        }
+        return new Response(400);
+    }
+
+    /** */
+    #[Route('/test-com', methods: ['get'])]
+    public function testCom(Request $req): Response
+    {
+        if( $req->getMethod() == 'GET' ) {
+            return new Response(200);
         }
         return new Response(400);
     }
