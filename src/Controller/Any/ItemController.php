@@ -136,37 +136,31 @@ class ItemController extends AbstractController
         } elseif( $req->getMethod() == 'GET' ) {
 
             $items = [];
-            // [NOTA] este get es solo para mostrar el paquete del dia, para
-            // busquedas es solo por rastreo.
-            // [OJO] Solo dueños Yonkeros logeados en la app podrán hacer busquedas
-            // en su propio inventario, para otras piezas que no esten en su inventario
-            // usaran el rastreador.
             $iku = $req->query->get('iku') ?? '';
             $query = $req->query->get('query') ?? '';
-            if($iku == '') {
-
-                $package = $fsys->getPackageOfDay();
-                if(array_key_exists('last', $package)) {
-                    if (time() - $package['last'] <= 12 * 60 * 60) {
-                        $items = $package['r'];
-                    }
-                }
-                if(!$items) {
-                    // Recuperamos de cache o de DB el paquete del dia
-                    $items = $repo->buildPakegeOfDay();
-                    $package['last'] = time();
-                    $package['r'] = $items;
-                    $fsys->setPackageOfDay($package);
-                }
-            }
-
             if($iku != '') {
-                // Si hay iku es que es un Yonkero descargar sus piezas
+                // Si hay iku es que es un Yonkero el que quiere sus piezas
                 if($query != '') {
                     // Solo en yonkero logeado podrá buscar en sus piezas
                 }
+                return $this->json($items);
             }
-            return $this->json($items);
+
+            $package = $fsys->getPackageOfDay();
+            if(array_key_exists('last', $package)) {
+                if (time() - $package['last'] <= 12 * 60 * 60) {
+                    $items = $package['r'];
+                }
+            }
+            if(!$items) {
+                // Recuperamos de cache o de DB el paquete del dia
+                $items = $repo->buildPakegeOfDay();
+                $package['last'] = time();
+                $package['r'] = $items;
+                $fsys->setPackageOfDay($package);
+            }
+
+            return $this->json($items, 200, ['Cache-Control' => 'public, max-age=43200']);
         }
         return $this->json(['abort' => true, 'body' => 'Error inesperado']);
     }
