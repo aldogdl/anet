@@ -23,6 +23,25 @@ class PubsRepository extends ServiceEntityRepository
     }
 
     /** */
+    public function buildPakegeOfDay(): array
+    {
+        $dql = 'SELECT id FROM pubs ORDER BY RAND() LIMIT 100';
+        $connection = $this->_em->getConnection();
+        $ids = $connection->fetchFirstColumn($dql);
+
+        $dql = 'SELECT u FROM ' . Pubs::class . ' u WHERE u.id IN (:ids) '.
+        'ORDER BY u.id DESC';
+        $query = $this->_em->createQuery($dql)->setParameter('ids', $ids);
+        $res = $query->getResult();
+        $rota = count($res);
+        $results = [];
+        for ($i=0; $i < $rota; $i++) { 
+            $results[] = $res[$i]->buildToSave();
+        }
+        return $results;
+    }
+
+    /** */
     public function setPubs(array $pubNew) : array
     {
         $results = [];

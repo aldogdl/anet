@@ -66,6 +66,33 @@ class Pubs
         $this->isDf = false;
     }
 
+    /** */
+    public function buildToSave(): array
+    {
+        $map = [
+            'iku'=> $this->iku,
+            'cd' => $this->code,
+            'pr' => $this->price,
+            'fr' => $this->ftoRef,
+            'oik'=> $this->ikuOwn,
+            'osl'=> $this->appSlug,
+            'owi'=> $this->appWaId,
+            'df' => $this->isDf,
+            'cr' => $this->createdAt->format('Y-m-d H:i:s'),
+            'ft' => $this->ftec,
+        ];
+        if(count($this->fotos) > 0) {
+            $map['fts'] = $this->fotos;
+        }
+        if($this->detalle != '') {
+            $map['dt'] = $this->detalle;
+        }
+        if($this->costo > 0) {
+            $map['ct'] = $this->costo;
+        }
+        return $map;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

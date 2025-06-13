@@ -30,7 +30,26 @@ class Fsys {
         }
         return $full;
     }
-    
+
+    /** */
+    public function getPackageOfDay(): array
+    {
+        try {
+            $content = file_get_contents('pakage.json');
+            if($content) {
+                return json_decode($content, true);
+            }
+        } catch (\Throwable $th) {}
+        return [];
+    }
+
+    /** */
+    public function setPackageOfDay(array $pakage): array
+    {
+        file_put_contents('pakage.json', json_encode($pakage));
+        return [];
+    }
+
     /** */
     public function getDiccionary(): array
     {
