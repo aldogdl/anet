@@ -133,34 +133,29 @@ class ItemController extends AbstractController
                     }
                 }
             }
+            
         } elseif( $req->getMethod() == 'GET' ) {
-
             $items = [];
-            $iku = $req->query->get('iku') ?? '';
-            $query = $req->query->get('query') ?? '';
-            if($iku != '') {
-                // Si hay iku es que es un Yonkero el que quiere sus piezas
-                if($query != '') {
-                    // Solo en yonkero logeado podrá buscar en sus piezas
-                }
-                return $this->json($items);
-            }
+            return $this->json($items, 200);
+        }
 
-            $package = $fsys->getPackageOfDay();
-            if(array_key_exists('last', $package)) {
-                if (time() - $package['last'] <= 12 * 60 * 60) {
-                    $items = $package['r'];
-                }
-            }
+        return $this->json(['abort' => true, 'body' => 'Error inesperado']);
+    }
+
+    /** */
+    #[Route('/cat/{slug}', methods: ['get'])]
+    public function itemCat(Request $req, PubsRepository $repo, Fsys $fsys, String $slug): Response
+    {
+        if( $req->getMethod() == 'GET' ) {
+
+            $items = $fsys->getPackageOf($slug);
             if(!$items) {
                 // Recuperamos de cache o de DB el paquete del dia
-                $items = $repo->buildPakegeOfDay();
-                $package['last'] = time();
-                $package['r'] = $items;
-                $fsys->setPackageOfDay($package);
+                $items = $repo->buildPakegeOf($slug);
+                $fsys->setPackageOf($slug, $items);
             }
 
-            return $this->json($items, 200, ['Cache-Control' => 'public, max-age=43200']);
+            return $this->json($items);
         }
         return $this->json(['abort' => true, 'body' => 'Error inesperado']);
     }

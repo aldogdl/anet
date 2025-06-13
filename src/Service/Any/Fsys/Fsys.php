@@ -21,21 +21,24 @@ class Fsys {
     public function _parsePath(String $path, ?String $filename)
     {
         $full = Path::canonicalize($this->params->get($path));
-        if(!$this->filesystem->exists($path)) {
-            $this->filesystem->mkdir($path);
+        if(!$this->filesystem->exists($full)) {
+            $this->filesystem->mkdir($full);
         }
-        if($filename != null && mb_strpos($filename, '+') !== false) {
-            $filename = str_replace('+', '/', $filename);
+        if($filename != null) {
+            if(mb_strpos($filename, '+') !== false) {
+                $filename = str_replace('+', '/', $filename);
+            }
             return Path::canonicalize($full.'/'.$filename);
         }
         return $full;
     }
 
     /** */
-    public function getPackageOfDay(): array
+    public function getPackageOf(String $slug): array
     {
+        $path = $this->_parsePath('prodPubs', $slug.'.json');
         try {
-            $content = file_get_contents('pakage.json');
+            $content = file_get_contents($path);
             if($content) {
                 return json_decode($content, true);
             }
@@ -44,9 +47,12 @@ class Fsys {
     }
 
     /** */
-    public function setPackageOfDay(array $pakage): array
+    public function setPackageOf(String $slug, array $pakage): array
     {
-        file_put_contents('pakage.json', json_encode($pakage));
+        $path = $this->_parsePath('prodPubs', $slug.'.json');
+        try {
+            file_put_contents($path, json_encode($pakage));
+        } catch (\Throwable $th) {}
         return [];
     }
 

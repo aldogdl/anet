@@ -23,16 +23,14 @@ class PubsRepository extends ServiceEntityRepository
     }
 
     /** */
-    public function buildPakegeOfDay(): array
+    public function buildPakegeOf(String $slug): array
     {
-        $dql = 'SELECT id FROM pubs ORDER BY RAND() LIMIT 100';
-        $connection = $this->_em->getConnection();
-        $ids = $connection->fetchFirstColumn($dql);
+        $dql = 'SELECT u FROM ' . Pubs::class . ' u WHERE u.appSlug = :slug '.
+        'ORDER BY u.id ASC';
 
-        $dql = 'SELECT u FROM ' . Pubs::class . ' u WHERE u.id IN (:ids) '.
-        'ORDER BY u.id DESC';
-        $query = $this->_em->createQuery($dql)->setParameter('ids', $ids);
+        $query = $this->_em->createQuery($dql)->setParameter('slug', $slug)->setMaxResults(200);
         $res = $query->getResult();
+
         $rota = count($res);
         $results = [];
         for ($i=0; $i < $rota; $i++) { 

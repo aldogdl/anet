@@ -3,7 +3,6 @@ parameters:
     scm        : '%phtml%/scm/'
     ftos       : '%phtml%/ftos/'
 
-
     appData    : '%phtml%/rfy/data/'
     sse        : '%phtml%/sse/'
     fbSended   : '%phtml%/fb_sended/'
