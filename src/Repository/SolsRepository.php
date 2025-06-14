@@ -25,21 +25,14 @@ class SolsRepository extends ServiceEntityRepository
     /** */
     public function setSol(array $solNew) : int {
         
-        $usCom = $this->_em->getRepository(UsCom::class)
-            ->findBy(['iku' => $solNew['iku'], 'usWaId' => $solNew['wi']]);
-
-        if (!$usCom) {
-            throw new \Exception('UsCom no encontrado');
-        }
-        
         $data = $solNew['sol'];
         // Crear nueva solicitud
         $sol = new Sols();
-        $sol->setCode($data['code']);
-        if(array_key_exists('detalle', $data)) {
-            $sol->setDetalle($data['detalle']);
+        $sol->setCode($data['cd']);
+        if(array_key_exists('dt', $data)) {
+            $sol->setDetalle($data['dt']);
         }
-        $sol->setIkuOwn($usCom[0]);
+        $sol->setIkuOwn($solNew['oiku']);
         $sol->setIku($solNew['iku']);
         $sol->setAppSlug($solNew['sl']);
         $sol->setAppWaId($solNew['owi']);

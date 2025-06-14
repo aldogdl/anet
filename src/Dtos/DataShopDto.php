@@ -18,6 +18,8 @@ class DataShopDto {
     private String $iku = '';
     // El paswword del usuario cuando inicia la app y éste ya se habia logeando antes
     private String $pass = '';
+    // El waId del usuario cualquiera cuando inicia la app y éste ya se habia logeando antes
+    private String $isUserWaId = '';
     // El nuevo token creado desde la app
     private String $tkNew = '';
     // Tipo de dispositivo
@@ -39,22 +41,33 @@ class DataShopDto {
     {
         $this->slug = $data['slug'];
         $this->dev = (array_key_exists('dev', $data)) ? $data['dev'] : '';
-        
+
+        // Si contiene este campo es un dueño o colaborador quien esta ingresando
         if(array_key_exists('pnew', $data)) {
-            $this->pass = $data['pnew'];
+            if(mb_strpos($data['pnew'], '.') !== false) {
+                $partes = explode(':', $data['pnew']);
+                $this->pass = trim($partes[0]);
+                $this->isUserWaId = trim($partes[1]);
+            }else{
+                $this->pass = $data['pnew'];
+            }
         }
+        // Si contiene este campo es una persona que ya ingresó con anterioridad
         if(array_key_exists('iku', $data)) {
             $this->iku = $data['iku'];
         }
+        // Si contiene este campo es necesario revisar el cambio de token fb
         if(array_key_exists('tkfb', $data)) {
             $this->tkNew = $data['tkfb'];
         }
 
-        // Datos de la empresa
+        // Primero obtenemos los Datos básicos de la empresa
         $this->dataOwnApp();
         if($this->error != '') {
             return $this->returnErr();
         }
+
+        // Recuperamos los puentes registrados
         try {
             $this->user['ng'] = json_decode(
                 file_get_contents(
@@ -113,74 +126,78 @@ class DataShopDto {
             $this->user = [];
         }
         try {
-
             $data = json_decode(
                 file_get_contents($this->params->get('dtaCtc').'/'.$this->slug.'.json'),
                 true
             );
-
-            $this->user['slug'] = $data['slug'];
-            $this->user['logo'] = $data['logo'];
-            $this->user['empresa'] = $data['empresa'];
-            $this->user['address'] = $data['address'];
-            $this->user['colonia'] = $data['colonia'];
-            $this->user['localidad'] = $data['localidad'];
-            $this->user['prestige'] = $data['prestige'];
-
-            $colabs = [];
-            $colabMain = [];
-            $getter = false;
-            $rota = count($data['colabs']);
-            for ($i=0; $i < $rota; $i++) {
-                
-                $pass = $data['colabs'][$i]['pass'];
-                
-                $passEncript = $this->cifrar($pass);
-                if($this->pass != '') {
-                    if($pass == $this->pass) {
-                        $colabMain = $data['colabs'][$i];
-                        $colabMain['pass'] = $passEncript;
-                        $colabMain['stt'] = 2;
-                        $getter = true;
-                        continue;
-                    }
-                }
-                
-                if(!$getter) {
-                    if(in_array('ROLE_MAIN', $data['colabs'][$i]['roles'])) {
-                        $colabMain = $data['colabs'][$i];
-                        $colabMain['pass'] = $passEncript;
-                        $getter = true;
-                        continue;
-                    }
-                }
-
-                $data['colabs'][$i]['pass'] = $passEncript;
-                $colabs[] = $data['colabs'][$i];
-            }
-
-            if($colabMain) {
-                
-                // [NOTA] El IKU del usuario lo tomamos al momento de recuperar
-                // sus datos en la tabla de UsCom mas adelante
-                if($this->iku != '') {
-                    $this->user['iku'] = $this->iku;
-                }
-                $this->user['waId']  = $colabMain['waId'];
-                $this->user['pass']  = $colabMain['pass'];
-                $this->user['roles'] = $colabMain['roles'];
-                $this->user['login'] = $colabMain['login'];
-                $this->user['kduk']  = $colabMain['kduk'];
-                $this->user['stt']   = $colabMain['stt'];
-                $this->user['contacto'] = $colabMain['nombre'].' '.$colabMain['fullName'];
-            }
-
-            $this->user['colabs'] = $colabs;
-            $this->dataComAndColabs();
-
         } catch (\Throwable $th) {
             $this->error = 'X No existe la empresa '.$this->slug;
         }
+
+        if($this->error != '') {
+            return;
+        }
+
+        $this->user['slug'] = $data['slug'];
+        $this->user['logo'] = $data['logo'];
+        $this->user['empresa'] = $data['empresa'];
+        $this->user['address'] = $data['address'];
+        $this->user['colonia'] = $data['colonia'];
+        $this->user['localidad'] = $data['localidad'];
+        $this->user['prestige'] = $data['prestige'];
+
+        $colabs = [];
+        $colabMain = [];
+        $getter = false;
+        
+        $rota = count($data['colabs']);
+        for ($i=0; $i < $rota; $i++) {
+            
+            $pass = $data['colabs'][$i]['pass'];
+            $passEncript = $this->cifrar($pass);
+            
+            // Si este dato no esta bacio, es que está ingresando o
+            // el dueño de la app o un colaborador, por lo tanto este
+            // se considera el usuario principal
+            if($this->pass != '') {
+                if($pass == $this->pass) {
+                    $colabMain = $data['colabs'][$i];
+                    $colabMain['pass'] = $passEncript;
+                    $colabMain['stt'] = 2;
+                    $getter = true;
+                    continue;
+                }
+            }
+            
+            // Si no se ha detectado al usuario principal por medio del
+            // pass, lo buscamos por medio de su rol
+            if(!$getter) {
+                if(in_array('ROLE_MAIN', $data['colabs'][$i]['roles'])) {
+                    $colabMain = $data['colabs'][$i];
+                    $colabMain['pass'] = $passEncript;
+                    $getter = true;
+                    continue;
+                }
+            }
+
+            $data['colabs'][$i]['pass'] = $passEncript;
+            $colabs[] = $data['colabs'][$i];
+        }
+
+        if($colabMain) {
+            // [NOTA] El IKU del usuario lo tomamos al momento de recuperar
+            // sus datos en la tabla de UsCom mas adelante
+            $this->user['waId']  = $colabMain['waId'];
+            $this->user['pass']  = $colabMain['pass'];
+            $this->user['roles'] = $colabMain['roles'];
+            $this->user['login'] = $colabMain['login'];
+            $this->user['kduk']  = $colabMain['kduk'];
+            $this->user['stt']   = $colabMain['stt'];
+            $this->user['contacto'] = $colabMain['nombre'].' '.$colabMain['fullName'];
+        }
+
+        $this->user['colabs'] = ($this->pass == 'is_user') ? [] : $colabs;
+        $this->recoverydataCom();
     }
 
     /** */
@@ -203,38 +220,56 @@ class DataShopDto {
         ];
     }
 
-    /** */
-    private function dataComAndColabs(): void
+    /** Recuperamos los datos de comunicacion */
+    private function recoverydataCom(): void
     {
         $usersWaIds = [$this->user['waId']];
+        if($this->isUserWaId != '') {
+            $usersWaIds[] = $this->isUserWaId;
+        }
         $rota = count($this->user['colabs']);
         for ($i=0; $i < $rota; $i++) { 
             $usersWaIds[] = $this->user['colabs'][$i]['waId'];
         }
         $data = $this->em->getDataComColabs($this->slug, $usersWaIds, $this->dev);
 
+        $checkTFB = false;
+        $ikuToken = '';
         // Primero actualizamos los datos del role principal
         if(array_key_exists($this->user['waId'], $data)) {
-            
-            $this->user['iku'] = $data[$this->user['waId']]['iku'];
-            if($this->tkNew != '') {
-                if($data[$this->user['waId']]['tk'] != $this->tkNew) {
-                    // Aprovechamos para actualizar el nuevo token
-                    $this->em->updateOnlyToken($this->tkNew, $data[$this->user['waId']]['iku']);
-                }
-                $this->user['tkfb'] = $this->tkNew;
-            }else{
-                $this->user['tkfb'] = $data[$this->user['waId']]['tk'];
-            }
-
+            $ikuToken = $data[$this->user['waId']]['iku'];
+            $this->user['iku'] = $ikuToken;
+            $checkTFB = true;
             $fechaLimite = (new \DateTimeImmutable())->sub(new \DateInterval('PT23H55M'));
             if($data[$this->user['waId']]['lastAt'] < $fechaLimite) {
                 // Han pasado más de 23h 55m desde la fecha
                 $this->user['login'] = 0;
             }
         }
+        if(array_key_exists($this->isUserWaId, $data)) {
+            $ikuToken = $data[$this->isUserWaId]['iku'];
+            $this->user['useriku'] = $ikuToken;
+            $checkTFB = true;
+            $fechaLimite = (new \DateTimeImmutable())->sub(new \DateInterval('PT23H55M'));
+            if($data[$this->isUserWaId]['lastAt'] < $fechaLimite) {
+                // Han pasado más de 23h 55m desde la fecha
+                $this->user['login'] = 0;
+            }
+        }
 
-        // Proceguimos con los colaboradores
+        if($checkTFB) {
+            if($this->tkNew != '') {
+                if($data[$ikuToken]['tk'] != $this->tkNew) {
+                    // Aprovechamos para actualizar el nuevo token
+                    $this->em->updateOnlyToken($this->tkNew, $data[$ikuToken]['iku']);
+                }
+                $this->user['tkfb'] = $this->tkNew;
+            }else{
+                $this->user['tkfb'] = $data[$ikuToken]['tk'];
+            }
+        }
+
+        // Proseguimos con los colaboradores
         for ($i=0; $i < $rota; $i++) {
             
             $key = $this->user['colabs'][$i]['waId'];

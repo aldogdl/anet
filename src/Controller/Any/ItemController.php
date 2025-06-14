@@ -147,7 +147,6 @@ class ItemController extends AbstractController
     public function itemCat(Request $req, PubsRepository $repo, Fsys $fsys, String $slug): Response
     {
         if( $req->getMethod() == 'GET' ) {
-
             $items = $fsys->getPackageOf($slug);
             if(!$items) {
                 // Recuperamos de cache o de DB el paquete del dia
