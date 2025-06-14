@@ -234,38 +234,34 @@ class DataShopDto {
         $data = $this->em->getDataComColabs($this->slug, $usersWaIds, $this->dev);
 
         $checkTFB = false;
-        $ikuToken = '';
+        $waIdToken = '';
         // Primero actualizamos los datos del role principal
         if(array_key_exists($this->user['waId'], $data)) {
-            $ikuToken = $data[$this->user['waId']]['iku'];
-            $this->user['iku'] = $ikuToken;
             $checkTFB = true;
+            $waIdToken = $this->user['waId'];
+            $this->user['iku'] = $data[$waIdToken]['iku'];
+            $this->user['tkfb'] = $data[$waIdToken]['tk'];
             $fechaLimite = (new \DateTimeImmutable())->sub(new \DateInterval('PT23H55M'));
-            if($data[$this->user['waId']]['lastAt'] < $fechaLimite) {
-                // Han pasado más de 23h 55m desde la fecha
-                $this->user['login'] = 0;
-            }
-        }
-        if(array_key_exists($this->isUserWaId, $data)) {
-            $ikuToken = $data[$this->isUserWaId]['iku'];
-            $this->user['useriku'] = $ikuToken;
-            $checkTFB = true;
-            $fechaLimite = (new \DateTimeImmutable())->sub(new \DateInterval('PT23H55M'));
-            if($data[$this->isUserWaId]['lastAt'] < $fechaLimite) {
+            if($data[$waIdToken]['lastAt'] < $fechaLimite) {
                 // Han pasado más de 23h 55m desde la fecha
                 $this->user['login'] = 0;
             }
         }
 
+        if(array_key_exists($this->isUserWaId, $data)) {
+            $checkTFB = true;
+            $waIdToken = $this->isUserWaId;
+            $this->user['useriku'] = $data[$waIdToken]['iku'];
+            $this->user['tkfb'] = $data[$waIdToken]['tk'];
+        }
+
         if($checkTFB) {
             if($this->tkNew != '') {
-                if($data[$ikuToken]['tk'] != $this->tkNew) {
+                if($data[$waIdToken]['tk'] != $this->tkNew) {
                     // Aprovechamos para actualizar el nuevo token
-                    $this->em->updateOnlyToken($this->tkNew, $data[$ikuToken]['iku']);
+                    $this->em->updateOnlyToken($this->tkNew, $data[$waIdToken]['iku']);
                 }
                 $this->user['tkfb'] = $this->tkNew;
-            }else{
-                $this->user['tkfb'] = $data[$ikuToken]['tk'];
             }
         }
 
