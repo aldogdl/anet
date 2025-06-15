@@ -6,7 +6,6 @@ use App\Dtos\DataShopDto;
 use App\Entity\UsCom;
 use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
-use App\Service\Any\IkuGenerator\GeneratorIku;
 use App\Service\Pushes;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
@@ -42,13 +41,20 @@ class SysComController extends AbstractController
     }
 
     /** */
+    #[Route('/test', methods: ['post'])]
+    public function test(Request $req, DataShopDto $shop): Response
+    {
+        return new Response(400);
+    }
+
+    /** */
     #[Route('/update-data-com', methods: ['post'])]
     public function updateDataCom(Request $req, UsComRepository $em, DataShopDto $shop): Response
     {
         if( $req->getMethod() == 'POST' ) {
             $data = $req->getContent();
             if(!$data) {
-                return new Response(500);
+                return new Response(403);
             }
 
             $data = json_decode($data, true);
@@ -56,18 +62,6 @@ class SysComController extends AbstractController
 
                 $obj = new UsCom();
                 $obj->fromJson($data);
-                
-                $obj = $em->updateDataCom($obj);
-                if($obj != null) {
-                    if($obj->getRole() == 'b') {
-                        $data = $shop->getMetaBussiness($obj);
-                    }else{
-                        $data = $shop->getMetaCustomer($obj);
-                    }
-                    return $this->json($data);
-                }else{
-                    return $this->json(['abort' => true, 'body' => 'X Error 401, Inténtalo nuevamente']);
-                }
             }else{
                 return $this->json(['abort' => true, 'body' => 'X Faltaron datos, Inténtalo nuevamente']);
             }

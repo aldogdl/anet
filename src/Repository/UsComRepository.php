@@ -162,9 +162,61 @@ class UsComRepository extends ServiceEntityRepository
     }
 
     /** */
+    public function fetchToken(String $token, String $slug):  array
+    {
+        $sql = 'SELECT id, own_app, iku FROM us_com WHERE tkfb = :token AND own_app = :slug LIMIT 1';
+        $conn = $this->_em->getConnection();
+        return $conn->fetchAssociative($sql, ['token' => $token, 'slug' => $slug]);
+    }
+
+    /** */
+    public function fetchWaId(String $waId, String $slug):  array
+    {
+        $sql = 'SELECT id, own_app, iku, tkfb FROM us_com WHERE us_wa_id = :waId AND own_app = :slug LIMIT 1';
+        
+        $conn = $this->_em->getConnection();
+        $result = $conn->fetchAssociative($sql, ['waId' => $waId, 'slug' => $slug]);
+        // $result ahora es un array asociativo con 'id', 'slug', 'iku' o false si no se encuentra
+        dd($result);
+        if ($result) {
+            return $result;
+        }
+        return [];
+    }
+
+    /** */
     public function updateDataCom(UsCom $obj): ?UsCom
     {
+        if($obj->getRole() == 'b') {
+            // Registrar el token por parte de un dueño o colaborador
+
+        }else{
+            // Registrar el token por parte de un usuario simple
+        }
+
         $updateReg = false;
+        // Revisamos euq el token de fb en la app del yonkero no exista.
+        $hasToken = $this->fetchToken($obj->getTkfb(), $obj->getOwnApp());
+        if($hasToken) {
+            // El token existe en la base de datos, no podemos sustituir si es otro usuario
+            $id = $hasToken['id'];
+            $slug = $hasToken['slug'];
+            $iku = $hasToken['iku'];
+        }else{
+            // Si no hay resultados es:
+            // | No hay registro del usuario | ha cambiando el token
+            $hasToken = $this->fetchWaId($obj->getUsWaId(), $obj->getOwnApp());
+            if($hasToken) {
+                // El usuario existe por su waId y el slug de la app pero...
+                if($hasToken['tkfb'] != $obj->getTkfb()) {
+                    // el token no es el mismo, lo mas seguro es que el token cambio
+                    $user = $this->_em->find(UsCom::class, $hasToken['id']);
+                    $user->setTkfb($obj->getTkfb());
+
+                }
+            }
+        }
+
         if($obj->getRole() == 'b') {
             $users = $this->getByWaIdAndDev($obj->getUsWaId(), $obj->getDev());            
         }else{
