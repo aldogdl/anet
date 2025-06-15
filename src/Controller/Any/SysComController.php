@@ -62,7 +62,7 @@ class SysComController extends AbstractController
                 $obj = new UsCom();
                 $obj->fromJson($data);
                 $res = $em->updateDataCom($obj);
-                return $this->json(['abort' => true, 'body' => $res]);
+                return $this->json(['abort' => false, 'body' => $res]);
             }else{
                 return $this->json(['abort' => true, 'body' => 'X Faltaron datos, Inténtalo nuevamente']);
             }
