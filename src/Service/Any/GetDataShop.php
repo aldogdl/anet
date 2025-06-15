@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Dtos;
+namespace App\Service\Any;
 
 use App\Repository\UsComRepository;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
-class DataShopDto {
+class GetDataShop {
 
     private UsComRepository $em;
     private ParameterBagInterface $params;

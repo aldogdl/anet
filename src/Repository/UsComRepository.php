@@ -49,78 +49,6 @@ class UsComRepository extends ServiceEntityRepository
         }
     }
     
-    /** 
-     * Recuperamos a los usuarios que coincidan con el waId y el
-     * tipo de dispositivo al cual estan conectador
-     */
-    public function getByWaIdAndDev(String $waId, String $dev): array
-    {
-        $dql = 'SELECT u FROM ' . UsCom::class . ' u '.
-        'WHERE u.usWaId = :waId AND u.dev = :dev '.
-        'ORDER BY u.lastAt DESC';
-
-        $res = $this->_em->createQuery($dql)->setParameters(['waId' => $waId, 'dev' => $dev])->execute();
-        if ($res) {
-            return $res;
-        }
-        return [];
-    }
-    
-    /** 
-     * Recuperamos a un usuario segun su id, dispositivo y el slug del yonkero dueño de la app
-     */
-    public function getByWaIdDevAndOwnApp(String $waId, String $dev, String $ownApp): array
-    {
-        $dql = 'SELECT u FROM ' . UsCom::class . ' u '.
-        'WHERE u.usWaId = :waId AND u.dev = :dev AND u.ownApp = :ownApp '.
-        'ORDER BY u.lastAt DESC ';
-
-        $res = $this->_em->createQuery($dql)->setParameters([
-            'waId' => $waId, 'dev' => $dev, 'ownApp' => $ownApp
-        ])->execute();
-
-        if ($res) {
-            return $res;
-        }
-        return [];
-    }
-    
-    /** 
-     * Recuperamos los datos de contacto de todos los colaboradores de un Yonek
-     */
-    public function getDataComColabs(String $ownApp, array $waIds): array
-    {
-        $dql = 'SELECT u FROM ' . UsCom::class . ' u '.
-        'WHERE u.usWaId IN(:waIds) AND u.ownApp = :ownApp '.
-        'ORDER BY u.lastAt DESC ';
-
-        $data = $this->_em->createQuery($dql)->setParameters([
-            'waIds' => $waIds, 'ownApp' => $ownApp
-        ])->getArrayResult();
-
-        $results = [];
-        $rota = count($data);
-        for ($i=0; $i < $rota; $i++) {
-            // Creamos un map para evitar duplicidad
-            if(!array_key_exists($data[$i]['usWaId'], $results)) {
-                $results[$data[$i]['usWaId']] = [
-                    "iku"    => $data[$i]['iku'],
-                    "tk"     => $data[$i]['tkfb'],
-                    "stt"    => $data[$i]['stt'],
-                    "dev"    => $data[$i]['dev'],
-                    "role"   => $data[$i]['role'],
-                    "usWaId" => $data[$i]['usWaId'],
-                    "usName" => $data[$i]['usName'],
-                    "usPlace"=> $data[$i]['usPlace'],
-                    "usEmail" => $data[$i]['usEmail'],
-                    "lastAt" => $data[$i]['lastAt'],
-                ];
-            }
-        }
-
-        return $results;
-    }
-    
     /** Recuperamos a un usuario segun su id y su dev */
     public function getTokenByWaId(String $waId): String
     {
@@ -161,99 +89,52 @@ class UsComRepository extends ServiceEntityRepository
         ])->execute();
     }
 
-    /** */
-    public function fetchToken(String $token, String $slug):  array
-    {
-        $sql = 'SELECT id, own_app, iku FROM us_com WHERE tkfb = :token AND own_app = :slug LIMIT 1';
-        $conn = $this->_em->getConnection();
-        return $conn->fetchAssociative($sql, ['token' => $token, 'slug' => $slug]);
-    }
-
-    /** */
+    /** 
+     * Hacemos una busqueda del registro de una manera mas rapida por SQL nativo
+     * en base al waId del usuario y el slug de la empresa
+    */
     public function fetchWaId(String $waId, String $slug):  array
     {
         $sql = 'SELECT id, own_app, iku, tkfb FROM us_com WHERE us_wa_id = :waId AND own_app = :slug LIMIT 1';
         
         $conn = $this->_em->getConnection();
         $result = $conn->fetchAssociative($sql, ['waId' => $waId, 'slug' => $slug]);
-        // $result ahora es un array asociativo con 'id', 'slug', 'iku' o false si no se encuentra
-        dd($result);
         if ($result) {
             return $result;
         }
         return [];
     }
 
-    /** */
-    public function updateDataCom(UsCom $obj): ?UsCom
+    /** 
+     * Actualizamos solo el token del usuario que coincida con si iku
+    */
+    public function fetchByIku(String $iku): ?UsCom
     {
-        if($obj->getRole() == 'b') {
-            // Registrar el token por parte de un dueño o colaborador
+        $dql = 'SELECT u FROM ' . UsCom::class . ' WHERE u.iku = :iku';
+        $res = $this->_em->createQuery($dql)->setParameter('iku', $iku)->execute();
+        if($res) {
+            return $res[0];
+        }
+        return null;
+    }
 
+    /** */
+    public function updateDataCom(UsCom $obj): array
+    {
+        $app = $this->fetchByIku($obj->getIku());
+        if($app) {
+            $app->setStt($obj->getStt());
+            $app->setTkfb($obj->getTkfb());
         }else{
-            // Registrar el token por parte de un usuario simple
+            $app = $obj;
         }
-
-        $updateReg = false;
-        // Revisamos euq el token de fb en la app del yonkero no exista.
-        $hasToken = $this->fetchToken($obj->getTkfb(), $obj->getOwnApp());
-        if($hasToken) {
-            // El token existe en la base de datos, no podemos sustituir si es otro usuario
-            $id = $hasToken['id'];
-            $slug = $hasToken['slug'];
-            $iku = $hasToken['iku'];
-        }else{
-            // Si no hay resultados es:
-            // | No hay registro del usuario | ha cambiando el token
-            $hasToken = $this->fetchWaId($obj->getUsWaId(), $obj->getOwnApp());
-            if($hasToken) {
-                // El usuario existe por su waId y el slug de la app pero...
-                if($hasToken['tkfb'] != $obj->getTkfb()) {
-                    // el token no es el mismo, lo mas seguro es que el token cambio
-                    $user = $this->_em->find(UsCom::class, $hasToken['id']);
-                    $user->setTkfb($obj->getTkfb());
-
-                }
-            }
-        }
-
-        if($obj->getRole() == 'b') {
-            $users = $this->getByWaIdAndDev($obj->getUsWaId(), $obj->getDev());            
-        }else{
-            $users = $this->getByWaIdDevAndOwnApp($obj->getUsWaId(), $obj->getDev(), $obj->getOwnApp());
-        }
-
-        $rota = count($users);
-        if($rota == 0) {
-            $has = $obj;
-        } elseif ($rota == 1) {
-            $has = $users[0];
-            $updateReg = true;
-        }else{
-            $has = $users[0];
-            $ikus = [];
-            for ($i=0; $i < $rota; $i++) { 
-                if($i > 0) {
-                    $ikus[] = $users[$i]->getIku(); 
-                }
-            }
-            if(count($ikus) > 0) {
-                $this->deleteAllByIku($ikus);
-            }
-            $updateReg = true;
-        }
-
-        if($updateReg) {
-            $has->setTkfb($obj->getTkfb());
-            $has->setStt($obj->getStt());
-        }
-        
         $fechaLimite = (new DateTimeImmutable())->sub(new DateInterval('PT23H55M'));
-        if($has->getLastAt() < $fechaLimite) {
+        if($app->getLastAt() < $fechaLimite) {
             // Han pasado más de 23h 55m desde la fecha
-            $has = $has->setStt(0);
+            $app->setStt(0);
         }
-        return $this->add($has);
+        $this->add($app);
+        return $app->toJsonResponse();
     }
 
 }

@@ -68,18 +68,12 @@ class UsCom
         $this->stt = 0;
     }
 
-    public function toJson() : array {
+    public function toJsonResponse() : array {
         return [
             'id'     => $this->id,
             'ownApp' => $this->ownApp,
-            'usWaId' => $this->usWaId,
-            'usName' => $this->usName,
-            'usEmail'=> $this->usEmail,
-            'role'   => $this->role,
             'topic'  => $this->topic,
             'stt'    => $this->stt,
-            'lastAt' => $this->lastAt,
-            'tkfb'   => $this->tkfb,
         ];
     }
 

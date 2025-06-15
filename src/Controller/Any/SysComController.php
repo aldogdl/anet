@@ -2,10 +2,10 @@
 
 namespace App\Controller\Any;
 
-use App\Dtos\DataShopDto;
 use App\Entity\UsCom;
 use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
+use App\Service\Any\GetDataShop;
 use App\Service\Pushes;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +20,7 @@ class SysComController extends AbstractController
 {
     /** Datos para any shop */
     #[Route('/get-data-any', methods: ['post'])]
-    public function getDataAnyShop(Request $req, DataShopDto $shop): Response
+    public function getDataAnyShop(Request $req, GetDataShop $shop): Response
     {
         if($req->getMethod() != 'POST') {
             return $this->json(['body' => 'Ok, gracias'], 400);
@@ -42,14 +42,14 @@ class SysComController extends AbstractController
 
     /** */
     #[Route('/test', methods: ['post'])]
-    public function test(Request $req, DataShopDto $shop): Response
+    public function test(Request $req, GetDataShop $shop): Response
     {
         return new Response(400);
     }
 
     /** */
     #[Route('/update-data-com', methods: ['post'])]
-    public function updateDataCom(Request $req, UsComRepository $em, DataShopDto $shop): Response
+    public function updateDataCom(Request $req, UsComRepository $em): Response
     {
         if( $req->getMethod() == 'POST' ) {
             $data = $req->getContent();
@@ -59,9 +59,10 @@ class SysComController extends AbstractController
 
             $data = json_decode($data, true);
             if(array_key_exists('dev', $data)) {
-
                 $obj = new UsCom();
                 $obj->fromJson($data);
+                $res = $em->updateDataCom($obj);
+                return $this->json(['abort' => true, 'body' => $res]);
             }else{
                 return $this->json(['abort' => true, 'body' => 'X Faltaron datos, Inténtalo nuevamente']);
             }
