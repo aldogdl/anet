@@ -110,7 +110,7 @@ class UsComRepository extends ServiceEntityRepository
     */
     public function fetchByIku(String $iku): ?UsCom
     {
-        $dql = 'SELECT u FROM ' . UsCom::class . ' WHERE u.iku = :iku';
+        $dql = 'SELECT u FROM ' . UsCom::class . ' u WHERE u.iku = :iku';
         $res = $this->_em->createQuery($dql)->setParameter('iku', $iku)->execute();
         if($res) {
             return $res[0];
