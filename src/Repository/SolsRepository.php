@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\Sols;
-use App\Entity\UsCom;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -24,7 +23,11 @@ class SolsRepository extends ServiceEntityRepository
 
     /** */
     public function setSol(array $data) : int
-    {    
+    {
+        $has = $this->findOneBy(['ikuAppSrc' => $data['iku_app'], 'iku' => $data['iku']]);
+        if($has) {
+            return $has->getId();
+        }
         // Crear nueva solicitud
         $sol = new Sols();
         $sol->setCode($data['cd']);
