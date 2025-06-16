@@ -32,7 +32,7 @@ class Sols
     private ?string $iku = null;
 
     #[ORM\Column(length: 25)]
-    private ?string $ikuOwn = null;
+    private ?string $ikuAppSrc = null;
 
     public function __construct()
     {
@@ -117,14 +117,14 @@ class Sols
         return $this;
     }
 
-    public function getIkuOwn(): ?string
+    public function getIkuAppSrc(): ?string
     {
-        return $this->ikuOwn;
+        return $this->ikuAppSrc;
     }
 
-    public function setIkuOwn(string $ikuOwn): static
+    public function setIkuAppSrc(string $ikuAppSrc): static
     {
-        $this->ikuOwn = $ikuOwn;
+        $this->ikuAppSrc = $ikuAppSrc;
 
         return $this;
     }

@@ -23,19 +23,18 @@ class SolsRepository extends ServiceEntityRepository
     }
 
     /** */
-    public function setSol(array $solNew) : int {
-        
-        $data = $solNew['sol'];
+    public function setSol(array $data) : int
+    {    
         // Crear nueva solicitud
         $sol = new Sols();
         $sol->setCode($data['cd']);
         if(array_key_exists('dt', $data)) {
             $sol->setDetalle($data['dt']);
         }
-        $sol->setIkuOwn($solNew['oiku']);
-        $sol->setIku($solNew['iku']);
-        $sol->setAppSlug($solNew['sl']);
-        $sol->setAppWaId($solNew['owi']);
+        $sol->setIkuAppSrc($data['iku_app']);
+        $sol->setIku($data['iku']);
+        $sol->setAppSlug($data['osl']);
+        $sol->setAppWaId($data['owi']);
 
         // Guardar en la base de datos
         try {

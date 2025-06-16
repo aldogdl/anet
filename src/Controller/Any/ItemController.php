@@ -82,7 +82,7 @@ class ItemController extends AbstractController
             if($data) {
                 
                 $data = json_decode($data, true);
-                if (!$data || !array_key_exists('sol', $data) || !isset($data['sl'], $data['sol'])) {
+                if (!$data) {
                     return $this->json(['abort' => true, 'body' => 'Datos incompletos'], 400);
                 }
 
