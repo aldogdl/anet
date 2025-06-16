@@ -6,6 +6,7 @@ use App\Entity\UsCom;
 use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\GetDataShop;
+use App\Service\Any\PublicAssetUrlGenerator;
 use App\Service\Pushes;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,9 +42,18 @@ class SysComController extends AbstractController
     }
 
     /** */
-    #[Route('/test', methods: ['post'])]
-    public function test(Request $req, GetDataShop $shop): Response
+    #[Route('/test', methods: ['get'])]
+    public function test(Request $req, PublicAssetUrlGenerator $urlGen): Response
     {
+        $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
+        $originalFilename = $req->query->get('file');
+        $path = Path::canonicalize($prodSols.'/'.$originalFilename);
+        if (!file_exists($path)) {
+            return $this->json(['abort' => true, 'body' => 'X No existe archivo' . $path], 402);
+        }else{
+            $url = $urlGen->generate($path);
+            return $this->json(['abort' => true, 'body' => 'Ok:' . $url], 200);
+        }
         return new Response(400);
     }
 

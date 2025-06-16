@@ -7,6 +7,7 @@ use App\Repository\PubsRepository;
 use App\Repository\SolsRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
+use App\Service\Any\PublicAssetUrlGenerator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,24 +20,22 @@ class ItemController extends AbstractController
      * Endpoint para subir las imagenes desde el form del catalogo
      */
     #[Route('/image', methods: ['POST'])]
-    public function imagesUP(Request $req): Response
+    public function imagesUP(Request $req, PublicAssetUrlGenerator $urlGen): Response
     {
         if($req->getMethod() != 'POST') {
             return $this->json(['abort' => true, 'body' => 'X No se ha subido la foto'], 401);
         }
         
-        $slug = $req->request->get('slug') ?? null;
         $ikuItem = $req->request->get('ikuItem') ?? null;
         $key = $req->request->get('key') ?? null;
         $file = $req->files->get('file');
-        $getTunnel = $req->request->get('tunels') ?? 'no';
 
-        if (!$slug || !$ikuItem || !$key || !$file) {
+        if (!$ikuItem || !$key || !$file) {
             return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
         }
 
         $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-        $path = Path::canonicalize($prodSols.'/'.$slug.'/'.$ikuItem);
+        $path = Path::canonicalize($prodSols);
 
         if (!file_exists($path)) {
             try {
@@ -50,21 +49,25 @@ class ItemController extends AbstractController
             $originalFilename = basename($file->getClientOriginalName());
             $file->move($path, $originalFilename);
         } catch (\Throwable $e) {
-            return $this->json(['abort' => true, 'body' => 'Error al mover archivo: '.$e->getMessage()], 500);
+            return $this->json(['abort' => true, 'body' => 'X Error al mover archivo: '.$e->getMessage()], 500);
         }
 
-        $results = [
-            'abort' => false,
-            'body' => 'Imagen guardada correctamente',
-            'filename' => $originalFilename,
-        ];
-        if($getTunnel == 'si') {
-            $ngkf = $this->getParameter(AnyPath::$NGKF);
-            $path = Path::canonicalize($ngkf);
-            if (file_exists($path)) {
-                $results['tunnels'] = json_decode(file_get_contents($path), true);
+        // Un refuerzo para guardarlo
+        $path = Path::canonicalize($prodSols.'/'.$originalFilename);
+        if (!file_exists($path)) {
+            try {
+                $file->move($path, $originalFilename);
+            } catch (\Throwable $th) {
+                return $this->json(['abort' => true, 'body' => 'X Error al mover archivo' . $path], 402);
             }
         }
+        $url = $urlGen->generate($path);
+        $results = [
+            'abort' => false,
+            'body' => $url,
+            'filename' => $originalFilename,
+        ];
+
         return $this->json($results);
     }
 
