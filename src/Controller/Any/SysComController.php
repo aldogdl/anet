@@ -122,7 +122,7 @@ class SysComController extends AbstractController
 
     /** */
     #[Route('/dta-ctc-list', methods: ['GET'])]
-    public function listarArchivos(): Response
+    public function listarArchivos(Request $req): Response
     {
         $carpeta = $this->getParameter('dtaCtc');
 
