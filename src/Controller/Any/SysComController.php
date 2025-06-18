@@ -120,4 +120,46 @@ class SysComController extends AbstractController
         return $this->json(['abort' => true]);
     }
 
+    /** */
+    #[Route('/dta-ctc-list', methods: ['GET'])]
+    public function listarArchivos(): Response
+    {
+        $carpeta = $this->getParameter('dtaCtc');
+
+        if (!is_dir($carpeta)) {
+            mkdir($carpeta, 0777, true);
+        }
+
+        $indexFile = "index_dta_ctc.json";
+
+        if (file_exists($indexFile)) {
+            // Si el index ya existe, lo leemos
+            $contenido = file_get_contents($indexFile);
+            $archivos = json_decode($contenido, true);
+        } else {
+            // Si no existe, lo generamos
+            $archivos = [];
+
+            foreach (scandir($carpeta) as $archivo) {
+                if (
+                    is_file("$carpeta/$archivo") &&
+                    pathinfo($archivo, PATHINFO_EXTENSION) === 'json'
+                ) {
+                    $archivos[] = [
+                        'ctc' => $archivo,
+                        'modificado' => date('c', filemtime("$carpeta/$archivo")),
+                    ];
+                }
+            }
+
+            // Guardamos el índice generado
+            file_put_contents($indexFile, json_encode($archivos));
+        }
+
+        return $this->json([
+            'status' => 'ok',
+            'archivos' => $archivos,
+        ]);
+    }
+
 }
