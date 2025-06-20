@@ -48,6 +48,7 @@ class SysComController extends AbstractController
         $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
         $originalFilename = $req->query->get('file');
         $path = Path::canonicalize($prodSols.'/'.$originalFilename);
+
         if (!file_exists($path)) {
             return $this->json(['abort' => true, 'body' => 'X No existe archivo' . $path], 402);
         }else{
@@ -162,4 +163,20 @@ class SysComController extends AbstractController
         ]);
     }
 
+    /** */
+    #[Route('/update-meli', methods: ['POST'])]
+    public function updateDataMeli(Request $req): Response
+    {
+        $data = $req->getContent();
+        if($data) {
+            $map = json_decode($data, true);
+            if(array_key_exists('slug', $map)) {
+                $logs = $this->getParameter('dtaCtcLog');
+                $path = Path::canonicalize($logs.'/'.$map['slug']);
+                file_put_contents($path, json_encode($map));
+                return $this->json(['abort' => false]);
+            }
+        }
+        return $this->json(['abort' => true]);
+    }
 }
