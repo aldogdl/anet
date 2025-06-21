@@ -172,7 +172,7 @@ class SysComController extends AbstractController
             $map = json_decode($data, true);
             if(array_key_exists('slug', $map)) {
                 $logs = $this->getParameter('dtaCtcLog');
-                $path = Path::canonicalize($logs.'/'.$map['slug']);
+                $path = Path::canonicalize($logs.'/'.$map['slug'].'.json');
                 file_put_contents($path, json_encode($map));
                 return $this->json(['abort' => false]);
             }
