@@ -183,7 +183,7 @@ class SysComController extends AbstractController
     /** 
      * Validamos que el slug de la empresa este entre las registradas
     */
-    #[Route('/validate-nickname', methods: ['HEAD'])]
+    #[Route('/validate-nickname', methods: ['GET'])]
     public function validateNick(Request $req): Response
     {
         $data = $req->headers->get('x-nickname');
