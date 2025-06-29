@@ -237,9 +237,12 @@ class SysComController extends AbstractController
     public function desvincularMeli(Request $req, DataSimpleMlm $mlm): Response
     {
         $data = $req->getContent();
-        if($data && $data['slug']) {
-            $res = $mlm->desvincularMlm($data);
-            return $this->json(['result' => $res]);
+        if($data) {
+            $data = json_decode($data, true);
+            if(array_key_exists('slug', $data)) {
+                $res = $mlm->desvincularMlm($data);
+                return $this->json(['result' => $res]);
+            }
         }
         return $this->json(['result' => false]);
     }
