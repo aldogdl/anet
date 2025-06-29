@@ -38,11 +38,9 @@ class SysComController extends AbstractController
             return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
         }
 
-        $ctcData = $fsys->get(AnyPath::$DTACTC, $data['slug'].'.json');
         $ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
         $apiml = $fsys->get(AnyPath::$ANYMLM, '');
         return $this->json([
-            'ctcData' => $ctcData,
             'ctcLog' => $ctcLog,
             'apiml' => $apiml,
         ]);
