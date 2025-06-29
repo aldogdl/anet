@@ -20,31 +20,6 @@ use Symfony\Component\Filesystem\Path;
 #[Route('/sys-com')]
 class SysComController extends AbstractController
 {
-    /** Datos para vinc con ml */
-    #[Route('/get-data-ownml', methods: ['post'])]
-    public function getDataOwnMl(Request $req, Fsys $fsys): Response
-    {
-        if($req->getMethod() != 'POST') {
-            return $this->json(['body' => 'Ok, gracias'], 400);
-        }
-
-        $data = $req->getContent();
-        if(!$data) {
-            return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
-        }
-
-        $data = json_decode($data, true);
-        if(!array_key_exists('slug', $data)) {
-            return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
-        }
-
-        $ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
-        $apiml = $fsys->get(AnyPath::$ANYMLM, '');
-        return $this->json([
-            'ctcLog' => $ctcLog,
-            'apiml' => $apiml,
-        ]);
-    }
 
     /** Datos para any shop */
     #[Route('/get-data-any', methods: ['post'])]
@@ -190,6 +165,32 @@ class SysComController extends AbstractController
         ]);
     }
 
+    /** Datos para vinc con ml */
+    #[Route('/get-data-ownml', methods: ['post'])]
+    public function getDataOwnMl(Request $req, Fsys $fsys): Response
+    {
+        if($req->getMethod() != 'POST') {
+            return $this->json(['body' => 'Ok, gracias'], 400);
+        }
+
+        $data = $req->getContent();
+        if(!$data) {
+            return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+        }
+
+        $data = json_decode($data, true);
+        if(!array_key_exists('slug', $data)) {
+            return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+        }
+
+        $ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
+        $apiml = $fsys->get(AnyPath::$ANYMLM, '');
+        return $this->json([
+            'ctcLog' => $ctcLog,
+            'apiml' => $apiml,
+        ]);
+    }
+
     /** */
     #[Route('/update-meli', methods: ['POST'])]
     public function updateDataMeli(Request $req): Response
@@ -214,14 +215,42 @@ class SysComController extends AbstractController
     public function validateNick(Request $req): Response
     {
         $data = $req->headers->get('x-nickname');
-        $exp = $this->getParameter('dtaCtc');
-        $path = Path::canonicalize($exp.'/'.$data.'.json');
+        if($data) {
+            $exp = $this->getParameter('dtaCtc');
+            $path = Path::canonicalize($exp.'/'.$data.'.json');
+    
+            $exists = file_exists($path);
+            return new Response(
+                '',
+                $exists ? 200 : 404,
+                ['X-Nickname-Valid' => $exists ? '1' : '0']
+            );
+        }
+        return new Response('', 403, ['X-Nickname-Valid' => '0']);
+    }
 
-        $exists = file_exists($path);
-        return new Response(
-            '',
-            $exists ? 200 : 404,
-            ['X-Nickname-Valid' => $exists ? '1' : '0']
-        );
+    /** 
+     * Desvinculamos la relacion entre app meli
+    */
+    #[Route('/desvincular-meli', methods: ['HEAD'])]
+    public function desvincularMeli(Request $req): Response
+    {
+        $data = $req->headers->get('x-nickname');
+        if($data) {
+            $exp = $this->getParameter('dtaCtc');
+            $path = Path::canonicalize($exp.'/'.$data.'.json');
+
+            $exists = file_exists($path);
+            if($exists) {
+                unlink($path);
+                $exists = file_exists($path);
+            }
+            return new Response(
+                '',
+                !$exists ? 200 : 404,
+                ['X-Nickname-Valid' => !$exists ? '1' : '0']
+            );
+        }
+        return new Response('', 403, ['X-Nickname-Valid' => '0']);
     }
 }
