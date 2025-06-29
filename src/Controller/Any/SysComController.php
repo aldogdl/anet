@@ -179,4 +179,22 @@ class SysComController extends AbstractController
         }
         return $this->json(['abort' => true]);
     }
+
+    /** 
+     * Validamos que el slug de la empresa este entre las registradas
+    */
+    #[Route('/validate-nickname', methods: ['HEAD'])]
+    public function validateNick(Request $req): Response
+    {
+        $data = $req->headers->get('x-nickname');
+        $exp = $this->getParameter('dtaCtc');
+        $path = Path::canonicalize($exp.'/'.$data.'.json');
+
+        $exists = file_exists($path);
+        return new Response(
+            '',
+            $exists ? 200 : 404,
+            ['X-Nickname-Valid' => $exists ? '1' : '0']
+        );
+    }
 }
