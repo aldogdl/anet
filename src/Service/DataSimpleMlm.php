@@ -258,7 +258,7 @@ class DataSimpleMlm {
      * desvinculo de la app
      * @param String $waId
     */
-    public function desvincularMlm(String $data) : bool
+    public function desvincularMlm(array $data) : bool
     {
         $result = false;
         $pathTo = $this->params->get('dtaCtcLog');
