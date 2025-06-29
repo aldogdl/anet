@@ -54,7 +54,6 @@ class MlmController extends AbstractController
     #[Route('mlm/parse-cot-token/{slug}/', methods: ['DELETE', 'GET'])]
     public function mlmParseCodeToken(Request $req, DataSimpleMlm $mlm, String $slug): Response
     {
-
         if($req->getMethod() == 'GET') {
 
             $path = 'mlm_'.$slug.'.txt';

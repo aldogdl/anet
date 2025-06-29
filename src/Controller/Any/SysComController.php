@@ -8,6 +8,7 @@ use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use App\Service\Any\GetDataShop;
 use App\Service\Any\PublicAssetUrlGenerator;
+use App\Service\DataSimpleMlm;
 use App\Service\Pushes;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
@@ -232,25 +233,14 @@ class SysComController extends AbstractController
     /** 
      * Desvinculamos la relacion entre app meli
     */
-    #[Route('/desvincular-meli', methods: ['HEAD'])]
-    public function desvincularMeli(Request $req): Response
+    #[Route('/desvincular-meli', methods: ['POST'])]
+    public function desvincularMeli(Request $req, DataSimpleMlm $mlm): Response
     {
-        $data = $req->headers->get('x-nickname');
-        if($data) {
-            $exp = $this->getParameter('dtaCtc');
-            $path = Path::canonicalize($exp.'/'.$data.'.json');
-
-            $exists = file_exists($path);
-            if($exists) {
-                unlink($path);
-                $exists = file_exists($path);
-            }
-            return new Response(
-                '',
-                !$exists ? 200 : 404,
-                ['X-Nickname-Valid' => !$exists ? '1' : '0']
-            );
+        $data = $req->getContent();
+        if($data && $data['slug']) {
+            $res = $mlm->desvincularMlm($data);
+            return $this->json(['result' => $res]);
         }
-        return new Response('', 403, ['X-Nickname-Valid' => '0']);
+        return $this->json(['result' => false]);
     }
 }

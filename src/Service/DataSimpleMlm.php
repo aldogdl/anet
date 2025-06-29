@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Component\Filesystem\Path;
 
 class DataSimpleMlm {
 
@@ -168,8 +169,8 @@ class DataSimpleMlm {
      * Recuperamos las credenciales del usuario para MeLi
      * @param String $Slug
     */
-    public function getCodesUser(String $slug, bool $compress = true) : array {
-
+    public function getCodesUser(String $slug, bool $compress = true) : array
+    {
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
@@ -190,8 +191,8 @@ class DataSimpleMlm {
     }
 	
     /** */
-    public function getDataLoksUserTest() : array {
-
+    public function getDataLoksUserTest() : array
+    {
         $pathTo = $this->params->get('dtaCtcLog');
         if(!is_dir($pathTo)) {
             mkdir($pathTo);
@@ -257,15 +258,33 @@ class DataSimpleMlm {
      * desvinculo de la app
      * @param String $waId
     */
-    public function desvincularMlm(String $slug) : String
+    public function desvincularMlm(String $data) : bool
     {
-        $result = 'ok';
+        $result = false;
         $pathTo = $this->params->get('dtaCtcLog');
-        if(!is_dir($pathTo)) { mkdir($pathTo); }
-        try {
-            unlink($pathTo .'/'. $slug . '.json');
-        } catch (\Throwable $th) {
-            $result = $th->getMessage(); 
+        $path = Path::canonicalize($pathTo.'/'.$data['slug'].'.json');
+        $url = 'https://api.mercadolibre.com/users/'.$data['userId'].'/applications/'.$data['appId'];
+
+        if(file_exists($path)) {
+            try {
+                $res = $this->client->request('DELETE', $url,
+                    [
+                        'headers' => [
+                            'accept' => 'application/json',
+                            'Authorization' => 'Bearer ' .$data['tk']
+                        ]
+                    ]
+                );
+
+                $code = $res->getStatusCode();
+                if($code >= 200 && $code < 300) {
+                    $map = json_decode($res->getContent(), true);
+                    if(array_key_exists('msg', $map) && mb_strpos($map['msg'], 'eliminada') !== false) {
+                        unlink($path);
+                        $result = true;
+                    }
+                }
+            } catch (\Throwable $e) {}
         }
         
         return $result;
@@ -287,5 +306,5 @@ class DataSimpleMlm {
             }
         }
     }
-    
+
 }
