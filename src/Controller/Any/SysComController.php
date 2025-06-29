@@ -5,6 +5,7 @@ namespace App\Controller\Any;
 use App\Entity\UsCom;
 use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
+use App\Service\Any\Fsys\Fsys;
 use App\Service\Any\GetDataShop;
 use App\Service\Any\PublicAssetUrlGenerator;
 use App\Service\Pushes;
@@ -19,6 +20,34 @@ use Symfony\Component\Filesystem\Path;
 #[Route('/sys-com')]
 class SysComController extends AbstractController
 {
+    /** Datos para vinc con ml */
+    #[Route('/get-data-ownml', methods: ['post'])]
+    public function getDataOwnMl(Request $req, Fsys $fsys): Response
+    {
+        if($req->getMethod() != 'POST') {
+            return $this->json(['body' => 'Ok, gracias'], 400);
+        }
+
+        $data = $req->getContent();
+        if(!$data) {
+            return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+        }
+
+        $data = json_decode($data, true);
+        if(!array_key_exists('slug', $data)) {
+            return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+        }
+
+        $ctcData = $fsys->get(AnyPath::$DTACTC, $data['slug'].'.json');
+        $ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
+        $apiml = $fsys->get(AnyPath::$ANYMLM, '');
+        return $this->json([
+            'ctcData' => $ctcData,
+            'ctcLog' => $ctcLog,
+            'apiml' => $apiml,
+        ]);
+    }
+
     /** Datos para any shop */
     #[Route('/get-data-any', methods: ['post'])]
     public function getDataAnyShop(Request $req, GetDataShop $shop): Response

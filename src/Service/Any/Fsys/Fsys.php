@@ -33,7 +33,10 @@ class Fsys {
         return $full;
     }
 
-    /** */
+    /** 
+     * El paquete de refacciones para mostrar en el catalogo
+     * de los usuarios finales
+    */
     public function getPackageOf(String $slug): array
     {
         $path = $this->_parsePath('prodPubs', $slug.'.json');

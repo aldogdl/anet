@@ -9,4 +9,7 @@ class AnyPath {
     static String $COMMLOC  = 'comLoc';
     static String $DICC = 'dictionary';
     static String $NGKF = 'ngile';
+    static String $DTACTC = 'dtaCtc';
+    static String $DTACTCLOG = 'dtaCtcLog';
+    static String $ANYMLM = 'anyMlm';
 }
