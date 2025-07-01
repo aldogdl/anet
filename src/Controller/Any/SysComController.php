@@ -254,7 +254,7 @@ class SysComController extends AbstractController
     {
         $data = $req->getContent();
         if($data) {
-            $data = json_decode($data);
+            $data = json_decode($data, true);
             if(array_key_exists('slug', $data)) {
                 $exp = $this->getParameter('dtaCtc');
                 $path = Path::canonicalize($exp.'/'.$data['slug'].'.json');
