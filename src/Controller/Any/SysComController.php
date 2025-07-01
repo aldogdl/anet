@@ -21,6 +21,22 @@ use Symfony\Component\Filesystem\Path;
 #[Route('/sys-com')]
 class SysComController extends AbstractController
 {
+    /** */
+    #[Route('/test', methods: ['get'])]
+    public function test(Request $req, PublicAssetUrlGenerator $urlGen): Response
+    {
+        $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
+        $originalFilename = $req->query->get('file');
+        $path = Path::canonicalize($prodSols.'/'.$originalFilename);
+
+        if (!file_exists($path)) {
+            return $this->json(['abort' => true, 'body' => 'X No existe archivo' . $path], 402);
+        }else{
+            $url = $urlGen->generate($path);
+            return $this->json(['abort' => true, 'body' => 'Ok:' . $url], 200);
+        }
+        return new Response(400);
+    }
 
     /** Datos para any shop */
     #[Route('/get-data-any', methods: ['post'])]
@@ -42,23 +58,6 @@ class SysComController extends AbstractController
 
         $res = $shop->getSimpleData($data);
         return $this->json($res);
-    }
-
-    /** */
-    #[Route('/test', methods: ['get'])]
-    public function test(Request $req, PublicAssetUrlGenerator $urlGen): Response
-    {
-        $prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-        $originalFilename = $req->query->get('file');
-        $path = Path::canonicalize($prodSols.'/'.$originalFilename);
-
-        if (!file_exists($path)) {
-            return $this->json(['abort' => true, 'body' => 'X No existe archivo' . $path], 402);
-        }else{
-            $url = $urlGen->generate($path);
-            return $this->json(['abort' => true, 'body' => 'Ok:' . $url], 200);
-        }
-        return new Response(400);
     }
 
     /** */
@@ -246,4 +245,24 @@ class SysComController extends AbstractController
         }
         return $this->json(['result' => false]);
     }
+
+    /** 
+     * Validamos que el slug de la empresa este entre las registradas
+    */
+    #[Route('/update-data-user', methods: ['POST'])]
+    public function updateDataUser(Request $req): Response
+    {
+        $data = $req->getContent();
+        if($data) {
+            $data = json_decode($data);
+            if(array_key_exists('slug', $data)) {
+                $exp = $this->getParameter('dtaCtc');
+                $path = Path::canonicalize($exp.'/'.$data['slug'].'.json');
+                file_put_contents($path, json_encode($data));
+                return $this->json(['abort' => false]);
+            }
+        }
+        return $this->json(['abort' => true], 403);
+    }
+
 }
