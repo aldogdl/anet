@@ -3,6 +3,7 @@
 namespace App\Controller\Any;
 
 use App\Service\Any\dto\MsgWs;
+use App\Service\Any\Fsys\Fsys;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,14 +14,23 @@ class YonkeMxWh extends AbstractController
 {
 	/** */
 	#[Route('/wh', methods: ['get', 'post'])]
-	public function webhookWa(Request $req): Response
+	public function webhookWa(Request $req, Fsys $fsys): Response
 	{
 		if( $req->getMethod() == 'POST' ) {
 
-				$msg = new MsgWs(json_decode($req->getContent(), true));
-				if($msg->type == 'stt') { return new Response(200); }
-				
-				file_put_contents('wa_post_'.uniqid().'.json', $msg->toJson());
+			$msg = new MsgWs(json_decode($req->getContent(), true));
+			if($msg->type == 'stt') { return new Response(200); }
+			
+			if($msg->type != 'text') {
+				return new Response(200);
+			}
+
+			if($msg->value == 'login') {
+				$fsys->initSesion($msg->waId, $msg->time);
+			} 
+			
+			file_put_contents('wa_post_'.uniqid().'.json', $msg->toJson());
+			return new Response(200);
 
 		} elseif( $req->getMethod() == 'GET' ) {
 
