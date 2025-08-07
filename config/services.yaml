@@ -5,6 +5,7 @@ parameters:
 
     appData    : '%phtml%/rfy/data/'
     sse        : '%phtml%/sse/'
+    invExp     : '%phtml%/inv/'
     fbSended   : '%phtml%/fb_sended/'
     fbFails    : '%phtml%/fb_fails/'
     sincDev    : '%phtml%/sinc_dev/'
