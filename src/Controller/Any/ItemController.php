@@ -187,8 +187,7 @@ class ItemController extends AbstractController
 
 		// Si no se envía nombre, usa el original
     $finalName = $customName ?: $uploadedFile->getClientOriginalName();
-		$path = $this->getParameter(AnyPath::$INVEXP);
-		$path = Path::canonicalize($path.'/'.$finalName);
+		$path = Path::canonicalize($this->getParameter(AnyPath::$INVEXP));
 
 		try {
 			$uploadedFile->move($path, $finalName);
