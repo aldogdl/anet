@@ -39,7 +39,7 @@ class SysComController extends AbstractController
 			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
 		}
 		
-		$ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
+		$ctcLog = $fsys->get(AnyPath::$DTACTC, $data['slug'].'.json');
 		if(array_key_exists('filenames', $data)) {
 			$lista = $data['filenames'];
 			$rota = count($lista);
