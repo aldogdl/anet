@@ -22,20 +22,54 @@ use Symfony\Component\Filesystem\Path;
 class SysComController extends AbstractController
 {
 	/** */
+	#[Route('/centinela', methods: ['post'])]
+	public function centinela(Request $req, Fsys $fsys): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
+
+		$data = json_decode($data, true);
+		if(!array_key_exists('slug', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+		}
+		
+		$ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
+		if(array_key_exists('filenames', $data)) {
+			$lista = $data['filenames'];
+			$rota = count($lista);
+			$files = [];
+			for ($i=0; $i < $rota; $i++) {
+				$partes = explode('/', $lista[$i]);
+				$partes = explode('.', $partes[1]);
+				$field = $partes[0];
+				$files[$field] = $fsys->getByPath($lista[$i]);
+			}
+		}
+		$files['ctc'] = $ctcLog;
+		return $this->json($files);
+	}
+
+	/** */
 	#[Route('/test', methods: ['get'])]
 	public function test(Request $req, PublicAssetUrlGenerator $urlGen): Response
 	{
-			$prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-			$originalFilename = $req->query->get('file');
-			$path = Path::canonicalize($prodSols.'/'.$originalFilename);
+		$prodSols = $this->getParameter(AnyPath::$PRODSOLS);
+		$originalFilename = $req->query->get('file');
+		$path = Path::canonicalize($prodSols.'/'.$originalFilename);
 
-			if (!file_exists($path)) {
-					return $this->json(['abort' => true, 'body' => 'X No existe archivo' . $path], 402);
-			}else{
-					$url = $urlGen->generate($path);
-					return $this->json(['abort' => true, 'body' => 'Ok:' . $url], 200);
-			}
-			return new Response(400);
+		if (!file_exists($path)) {
+			return $this->json(['abort' => true, 'body' => 'X No existe archivo' . $path], 402);
+		}else{
+			$url = $urlGen->generate($path);
+			return $this->json(['abort' => true, 'body' => 'Ok:' . $url], 200);
+		}
+		return new Response(400);
 	}
 
 	/** Datos para any shop */
@@ -170,26 +204,26 @@ class SysComController extends AbstractController
 	#[Route('/get-data-ownml', methods: ['post'])]
 	public function getDataOwnMl(Request $req, Fsys $fsys): Response
 	{
-			if($req->getMethod() != 'POST') {
-					return $this->json(['body' => 'Ok, gracias'], 400);
-			}
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
 
-			$data = $req->getContent();
-			if(!$data) {
-					return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
-			}
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
 
-			$data = json_decode($data, true);
-			if(!array_key_exists('slug', $data)) {
-					return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
-			}
+		$data = json_decode($data, true);
+		if(!array_key_exists('slug', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+		}
 
-			$ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
-			$apiml = $fsys->get(AnyPath::$ANYMLM, '');
-			return $this->json([
-					'ctcLog' => $ctcLog,
-					'apiml' => $apiml,
-			]);
+		$ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
+		$apiml = $fsys->get(AnyPath::$ANYMLM, '');
+		return $this->json([
+			'ctcLog' => $ctcLog,
+			'apiml' => $apiml,
+		]);
 	}
 
 	/** */

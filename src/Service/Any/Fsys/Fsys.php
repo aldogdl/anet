@@ -77,7 +77,22 @@ class Fsys
 		}
 		return [];
 	}
-    
+
+	/** 
+	 * El path es relativo a public_html ej. /folder/archivo
+	*/
+	public function getByPath(String $relative) : array
+	{
+		$path = Path::canonicalize($relative);
+		if($this->filesystem->exists($path)) {
+			$content = file_get_contents($path);
+			if($content) {
+				return json_decode($content, true);
+			}
+		}
+		return [];
+	}
+
 	/** */
 	public function get(String $path, ?String $filename) : array
 	{
