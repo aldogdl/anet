@@ -38,7 +38,7 @@ class SysComController extends AbstractController
 		if(!array_key_exists('slug', $data)) {
 			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
 		}
-		
+
 		$ctcLog = $fsys->get(AnyPath::$DTACTC, $data['slug'].'.json');
 		if(array_key_exists('filenames', $data)) {
 			$lista = $data['filenames'];
@@ -285,19 +285,21 @@ class SysComController extends AbstractController
 	 * Validamos que el slug de la empresa este entre las registradas
 	*/
 	#[Route('/update-data-user', methods: ['POST'])]
-	public function updateDataUser(Request $req): Response
+	public function updateDataUser(Request $req, Fsys $fsys): Response
 	{
-			$data = $req->getContent();
-			if($data) {
-					$data = json_decode($data, true);
-					if(array_key_exists('slug', $data)) {
-							$exp = $this->getParameter('dtaCtc');
-							$path = Path::canonicalize($exp.'/'.$data['slug'].'.json');
-							file_put_contents($path, json_encode($data));
-							return $this->json(['abort' => false]);
-					}
+		$data = $req->getContent();
+		if($data) {
+			$data = json_decode($data, true);
+			if(array_key_exists('slug', $data)) {
+				$res = $fsys->set(AnyPath::$DTACTC, $data, $data['slug'].'.json');
+				if($res == '') {
+					return $this->json(['abort' => false]);
+				}else{
+					return $this->json(['abort' => true, 'erro' => $res], 400);
+				}
 			}
-			return $this->json(['abort' => true], 403);
+		}
+		return $this->json(['abort' => true], 403);
 	}
 
 }
