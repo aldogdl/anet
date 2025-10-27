@@ -12,6 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/yonke-mx')]
 class YonkeMxWh extends AbstractController
 {
+	
 	/** */
 	#[Route('/wh', methods: ['get', 'post'])]
 	public function webhookWa(Request $req, Fsys $fsys): Response
@@ -56,10 +57,10 @@ class YonkeMxWh extends AbstractController
 	#[Route('/test-com', methods: ['get'])]
 	public function testCom(Request $req): Response
 	{
-			if( $req->getMethod() == 'GET' ) {
-					return new Response(200);
-			}
-			return new Response(400);
+		if($req->getMethod() == 'GET' ) {
+			return new Response(200);
+		}
+		return new Response(400);
 	}
 
 }

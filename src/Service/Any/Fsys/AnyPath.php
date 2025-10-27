@@ -13,4 +13,5 @@ class AnyPath {
     static String $DTACTCLOG = 'dtaCtcLog';
     static String $ANYMLM = 'anyMlm';
     static String $INVEXP = 'invExp';
+    static String $SYNCDEV = 'sincDev';
 }

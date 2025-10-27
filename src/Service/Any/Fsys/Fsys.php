@@ -19,19 +19,35 @@ class Fsys
 	}
 	
 	/** */
-	public function _parsePath(String $path, ?String $filename)
+	public function _parsePath(String $path, ?String $filename): string
 	{
 		$full = Path::canonicalize($this->params->get($path));
 		if(!$this->filesystem->exists($full)) {
-			$this->filesystem->mkdir($full);
+			$this->filesystem->mkdir($full, 0755);
 		}
 		if($filename != null) {
 			if(mb_strpos($filename, '+') !== false) {
-				$filename = str_replace('+', '/', $filename);
+				$folders = explode('+', $filename);
+				for ($i=0; $i < count($folders); $i++) { 
+					if(mb_strpos($folders[$i], '.') === false) {
+						if(!$this->filesystem->exists($full.'/'.$folders[$i])) {
+							$this->filesystem->mkdir($full.'/'.$folders[$i], 0755);
+						}
+					}
+				}
+				$filename = implode('/', $folders);
 			}
 			return Path::canonicalize($full.'/'.$filename);
 		}
 		return $full;
+	}
+
+	/**
+	 * Construimos el path desde los Enum
+	 */
+	public function buildPath(String $path, ?String $filename): string
+	{
+		return $this->_parsePath($path, $filename);
 	}
 
 	/** 
@@ -104,6 +120,20 @@ class Fsys
 			}
 		}
 		return [];
+	}
+
+	/** 
+	 * El path ya esta construido junto con su nombre de archivo
+	*/
+	public function setByPath(String $path, array $content) : String
+	{
+		try {
+			$this->filesystem->dumpFile($path, json_encode($content));
+			return $path;
+		} catch (\Throwable $th) {
+			return $th->getMessage();
+		}
+		return '';
 	}
 
 	/** */

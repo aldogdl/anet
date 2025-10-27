@@ -3,6 +3,7 @@
 namespace App\Controller\Any;
 
 use App\Entity\UsCom;
+use App\Repository\SyncMlRepository;
 use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
@@ -10,6 +11,7 @@ use App\Service\Any\GetDataShop;
 use App\Service\Any\PublicAssetUrlGenerator;
 use App\Service\DataSimpleMlm;
 use App\Service\Pushes;
+use App\Service\SecurityBasic;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,9 +23,12 @@ use Symfony\Component\Filesystem\Path;
 #[Route('/sys-com')]
 class SysComController extends AbstractController
 {
-	/** */
+
+	/** 
+	 * 
+	*/
 	#[Route('/centinela', methods: ['post'])]
-	public function centinela(Request $req, Fsys $fsys): Response
+	public function centinela(Request $req, Fsys $fsys, SyncMlRepository $em): Response
 	{
 		if($req->getMethod() != 'POST') {
 			return $this->json(['body' => 'Ok, gracias'], 400);
@@ -51,8 +56,61 @@ class SysComController extends AbstractController
 				$files[$field] = $fsys->getByPath($lista[$i]);
 			}
 		}
+
+		// Recuperamos notificaciones
+		if(array_key_exists('userId', $data)) {
+			$userId = $data['userId'];
+			$last = '';
+			if(array_key_exists('last', $data)) {
+				$last = $data['last'];
+			}
+			$notif = $em->getAllMsgAfterByMsgId($userId, $last);
+			if($notif) {
+				$files['notif'] = $notif;
+			}
+		}
+
 		$files['ctc'] = $ctcLog;
 		return $this->json($files);
+	}
+
+	/** 
+	 * 
+	*/
+	#[Route('/set-file-json/{token}', methods: ['post'])]
+	public function setFileJson(Request $req, Fsys $fsys, SecurityBasic $security, String $token): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+		if(mb_strpos($token, 'test::') !== false) {
+			$partes = explode('::', $token);
+			$token = base64_encode($partes[1]);
+		}
+		if(!$security->isValid($token)) {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
+		
+		$data = json_decode($data, true);
+		if(!array_key_exists('waId', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Falta el WaId del Usuario'], 402);
+		}
+		if(!array_key_exists('topic', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Falta el topico del Archivo'], 402);
+		}
+		if(!array_key_exists('body', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Falta el body'], 402);
+		}
+		$time = (integer) microtime(true) * 1000;
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, $data['topic'] .'+'. $data['waId']."_".$time.'.json');
+		$path = $fsys->setByPath($path, $data);
+
+		return $this->json(['file' => $path]);
 	}
 
 	/** */
