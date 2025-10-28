@@ -37,22 +37,20 @@ class SyncMlRepository extends ServiceEntityRepository
 	*/
 	public function getAllMsgAfterByMsgId(String $userId, ?String $msgId = ''): array
 	{
+		
 		if($msgId == '' || $msgId == null) {
-			$dql = 'SELECT n FROM ' . SyncMl::class . ' n '.
-			'WHERE n.user_id = :user';
-
-			return $this->_em->createQuery($dql)
-				->setParameter('user', $userId)
-				->getArrayResult();
+			
+			$dql = 'SELECT n FROM ' . SyncMl::class . ' n ';
+			return $this->_em->createQuery($dql)->getArrayResult();
 		}
 
 		$dql = $this->getMsgByMsgId($msgId);
 		$has = $dql->execute();
 		if($has) {
 			$dql = 'SELECT n FROM ' . SyncMl::class . ' n '.
-			'WHERE n.sendAt > :date && n.user_id = :user';
+			'WHERE n.sendAt > :date';
 			return $this->_em->createQuery($dql)
-				->setParameters(['date' => $$has[0]->getSendAt(), 'user' => $userId])
+				->setParameter('date', $$has[0]->getSendAt())
 				->getArrayResult();
 		}
 
