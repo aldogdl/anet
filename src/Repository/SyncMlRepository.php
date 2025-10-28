@@ -35,11 +35,10 @@ class SyncMlRepository extends ServiceEntityRepository
 	* Recuperamos todos los mensajes que han llegado a partir
 	* del id del mensaje enviado por parametro
 	*/
-	public function getAllMsgAfterByMsgId(String $userId, ?String $msgId = ''): array
+	public function getAllMsgAfterByMsgId(String $msgId = ''): array
 	{
 		
 		if($msgId == '' || $msgId == null) {
-			
 			$dql = 'SELECT n FROM ' . SyncMl::class . ' n ';
 			return $this->_em->createQuery($dql)->getArrayResult();
 		}

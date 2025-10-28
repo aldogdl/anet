@@ -45,11 +45,11 @@ class MlmController extends AbstractController
 	/**
 	 * Recuperar las ultimas notificaciones
 	 */
-	#[Route('mlm/{userId}/get/', methods: ['GET'])]
-	public function recoveryNotifMlm(Request $req, SyncMlRepository $em, int $userId): Response
+	#[Route('mlm/notif/get/', methods: ['GET'])]
+	public function recoveryNotifMlm(Request $req, SyncMlRepository $em): Response
 	{
 		$query = $req->query->get('last');
-		$msgs = $em->getAllMsgAfterByMsgId($userId, $query);
+		$msgs = $em->getAllMsgAfterByMsgId($query);
 		return $this->json($msgs);
 	}
 
