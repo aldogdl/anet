@@ -58,13 +58,8 @@ class SysComController extends AbstractController
 		}
 
 		// Recuperamos notificaciones
-		if(array_key_exists('userId', $data)) {
-			$userId = $data['userId'];
-			$last = '';
-			if(array_key_exists('last', $data)) {
-				$last = $data['last'];
-			}
-			$notif = $em->getAllMsgAfterByMsgId($userId, $last);
+		if(array_key_exists('last', $data)) {
+			$notif = $em->getAllMsgAfterByMsgId($data['last']);
 			if($notif) {
 				$files['notif'] = $notif;
 			}
