@@ -44,6 +44,14 @@ class SysComController extends AbstractController
 			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
 		}
 
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'presence+'.$data['slug'].'.json');
+		$date = new \DateTime('now');
+		// Timestamp en segundos
+		$timestampSeconds = $date->getTimestamp();
+		// Timestamp en milisegundos
+		$timestampMilliseconds = $timestampSeconds * 1000;
+		$fsys->setByPath($path, ['last' => $timestampMilliseconds]);
+
 		$ctcLog = $fsys->get(AnyPath::$DTACTC, $data['slug'].'.json');
 		if(array_key_exists('filenames', $data)) {
 			$lista = $data['filenames'];
