@@ -43,8 +43,11 @@ class SysComController extends AbstractController
 		if(!array_key_exists('slug', $data)) {
 			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
 		}
-
-		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'presence+'.$data['slug'].'.json');
+		$waId = '_otra_cuenta';
+		if(array_key_exists('waId', $data)) {
+			$waId = '_'.$data['waId'];
+		}
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'presence+'.$data['slug'].'+'.$waId.'.json');
 		$date = new \DateTime('now');
 		// Timestamp en segundos
 		$timestampSeconds = $date->getTimestamp();
