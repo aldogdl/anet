@@ -47,7 +47,9 @@ class SysComController extends AbstractController
 		if(array_key_exists('waId', $data)) {
 			$waId = '_'.$data['waId'];
 		}
-		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'presence+'.$data['slug'].'+'.$waId.'.json');
+
+		// Creamos una marca de presencia o uso de la app
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'presence+'.$data['slug'].'_'.$waId.'.json');
 		$date = new \DateTime('now');
 		// Timestamp en segundos
 		$timestampSeconds = $date->getTimestamp();
