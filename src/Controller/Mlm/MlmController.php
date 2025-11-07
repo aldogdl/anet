@@ -9,12 +9,13 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 
+#[Route('/mlm')]
 class MlmController extends AbstractController
 {
 	/**
 	 * Endpoint para la verificacion de conección
 	 */
-	#[Route('mlm/notifications/', methods: ['GET', 'POST'])]
+	#[Route('/notifications/', methods: ['GET', 'POST'])]
 	public function notisMlm(Request $req, SyncMlRepository $em): Response
 	{
 		$content = $req->getContent();
@@ -30,7 +31,7 @@ class MlmController extends AbstractController
 	/**
 	 * Endpoint para la verificacion de conección
 	 */
-	#[Route('mlm/code/', methods: ['GET', 'POST'])]
+	#[Route('/code/', methods: ['GET', 'POST'])]
 	public function verifyMlm(Request $req): Response
 	{
 		$slug = $req->query->get('state');
@@ -45,7 +46,7 @@ class MlmController extends AbstractController
 	/**
 	 * Recuperar las ultimas notificaciones
 	 */
-	#[Route('mlm/notif/get/', methods: ['GET'])]
+	#[Route('/notif/get/', methods: ['GET'])]
 	public function recoveryNotifMlm(Request $req, SyncMlRepository $em): Response
 	{
 		$query = $req->query->get('last');
@@ -57,7 +58,7 @@ class MlmController extends AbstractController
 	 * Endpoint para actualizar los datos lock provenientes desde la app
 	 * del catalogo
 	 */
-	#[Route('mlm/refresh-token-mlm/{slug}/{refreshTk}', methods: ['GET'])]
+	#[Route('/refresh-token-mlm/{slug}/{refreshTk}', methods: ['GET'])]
 	public function refreshTokenMlm(DataSimpleMlm $mlm, String $slug, String $refreshTk): Response
 	{
 		$res = $mlm->refreshTokenMlm($slug, $refreshTk);
@@ -69,7 +70,7 @@ class MlmController extends AbstractController
 	 * vinculacion por lo tanto se recuperan desde la app AnyShop y se
 	 * eliminan inmediatamente.
 	 */
-	#[Route('mlm/parse-cot-token/{slug}/', methods: ['DELETE', 'GET'])]
+	#[Route('/parse-cot-token/{slug}/', methods: ['DELETE', 'GET'])]
 	public function mlmParseCodeToken(Request $req, DataSimpleMlm $mlm, String $slug): Response
 	{
 		if($req->getMethod() == 'GET') {
