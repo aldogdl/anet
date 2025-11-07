@@ -10,83 +10,84 @@ use Symfony\Component\Filesystem\Path;
 
 class DataSimpleMlm {
 
-    private $params;
-    private $client;
-    public String $errFromMlm = '';
-    public ?array $conm;
-    private String $url = 'https://api.mercadolibre.com/oauth/token';
+	private $params;
+	private $client;
+	public String $errFromMlm = '';
+	public ?array $conm;
+	private String $url = 'https://api.mercadolibre.com/oauth/token';
 
-    /** */
+	/** */
 	public function __construct(ParameterBagInterface $container, HttpClientInterface $client)
 	{
 		$this->params = $container;
-        $this->client = $client;
-        $this->conm   = null;
+			$this->client = $client;
+			$this->conm   = null;
 	}
 
-    /** Realizar Solciitud a MeLi */
-    private function recoveryToken(String $codeTk, bool $isRefresh = false) : array
-    {
-        $code  = 401;
-        $bodyResult = [];
-        $this->errFromMlm = '';
-        if($this->conm == null) {
-            $this->getCredentialsMlm();
-        }
-        if($this->conm == null) {
-            $this->errFromMlm = 'X Archivo de credenciales no encontrado';
-            return $bodyResult;
-        }
-        $dataSend = [
-            'grant_type' => ($isRefresh) ? 'refresh_token' : 'authorization_code',
-            'client_id'  => $this->conm['appId'],
-            'client_secret' => $this->conm['appTk'],
-        ];
-        if($isRefresh) {
-            $dataSend['refresh_token'] = $codeTk;
-        }else {
-            $dataSend['code'] = $codeTk;
-            $dataSend['redirect_uri'] = 'https://autoparnet.com/mlm/code/';
-        }
-        
-        try {
+	/** Realizar Solciitud a MeLi */
+	private function recoveryToken(String $codeTk, bool $isRefresh = false) : array
+	{
+		$code  = 401;
+		$bodyResult = [];
+		$this->errFromMlm = '';
+		if($this->conm == null) {
+			$this->getCredentialsMlm();
+		}
+		if($this->conm == null) {
+			$this->errFromMlm = 'X Archivo de credenciales no encontrado';
+			return $bodyResult;
+		}
+		$dataSend = [
+				'grant_type' => ($isRefresh) ? 'refresh_token' : 'authorization_code',
+				'client_id'  => $this->conm['appId'],
+				'client_secret' => $this->conm['appTk'],
+		];
+		
+		if($isRefresh) {
+			$dataSend['refresh_token'] = $codeTk;
+		}else {
+			$dataSend['code'] = $codeTk;
+			$dataSend['redirect_uri'] = 'https://autoparnet.com/mlm/code/';
+		}
+		
+		try {
 
-            $response = $this->client->request('POST', $this->url,
-                [
-                    'headers' => [
-                        'accept' => 'application/json',
-                        'Content-Type' => 'application/x-www-form-urlencoded',
-                    ],
-                    'body' => http_build_query($dataSend)
-                ]
-            );
+			$response = $this->client->request('POST', $this->url,
+				[
+					'headers' => [
+						'accept' => 'application/json',
+						'Content-Type' => 'application/x-www-form-urlencoded',
+					],
+					'body' => http_build_query($dataSend)
+				]
+			);
 
-            $code = $response->getStatusCode();
-            if($code >= 200 && $code <= 300) {
-                $code = 200;
-                $bodyResult = json_decode($response->getContent(), true);
-            }else {
-                $this->errFromMlm = 'X ' . $response->getContent();
-            }
+			$code = $response->getStatusCode();
+			if($code >= 200 && $code <= 300) {
+				$code = 200;
+				$bodyResult = json_decode($response->getContent(), true);
+			}else {
+				$this->errFromMlm = 'X ' . $response->getContent();
+			}
 
-        } catch (HttpExceptionInterface $e) {
-            // Maneja errores HTTP específicos (por ejemplo, 400, 401, 404, etc.)
-            $this->errFromMlm = 'Error HTTP: ' . $e->getCode() . ' ' . $e->getMessage();
-        } catch (TransportExceptionInterface $e) {
-            // Maneja errores de transporte (por ejemplo, errores de conexión, timeout, etc.)
-            $this->errFromMlm = 'Error de transporte: ' . $e->getMessage();
-        } catch (\Throwable $th) {
-            // Maneja cualquier otro tipo de error
-            $this->errFromMlm = 'Error desconocido: ' . $th->getMessage();
-        }
+		} catch (HttpExceptionInterface $e) {
+			// Maneja errores HTTP específicos (por ejemplo, 400, 401, 404, etc.)
+			$this->errFromMlm = 'Error HTTP: ' . $e->getCode() . ' ' . $e->getMessage();
+		} catch (TransportExceptionInterface $e) {
+			// Maneja errores de transporte (por ejemplo, errores de conexión, timeout, etc.)
+			$this->errFromMlm = 'Error de transporte: ' . $e->getMessage();
+		} catch (\Throwable $th) {
+			// Maneja cualquier otro tipo de error
+			$this->errFromMlm = 'Error desconocido: ' . $th->getMessage();
+		}
 
-        if($this->errFromMlm != '') {
-            $bodyResult['error'] = $this->errFromMlm;
-            $this->errFromMlm = '';
-        }
-        $dataSend['url'] = $this->url;
-        return $bodyResult;
-    }
+		if($this->errFromMlm != '') {
+			$bodyResult['error'] = $this->errFromMlm;
+			$this->errFromMlm = '';
+		}
+		$dataSend['url'] = $this->url;
+		return $bodyResult;
+	}
 
     /** 
      * Recuperamos lod datos completos del dueño del catalogo
@@ -260,34 +261,34 @@ class DataSimpleMlm {
     */
     public function desvincularMlm(array $data) : bool
     {
-        $result = false;
-        $pathTo = $this->params->get('dtaCtcLog');
-        $path = Path::canonicalize($pathTo.'/'.$data['slug'].'.json');
-        $url = 'https://api.mercadolibre.com/users/'.$data['userId'].'/applications/'.$data['appId'];
+			$result = false;
+			$pathTo = $this->params->get('dtaCtcLog');
+			$path = Path::canonicalize($pathTo.'/'.$data['slug'].'.json');
+			$url = 'https://api.mercadolibre.com/users/'.$data['userId'].'/applications/'.$data['appId'];
 
-        if(file_exists($path)) {
-            try {
-                $res = $this->client->request('DELETE', $url,
-                    [
-                        'headers' => [
-                            'accept' => 'application/json',
-                            'Authorization' => 'Bearer ' .$data['tk']
-                        ]
-                    ]
-                );
+			if(file_exists($path)) {
+				try {
+					$res = $this->client->request('DELETE', $url,
+						[
+							'headers' => [
+								'accept' => 'application/json',
+								'Authorization' => 'Bearer '.$data['tk']
+							]
+						]
+					);
 
-                $code = $res->getStatusCode();
-                if($code >= 200 && $code < 300) {
-                    $map = json_decode($res->getContent(), true);
-                    if(array_key_exists('msg', $map) && mb_strpos($map['msg'], 'eliminada') !== false) {
-                        unlink($path);
-                        $result = true;
-                    }
-                }
-            } catch (\Throwable $e) {}
-        }
-        
-        return $result;
+					$code = $res->getStatusCode();
+					if($code >= 200 && $code < 300) {
+						$map = json_decode($res->getContent(), true);
+						if(array_key_exists('msg', $map) && mb_strpos($map['msg'], 'eliminada') !== false) {
+							unlink($path);
+							$result = true;
+						}
+					}
+				} catch (\Throwable $e) {}
+			}
+			
+			return $result;
     }
 
     /**

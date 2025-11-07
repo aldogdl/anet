@@ -100,8 +100,25 @@ class MlmController extends AbstractController
 			//     return $this->json(['abort' => false, 'body' => ['ok' => $slug]]);
 			// }
 		}
-		
+
 		return $this->json(['abort' => true, 'body' => ['error' => 'X Error desconocido']]);
+	}
+
+	/** 
+	 * Desvinculamos la relacion entre app meli
+	*/
+	#[Route('/desvincular-meli', methods: ['POST'])]
+	public function desvincularMeli(Request $req, DataSimpleMlm $mlm): Response
+	{
+		$data = $req->getContent();
+		if($data) {
+			$data = json_decode($data, true);
+			if(array_key_exists('slug', $data)) {
+				$res = $mlm->desvincularMlm($data);
+				return $this->json(['result' => $res]);
+			}
+		}
+		return $this->json(['result' => false]);
 	}
 
 }

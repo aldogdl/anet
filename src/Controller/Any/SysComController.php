@@ -329,23 +329,6 @@ class SysComController extends AbstractController
 	}
 
 	/** 
-	 * Desvinculamos la relacion entre app meli
-	*/
-	#[Route('/desvincular-meli', methods: ['POST'])]
-	public function desvincularMeli(Request $req, DataSimpleMlm $mlm): Response
-	{
-			$data = $req->getContent();
-			if($data) {
-					$data = json_decode($data, true);
-					if(array_key_exists('slug', $data)) {
-							$res = $mlm->desvincularMlm($data);
-							return $this->json(['result' => $res]);
-					}
-			}
-			return $this->json(['result' => false]);
-	}
-
-	/** 
 	 * Validamos que el slug de la empresa este entre las registradas
 	*/
 	#[Route('/update-data-user', methods: ['POST'])]
