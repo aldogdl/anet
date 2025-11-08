@@ -95,13 +95,6 @@ class MlmController extends AbstractController
 			}
 		}
 
-		if($req->getMethod() == 'DELETE') {
-			// $isOk = $mlm->desvincularMlm($slug);
-			// if($isOk == 'ok') {
-			//     return $this->json(['abort' => false, 'body' => ['ok' => $slug]]);
-			// }
-		}
-
 		return $this->json(['abort' => true, 'body' => ['error' => 'X Error desconocido']]);
 	}
 

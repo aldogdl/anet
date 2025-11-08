@@ -141,14 +141,33 @@ class DataSimpleMlm {
     */
     public function parseCodeToToken(String $code, String $slug) : array
     {
-        $result = $this->recoveryToken($code);
-        if(array_key_exists('error', $result)) {
-            return ['abort' => true, 'body' => ['error' => $result['error']]];
-        }else if($this->errFromMlm != '') {
-            return ['abort' => true, 'body' => ['error' => $this->errFromMlm]];
-        }
-        $saved = $this->setCodeTokenMlm($result, $slug);
-        return ($saved) ? $saved : $result;
+			$result = $this->recoveryToken($code);
+			if(array_key_exists('error', $result)) {
+				return ['abort' => true, 'body' => ['error' => $result['error']]];
+			}else if($this->errFromMlm != '') {
+				return ['abort' => true, 'body' => ['error' => $this->errFromMlm]];
+			}
+			
+			$saved = $this->setCodeTokenMlm($result, $slug);
+			$this->getCredentialsMlm();
+			
+			if(!array_key_exists('token', $saved)) {
+				$saved = [
+					'saved'  => false,
+					'slug'   => $slug,
+					'token'  => $result['access_token'],
+					'userId' => $result['user_id'],
+					'expire' => $result['expires_in'],
+					'scope'  => $result['scope'],
+					'refreshTk' => $result['refresh_token'],
+					'updatedAt' => (integer) microtime(true) * 1000,
+				];
+			}
+			if(array_key_exists('appId', $this->conm)) {
+				$saved['edi'] = $this->conm['appId'];
+				$saved['yek'] = $this->conm['appTk'];
+			}
+			return $saved;
     }
 
     /** 
@@ -231,27 +250,26 @@ class DataSimpleMlm {
     */
     public function setCodeTokenMlm(array $data, String $slug) : array
     {
-        $result = [];
-        
-        if(array_key_exists('access_token', $data)) {
+			$result = [];
+			if(array_key_exists('access_token', $data)) {
 
-            $pathTo = $this->params->get('dtaCtcLog');
-            if(!is_dir($pathTo)) { mkdir($pathTo); }
+				$pathTo = $this->params->get('dtaCtcLog');
+				if(!is_dir($pathTo)) { mkdir($pathTo); }
 
-            $pathTo = $pathTo .'/'. $slug . '.json';
-            $result = [
-                'slug'   => $slug,
-                'token'  => $data['access_token'],
-                'userId' => $data['user_id'],
-                'expire' => $data['expires_in'],
-                'scope'  => $data['scope'],
-                'refreshTk' => $data['refresh_token'],
-                'updatedAt' => (integer) microtime(true) * 1000,
-            ];
-            file_put_contents($pathTo, json_encode($result));
-        }
+				$pathTo = $pathTo .'/'. $slug . '.json';
+				$result = [
+					'slug'   => $slug,
+					'token'  => $data['access_token'],
+					'userId' => $data['user_id'],
+					'expire' => $data['expires_in'],
+					'scope'  => $data['scope'],
+					'refreshTk' => $data['refresh_token'],
+					'updatedAt' => (integer) microtime(true) * 1000,
+				];
+				file_put_contents($pathTo, json_encode($result));
+			}
         
-        return $result;
+			return $result;
     }
     
     /** 
@@ -292,20 +310,20 @@ class DataSimpleMlm {
     }
 
     /**
-     * Recuperamos las credenciales de app
+     * Recuperamos las credenciales de la app
      */
     private function getCredentialsMlm(): void
     {
-        $this->conm = null;
-        $pathTo = $this->params->get('anyMlm');
-        if(is_file($pathTo)) {
-            $data = json_decode(file_get_contents($pathTo), true);
-            if($data) {
-                $appId = str_replace('edi:', '', $data['edi']);
-                $appTk = str_replace('yek:', '', $data['yek']);
-                $this->conm = ['appId' => $appId, 'appTk' => $appTk];
-            }
-        }
+			$this->conm = null;
+			$pathTo = $this->params->get('anyMlm');
+			if(is_file($pathTo)) {
+				$data = json_decode(file_get_contents($pathTo), true);
+				if($data) {
+					$appId = str_replace('edi:', '', $data['edi']);
+					$appTk = str_replace('yek:', '', $data['yek']);
+					$this->conm = ['appId' => $appId, 'appTk' => $appTk];
+				}
+			}
     }
 
 }
