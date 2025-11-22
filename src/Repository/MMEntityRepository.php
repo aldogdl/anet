@@ -19,15 +19,15 @@ class MMEntityRepository extends ServiceEntityRepository
     
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, MMEntity::class);
+			parent::__construct($registry, MMEntity::class);
     }
 
     /** */
     public function getById(int $id) : \Doctrine\ORM\Query
     {
-        $dql = 'SELECT m FROM '. MMEntity::class .' m '.
-        'WHERE m.id = :id';
-        return $this->_em->createQuery($dql)->setParameter('id', $id);
+			$dql = 'SELECT m FROM '. MMEntity::class .' m '.
+			'WHERE m.id = :id';
+			return $this->_em->createQuery($dql)->setParameter('id', $id);
     }
     
     /** 
@@ -35,11 +35,11 @@ class MMEntityRepository extends ServiceEntityRepository
     */
     public function existByName(String $name) : bool
     {
-        $dql = 'SELECT COUNT(m.id) FROM '. MMEntity::class .' m '.
-        'WHERE m.name = :name';
+			$dql = 'SELECT COUNT(m.id) FROM '. MMEntity::class .' m '.
+			'WHERE m.name = :name';
 
-        return $this->_em->createQuery($dql)
-            ->setParameter('name', $name)->getSingleScalarResult() > 0;
+			return $this->_em->createQuery($dql)
+				->setParameter('name', $name)->getSingleScalarResult() > 0;
     }
     
     /** 
@@ -47,29 +47,31 @@ class MMEntityRepository extends ServiceEntityRepository
     */
     public function getMMSlim(String $tipo) : array
     {
-        $dql = 'SELECT m FROM '. MMEntity::class .' m ';
-        if($tipo == 'models') {
-            $dql = $dql . 'WHERE m.idMrk != 0';
-        }else{
-            $dql = $dql . 'WHERE m.idMrk = 0';
-        }
+			$dql = 'SELECT m FROM '. MMEntity::class .' m ';
+			if($tipo == 'models') {
+				$dql = $dql . 'WHERE m.idMrk != 0';
+			}else {
+				if($tipo != 'alls') {
+					$dql = $dql . 'WHERE m.idMrk = 0';
+				}
+			}
 
-        $dql = $dql . ' ORDER BY m.name ASC';
-        $res = $this->_em->createQuery($dql)->getArrayResult();
-        
-        $result = [];
-        $rota = count($res);
-        if($rota > 0) {
-            for ($i=0; $i < $rota; $i++) { 
-                $result[] = [
-                    'i' => $res[$i]['id'],
-                    'im'=> $res[$i]['idMrk'],
-                    'n' => $res[$i]['name'],
-                    'v' => $res[$i]['variants'],
-                ];
-            }
-        }
-        return $result;
+			$dql = $dql . ' ORDER BY m.name ASC';
+			$res = $this->_em->createQuery($dql)->getArrayResult();
+
+			$result = [];
+			$rota = count($res);
+			if($rota > 0) {
+				for ($i=0; $i < $rota; $i++) { 
+					$result[] = [
+						'i' => $res[$i]['id'],
+						'im'=> $res[$i]['idMrk'],
+						'n' => $res[$i]['name'],
+						'v' => $res[$i]['variants'],
+					];
+				}
+			}
+			return $result;
     }
     
     /** 
@@ -78,20 +80,20 @@ class MMEntityRepository extends ServiceEntityRepository
     */
     public function getMM(?int $idMrk) : array
     {
-        $dql = 'SELECT m FROM '. MMEntity::class .' m ';
-        if($idMrk != null) {
-            $dql = $dql . 'WHERE m.idMrk = :idMrk';
-        }else{
-            $dql = $dql . 'WHERE m.idMrk = 0';
-        }
+			$dql = 'SELECT m FROM '. MMEntity::class .' m ';
+			if($idMrk != null) {
+				$dql = $dql . 'WHERE m.idMrk = :idMrk';
+			}else{
+				$dql = $dql . 'WHERE m.idMrk = 0';
+			}
 
-        $dql = $dql . ' ORDER BY m.id ASC';
-        if($idMrk != null) {
-            return $this->_em->createQuery($dql)
-                ->setParameter('idMrk', $idMrk)->getArrayResult();
-        }
+			$dql = $dql . ' ORDER BY m.id ASC';
+			if($idMrk != null) {
+				return $this->_em->createQuery($dql)
+						->setParameter('idMrk', $idMrk)->getArrayResult();
+			}
 
-        return $this->_em->createQuery($dql)->getArrayResult();
+			return $this->_em->createQuery($dql)->getArrayResult();
     }
 
     /** 
