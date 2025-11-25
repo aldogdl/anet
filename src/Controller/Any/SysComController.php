@@ -113,7 +113,12 @@ class SysComController extends AbstractController
 			return $this->json(['abort' => true, 'body' => 'Falta el body'], 402);
 		}
 		$time = (integer) microtime(true) * 1000;
-		$path = $fsys->buildPath(AnyPath::$SYNCDEV, $data['topic'] .'+'. $data['waId']."_".$time.'.json');
+		$filename = $data['waId']."_".$time;
+		// Si es local no se agrega el timestamp
+		if($data['topic'] == 'local') {
+			$filename = $data['waId'];
+		}
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, $data['topic'] .'+'.$filename.'.json');
 		$path = $fsys->setByPath($path, $data);
 
 		return $this->json(['file' => $path]);
