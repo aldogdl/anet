@@ -27,6 +27,46 @@ class SysComController extends AbstractController
 	/** 
 	 * 
 	*/
+	#[Route('/init-app-mob', methods: ['post'])]
+	public function initAppMob(Request $req, Fsys $fsys, SyncMlRepository $em): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
+
+		$data = json_decode($data, true);
+		if(!array_key_exists('slug', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Faltan el slug del usuario'], 403);
+		}
+		$waId = '_otro_dev';
+		if(array_key_exists('waId', $data)) {
+			$waId = '_'.$data['waId'];
+		}
+
+		// Creamos una marca de presencia o uso de la app
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'devs+'.$data['slug'].'_'.$waId.'.json');
+		$date = new \DateTime('now');
+		// Timestamp en segundos
+		$timestampSeconds = $date->getTimestamp();
+		// Timestamp en milisegundos
+		$timestampMilliseconds = $timestampSeconds * 1000;
+		$data['last'] = $timestampMilliseconds;
+		$fsys->setByPath($path, $data);
+		
+		// Recuperamos los datos de any shoper
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'local+'.$data['slug'].'.json');
+		$data = $fsys->getByPath($path);
+		return $this->json($data);
+	}
+
+	/** 
+	 * 
+	*/
 	#[Route('/centinela', methods: ['post'])]
 	public function centinela(Request $req, Fsys $fsys, SyncMlRepository $em): Response
 	{
@@ -116,7 +156,7 @@ class SysComController extends AbstractController
 		$filename = $data['waId']."_".$time;
 		// Si es local no se agrega el timestamp
 		if($data['topic'] == 'local') {
-			$filename = $data['waId'];
+			$filename = $data['slug'];
 		}
 		$path = $fsys->buildPath(AnyPath::$SYNCDEV, $data['topic'] .'+'.$filename.'.json');
 		$path = $fsys->setByPath($path, $data);
