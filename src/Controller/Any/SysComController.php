@@ -61,7 +61,7 @@ class SysComController extends AbstractController
 		// Recuperamos los datos de any shoper
 		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'local+'.$data['slug'].'.json');
 		$data = $fsys->getByPath($path);
-		return $this->json($data);
+		return $this->json(($data) ? $data : ['error' => 'No se encontraron datos']);
 	}
 
 	/** 
