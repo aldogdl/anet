@@ -24,11 +24,9 @@ use Symfony\Component\Filesystem\Path;
 class SysComController extends AbstractController
 {
 
-	/** 
-	 * 
-	*/
+	/** **/
 	#[Route('/init-app-mob', methods: ['post'])]
-	public function initAppMob(Request $req, Fsys $fsys, SyncMlRepository $em): Response
+	public function initAppMob(Request $req, Fsys $fsys): Response
 	{
 		if($req->getMethod() != 'POST') {
 			return $this->json(['body' => 'Ok, gracias'], 400);
@@ -43,6 +41,7 @@ class SysComController extends AbstractController
 		if(!array_key_exists('slug', $data)) {
 			return $this->json(['abort' => true, 'body' => 'Faltan el slug del usuario'], 403);
 		}
+
 		$waId = '_otro_dev';
 		if(array_key_exists('waId', $data)) {
 			$waId = '_'.$data['waId'];
@@ -358,19 +357,19 @@ class SysComController extends AbstractController
 	#[Route('/validate-nickname', methods: ['HEAD'])]
 	public function validateNick(Request $req): Response
 	{
-			$data = $req->headers->get('x-nickname');
-			if($data) {
-					$exp = $this->getParameter('dtaCtc');
-					$path = Path::canonicalize($exp.'/'.$data.'.json');
-	
-					$exists = file_exists($path);
-					return new Response(
-							'',
-							$exists ? 200 : 404,
-							['X-Nickname-Valid' => $exists ? '1' : '0']
-					);
-			}
-			return new Response('', 403, ['X-Nickname-Valid' => '0']);
+		$data = $req->headers->get('x-nickname');
+		if($data) {
+			$exp = $this->getParameter('dtaCtc');
+			$path = Path::canonicalize($exp.'/'.$data.'.json');
+
+			$exists = file_exists($path);
+			return new Response(
+				'',
+				$exists ? 200 : 404,
+				['X-Nickname-Valid' => $exists ? '1' : '0']
+			);
+		}
+		return new Response('', 403, ['X-Nickname-Valid' => '0']);
 	}
 
 	/** 
