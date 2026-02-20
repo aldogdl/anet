@@ -49,87 +49,87 @@ class MyFsys
     /** */
     public function setStopStt(String $waIdCot): void
     {
-        try {
-			$this->filesystem->dumpFile($waIdCot.'_stopstt.json', '');
-		} catch (FileException $e) {}
+			try {
+				$this->filesystem->dumpFile($waIdCot.'_stopstt.json', '');
+			} catch (FileException $e) {}
     }
 
     /** */
     public function getContent(String $folder, String $filename = ''): array | String
     {
-        $path = $this->getFolderTo($folder);
-        $tipoReturn = 'string';
-        $content = '';
+			$path = $this->getFolderTo($folder);
+			$tipoReturn = 'string';
+			$content = '';
 
-        if(mb_strpos($filename, '.json') !== false) {
-            $tipoReturn = 'map';
-            $content = [];
-        }
-        if($filename != '') {
-            $path = $path . '/' .$filename;
-        }
+			if(mb_strpos($filename, '.json') !== false) {
+				$tipoReturn = 'map';
+				$content = [];
+			}
+			if($filename != '') {
+				$path = $path . '/' .$filename;
+			}
 
-        try {
-            if($this->existe($folder, $filename)) {
-                $content = file_get_contents($path);
-                if($content != '' && $tipoReturn == 'map') {
-                    return json_decode($content, true);
-                }
-            }
-		} catch (FileException $e) {}
+			try {
+				if($this->existe($folder, $filename)) {
+					$content = file_get_contents($path);
+					if($content != '' && $tipoReturn == 'map') {
+						return json_decode($content, true);
+					}
+				}
+			} catch (FileException $e) {}
 
-        return $content;
+			return $content;
     }
 
     /** */
-    public function setContent(String $folder, String $filename = '', array $content): void
+    public function setContent(String $folder, String $filename, array $content): void
     {
-        $path = $this->getFolderTo($folder);
-        if($filename != '') {
-            $path = $path . '/' .$filename;
-        }
+			$path = $this->getFolderTo($folder);
+			if($filename != '') {
+				$path = $path . '/' .$filename;
+			}
 
-        try {
-			$this->filesystem->dumpFile($path, json_encode($content));
-		} catch (FileException $e) {}
+			try {
+				$this->filesystem->dumpFile($path, json_encode($content));
+			} catch (FileException $e) {}
     }
 
     /** */
     public function delete(String $folder, String $filename = ''): void
     {
-        $path = $this->getFolderTo($folder);
-        if($filename != '') {
-            $path = $path . '/' .$filename;
-        }
-        try {
-            if(is_file($path)) {
-                $this->filesystem->remove($path);
-            }
-		} catch (FileException $e) {}
+			$path = $this->getFolderTo($folder);
+			if($filename != '') {
+				$path = $path . '/' .$filename;
+			}
+			try {
+				if(is_file($path)) {
+					$this->filesystem->remove($path);
+				}
+			} catch (FileException $e) {}
     }
 
     /** */
     public function existe(String $folder, String $filename = ''): bool
     {
-        $path = $this->getFolderTo($folder);
-        if($filename != '') {
-            $path = $path . '/' .$filename;
-        }
-        return $this->filesystem->exists($path);
+			$path = $this->getFolderTo($folder);
+			if($filename != '') {
+				$path = $path . '/' .$filename;
+			}
+			return $this->filesystem->exists($path);
     }
 
     /** */
     public function getConmuta(): array
     {
-        $path = $this->params->get('tkwaconm');
-        try {
-            $content = file_get_contents($path);
-            if($content != '') {
-                return json_decode($content, true);
-            }
-        } catch (FileException $e) {}
+			$path = $this->params->get('tkwaconm');
+			try {
+				$content = file_get_contents($path);
+				if($content != '') {
+					return json_decode($content, true);
+				}
+			} catch (FileException $e) {}
 
-        return [];
+			return [];
     }
 
     /** 

@@ -16,44 +16,42 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ItemPubRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, ItemPub::class);
-    }
+	public function __construct(ManagerRegistry $registry)
+	{
+		parent::__construct($registry, ItemPub::class);
+	}
 
-    /** */
-    public function existPub(String $idSrc): int
-    {
-        $dql = 'SELECT COUNT(it.id) FROM ' . ItemPub::class . ' it '.
-        'WHERE it.idSrc = :idSrc';
+	/** */
+	public function existPub(String $idSrc): int
+	{
+		$dql = 'SELECT COUNT(it.id) FROM ' . ItemPub::class . ' it '.
+		'WHERE it.idSrc = :idSrc';
 
-        return $this->_em->createQuery($dql)
-            ->setParameter('idSrc', $idSrc)->getSingleScalarResult();
-    } 
+		return $this->_em->createQuery($dql)
+			->setParameter('idSrc', $idSrc)->getSingleScalarResult();
+	} 
 
-    /** */
-    public function setPub(array $data): array
-    {
-
-        $existe = $this->existPub($data['idSrc']);
-        $action = 'add';
-        $result = [];
-        if($existe == 0) {
-            $obj = new ItemPub();
-            $obj = $obj->fromJson($data);
-            try {
-                $this->_em->persist($obj);
-                $this->_em->flush();
-                $result = $obj->toSlim();
-                $result['id'] = $obj->getId();
-            } catch (\Throwable $th) {
-                return ['abort' => true, "body" => $th->getMessage()];
-            }
-        }else{
-            $action = 'edt';
-            $result['id'] = $existe;
-        }
-        
-        return ['abort' => false, "action" => $action, "body" => $result];
-    }
+	/** */
+	public function setPub(array $data): array
+	{
+		$existe = $this->existPub($data['id']);
+		$action = 'add';
+		$result = [];
+		if($existe == 0) {
+			$obj = new ItemPub();
+			$obj = $obj->fromJson($data);
+			try {
+				$this->_em->persist($obj);
+				$this->_em->flush();
+				$id = $obj->getId();
+				return ['abort' => false, 'action' => $action, 'body' => ['id' => $id]];
+			} catch (\Throwable $th) {
+				return ['abort' => true, 'action' => 'error', 'body' => $th->getMessage()];
+			}
+		}else{
+			$action = 'edt';
+			$result['id'] = $existe;
+		}
+		return ['abort' => false, "action" => $action, "body" => $result];
+	}
 }

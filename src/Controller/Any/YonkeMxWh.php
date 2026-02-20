@@ -12,7 +12,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/yonke-mx')]
 class YonkeMxWh extends AbstractController
 {
-	
 	/** */
 	#[Route('/wh', methods: ['get', 'post'])]
 	public function webhookWa(Request $req, Fsys $fsys): Response

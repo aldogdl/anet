@@ -2,9 +2,8 @@
 
 namespace App\Controller\Any;
 
+use App\Repository\ItemPubRepository;
 use Symfony\Component\Filesystem\Path;
-use App\Repository\PubsRepository;
-use App\Repository\SolsRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use App\Service\Any\PublicAssetUrlGenerator;
@@ -74,53 +73,8 @@ class ItemController extends AbstractController
 	}
 
 	/** */
-	#[Route('/sol', methods: ['get', 'post', 'delete'])]
-	public function itemSol(Request $req, SolsRepository $em): Response
-	{
-		if( $req->getMethod() == 'POST' ) {
-
-			$data = $req->getContent();
-				
-			if($data) {
-					
-				$data = json_decode($data, true);
-				if (!$data) {
-					return $this->json(['abort' => true, 'body' => 'Datos incompletos'], 400);
-				}
-
-				$newId = $em->setSol($data);
-				if($newId == 0) {
-					return $this->json(['abort' => true, 'body' => 'Inténtalo nuevamente'], 403);
-				}
-				if(array_key_exists('notiff', $data)) {
-					// TODO 
-					// No se logro enviar la notificacion desde el cliente hacia el core
-				}
-				return $this->json(['abort' => false, 'body' => $newId]);
-			}
-				
-		} elseif( $req->getMethod() == 'GET' ) {
-
-			// Si viene el slug
-			$slug = $req->query->get('slug') ?? '';
-			// Si viene el ciku es que es un colaborador que quiere sus solicitudes
-			$cIku = $req->query->get('ciku') ?? '';
-			// El iku del usuario que quiere sus solicitudes
-			$usIku = $req->query->get('usiku') ?? '';
-			if(!$slug) {
-				return $this->json([]);
-			}
-			if($usIku) {
-				$res = $em->getMiSolicitudes($slug, $usIku);
-			}
-			return $this->json([]);
-		}
-		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
-	}
-
-	/** */
 	#[Route('/pub', methods: ['get', 'post', 'delete'])]
-	public function itemPub(Request $req, PubsRepository $repo, Fsys $fsys): Response
+	public function itemPub(Request $req, ItemPubRepository $repo): Response
 	{
 		if( $req->getMethod() == 'POST' ) {
 
@@ -134,34 +88,20 @@ class ItemController extends AbstractController
 					}
 				}else{
 					$res = $repo->setPub($data);
+					if(array_key_exists('abort', $res) && $res['abort']) {
+						return $this->json($res, 500);
+					}
 					if($res != 0) {
-						return $this->json(['abort' => false, "id" => $res, "body" => 'Guardado con éxito']);
+						return $this->json($res);
 					}
 				}
 			}
-				
+
 		} elseif( $req->getMethod() == 'GET' ) {
 			$items = [];
 			return $this->json($items, 200);
 		}
 
-		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
-	}
-
-	/** */
-	#[Route('/cat/{slug}', methods: ['get'])]
-	public function itemCat(Request $req, PubsRepository $repo, Fsys $fsys, String $slug): Response
-	{
-		if( $req->getMethod() == 'GET' ) {
-			$items = $fsys->getPackageOf($slug);
-			if(!$items) {
-				// Recuperamos de cache o de DB el paquete del dia
-				$items = $repo->buildPakegeOf($slug);
-				$fsys->setPackageOf($slug, $items);
-			}
-
-			return $this->json($items);
-		}
 		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
 	}
 
@@ -178,12 +118,12 @@ class ItemController extends AbstractController
 	{
 
 		/** @var UploadedFile $uploadedFile */
-    $uploadedFile = $request->files->get('db_file');
-    $customName = $request->request->get('file_name');
+		$uploadedFile = $request->files->get('db_file');
+		$customName = $request->request->get('file_name');
 
 		if (!$uploadedFile) {
 			return $this->json(['error' => 'No se envió el archivo'], Response::HTTP_BAD_REQUEST);
-    }
+    	}
 
 		// Si no se envía nombre, usa el original
     $finalName = $customName ?: $uploadedFile->getClientOriginalName();
