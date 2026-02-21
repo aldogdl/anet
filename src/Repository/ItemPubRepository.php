@@ -54,4 +54,16 @@ class ItemPubRepository extends ServiceEntityRepository
 		}
 		return ['abort' => false, "action" => $action, "body" => $result];
 	}
-}
+
+	/** */
+	public function delPub(int $id, string $waId): int
+	{
+		$dql = 'DELETE FROM ' . ItemPub::class . ' it '.
+		'WHERE it.id = :id AND it.waId = :waId';
+
+		return $this->_em->createQuery($dql)
+			->setParameters(['id' => $id, 'waId' => $waId])
+			->execute();
+	}
+
+	}

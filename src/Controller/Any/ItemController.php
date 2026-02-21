@@ -97,6 +97,19 @@ class ItemController extends AbstractController
 				}
 			}
 
+		} elseif( $req->getMethod() == 'DELETE' ) {
+
+			$id = $req->query->get('id') ?? 0;
+			$waId = $req->query->get('waId') ?? 0;
+			if($id && $waId) {
+				$res = $repo->delPub($id, $waId);
+				if($res != 0) {
+					return $this->json(['abort' => false, "body" => $res]);
+				} else {
+					return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
+				}
+			}
+
 		} elseif( $req->getMethod() == 'GET' ) {
 			$items = [];
 			return $this->json($items, 200);
