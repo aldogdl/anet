@@ -145,7 +145,7 @@ class ItemPubRepository extends ServiceEntityRepository
 				$obj->setPoss($poss);
 			}
 		}
-		dd($obj);
+
 		try {
 			$this->_em->persist($obj);
 			$this->_em->flush();
