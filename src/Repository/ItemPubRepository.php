@@ -29,7 +29,60 @@ class ItemPubRepository extends ServiceEntityRepository
 
 		return $this->_em->createQuery($dql)
 			->setParameter('idSrc', $idSrc)->getSingleScalarResult();
-	} 
+	}
+
+	/** */
+	public function matchOne(array $data): array
+	{
+		$anioActual = (int) date('Y');
+
+		$mrkId      = $data['mrkId'];
+		$mdlId      = $data['mdlId'];
+		$anioInicio = (int) $data['anioInicio'];
+		$anioFin    = isset($data['anioFin']) ? (int) $data['anioFin']	: $anioInicio + 1;
+		$waId       = $data['waId'];
+		$lado    = isset($data['lado']) ? $data['lado']	: '';
+		$poss    = isset($data['poss']) ? $data['poss']	: '';
+	
+		if ($anioFin > $anioActual) {
+			$anioFin = $anioActual;
+		}
+
+		$params = [
+			'mrkId'      => (int) $mrkId,
+			'mdlId'      => (int) $mdlId,
+			'waId'       => $waId,
+			'isActive'   => 1,
+			'anioInicio' => $anioInicio,
+			'anioFin'    => $anioFin,
+		];
+
+		$dql = "
+			SELECT it
+			FROM " . ItemPub::class . " it
+			WHERE it.mrkId = :mrkId
+				AND it.mdlId = :mdlId
+				AND it.waId <> :waId
+				AND it.isActive = :isActive
+				AND it.anioInicio <= :anioFin
+				AND it.anioFin >= :anioInicio
+			";
+
+		if (!empty($lado)) {
+			$dql .= " AND it.lado IN (:lado, 'A')";
+			$params['lado'] = $lado;
+		}
+
+		if (!empty($poss)) {
+			$dql .= " AND it.poss IN (:poss, 'A')";
+			$params['poss'] = $poss;
+		}
+
+		$dql .= " ORDER BY it.created DESC, it.id DESC";
+		return $this->_em->createQuery($dql)
+			->setParameters($params)
+			->getArrayResult();
+	}
 
 	/** */
 	public function setPub(array $data): array

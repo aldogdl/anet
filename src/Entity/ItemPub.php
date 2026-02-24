@@ -6,6 +6,20 @@ use App\Repository\ItemPubRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ItemPubRepository::class)]
+#[ORM\Table(name: 'item_pub', indexes: [
+    new ORM\Index(
+        name: 'idx_itempub_mrk_mdl_active_year',
+        columns: ['mrk_id', 'mdl_id', 'is_active', 'anio_inicio', 'anio_fin']
+    ),
+    new ORM\Index(
+        name: 'idx_itempub_mrk_mdl_active_created_id',
+        columns: ['mrk_id', 'mdl_id', 'is_active', 'created', 'id']
+    ),
+    new ORM\Index(
+        name: 'idx_itempub_mrk_mdl_lado_active',
+        columns: ['mrk_id', 'mdl_id', 'is_active', 'lado', 'poss']
+    ),
+])]
 class ItemPub
 {
     #[ORM\Id]
@@ -92,29 +106,12 @@ class ItemPub
     public function __construct()
     {
 			$this->stt = 0;
+			$this->anioFin = 9999;
 			$this->extras = [];
+			$this->lado = 'A';
+			$this->poss = 'A';
+			$this->isActive = true;
 			$this->created = new \DateTimeImmutable('now');
-    }
-
-    /** */
-    public function toSlim() : array {
-			$slim = [
-				'pz' => $this->extras['pz'],
-				'mk' => $this->extras['mk'],
-				'md' => $this->extras['md'],
-				'a' => $this->extras['a'],
-				'pr' => $this->price,
-			];
-			if(array_key_exists('l', $this->extras)) {
-				$slim['l'] = $this->extras['l'];
-			}
-			if(array_key_exists('p', $this->extras)) {
-				$slim['p'] = $this->extras['p'];
-			}
-			$slim['im'] = $this->imgBig;
-			$slim['s'] = $this->idSrc;
-			$slim['sr'] = $this->src;
-			return $slim;
     }
 
     /** */

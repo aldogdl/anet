@@ -129,7 +129,6 @@ class ItemController extends AbstractController
 	#[Route('/export-db', methods: ['post'])]
 	public function exportDB(Request $request, Fsys $fsys): Response
 	{
-
 		/** @var UploadedFile $uploadedFile */
 		$uploadedFile = $request->files->get('db_file');
 		$customName = $request->request->get('file_name');
@@ -154,4 +153,24 @@ class ItemController extends AbstractController
     ]);
 	}
 
+	/** */
+	#[Route('/match-one', methods: ['post'])]
+	public function matchOne(Request $req, ItemPubRepository $em): Response
+	{
+		if( $req->getMethod() != 'POST' ) {
+			return $this->json(['abort' => true, 'body' => 'Método no permitido'], 405);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'X No se ha enviado el body'], 400);
+		}
+
+		$data = json_decode($data, true);
+		$res = $em->matchOne($data);
+		if($res != 0) {
+			return $this->json(['abort' => false, "body" => $res]);
+		}
+		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
+	}
 }
