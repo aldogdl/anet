@@ -105,16 +105,24 @@ class MMEntityRepository extends ServiceEntityRepository
 	{
 		$obj = new MMEntity();
 		$obj = $obj->fromJson($mm);
-		if(!$this->existByName($obj->getName())) {
-			try {
-				$this->_em->persist($obj);
-				$this->_em->flush();
-			} catch (\Throwable $th) {
-				return $this->json(['abort' => true, 'body' => $th->getMessage()]);
+		if($obj->getId() == 0) {
+			// Ya que se pretende agregar, buscamos en ls BD
+			// si el nombre ya existe para evitar duplicados
+			if($this->existByName($obj->getName())) {
+				return ['abort' => true, 'data' => 'Ya existe un elemento con ese nombre'];
 			}
 		}
 
-		return ['abort' => false, 'body' => 'Guardao con éxito'];
+		try {
+			$this->_em->persist($obj);
+			$this->_em->flush();
+			return ['abort' => false, 'data' => $this->getMMSlim('alls')];
+		} catch (\Throwable $th) {
+			return $this->json(['abort' => true, 'data' => $th->getMessage()]);
+		}
+
+		return $this->json(['abort' => true, 'data' => 'Error inesperado']);
+
 	}
 
 }

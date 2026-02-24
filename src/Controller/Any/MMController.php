@@ -21,7 +21,7 @@ class MMController extends AbstractController
 		if( $req->getMethod() == 'POST' ) {
 			$data = $req->getContent();
 			if($data) {
-					return $this->json($em->setMM( json_decode($data, true) ));
+				return $this->json($em->setMM( json_decode($data, true) ));
 			}
 		} elseif( $req->getMethod() == 'GET' ) {
 			$idMrk = $req->query->get('idMrk');
