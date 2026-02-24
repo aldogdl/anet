@@ -32,6 +32,16 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** */
+	public function getIfExistPubById(int $id): ItemPub | null
+	{
+		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '.
+		'WHERE it.id = :id';
+
+		return $this->_em->createQuery($dql)
+			->setParameter('id', $id)->getOneOrNullResult();
+	}
+
+	/** */
 	public function matchOne(array $data): array
 	{
 		$anioActual = (int) date('Y');
@@ -85,25 +95,64 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** */
-	public function setPub(array $data): array
+	public function setPub(array $data, String $pathDicc): array
 	{
-		$existe = $this->existPub($data['id']);
+
 		$action = 'add';
 		$result = [];
-		if($existe == 0) {
+		$lado = '';
+		$poss = '';
+
+		$obj = null;
+    if($data['id'] ?? 0 != 0) {
+			$obj = $this->getIfExistPubById($data['id']);
+		}
+
+		if($obj == null) {
 			$obj = new ItemPub();
 			$obj = $obj->fromJson($data);
-			try {
-				$this->_em->persist($obj);
-				$this->_em->flush();
-				$id = $obj->getId();
-				return ['abort' => false, 'action' => $action, 'body' => ['id' => $id]];
-			} catch (\Throwable $th) {
-				return ['abort' => true, 'action' => 'error', 'body' => $th->getMessage()];
-			}
 		}else{
 			$action = 'edt';
-			$result['id'] = $existe;
+		}
+    $dicc = json_decode(file_get_contents($pathDicc), true);
+
+		if(isset($data['lado'])) {
+			$lado = mb_strtolower($data['lado']);
+			if(array_key_exists($lado, $dicc['lp_encode'])) {
+				$lado = $dicc['lp_encode'][$lado];
+			} else {
+				$lado = mb_strtoupper($data['lado']);
+				if(!array_key_exists($lado, $dicc['lp_decode'])) {
+					$lado = 'A';
+				}
+			}
+			if($lado != '') {
+				$obj->setLado($lado);
+			}
+		}
+
+		if(isset($data['poss'])) {
+			$poss = mb_strtolower($data['poss']);
+			if(array_key_exists($poss, $dicc['lp_encode'])) {
+				$poss = $dicc['lp_encode'][$poss];
+			} else {
+				$poss = mb_strtoupper($data['poss']);
+				if(!array_key_exists($poss, $dicc['lp_decode'])) {
+					$poss = 'A';
+				}
+			}
+			if($poss != '') {
+				$obj->setPoss($poss);
+			}
+		}
+		dd($obj);
+		try {
+			$this->_em->persist($obj);
+			$this->_em->flush();
+			$id = $obj->getId();
+			return ['abort' => false, 'action' => $action, 'body' => ['id' => $id]];
+		} catch (\Throwable $th) {
+			return ['abort' => true, 'action' => 'error', 'body' => $th->getMessage()];
 		}
 		return ['abort' => false, "action" => $action, "body" => $result];
 	}
@@ -119,4 +168,4 @@ class ItemPubRepository extends ServiceEntityRepository
 			->execute();
 	}
 
-	}
+}

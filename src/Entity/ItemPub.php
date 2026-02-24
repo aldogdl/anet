@@ -105,11 +105,11 @@ class ItemPub
     /** */
     public function __construct()
     {
-			$this->stt = 0;
-			$this->anioFin = 9999;
+			$this->stt = 1;
 			$this->extras = [];
 			$this->lado = 'A';
 			$this->poss = 'A';
+			$this->anioFin = 9999;
 			$this->isActive = true;
 			$this->created = new \DateTimeImmutable('now');
     }

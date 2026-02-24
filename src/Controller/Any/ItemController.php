@@ -16,6 +16,20 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 #[Route('/any-item')]
 class ItemController extends AbstractController
 {
+  
+	/**
+	 * Endpoint para subir las imagenes desde el form del catalogo
+	 */
+	#[Route('/only-test', methods: ['get'])]
+	public function onlyTest(Request $req, ItemPubRepository $em): Response {
+    
+	  $res = $em->getIfExistPubById(1);
+		if($res) {
+			dd($res);
+		}
+		return $this->json(['abort' => true, 'body' => 'X No se ha subido la foto'], 401);
+	}
+
 	/**
 	 * Endpoint para subir las imagenes desde el form del catalogo
 	 */
@@ -79,15 +93,18 @@ class ItemController extends AbstractController
 		if( $req->getMethod() == 'POST' ) {
 
 			$data = $req->getContent();
+			$dicc = $this->getParameter(AnyPath::$DICC);
+
 			if($data) {
+
 				$data = json_decode($data, true);
 				if(array_key_exists('list', $data)) {
-					$res = $repo->setPubs($data);
+					$res = $repo->setPubs($data, $dicc);
 					if($res != 0) {
 						return $this->json(['abort' => false, "body" => $res]);
 					}
 				}else{
-					$res = $repo->setPub($data);
+					$res = $repo->setPub($data, $dicc);
 					if(array_key_exists('abort', $res) && $res['abort']) {
 						return $this->json($res, 500);
 					}

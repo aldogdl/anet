@@ -24,26 +24,26 @@ class MyFsys
     /** */
     public function updateFechaLoginTo(String $slug, String $waId, String $fechHra): String
     {
-        $filename = $slug . '.json';
-        $map = $this->getContent('dtaCtc', $filename);
-        $result = '';
-        if(array_key_exists('colabs', $map)) {
-            $colabs = $map['colabs'];
-            $has = array_search($waId, array_column($colabs, 'waId'));
-            if($has !== false) {
-                
-                $fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fechHra);
-                $fechaDateTime->add(new \DateInterval('PT23H55M'));
+			$filename = $slug . '.json';
+			$map = $this->getContent('dtaCtc', $filename);
+			$result = '';
+			if(array_key_exists('colabs', $map)) {
+				$colabs = $map['colabs'];
+				$has = array_search($waId, array_column($colabs, 'waId'));
+				if($has !== false) {
+						
+					$fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fechHra);
+					$fechaDateTime->add(new \DateInterval('PT23H55M'));
 
-                $colabs[$has]['login'] = $fechHra;
-                $colabs[$has]['kduk'] = $fechaDateTime->format('Y-m-d\TH:i:s.v');
-                $colabs[$has]['stt'] = 1;
+					$colabs[$has]['login'] = $fechHra;
+					$colabs[$has]['kduk'] = $fechaDateTime->format('Y-m-d\TH:i:s.v');
+					$colabs[$has]['stt'] = 1;
 
-                $map['colabs'] = $colabs;
-                $this->setContent('dtaCtc', $filename, $map);
-            }
-        }
-        return $result;
+					$map['colabs'] = $colabs;
+					$this->setContent('dtaCtc', $filename, $map);
+				}
+			}
+			return $result;
     }
 
     /** */
