@@ -97,7 +97,6 @@ class ItemPubRepository extends ServiceEntityRepository
 	/** */
 	public function setPub(array $data, String $pathDicc): array
 	{
-
 		$action = 'add';
 		$result = [];
 		$lado = '';
