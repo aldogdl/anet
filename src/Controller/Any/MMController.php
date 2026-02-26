@@ -35,8 +35,7 @@ class MMController extends AbstractController
 	public function mmGetModelsSlim(Request $req, MMEntityRepository $em): Response
 	{
 		if( $req->getMethod() == 'GET' ) {
-			$tipo = $req->query->get('tipo');
-			return $this->json($em->getMMSlim( $tipo ));
+			return $this->json($em->getMMSlim());
 		}
 		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
 	}

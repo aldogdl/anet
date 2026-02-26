@@ -45,7 +45,7 @@ class MMEntityRepository extends ServiceEntityRepository
 	/** 
 	 * Recuperamos todos los elementos de manera slim
 	*/
-	public function getMMSlim(String $tipo) : array
+	public function getMMSlim() : array
 	{
 
 		$dql = 'SELECT m.id, m.idMrk, m.name, m.variants, m.extras
@@ -85,19 +85,11 @@ class MMEntityRepository extends ServiceEntityRepository
     	}
 		}
 
-		if($tipo == 'mrks') {
-			return ['abort' => false, 'body' => $mrks];
-		}
-
 		// 2da pasada: llenar nm
 		foreach ($mdls as &$m) {
 			$m['nm'] = $brandNameById[$m['im']] ?? '';
 		}
 		unset($m);
-				
-		if($tipo == 'mdls') {
-			return ['abort' => false, 'body' => $mdls];
-		}
 
 		return ['abort' => false, 'data' => ['mrks' => $mrks, 'mdls' => $mdls]];
 	}
