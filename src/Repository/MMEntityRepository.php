@@ -47,35 +47,61 @@ class MMEntityRepository extends ServiceEntityRepository
 	*/
 	public function getMMSlim(String $tipo) : array
 	{
-		$dql = 'SELECT m FROM '. MMEntity::class .' m ';
-		if($tipo == 'models') {
-			$dql = $dql . 'WHERE m.idMrk != 0';
-		}else {
-			if($tipo != 'alls') {
-				$dql = $dql . 'WHERE m.idMrk = 0';
-			}
-		}
 
-		$dql = $dql . ' ORDER BY m.name ASC';
-		$res = $this->_em->createQuery($dql)->getArrayResult();
+		$dql = 'SELECT m.id, m.idMrk, m.name, m.variants, m.extras
+			FROM ' . MMEntity::class . ' m
+			ORDER BY m.name ASC';
 
-		$result = [];
-		$rota = count($res);
-		if($rota > 0) {
-			for ($i=0; $i < $rota; $i++) { 
+		$res = $this->_em->createQuery($dql)
+			->getArrayResult();
 
-				$result[] = [
-					'i' => $res[$i]['id'],
-					'im'=> $res[$i]['idMrk'],
-					'n' => $res[$i]['name'],
-					'v' => $res[$i]['variants'],
-					'ex' => $res[$i]['extras'],
+		$mrks = [];
+		$mdls = [];
+		$brandNameById = [];
+
+		foreach ($res as $r) {
+			$id   = (int)$r['id'];
+			$idMrk = (int)$r['idMrk'];
+
+			if ($idMrk === 0) {
+				$brandNameById[$id] = $r['name'];
+
+				$mrks[] = [
+					'i'  => $id,
+					'im' => 0,
+					'n'  => $r['name'],
+					'v'  => $r['variants'], // si ya es array/json en Doctrine, se queda
+					'ex' => $r['extras'],
 				];
-			}
+			} else {
+				$mdls[] = [
+					'i'  => $id,
+					'im' => $idMrk,
+					'n'  => $r['name'],
+					'nm' => '',              // se llena después
+					'v'  => $r['variants'],
+					// 'ex' => $r['extras'],  // si en modelos "ya no va", simplemente no lo pongas
+				];
+    	}
 		}
-		return $result;
+
+		if($tipo == 'mrks') {
+			return ['abort' => false, 'body' => $mrks];
+		}
+
+		// 2da pasada: llenar nm
+		foreach ($mdls as &$m) {
+			$m['nm'] = $brandNameById[$m['im']] ?? '';
+		}
+		unset($m);
+				
+		if($tipo == 'mdls') {
+			return ['abort' => false, 'body' => $mdls];
+		}
+
+		return ['abort' => false, 'data' => ['mrks' => $mrks, 'mdls' => $mdls]];
 	}
-	
+
 	/** 
 	 * Recuperamos todos los elementos en caso de que $idMrk == null
 	 * se refiere a las marcas en caso contrario son modelos
