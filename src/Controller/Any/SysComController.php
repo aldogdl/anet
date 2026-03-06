@@ -184,45 +184,45 @@ class SysComController extends AbstractController
 	#[Route('/get-data-any', methods: ['post'])]
 	public function getDataAnyShop(Request $req, GetDataShop $shop): Response
 	{
-			if($req->getMethod() != 'POST') {
-					return $this->json(['body' => 'Ok, gracias'], 400);
-			}
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
 
-			$data = $req->getContent();
-			if(!$data) {
-					return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
-			}
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
 
-			$data = json_decode($data, true);
-			if(!array_key_exists('slug', $data) || !array_key_exists('dev', $data)) {
-					return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
-			}
+		$data = json_decode($data, true);
+		if(!array_key_exists('slug', $data) || !array_key_exists('dev', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+		}
 
-			$res = $shop->getSimpleData($data);
-			return $this->json($res);
+		$res = $shop->getSimpleData($data);
+		return $this->json($res);
 	}
 
 	/** */
 	#[Route('/update-data-com', methods: ['post'])]
 	public function updateDataCom(Request $req, UsComRepository $em): Response
 	{
-			if( $req->getMethod() == 'POST' ) {
-					$data = $req->getContent();
-					if(!$data) {
-							return new Response(403);
-					}
-
-					$data = json_decode($data, true);
-					if(array_key_exists('dev', $data)) {
-							$obj = new UsCom();
-							$obj->fromJson($data);
-							$res = $em->updateDataCom($obj);
-							return $this->json(['abort' => false, 'body' => $res]);
-					}else{
-							return $this->json(['abort' => true, 'body' => 'X Faltaron datos, Inténtalo nuevamente']);
-					}
+		if( $req->getMethod() == 'POST' ) {
+			$data = $req->getContent();
+			if(!$data) {
+				return new Response(403);
 			}
-			return new Response(400);
+
+			$data = json_decode($data, true);
+			if(array_key_exists('dev', $data)) {
+				$obj = new UsCom();
+				$obj->fromJson($data);
+				$res = $em->updateDataCom($obj);
+				return $this->json(['abort' => false, 'body' => $res]);
+			}else{
+				return $this->json(['abort' => true, 'body' => 'X Faltaron datos, Inténtalo nuevamente']);
+			}
+		}
+		return new Response(400);
 	}
 
 	/** 
@@ -232,19 +232,19 @@ class SysComController extends AbstractController
 	#[Route('/push-core', methods: ['post'])]
 	public function sendPushToCore(Request $req, UsComRepository $em, Pushes $push): Response 
 	{
-			$data = json_decode($req->getContent(), true);
-			if(array_key_exists('code', $data)) {
+		$data = json_decode($req->getContent(), true);
+		if(array_key_exists('code', $data)) {
 
-					$how = file_get_contents($this->getParameter('report'));
-					$token = $em->getTokenByWaId($how);
-					$notif = Notification::create('Refuerzo de Solicitud', $data['code'], '');
-					$result = $push->sendTo($token, $notif, ['ownApp' => $data['slugApp']]);
-					if(array_key_exists('sended', $result)) {
-							return $this->json(['abort' => false, 'id' => $result['sended']['name']]);
-					}
+			$how = file_get_contents($this->getParameter('report'));
+			$token = $em->getTokenByWaId($how);
+			$notif = Notification::create('Refuerzo de Solicitud', $data['code'], '');
+			$result = $push->sendTo($token, $notif, ['ownApp' => $data['slugApp']]);
+			if(array_key_exists('sended', $result)) {
+				return $this->json(['abort' => false, 'id' => $result['sended']['name']]);
 			}
-			
-			return $this->json([]);
+		}
+
+		return $this->json([]);
 	}
 
 	/** Desde el core subimos los datos de com-int */
@@ -338,17 +338,17 @@ class SysComController extends AbstractController
 	#[Route('/update-meli', methods: ['POST'])]
 	public function updateDataMeli(Request $req): Response
 	{
-			$data = $req->getContent();
-			if($data) {
-					$map = json_decode($data, true);
-					if(array_key_exists('slug', $map)) {
-							$logs = $this->getParameter('dtaCtcLog');
-							$path = Path::canonicalize($logs.'/'.$map['slug'].'.json');
-							file_put_contents($path, json_encode($map));
-							return $this->json(['abort' => false]);
-					}
+		$data = $req->getContent();
+		if($data) {
+			$map = json_decode($data, true);
+			if(array_key_exists('slug', $map)) {
+				$logs = $this->getParameter('dtaCtcLog');
+				$path = Path::canonicalize($logs.'/'.$map['slug'].'.json');
+				file_put_contents($path, json_encode($map));
+				return $this->json(['abort' => false]);
 			}
-			return $this->json(['abort' => true]);
+		}
+		return $this->json(['abort' => true]);
 	}
 
 	/** 
@@ -370,6 +370,81 @@ class SysComController extends AbstractController
 			);
 		}
 		return new Response('', 403, ['X-Nickname-Valid' => '0']);
+	}
+  
+	/** 
+	 * Validamos que el slug de la empresa este entre las registradas
+	*/
+	#[Route('/reg-auth', methods: ['GET'])]
+	public function autorizarRegistro(Request $req, Fsys $fsys): Response
+	{
+		$slug = '';
+		$socio = '';
+		$token = '';
+		$query = $req->query->all();
+
+		if(array_key_exists('slug', $query)) {
+			$slug = $query['slug'];
+		}
+		if(array_key_exists('me', $query)) {
+			$who = $query['me'];
+			if(mb_strpos($who, '.') !== false) {
+				$partes = explode('.', $who);
+				$socio = $partes[0];
+				$token = $partes[1];
+			}
+		}
+
+    $content = ['msg' => 'ok'];
+		if($slug == '') {
+			$content = ['msg' => 'Tu nombre de usuario no se recibió'];
+		}
+		if($socio == '') {
+			$content = ['msg' => 'El nombre del Administrador no se recibió'];
+		}
+		if($token == '') {
+			$content = ['msg' => 'El token del Administrador no se recibió'];
+		}
+		
+		if($content['msg'] != 'ok') {
+			$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
+			return $this->json(['abort' => true], 403);
+		}
+
+		$auth = $fsys->get(AnyPath::$DTACTC, $socio.'.json');
+		if($auth && array_key_exists('colabs', $auth)) {
+
+			// buscar el colaborador que tenga el rol ROLE_MAIN y conservar su JSON
+			$mainColab = null;
+			foreach ($auth['colabs'] as $colab) {
+				if (isset($colab['roles']) && in_array('ROLE_MAIN', $colab['roles'], true)) {
+					$mainColab = $colab;
+					break;
+				}
+			}
+
+			if (!$mainColab) {
+				$content = ['msg' => 'No existe ningún Administrador Autorizado'];
+			} elseif (!isset($mainColab['pass']) || $mainColab['pass'] !== $token) {
+				// el token no coincide con la contraseña del colaborador principal
+				$content = ['msg' => 'Token inválido para el Administrador principal'];
+			} else {
+				$content = ['msg' => 'ok'];
+			}
+
+			if($content['msg'] != 'ok') {
+				$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
+				return $this->json(['abort' => true], 403);
+			}
+		}
+
+		$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
+		if($res == '') {
+			return $this->json(['abort' => false]);
+		}else{
+			return $this->json(['abort' => true, 'erro' => $res], 400);
+		}
+		return $this->json(['abort' => true], 403);
 	}
 
 	/** 

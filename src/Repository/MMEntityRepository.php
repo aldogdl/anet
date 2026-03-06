@@ -41,7 +41,7 @@ class MMEntityRepository extends ServiceEntityRepository
 		return $this->_em->createQuery($dql)
 			->setParameter('name', $name)->getSingleScalarResult() > 0;
 	}
-	
+
 	/** 
 	 * Recuperamos todos los elementos de manera slim
 	*/
