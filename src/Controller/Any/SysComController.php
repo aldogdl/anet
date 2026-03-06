@@ -378,22 +378,32 @@ class SysComController extends AbstractController
 	#[Route('/reg-auth', methods: ['GET'])]
 	public function autorizarRegistro(Request $req, Fsys $fsys): Response
 	{
+
+	 	if($req->getMethod() != 'GET') {
+			return $this->json(['msg' => 'El método no es válido'], 200);
+		}
+		
 		$slug = '';
 		$socio = '';
 		$token = '';
 		$query = $req->query->all();
 
-		if(array_key_exists('slug', $query)) {
-			$slug = $query['slug'];
+		if(!array_key_exists('slug', $query)) {
+			return $this->json(['msg' => 'El slug no se recibió'], 200);
 		}
-		if(array_key_exists('me', $query)) {
-			$who = $query['me'];
-			if(mb_strpos($who, '.') !== false) {
-				$partes = explode('.', $who);
-				$socio = $partes[0];
-				$token = $partes[1];
-			}
+		if(!array_key_exists('me', $query)) {
+			return $this->json(['msg' => 'El me no se recibió'], 200);
 		}
+
+		$slug = $query['slug'];
+		$who = $query['me'];
+		if(mb_strpos($who, '.') === false) {
+			return $this->json(['msg' => 'El formato de me es inválido'], 200);
+		}
+
+		$partes = explode('.', $who);
+		$socio = $partes[0];
+		$token = $partes[1];
 
     $content = ['msg' => 'ok'];
 		if($slug == '') {
@@ -408,7 +418,12 @@ class SysComController extends AbstractController
 		
 		if($content['msg'] != 'ok') {
 			$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
-			return $this->json(['abort' => true], 403);
+			return $this->json($content, 200);
+		}
+		
+		$auth = $fsys->get(AnyPath::$DTACTC, $slug.'.json');
+		if($auth && array_key_exists('colabs', $auth)) {
+			return $this->json(['msg' => 'Usuario existente'], 200);
 		}
 
 		$auth = $fsys->get(AnyPath::$DTACTC, $socio.'.json');
@@ -434,17 +449,19 @@ class SysComController extends AbstractController
 
 			if($content['msg'] != 'ok') {
 				$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
-				return $this->json(['abort' => true], 403);
+				return $this->json($content, 200);
+			}
+
+			$content['asesor'] = $socio;
+			$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
+			if($res == '') {
+				return $this->json(['msg' => 'Registro Autorizado'], 200);
+			}else{
+				return $this->json(['abort' => true, 'msg' => $res], 200);
 			}
 		}
 
-		$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
-		if($res == '') {
-			return $this->json(['abort' => false]);
-		}else{
-			return $this->json(['abort' => true, 'erro' => $res], 400);
-		}
-		return $this->json(['abort' => true], 403);
+		return $this->json(['abort' => true, 'msg' => 'Acceso denegado'], 200);
 	}
 
 	/** 
@@ -458,9 +475,15 @@ class SysComController extends AbstractController
 
 			$data = json_decode($data, true);
 			if(array_key_exists('slug', $data)) {
+
 				if(array_key_exists('registro', $data)) {
+
+					$reg = $fsys->get(AnyPath::$REGAUTH, $data['slug'].'.json');
 					$res = $fsys->del(AnyPath::$REGAUTH, $data['slug'].'.json');
 					unset($data['registro']);
+					if($res && array_key_exists('asesor', $reg)) {
+						$data['asesor'] = $reg['asesor'];
+					}
 				}
 
 				$res = $fsys->set(AnyPath::$DTACTC, $data, $data['slug'].'.json');
