@@ -148,6 +148,17 @@ class Fsys
 		return '';
 	}
 
+	/** */
+	public function del(String $path, ?String $filename): bool
+	{
+		$path = $this->_parsePath($path, $filename);
+		try {
+			$this->filesystem->remove($path);
+			return true;
+		} catch (\Throwable $th) {}
+		return false;
+	}
+
 	/** Marcamos el inicio de sesion de un usuario */
 	public function initSesion(String $waId, int $time): void 
 	{

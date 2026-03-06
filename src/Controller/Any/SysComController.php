@@ -455,8 +455,14 @@ class SysComController extends AbstractController
 	{
 		$data = $req->getContent();
 		if($data) {
+
 			$data = json_decode($data, true);
 			if(array_key_exists('slug', $data)) {
+				if(array_key_exists('registro', $data)) {
+					$res = $fsys->del(AnyPath::$REGAUTH, $data['slug'].'.json');
+					unset($data['registro']);
+				}
+
 				$res = $fsys->set(AnyPath::$DTACTC, $data, $data['slug'].'.json');
 				if($res == '') {
 					return $this->json(['abort' => false]);
