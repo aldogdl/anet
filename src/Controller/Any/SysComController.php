@@ -417,7 +417,6 @@ class SysComController extends AbstractController
 		}
 		
 		if($content['msg'] != 'ok') {
-			$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
 			return $this->json($content, 200);
 		}
 		
@@ -448,7 +447,6 @@ class SysComController extends AbstractController
 			}
 
 			if($content['msg'] != 'ok') {
-				$res = $fsys->set(AnyPath::$REGAUTH, $content, $slug.'.json');
 				return $this->json($content, 200);
 			}
 
