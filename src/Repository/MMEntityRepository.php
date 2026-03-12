@@ -96,7 +96,7 @@ class MMEntityRepository extends ServiceEntityRepository
 
 	/** 
 	 * Recuperamos todos los elementos en caso de que $idMrk == null
-	 * se refiere a las marcas en caso contrario son modelos
+	 * se refiere a las marcas, en caso contrario son modelos
 	*/
 	public function getMM(?int $idMrk) : array
 	{
@@ -141,6 +141,38 @@ class MMEntityRepository extends ServiceEntityRepository
 
 		return $this->json(['abort' => true, 'data' => 'Error inesperado']);
 
+	}
+
+	/** 
+	 * Borramos el elemento ya sea marca o modelo
+	*/
+	public function delMM(int $id) : array
+	{
+		$obj = $this->find($id);
+		if (!$obj) {
+			return ['abort' => true, 'data' => 'Elemento no encontrado'];
+		}
+		
+		if($obj->getIdMrk() == 0) {
+			// Si es una marca, borramos también sus modelos relacionados
+			$models = $this->getMM($obj->getId());
+			foreach ($models as $model) {
+				$modelObj = $this->find($model['id']);
+				if ($modelObj) {
+					$this->_em->remove($modelObj);
+				}
+			}
+		}
+
+		try {
+			$this->_em->remove($obj);
+			$this->_em->flush();
+			return ['abort' => false, 'data' => $this->getMMSlim('alls')];
+		} catch (\Throwable $th) {
+			return $this->json(['abort' => true, 'data' => $th->getMessage()]);
+		}
+
+		return $this->json(['abort' => true, 'data' => 'Error inesperado']);
 	}
 
 }

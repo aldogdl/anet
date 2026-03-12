@@ -23,6 +23,9 @@ class MMController extends AbstractController
 			if($data) {
 				return $this->json($em->setMM( json_decode($data, true) ));
 			}
+		} elseif( $req->getMethod() == 'DELETE' ) {
+			$idAuto = $req->query->get('id');
+			return $this->json($em->delMM( $idAuto ));
 		} elseif( $req->getMethod() == 'GET' ) {
 			$idMrk = $req->query->get('idMrk');
 			return $this->json($em->getMM( $idMrk ));
