@@ -43,6 +43,18 @@ class MMEntityRepository extends ServiceEntityRepository
 	}
 
 	/** 
+	 * Revisamos si existe un elemento por medio de su nombre
+	*/
+	public function getByName(String $name) : \Doctrine\ORM\Query
+	{
+		$dql = 'SELECT m FROM '. MMEntity::class .' m '.
+		'WHERE m.name = :name';
+
+		return $this->_em->createQuery($dql)
+			->setParameter('name', $name);
+	}
+
+	/** 
 	 * Recuperamos todos los elementos de manera slim
 	*/
 	public function getMMSlim() : array
@@ -127,6 +139,14 @@ class MMEntityRepository extends ServiceEntityRepository
 			// Ya que se pretende agregar, buscamos en ls BD
 			// si el nombre ya existe para evitar duplicados
 			if($this->existByName($obj->getName())) {
+				$query = $this->getByName($obj->getName());
+				$existingObj = $query->getOneOrNullResult();
+				if ($existingObj) {
+					return [
+						'abort' => true,
+						'data' => 'Ya existe un elemento con ese nombre (ID: ' . $existingObj->getId() . ' ' . $existingObj->getName() . ' - ' . ($existingObj->getIdMrk() == 0 ? 'Marca' : 'Modelo') . ')'
+					];
+				}
 				return ['abort' => true, 'data' => 'Ya existe un elemento con ese nombre'];
 			}
 		}
@@ -152,7 +172,7 @@ class MMEntityRepository extends ServiceEntityRepository
 		if (!$obj) {
 			return ['abort' => true, 'data' => 'Elemento no encontrado'];
 		}
-		
+
 		if($obj->getIdMrk() == 0) {
 			// Si es una marca, borramos también sus modelos relacionados
 			$models = $this->getMM($obj->getId());
