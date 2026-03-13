@@ -29,6 +29,11 @@ class MMEntity
 	#[ORM\Column(nullable: true)]
 	private ?array $extras = null;
 
+    /** */
+	public function __construct() {
+		$this->idMrk = 0;
+	}
+
 	public function getId(): ?int
 	{
 		return $this->id;
@@ -103,6 +108,9 @@ class MMEntity
 		$this->variants = $json['variants'];
 		$this->scrape = (array_key_exists('scrape', $json)) ? $json['scrape'] : [];
 		$this->extras = $json['extras'];
+		if($this->idMrk == null) {
+			$this->idMrk = 0; // por defecto, si no se especifica, se asume que es una marca
+		}
 		return $this;
 	}
 
