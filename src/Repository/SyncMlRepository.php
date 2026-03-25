@@ -50,7 +50,7 @@ class SyncMlRepository extends ServiceEntityRepository
 				return [];
 			}
 
-			$qb->andWhere('n.sendAt > :sendAt')
+			$qb->andWhere('n.receivedAt > :sendAt')
 				->setParameter('sendAt', $lastMsg->getSendAt());
 		}
 
