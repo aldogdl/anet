@@ -24,36 +24,38 @@ class SyncMlRepository extends ServiceEntityRepository
 	/**
 	* Recuperamos el mensaje solicitado por el id del mensaje que crea ML
 	*/
-	public function getMsgByMsgId(String $msgId): \Doctrine\ORM\Query
+	public function getMsgByMsgId(string $msgId): ?SyncMl
 	{
-		$dql = 'SELECT n FROM ' . SyncMl::class . ' n '.
-		'WHERE n.msg_id = :idMsg';
-		return $this->_em->createQuery($dql)->setParameter('idMsg', $msgId);
+		return $this->createQueryBuilder('n')
+			->where('n.msg_id = :idMsg')
+			->setParameter('idMsg', $msgId)
+			->getQuery()
+			->getOneOrNullResult();
 	}
 
 	/**
 	* Recuperamos todos los mensajes que han llegado a partir
 	* del id del mensaje enviado por parametro
 	*/
-	public function getAllMsgAfterByMsgId(?String $msgId = ''): array
+	public function getAllMsgAfterByMsgId(int|string $idUser, ?string $msgId = null): array
 	{
-		$order = 'ORDER BY n.receivedAt DESC';
-		$dql = 'SELECT n FROM ' . SyncMl::class . ' n ';
-		if($msgId == '' || $msgId == null) {
-			$dql = $dql.$order;
-			return $this->_em->createQuery($dql)->getArrayResult();
+		$qb = $this->createQueryBuilder('n')
+			->where('n.user_id = :idUser')
+			->setParameter('idUser', $idUser)
+			->orderBy('n.receivedAt', 'DESC');
+
+		if ($msgId !== null && $msgId !== '') {
+			$lastMsg = $this->getMsgByMsgId($msgId);
+			if (!$lastMsg || !$lastMsg->getSendAt()) {
+				return [];
+			}
+
+			$qb->andWhere('n.sendAt > :sendAt')
+				->setParameter('sendAt', $lastMsg->getSendAt());
 		}
 
-		$dqlLast = $this->getMsgByMsgId($msgId);
-		$has = $dqlLast->execute();
-		if($has) {
-			$dql = $dql.'WHERE n.sendAt > :date ' .$order;
-			return $this->_em->createQuery($dql)
-				->setParameter('date', $has[0]->getSendAt())
-				->getArrayResult();
-		}
-
-		return [];
+    $this->deleteOlderThan48Hours($idUser);
+		return $qb->getQuery()->getArrayResult();
 	}
 
 	/**
@@ -63,17 +65,32 @@ class SyncMlRepository extends ServiceEntityRepository
 	{
 		$dto = new SyncMl();
 		$dto = $dto->set($msg);
-		$dql = $this->getMsgByMsgId($dto->getMsgId());
-		$has = $dql->execute();
-		if($has) {
+		$existing = $this->getMsgByMsgId($dto->getMsgId());
+		if ($existing) {
 			return;
 		}
 		$this->_em->persist($dto);
 		try {
 			$this->_em->flush();
 		} catch (\Throwable $th) {
-			//throw $th;
+			// Se ignora el error, pero es recomendable loggear si sucede.
 		}
+	}
+
+	/**
+	* Elimina registros con receivedAt mayores a 48 horas para un usuario específico
+	*/
+	public function deleteOlderThan48Hours(int|string $userId): int
+	{
+		$threshold = new \DateTimeImmutable('-48 hours');
+		return $this->createQueryBuilder('n')
+			->delete()
+			->where('n.receivedAt < :threshold')
+			->andWhere('n.user_id = :userId')
+			->setParameter('threshold', $threshold)
+			->setParameter('userId', $userId)
+			->getQuery()
+			->execute();
 	}
 
 }

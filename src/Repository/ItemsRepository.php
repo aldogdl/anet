@@ -51,28 +51,28 @@ class ItemsRepository extends ServiceEntityRepository
     /** */
     public function getItemByCampoValor(array $params): \Doctrine\ORM\Query
     {
-        $campo = $params['field'];
-        $value = $params['value'];
+			$campo = $params['field'];
+			$value = $params['value'];
 
-        $dql = 'SELECT it FROM ' . Items::class . ' it ';
-        if(mb_strpos($value, ',')) {
-            $value = explode(',', $value);            
-            $dql = $dql . 'WHERE it.'.$campo.' IN (:valor)';
-        }else{
-            $dql = $dql . 'WHERE it.'.$campo.' = :valor';
-        }
+			$dql = 'SELECT it FROM ' . Items::class . ' it ';
+			if(mb_strpos($value, ',')) {
+					$value = explode(',', $value);            
+					$dql = $dql . 'WHERE it.'.$campo.' IN (:valor)';
+			}else{
+					$dql = $dql . 'WHERE it.'.$campo.' = :valor';
+			}
 
-        $valores = ['valor' => $value];
-        // TODO $extras que recupere items con condiciones extras ej: mayor_que un tiempo
-        if(array_key_exists('mayor_que', $params)) {
+			$valores = ['valor' => $value];
+			// TODO $extras que recupere items con condiciones extras ej: mayor_que un tiempo
+			if(array_key_exists('mayor_que', $params)) {
 
-            $dateTime = new \DateTime();
-            $dateTime->setTimestamp($params['mayor_que'] / 1000);
-            $dql = $dql . ' AND it.createdAt > :fecha';
-            $valores['fecha'] = $dateTime;
-        }
+				$dateTime = new \DateTime();
+				$dateTime->setTimestamp($params['mayor_que'] / 1000);
+				$dql = $dql . ' AND it.createdAt > :fecha';
+				$valores['fecha'] = $dateTime;
+			}
 
-        return $this->_em->createQuery($dql)->setParameters($valores);
+			return $this->_em->createQuery($dql)->setParameters($valores);
     }
 
     /** 
@@ -81,11 +81,11 @@ class ItemsRepository extends ServiceEntityRepository
     */
     public function getItemsAsRefByType(String $type): \Doctrine\ORM\Query {
 
-        $dql = 'SELECT partial it.{id, pieza, lado, poss, marca, model, anios, ownWaId, '.
-        'ownSlug, thumbnail, stt, idItem, fotos, createdAt} FROM '.Items::class.' it '.
-        'WHERE it.type = :tipo '.
-        'ORDER BY it.id DESC';
-        return $this->_em->createQuery($dql)->setParameter('tipo', $type);
+			$dql = 'SELECT partial it.{id, pieza, lado, poss, marca, model, anios, ownWaId, '.
+			'ownSlug, thumbnail, stt, idItem, fotos, createdAt} FROM '.Items::class.' it '.
+			'WHERE it.type = :tipo '.
+			'ORDER BY it.id DESC';
+			return $this->_em->createQuery($dql)->setParameter('tipo', $type);
     }
 
     /** 
@@ -94,23 +94,23 @@ class ItemsRepository extends ServiceEntityRepository
     */
     public function getItemsCompleteByType(String $type, String $waIdFrom = '', array $estosNo = []): \Doctrine\ORM\Query
     {
-        $hasEstosNo = 0;
+			$hasEstosNo = 0;
 
-        $dql = 'SELECT it FROM '.Items::class.' it '.
-        'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo AND it.idCot = 0 AND it.stt > 2 ';
-        $hasEstosNo = count($estosNo);
-        if($hasEstosNo > 0) {
-            $dql .= 'AND it.id NOT IN (:estos_no) ';
-        }
-        $dql .= 'ORDER BY it.id DESC';
+			$dql = 'SELECT it FROM '.Items::class.' it '.
+			'WHERE it.ownWaId != :waIdFrom AND it.type = :tipo AND it.idCot = 0 AND it.stt > 2 ';
+			$hasEstosNo = count($estosNo);
+			if($hasEstosNo > 0) {
+				$dql .= 'AND it.id NOT IN (:estos_no) ';
+			}
+			$dql .= 'ORDER BY it.id DESC';
 
-        $query = $this->_em->createQuery($dql);
-        $query->setParameter('waIdFrom', $waIdFrom);
-        $query->setParameter('tipo', $type);
-        if($hasEstosNo > 0) {
-            $query->setParameter('estos_no', $estosNo);
-        }
-        return $query;
+			$query = $this->_em->createQuery($dql);
+			$query->setParameter('waIdFrom', $waIdFrom);
+			$query->setParameter('tipo', $type);
+			if($hasEstosNo > 0) {
+				$query->setParameter('estos_no', $estosNo);
+			}
+			return $query;
     }
 
     /** */
