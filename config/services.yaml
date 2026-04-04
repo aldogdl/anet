@@ -3,7 +3,6 @@ parameters:
     scm        : '%phtml%/scm/'
     ftos       : '%phtml%/ftos/'
 
-    appData    : '%phtml%/rfy/data/'
     sse        : '%phtml%/sse/'
     regAuth    : '%phtml%/reg_auth/'
     invExp     : '%phtml%/inv/'
@@ -49,6 +48,8 @@ parameters:
     sseMetas   : '%phtml%/sse_metas/'
     sseFails   : '%phtml%/sse_fails/'
     comments   : '%phtml%/comments/'
+    
+    app.image_driver: '%env(string:IMAGE_DRIVER)%'
 
 services:
     # default configuration for services in *this* file
@@ -64,4 +65,8 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Service\ImageUploadService:
+        arguments:
+            $projectDir: '%phtml%'
+            $imageDriver: '%app.image_driver%'
 

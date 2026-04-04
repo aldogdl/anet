@@ -44,17 +44,6 @@ class MlmController extends AbstractController
 	}
 
 	/**
-	 * Recuperar las ultimas notificaciones
-	 */
-	#[Route('/notif/get/', methods: ['GET'])]
-	public function recoveryNotifMlm(Request $req, SyncMlRepository $em): Response
-	{
-		$query = $req->query->get('last');
-		$msgs = $em->getAllMsgAfterByMsgId($query);
-		return $this->json($msgs);
-	}
-
-	/**
 	 * Endpoint para actualizar los datos lock provenientes desde la app
 	 * del catalogo
 	 */

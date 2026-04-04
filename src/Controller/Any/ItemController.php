@@ -7,6 +7,7 @@ use Symfony\Component\Filesystem\Path;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use App\Service\Any\PublicAssetUrlGenerator;
+use App\Service\ImageUploadService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -28,62 +29,6 @@ class ItemController extends AbstractController
 			dd($res);
 		}
 		return $this->json(['abort' => true, 'body' => 'X No se ha subido la foto'], 401);
-	}
-
-	/**
-	 * Endpoint para subir las imagenes desde el form del catalogo
-	 */
-	#[Route('/image', methods: ['POST'])]
-	public function imagesUP(Request $req, PublicAssetUrlGenerator $urlGen): Response
-	{
-		if($req->getMethod() != 'POST') {
-			return $this->json(['abort' => true, 'body' => 'X No se ha subido la foto'], 401);
-		}
-		
-		$ikuItem = $req->request->get('ikuItem') ?? null;
-		$key = $req->request->get('key') ?? null;
-		$file = $req->files->get('file');
-
-		if (!$ikuItem || !$key || !$file) {
-			return $this->json(['abort' => true, 'body' => 'Parámetros incompletos'], 400);
-		}
-
-		$prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-		$path = Path::canonicalize($prodSols);
-
-		if (!file_exists($path)) {
-			try {
-				mkdir($path, 0755, true);
-			} catch (\Throwable $th) {
-				return $this->json(['abort' => true, 'body' => 'X Error al crear carpeta' . $path], 402);
-			}
-		}
-		
-		try {
-			$originalFilename = basename($file->getClientOriginalName());
-			$file->move($path, $originalFilename);
-		} catch (\Throwable $e) {
-			return $this->json(['abort' => true, 'body' => 'X Error al mover archivo: '.$e->getMessage()], 500);
-		}
-
-		// Un refuerzo para guardarlo
-		$path = Path::canonicalize($prodSols.'/'.$originalFilename);
-		if (!file_exists($path)) {
-			try {
-				$file->move($path, $originalFilename);
-			} catch (\Throwable $th) {
-				return $this->json(['abort' => true, 'body' => 'X Error al mover archivo' . $path], 402);
-			}
-		}
-
-		$url = $urlGen->generate($path);
-		$results = [
-			'abort' => false,
-			'body' => $url,
-			'filename' => $originalFilename,
-		];
-
-		return $this->json($results);
 	}
 
 	/** */
@@ -135,6 +80,45 @@ class ItemController extends AbstractController
 		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
 	}
 
+	/**
+	 * Endpoint para subir las imagenes desde el form
+	 */
+	#[Route('/images', methods: ['POST'])]
+	public function images(Request $req, ImageUploadService $imageUploadService): Response
+	{
+		$ikuItem = $req->request->get('ikuItem');
+		$slug = $req->request->get('slug');
+		$file = $req->files->get('file');
+
+		if (!$ikuItem || !$slug || !$file) {
+			return $this->json([
+				'abort' => true,
+				'body' => 'Parámetros incompletos',
+			], 400);
+		}
+
+		try {
+			$result = $imageUploadService->uploadAndCreateThumb(
+				$file,
+				(string) $slug,
+				(string) $ikuItem
+			);
+
+			return $this->json([
+				'abort' => false,
+				'body' => 'Imagen subida correctamente',
+				'filename' => $result['filename'],
+				'original_url' => $result['original_url'],
+				'thumb_url' => $result['thumb_url'],
+			]);
+		} catch (\Throwable $e) {
+			return $this->json([
+				'abort' => true,
+				'body' => 'X Error al subir imagen: ' . $e->getMessage(),
+			], 500);
+		}
+	}
+
 	/** */
 	#[Route('/dicc', methods: ['get'])]
 	public function getDicc(Fsys $fsys): Response
@@ -152,7 +136,7 @@ class ItemController extends AbstractController
 
 		if (!$uploadedFile) {
 			return $this->json(['error' => 'No se envió el archivo'], Response::HTTP_BAD_REQUEST);
-    	}
+		}
 
 		// Si no se envía nombre, usa el original
     $finalName = $customName ?: $uploadedFile->getClientOriginalName();
