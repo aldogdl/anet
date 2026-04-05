@@ -124,6 +124,8 @@ class ItemController extends AbstractController
 			return $this->json([
 				'abort' => false,
 				'body' => $body,
+				'idItem' => $idItem,
+				'base_path' => $result['base_path'] ?? '',
 				'filename' => $result['filename'],
 				'original_url' => $result['original_url'],
 				'thumb_url' => $result['thumb_url'],
