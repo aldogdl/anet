@@ -80,8 +80,9 @@ class ImageUploadService
 				'thumb_url' => '',
 			];
 		}
-
-		$thumbPath = $imgDir . '/peq_' . $filename;
+    
+		$filename = 'peq_' . $filename;
+		$thumbPath = $imgDir . '/' . $filename;
 		$image = $this->imageManager->read($originalPath);
 		$image->scaleDown(width: 150);
 		$image->save($thumbPath, 80);
