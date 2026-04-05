@@ -75,6 +75,7 @@ class ImageUploadService
 		if($withThubn === false) {
 			return [
 				'filename' => $filename,
+				'base_path' => $this->assetUrlGenerator->generate($imgDir),
 				'original_url' => $this->assetUrlGenerator->generate($originalPath),
 				'thumb_url' => '',
 			];

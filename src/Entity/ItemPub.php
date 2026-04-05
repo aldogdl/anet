@@ -157,6 +157,14 @@ class ItemPub
 
 			return $item;
     }
+    
+		/** */
+		public function setPathImg(string $pathImg): void
+		{
+			$extras = $this->getExtras() ?? [];
+			$extras['pathImg'] = $pathImg;
+			$this->setExtras($extras);
+		}
 
     public function getId(): ?int
     {

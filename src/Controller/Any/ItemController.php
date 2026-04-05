@@ -84,10 +84,11 @@ class ItemController extends AbstractController
 	 * Endpoint para subir las imagenes desde el form
 	 */
 	#[Route('/images', methods: ['POST'])]
-	public function images(Request $req, ImageUploadService $imageUploadService): Response
+	public function images(Request $req, ImageUploadService $imageUploadService, ItemPubRepository $em): Response
 	{
 		$ikuItem = $req->request->get('ikuItem');
 		$slug = $req->request->get('slug');
+		$idItem = $req->request->get('thubn');
 		$withThubn = $req->request->get('thubn');
 		$file = $req->files->get('file');
 
@@ -100,8 +101,10 @@ class ItemController extends AbstractController
 
 		if (!$withThubn) {
 			$withThubn = false;
+			$idItem = 0;
 		}else {
 			$withThubn = true;
+			$idItem = (integer) $idItem;
 		}
 
 		try {
@@ -112,10 +115,15 @@ class ItemController extends AbstractController
 				(string) $ikuItem,
 				$withThubn
 			);
+      
+			$body = 'Imagen subida correctamente';
+      if($idItem > 0 && array_key_exists('base_path', $result)) {
+				$body = $em->updateImagePath($idItem, $result['base_path']);
+			}
 
 			return $this->json([
 				'abort' => false,
-				'body' => 'Imagen subida correctamente',
+				'body' => $body,
 				'filename' => $result['filename'],
 				'original_url' => $result['original_url'],
 				'thumb_url' => $result['thumb_url'],

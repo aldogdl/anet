@@ -97,6 +97,7 @@ class ItemPubRepository extends ServiceEntityRepository
 	/** */
 	public function setPub(array $data, String $pathDicc): array
 	{
+
 		$action = 'add';
 		$result = [];
 		$lado = '';
@@ -154,6 +155,24 @@ class ItemPubRepository extends ServiceEntityRepository
 			return ['abort' => true, 'action' => 'error', 'body' => $th->getMessage()];
 		}
 		return ['abort' => false, "action" => $action, "body" => $result];
+	}
+  
+	/** */
+	public function updateImagePath(int $idItem, String $pathImg): string
+	{
+
+    $item = $this->getIfExistPubById($idItem);
+		if($item == null) {
+			return 'No se encontró el item con id: ' . $idItem;
+		}
+		try {
+			$item->setPathImg($pathImg);
+			$this->_em->persist($item);
+			$this->_em->flush();
+			return 'Ruta de imagen actualizada correctamente';
+		} catch (\Throwable $th) {
+			return 'Error al actualizar la ruta de imagen: ' . $th->getMessage();
+		}
 	}
 
 	/** */
