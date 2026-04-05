@@ -159,6 +159,13 @@ class ItemPub
     }
     
 		/** */
+		public function setIdItem(int $id): self
+		{
+			$this->id = $id;
+			return $this;
+		}
+
+		/** */
 		public function setPathImg(string $pathImg): void
 		{
 			$extras = $this->getExtras() ?? [];

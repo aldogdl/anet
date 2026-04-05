@@ -113,10 +113,14 @@ class ItemPubRepository extends ServiceEntityRepository
 			$obj = $obj->fromJson($data);
 		}else{
 			$action = 'edt';
+			$obj = new ItemPub();
+			$obj = $obj->fromJson($data);
+			$obj = $obj->setIdItem($data['id']);
 		}
     $dicc = json_decode(file_get_contents($pathDicc), true);
 
 		if(isset($data['lado'])) {
+
 			$lado = mb_strtolower($data['lado']);
 			if(array_key_exists($lado, $dicc['lp_encode'])) {
 				$lado = $dicc['lp_encode'][$lado];
@@ -158,6 +162,17 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
   
 	/** */
+	public function delPub(int $id, string $waId): int
+	{
+		$dql = 'DELETE FROM ' . ItemPub::class . ' it '.
+		'WHERE it.id = :id AND it.waId = :waId';
+
+		return $this->_em->createQuery($dql)
+			->setParameters(['id' => $id, 'waId' => $waId])
+			->execute();
+	}
+  
+	/** */
 	public function updateImagePath(int $idItem, String $pathImg): string
 	{
 
@@ -173,17 +188,6 @@ class ItemPubRepository extends ServiceEntityRepository
 		} catch (\Throwable $th) {
 			return 'Error al actualizar la ruta de imagen: ' . $th->getMessage();
 		}
-	}
-
-	/** */
-	public function delPub(int $id, string $waId): int
-	{
-		$dql = 'DELETE FROM ' . ItemPub::class . ' it '.
-		'WHERE it.id = :id AND it.waId = :waId';
-
-		return $this->_em->createQuery($dql)
-			->setParameters(['id' => $id, 'waId' => $waId])
-			->execute();
 	}
 
 }
