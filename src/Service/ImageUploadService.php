@@ -72,10 +72,10 @@ class ImageUploadService
 		$filename = $originalName . '.' . $extension;
 		$originalPath = $imgDir . '/' . $filename;
 		$file->move($imgDir, $filename);
+
 		if($withThubn === false) {
 			return [
 				'filename' => $filename,
-				'base_path' => $this->assetUrlGenerator->generate($imgDir),
 				'original_url' => $this->assetUrlGenerator->generate($originalPath),
 				'thumb_url' => '',
 			];
@@ -88,6 +88,7 @@ class ImageUploadService
 
 		return [
 			'filename' => $filename,
+			'base_path' => $this->assetUrlGenerator->generate($imgDir),
 			'original_url' => $this->assetUrlGenerator->generate($originalPath),
 			'thumb_url' => $this->assetUrlGenerator->generate($thumbPath),
 		];
