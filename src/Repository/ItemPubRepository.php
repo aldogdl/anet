@@ -105,7 +105,6 @@ class ItemPubRepository extends ServiceEntityRepository
 
 		$obj = null;
     if($data['id'] ?? 0 != 0) {
-			file_put_contents('prueba_'.$data['id'].'_1'.'.json', json_encode($data));
 			$obj = $this->getIfExistPubById($data['id']);
 		}
 
@@ -172,7 +171,7 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
   
 	/** */
-	public function updateImagePath(int $idItem, String $pathImg): string
+	public function updateImagePath(int $idItem, String $thubn, String $pathImg): string
 	{
 
     $item = $this->getIfExistPubById($idItem);
@@ -181,6 +180,7 @@ class ItemPubRepository extends ServiceEntityRepository
 		}
 		try {
 			$item->setPathImg($pathImg);
+			$item->setThumb($thubn);
 			$this->_em->persist($item);
 			$this->_em->flush();
 			return 'Ruta de imagen actualizada correctamente';

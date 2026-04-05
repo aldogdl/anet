@@ -118,14 +118,12 @@ class ItemController extends AbstractController
       
 			$body = 'Imagen subida correctamente';
       if($idItem > 0 && array_key_exists('base_path', $result)) {
-				$body = $em->updateImagePath($idItem, $result['base_path']);
+				$body = $em->updateImagePath($idItem, $result['filename'], $result['base_path']);
 			}
 
 			return $this->json([
 				'abort' => false,
 				'body' => $body,
-				'idItem' => $idItem,
-				'base_path' => $result['base_path'] ?? '',
 				'filename' => $result['filename'],
 				'original_url' => $result['original_url'],
 				'thumb_url' => $result['thumb_url'],
