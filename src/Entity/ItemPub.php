@@ -159,6 +159,49 @@ class ItemPub
 
 			return $item;
     }
+
+    /** */
+    public function updateFromJson(array $data): self
+    {
+        $this->setStt((int) $data['stt']);
+        $this->setType((int) $data['type']);
+        $this->setIdSrc($data['idSrc'] ?? null);
+        $this->setIku($data['iku'] ?? null);
+        $this->setSrc($data['src'] ?? null);
+        $this->setTitle($data['title'] ?? null);
+        $this->setThumb($data['thumb'] ?? null);
+        $this->setImgBig($data['imgBig'] ?? null);
+        $this->setPrice((float) $data['price']);
+        $this->setCosto((float) $data['costo']);
+        $this->setLink($data['link'] ?? null);
+        $this->setIsActive((bool) $data['isActive']);
+        $this->setPieza($data['pieza'] ?? null);
+        $this->setMrkId((int) $data['mrkId']);
+        $this->setMdlId((int) $data['mdlId']);
+        $this->setAnioInicio((int) $data['anioInicio']);
+        $this->setAnioFin(isset($data['anioFin']) ? (int) $data['anioFin'] : null);
+        $this->setLado($data['lado'] ?? null);
+        $this->setPoss($data['poss'] ?? null);
+        $this->setDetalles($data['detalles'] ?? null);
+        $this->setWaId($data['waId'] ?? null);
+        $this->setTaId((int) $data['taId']);
+
+        // Extras viene como objeto JSON desde Dart
+        $this->setExtras(
+            isset($data['extras']) && is_array($data['extras'])
+                    ? $data['extras']
+                    : null
+        );
+
+        // Fecha creada
+        $this->setCreated(
+            isset($data['created'])
+                    ? new \DateTimeImmutable($data['created'])
+                    : new \DateTimeImmutable()
+        );
+
+        return $this;
+    }
     
 		/** */
 		public function setIdItem(int $id): static
