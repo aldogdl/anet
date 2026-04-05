@@ -7,7 +7,6 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ImageUploadService
 {
@@ -16,7 +15,6 @@ class ImageUploadService
   
 	/** */
 	public function __construct(
-		private SluggerInterface $slugger,
 		private string $projectDir,
 		private string $imageDriver,
 		private PublicAssetUrlGenerator $assetUrlGenerator
@@ -50,7 +48,7 @@ class ImageUploadService
 	}
 
 	/** */
-	public function uploadAndCreateThumb(UploadedFile $file, string $slug, string $iku): array
+	public function uploadAndCreateThumb(UploadedFile $file, string $slug, string $iku, bool $withThubn): array
 	{
 		$imgDir = $this->projectDir . '/inv/images/' . $slug . '/' . $iku;
 		if (!is_dir($imgDir)) {
@@ -72,11 +70,17 @@ class ImageUploadService
 		}
 
 		$filename = $originalName . '.' . $extension;
-
 		$originalPath = $imgDir . '/' . $filename;
-		$thumbPath = $imgDir . '/peq_' . $filename;
 		$file->move($imgDir, $filename);
+		if($withThubn === false) {
+			return [
+				'filename' => $filename,
+				'original_url' => $this->assetUrlGenerator->generate($originalPath),
+				'thumb_url' => '',
+			];
+		}
 
+		$thumbPath = $imgDir . '/peq_' . $filename;
 		$image = $this->imageManager->read($originalPath);
 		$image->scaleDown(width: 150);
 		$image->save($thumbPath, 80);

@@ -88,6 +88,7 @@ class ItemController extends AbstractController
 	{
 		$ikuItem = $req->request->get('ikuItem');
 		$slug = $req->request->get('slug');
+		$withThubn = $req->request->get('thubn');
 		$file = $req->files->get('file');
 
 		if (!$ikuItem || !$slug || !$file) {
@@ -97,11 +98,19 @@ class ItemController extends AbstractController
 			], 400);
 		}
 
+		if (!$withThubn) {
+			$withThubn = false;
+		}else {
+			$withThubn = true;
+		}
+
 		try {
+
 			$result = $imageUploadService->uploadAndCreateThumb(
 				$file,
 				(string) $slug,
-				(string) $ikuItem
+				(string) $ikuItem,
+				$withThubn
 			);
 
 			return $this->json([
@@ -111,6 +120,7 @@ class ItemController extends AbstractController
 				'original_url' => $result['original_url'],
 				'thumb_url' => $result['thumb_url'],
 			]);
+
 		} catch (\Throwable $e) {
 			return $this->json([
 				'abort' => true,
