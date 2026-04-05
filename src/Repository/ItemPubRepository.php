@@ -115,7 +115,7 @@ class ItemPubRepository extends ServiceEntityRepository
 			$action = 'edt';
 			$obj = new ItemPub();
 			$obj = $obj->fromJson($data);
-			$obj = $obj->setIdItem($data['id']);
+			$obj->setIdItem($data['id']);
 		}
     $dicc = json_decode(file_get_contents($pathDicc), true);
 

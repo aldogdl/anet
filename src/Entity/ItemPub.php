@@ -20,6 +20,7 @@ use Doctrine\ORM\Mapping as ORM;
         columns: ['mrk_id', 'mdl_id', 'is_active', 'lado', 'poss']
     ),
 ])]
+
 class ItemPub
 {
     #[ORM\Id]
@@ -118,6 +119,7 @@ class ItemPub
     public function fromJson(array $data): self 
     {
 			$item = new self();
+			
 			$item->setStt((int) $data['stt']);
 			$item->setType((int) $data['type']);
 			$item->setIdSrc($data['idSrc'] ?? null);
@@ -159,7 +161,7 @@ class ItemPub
     }
     
 		/** */
-		public function setIdItem(int $id): self
+		public function setIdItem(int $id): static
 		{
 			$this->id = $id;
 			return $this;
@@ -175,31 +177,31 @@ class ItemPub
 
     public function getId(): ?int
     {
-        return $this->id;
+			return $this->id;
     }
 
     public function getTitle(): ?string
     {
-        return $this->title;
+			return $this->title;
     }
 
     public function setTitle(string $title): static
     {
-        $this->title = $title;
+			$this->title = $title;
 
-        return $this;
+			return $this;
     }
 
     public function getThumb(): ?string
     {
-        return $this->thumb;
+			return $this->thumb;
     }
 
     public function setThumb(string $thumb): static
     {
-        $this->thumb = $thumb;
+			$this->thumb = $thumb;
 
-        return $this;
+			return $this;
     }
 
     public function getImgBig(): ?string
