@@ -103,6 +103,9 @@ class ItemPub
     #[ORM\Column]
     private ?int $taId = null;
 
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     /** */
     public function __construct()
     {
@@ -519,6 +522,18 @@ class ItemPub
     public function setTaId(int $taId): static
     {
         $this->taId = $taId;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
