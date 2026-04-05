@@ -105,17 +105,21 @@ class ItemPubRepository extends ServiceEntityRepository
 
 		$obj = null;
     if($data['id'] ?? 0 != 0) {
+			file_put_contents('prueba_'.$data['id'].'_1'.'.json', json_encode($data));
 			$obj = $this->getIfExistPubById($data['id']);
-		}
-
-		if($obj == null) {
+			}
+			
+			if($obj == null) {
+			file_put_contents('prueba_'.$data['id'].'_2'.'.json', json_encode($data));
 			$obj = new ItemPub();
 			$obj = $obj->fromJson($data);
-		}else{
+			}else{
+			file_put_contents('prueba_'.$data['id'].'_3'.'.json', json_encode($data));
 			$action = 'edt';
 			$obj = new ItemPub();
 			$obj = $obj->fromJson($data);
 			$obj->setIdItem($data['id']);
+			file_put_contents('prueba_'.$obj->getId().'_4'.'.json', json_encode($data));
 		}
     $dicc = json_decode(file_get_contents($pathDicc), true);
 
