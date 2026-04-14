@@ -3,7 +3,6 @@ parameters:
     scm        : '%phtml%/scm/'
     ftos       : '%phtml%/ftos/'
 
-    sse        : '%phtml%/sse/'
     regAuth    : '%phtml%/reg_auth/'
     invExp     : '%phtml%/inv/'
     fbSended   : '%phtml%/fb_sended/'

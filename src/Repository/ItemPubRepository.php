@@ -42,6 +42,18 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** */
+	public function getPubsBySlug(string $slug, string $waId): \Doctrine\ORM\Query
+	{
+		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '.
+		'WHERE it.slug = :slug OR it.waId = :waId AND it.isActive = 1 '.
+		'ORDER BY it.created DESC, it.id DESC';
+
+		return $this->_em->createQuery($dql)
+			->setParameter('slug', $slug)
+			->setParameter('waId', $waId);
+	}
+
+	/** */
 	public function matchOne(array $data): array
 	{
 		$anioActual = (int) date('Y');

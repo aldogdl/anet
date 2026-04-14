@@ -3,10 +3,10 @@
 namespace App\Controller\Any;
 
 use App\Repository\ItemPubRepository;
+use App\Repository\PaginatorQuery;
 use Symfony\Component\Filesystem\Path;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
-use App\Service\Any\PublicAssetUrlGenerator;
 use App\Service\ImageUploadService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 #[Route('/any-item')]
 class ItemController extends AbstractController
 {
-  
+
 	/**
 	 * Endpoint para subir las imagenes desde el form del catalogo
 	 */
@@ -35,7 +35,7 @@ class ItemController extends AbstractController
 	#[Route('/pub', methods: ['get', 'post', 'delete'])]
 	public function itemPub(Request $req, ItemPubRepository $repo): Response
 	{
-		if( $req->getMethod() == 'POST' ) {
+		if($req->getMethod() == 'POST' ) {
 
 			$data = $req->getContent();
 			$dicc = $this->getParameter(AnyPath::$DICC);
@@ -73,8 +73,27 @@ class ItemController extends AbstractController
 			}
 
 		} elseif( $req->getMethod() == 'GET' ) {
+
+			$id = $req->query->get('id') ?? 0;
+			$page = $req->query->get('page') ?? 1;
+			$waId = $req->query->get('waId') ?? 0;
+			$slug = $req->query->get('slug') ?? 0;
 			$items = [];
-			return $this->json($items, 200);
+
+			if($id) {
+				$res = $repo->getIfExistPubById($id);
+				if($res) {
+					$items = [$res];
+				}
+			} elseif($slug && $waId) {
+
+				$query = $repo->getPubsBySlug($slug, $waId);
+				$paginado = new PaginatorQuery();
+				$items = $paginado->pagine($query, 50, 'max', $page);
+			} else {
+				return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
+			}
+			return $this->json(['abort' => false, 'body' => $items]);
 		}
 
 		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
@@ -143,11 +162,12 @@ class ItemController extends AbstractController
 	{
 		return $this->json($fsys->getDiccionary());
 	}
-  
+
 	/** */
 	#[Route('/export-db', methods: ['post'])]
 	public function exportDB(Request $request, Fsys $fsys): Response
 	{
+
 		/** @var UploadedFile $uploadedFile */
 		$uploadedFile = $request->files->get('db_file');
 		$customName = $request->request->get('file_name');
@@ -192,4 +212,5 @@ class ItemController extends AbstractController
 		}
 		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
 	}
+
 }

@@ -106,6 +106,9 @@ class ItemPub
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $slug = null;
+
     /** */
     public function __construct()
     {
@@ -128,6 +131,7 @@ class ItemPub
 			$item->setType((int) $data['type']);
 			$item->setIdSrc($data['idSrc'] ?? null);
 			$item->setIku($data['iku'] ?? null);
+			$item->setSlug($data['slug'] ?? '');
 			$item->setSrc($data['src'] ?? null);
 			$item->setTitle($data['title'] ?? null);
 			$item->setThumb($data['thumb'] ?? null);
@@ -171,6 +175,7 @@ class ItemPub
 			$this->setType((int) $data['type']);
 			$this->setIdSrc($data['idSrc'] ?? null);
 			$this->setIku($data['iku'] ?? null);
+			$this->setSlug($data['slug'] ?? '');
 			$this->setSrc($data['src'] ?? null);
 			$this->setTitle($data['title'] ?? null);
 			$this->setThumb($data['thumb'] ?? null);
@@ -538,6 +543,18 @@ class ItemPub
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
 
         return $this;
     }
