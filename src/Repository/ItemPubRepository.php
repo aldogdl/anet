@@ -63,6 +63,8 @@ class ItemPubRepository extends ServiceEntityRepository
 		$anioInicio = (int) $data['anioInicio'];
 		$anioFin    = isset($data['anioFin']) ? (int) $data['anioFin']	: $anioInicio + 1;
 		$waId       = $data['waId'];
+		$slug    = isset($data['slug']) ? $data['slug']	: '';
+		$inTo    = isset($data['inTo']) ? $data['inTo']	: '';
 		$lado    = isset($data['lado']) ? $data['lado']	: '';
 		$poss    = isset($data['poss']) ? $data['poss']	: '';
 	
@@ -73,7 +75,6 @@ class ItemPubRepository extends ServiceEntityRepository
 		$params = [
 			'mrkId'      => (int) $mrkId,
 			'mdlId'      => (int) $mdlId,
-			'waId'       => $waId,
 			'isActive'   => 1,
 			'anioInicio' => $anioInicio,
 			'anioFin'    => $anioFin,
@@ -84,11 +85,28 @@ class ItemPubRepository extends ServiceEntityRepository
 			FROM " . ItemPub::class . " it
 			WHERE it.mrkId = :mrkId
 				AND it.mdlId = :mdlId
-				AND it.waId <> :waId
 				AND it.isActive = :isActive
 				AND it.anioInicio <= :anioFin
 				AND it.anioFin >= :anioInicio
 			";
+
+		if (!empty($waId)) {
+			$params['waId'] = $waId;
+			if (!empty($inTo)) {
+				$dql .= " AND it.waId = :waId";
+			} else {
+				$dql .= " AND it.waId <> :waId";
+			}
+		}
+
+		if (!empty($slug)) {
+			$params['slug'] = $slug;
+			if (!empty($inTo)) {
+				$dql .= " OR it.slug = :slug";
+			} else {
+				$dql .= " AND it.slug <> :slug";
+			}
+		}
 
 		if (!empty($lado)) {
 			$dql .= " AND it.lado IN (:lado, 'A')";
