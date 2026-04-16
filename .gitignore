@@ -8,14 +8,15 @@ _.env.local.php
 .env
 .gitignore
 .well-known
+.well-known/
 error_log
 
 
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
+config/*.json
 public_html/wa_get_imgs/
 public_html/request.log
-public_html/cotiza/
 public_html/sinc_dev/
 public_html/prod_pubs/
 public_html/prod_sols/
@@ -24,39 +25,39 @@ public_html/bgs_shop/
 public_html/mlm_*
 public_html/*.js
 public_html/anet_shop/
-public_html/shop/
 public_html/req_radec/
 public_html/logs_errs/
 public_html/inv/
+public_html/scm/
 public_html/pnid.pni
 public_html/desc_mlm.txt
 public_html/wa_analizar/
+public_html/yonkeros/
 
 ###>Revision V6###
-config/*.json
+public_html/cotiza/
+public_html/shop/
 public_html/error_log
 public_html/error.log
 public_html/*.json
 public_html/htacces.zip
 public_html/.htaccess
 public_html/.htacces.back
-.well-known/
 public_html/.well-known/
 public_html/bundles/
 public_html/ftos/
 
 public_html/anyshoper/
+logs/
 
 public_html/reg_auth/
 public_html/fb_sended/
 public_html/fb_fails/
 public_html/rfy/
 public_html/mlm_auth/
-public_html/scm/
 public_html/mm/
 public_html/cc/
 public_html/sse/
-public_html/yonkeros/
 public_html/paty/
 public_html/ml/
 public_html/sse_metas/
