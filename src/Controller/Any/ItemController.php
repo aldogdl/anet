@@ -35,6 +35,7 @@ class ItemController extends AbstractController
 	#[Route('/pub', methods: ['get', 'post', 'delete'])]
 	public function itemPub(Request $req, ItemPubRepository $repo): Response
 	{
+		
 		if($req->getMethod() == 'POST' ) {
 
 			$data = $req->getContent();
