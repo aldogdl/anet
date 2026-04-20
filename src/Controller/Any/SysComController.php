@@ -131,8 +131,8 @@ class SysComController extends AbstractController
 			$last = $data['last'];
 			// Recuperamos notificaciones de MeLi
 			if(array_key_exists('meli', $last) && array_key_exists('idUserMl', $data)) {
-				$notif = $emMl->getAllMsgAfterByMsgId($data['idUserMl'], $last['meli']);
-				$files['notif'] = $notif;
+				$meli = $emMl->getAllMsgAfterByMsgId($data['idUserMl'], $last['meli']);
+				$files['meli'] = $meli;
 			}
 			// Recuperamos actualizaciones de Match1
 			if(array_key_exists('pub', $last)) {
