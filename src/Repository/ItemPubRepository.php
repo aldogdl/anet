@@ -192,7 +192,7 @@ class ItemPubRepository extends ServiceEntityRepository
 			$obj = $obj->fromJson($data);
 		}else{
 			$action = 'edt';
-			$obj->updateFromJson($data);
+			$obj = $obj->updateFromJson($data);
 		}
     $dicc = json_decode(file_get_contents($pathDicc), true);
 
@@ -237,7 +237,7 @@ class ItemPubRepository extends ServiceEntityRepository
 		}
 		return ['abort' => false, "action" => $action, "body" => $result];
 	}
-  
+
 	/** */
 	public function delPub(int $id, string $waId): int
 	{

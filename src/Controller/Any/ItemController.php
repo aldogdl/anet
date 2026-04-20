@@ -167,7 +167,6 @@ class ItemController extends AbstractController
 	#[Route('/export-db', methods: ['post'])]
 	public function exportDB(Request $request, Fsys $fsys): Response
 	{
-
 		/** @var UploadedFile $uploadedFile */
 		$uploadedFile = $request->files->get('db_file');
 		$customName = $request->request->get('file_name');

@@ -175,7 +175,6 @@ class ItemPub
 			$this->setType((int) $data['type']);
 			$this->setIdSrc($data['idSrc'] ?? null);
 			$this->setIku($data['iku'] ?? null);
-			$this->setSlug($data['slug'] ?? '');
 			$this->setSrc($data['src'] ?? null);
 			$this->setTitle($data['title'] ?? null);
 			$this->setThumb($data['thumb'] ?? null);
@@ -192,6 +191,7 @@ class ItemPub
 			$this->setLado($data['lado'] ?? null);
 			$this->setPoss($data['poss'] ?? null);
 			$this->setDetalles($data['detalles'] ?? null);
+			$this->setSlug($data['slug'] ?? '');
 			$this->setWaId($data['waId'] ?? null);
 			$this->setTaId((int) $data['taId']);
 
