@@ -34,6 +34,21 @@ class SyncMlRepository extends ServiceEntityRepository
 	}
 
 	/**
+	* Necesitamos recuperar el mensaje por el id del producto.
+	*/
+	public function getMsgByIdProduct(string $id): ?SyncMl
+	{
+		$dql = 'SELECT n FROM ' . SyncMl::class . ' n '
+			. 'WHERE n.resource LIKE :id '
+			. 'ORDER BY n.receivedAt ASC';
+
+		return $this->_em->createQuery($dql)
+			->setParameter('id', '%' . $id . '%')
+			->setMaxResults(1)
+			->getOneOrNullResult();
+	}
+
+	/**
 	* Recuperamos todos los mensajes que han llegado a partir
 	* del id del mensaje enviado por parametro
 	*/
@@ -45,7 +60,12 @@ class SyncMlRepository extends ServiceEntityRepository
 			->orderBy('n.receivedAt', 'DESC');
 
 		if ($msgId !== null && $msgId !== '') {
-			$lastMsg = $this->getMsgByMsgId($msgId);
+			$idType = mb_strpos($msgId, 'ML');
+			if($idType !== false && $idType < 3) {
+				$lastMsg = $this->getMsgByIdProduct($msgId);
+			} else {
+				$lastMsg = $this->getMsgByMsgId($msgId);
+			}
 			if (!$lastMsg || !$lastMsg->getSendAt()) {
 				return [];
 			}
