@@ -38,18 +38,18 @@ class ItemController extends AbstractController
 		if($req->getMethod() == 'POST' ) {
 
 			$data = $req->getContent();
-			$dicc = $this->getParameter(AnyPath::$DICC);
+			$diccPath = $this->getParameter(AnyPath::$DICC);
 
 			if($data) {
 
 				$data = json_decode($data, true);
 				if(array_key_exists('list', $data)) {
-					$res = $repo->setPubs($data, $dicc);
+					$res = $repo->setPubs($data, $diccPath);
 					if($res != 0) {
 						return $this->json(['abort' => false, "body" => $res]);
 					}
 				}else{
-					$res = $repo->setPub($data, $dicc);
+					$res = $repo->setPub($data, $diccPath);
 					if(array_key_exists('abort', $res) && $res['abort']) {
 						return $this->json($res, 500);
 					}
