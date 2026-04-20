@@ -3,13 +3,13 @@
 namespace App\Controller\Any;
 
 use App\Entity\UsCom;
+use App\Repository\ItemPubRepository;
 use App\Repository\SyncMlRepository;
 use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use App\Service\Any\GetDataShop;
 use App\Service\Any\PublicAssetUrlGenerator;
-use App\Service\DataSimpleMlm;
 use App\Service\Pushes;
 use App\Service\SecurityBasic;
 use Kreait\Firebase\Messaging\Notification;
@@ -67,7 +67,9 @@ class SysComController extends AbstractController
 	 * 
 	*/
 	#[Route('/centinela', methods: ['post'])]
-	public function centinela(Request $req, Fsys $fsys, SyncMlRepository $em): Response
+	public function centinela(
+		Request $req, Fsys $fsys, SyncMlRepository $emMl, ItemPubRepository $emPub
+	): Response
 	{
 		if($req->getMethod() != 'POST') {
 			return $this->json(['body' => 'Ok, gracias'], 400);
@@ -79,12 +81,20 @@ class SysComController extends AbstractController
 		}
 
 		$data = json_decode($data, true);
+		$slug = '';
 		if(!array_key_exists('slug', $data)) {
 			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
 		}
-		$waId = '_otra_cuenta';
+
+		$slug = $data['slug'];
+		$waId = 'otra_cuenta';
 		if(array_key_exists('waId', $data)) {
-			$waId = '_'.$data['waId'];
+			$waId = $data['waId'];
+		}
+
+		$verDicc = 1;
+		if(array_key_exists('dicc_sync', $data)) {
+			$verDicc = (integer) $data['dicc_sync'];
 		}
 
 		// Creamos una marca de presencia o uso de la app
@@ -105,14 +115,30 @@ class SysComController extends AbstractController
 				$partes = explode('/', $lista[$i]);
 				$partes = explode('.', $partes[1]);
 				$field = $partes[0];
-				$files[$field] = $fsys->getByPath($lista[$i]);
+				if($field == 'dicc') {
+					$dicc = $fsys->getByPath($lista[$i]);
+					if(array_key_exists('version', $dicc) && $dicc['version'] > $verDicc) {
+						$files[$field] = $dicc;
+					}
+				} else {
+					$files[$field] = $fsys->getByPath($lista[$i]);
+				}
 			}
 		}
 
-		// Recuperamos notificaciones
-		if(array_key_exists('last', $data) && array_key_exists('idUserMl', $data)) {
-			$notif = $em->getAllMsgAfterByMsgId($data['idUserMl'], $data['last']);
-			$files['notif'] = $notif;
+		if(array_key_exists('last', $data)) {
+			
+			$last = $data['last'];
+			// Recuperamos notificaciones de MeLi
+			if(array_key_exists('meli', $last) && array_key_exists('idUserMl', $data)) {
+				$notif = $emMl->getAllMsgAfterByMsgId($data['idUserMl'], $last['meli']);
+				$files['notif'] = $notif;
+			}
+			// Recuperamos actualizaciones de Match1
+			if(array_key_exists('any', $last)) {
+				$pubs = $emPub->getAllMsgAfterUpdate($slug, $last['any']);
+				$files['pubs'] = $pubs;
+			}
 		}
 
 		$files['ctc'] = $ctcLog;

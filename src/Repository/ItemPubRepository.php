@@ -54,6 +54,55 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** */
+	public function getAllMsgAfterUpdate(string $slug, int $lastUpdate): array
+	{
+		$updatedAt = \DateTimeImmutable::createFromFormat('U.u', sprintf('%.6f', $lastUpdate / 1000));
+		if ($updatedAt === false) {
+			$updatedAt = new \DateTimeImmutable('@' . floor($lastUpdate / 1000));
+		}
+
+		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '
+			. 'WHERE it.slug = :slug '
+			. 'AND it.updatedAt > :updatedAt '
+			. 'ORDER BY it.updatedAt DESC, it.id DESC';
+
+		$items = $this->_em->createQuery($dql)
+			->setParameter('slug', $slug)
+			->setParameter('updatedAt', $updatedAt)
+			->getArrayResult();
+
+		$results = [];
+		$pendings = [];
+		$last = $lastUpdate;
+
+		foreach ($items as $index => $item) {
+
+			$updatedAtValue = $item['updatedAt'];
+			if ($updatedAtValue instanceof \DateTimeInterface) {
+				$updatedAtMillis = (int) floor((float) $updatedAtValue->format('U.u') * 1000);
+			} else {
+				$updatedAtMillis = (int) floor((float) strtotime($updatedAtValue) * 1000);
+			}
+
+			if ($updatedAtMillis > $last) {
+				$last = $updatedAtMillis;
+			}
+
+			if ($index < 5) {
+				$results[] = $item;
+			} else {
+				$pendings[] = $item['id'];
+			}
+		}
+
+		return [
+			'results' => $results,
+			'pendings' => $pendings,
+			'last' => $last,
+		];
+	}
+
+	/** */
 	public function matchOne(array $data): array
 	{
 		$anioActual = (int) date('Y');
