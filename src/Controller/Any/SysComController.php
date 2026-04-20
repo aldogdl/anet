@@ -135,8 +135,8 @@ class SysComController extends AbstractController
 				$files['notif'] = $notif;
 			}
 			// Recuperamos actualizaciones de Match1
-			if(array_key_exists('any', $last)) {
-				$pubs = $emPub->getAllMsgAfterUpdate($slug, $last['any']);
+			if(array_key_exists('pub', $last)) {
+				$pubs = $emPub->getAllMsgAfterUpdate($slug, $last['pub']);
 				$files['pubs'] = $pubs;
 			}
 		}
