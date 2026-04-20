@@ -63,7 +63,7 @@ class ItemPubRepository extends ServiceEntityRepository
 
 		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '
 			. 'WHERE it.slug = :slug '
-			. 'AND it.updatedAt > :updatedAt '
+			. 'AND it.updatedAt >= :updatedAt '
 			. 'ORDER BY it.updatedAt DESC, it.id DESC';
 
 		$items = $this->_em->createQuery($dql)
