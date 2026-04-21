@@ -128,7 +128,7 @@ class SysComController extends AbstractController
 
 		if(array_key_exists('last', $data)) {
 			
-			$last = $data['last'];
+			$last = json_decode($data['last'], true);
 			// Recuperamos notificaciones de MeLi
 			if(array_key_exists('meli', $last) && array_key_exists('idUserMl', $data)) {
 				$meli = $emMl->getAllMsgAfterByMsgId($data['idUserMl'], $last['meli']);
