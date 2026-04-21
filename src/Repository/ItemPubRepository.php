@@ -62,6 +62,8 @@ class ItemPubRepository extends ServiceEntityRepository
 		if ($updatedAt === false) {
 			$updatedAt = new \DateTimeImmutable('@' . floor($safeLastUpdate / 1000));
 		}
+		$tz = new \DateTimeZone(date_default_timezone_get()); 
+		$updatedAt = $updatedAt->setTimezone($tz);
 
 		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '
 			. 'WHERE it.slug = :slug '
@@ -83,7 +85,10 @@ class ItemPubRepository extends ServiceEntityRepository
 			if ($updatedAtValue instanceof \DateTimeInterface) {
 				$updatedAtMillis = (int) floor((float) $updatedAtValue->format('U.u') * 1000);
 			} else {
-				$updatedAtMillis = (int) floor((float) strtotime($updatedAtValue) * 1000);
+				// Si viene como "2026-04-21 07:20:12.500000"
+				$obj = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s.u', $updatedAtValue);
+				if (!$obj) $obj = new \DateTimeImmutable($updatedAtValue);
+				$updatedAtMillis = (int) floor((float) $obj->format('U.u') * 1000);
 			}
 
 			if ($updatedAtMillis > $last) {
