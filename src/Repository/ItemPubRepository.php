@@ -56,9 +56,10 @@ class ItemPubRepository extends ServiceEntityRepository
 	/** */
 	public function getAllMsgAfterUpdate(string $slug, int $lastUpdate): array
 	{
-		$updatedAt = \DateTimeImmutable::createFromFormat('U.u', sprintf('%.6f', $lastUpdate / 1000));
+		$safeLastUpdate = $lastUpdate - 1000;
+		$updatedAt = \DateTimeImmutable::createFromFormat('U.u', sprintf('%.6f', $safeLastUpdate / 1000));
 		if ($updatedAt === false) {
-			$updatedAt = new \DateTimeImmutable('@' . floor($lastUpdate / 1000));
+			$updatedAt = new \DateTimeImmutable('@' . floor($safeLastUpdate / 1000));
 		}
 
 		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '
