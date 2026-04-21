@@ -49,6 +49,7 @@ parameters:
     comments   : '%phtml%/comments/'
     
     app.image_driver: '%env(string:IMAGE_DRIVER)%'
+    app.timezone: 'America/Mexico_City'
 
 services:
     # default configuration for services in *this* file
