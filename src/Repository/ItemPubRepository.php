@@ -56,12 +56,12 @@ class ItemPubRepository extends ServiceEntityRepository
 	/** */
 	public function getAllMsgAfterUpdate(string $slug, int $lastUpdate): array
 	{
-
 		$safeLastUpdate = $lastUpdate - 1000;
 		$updatedAt = \DateTimeImmutable::createFromFormat('U.u', sprintf('%.6f', $safeLastUpdate / 1000));
 		if ($updatedAt === false) {
 			$updatedAt = new \DateTimeImmutable('@' . floor($safeLastUpdate / 1000));
 		}
+
 		$tz = new \DateTimeZone(date_default_timezone_get()); 
 		$updatedAt = $updatedAt->setTimezone($tz);
 
@@ -77,6 +77,7 @@ class ItemPubRepository extends ServiceEntityRepository
 
 		$results = [];
 		$pendings = [];
+		$inactives = [];
 		$last = $lastUpdate;
 
 		foreach ($items as $index => $item) {
@@ -95,16 +96,29 @@ class ItemPubRepository extends ServiceEntityRepository
 				$last = $updatedAtMillis;
 			}
 
-			if ($index < 5) {
-				$results[] = $item;
+			// Separar items inactivos o con status 501
+			if ((!isset($item['isActive']) || $item['isActive'] == 0) || (isset($item['status']) && $item['status'] == 501)) {
+				$inactives[] = [
+					'id' => $item['id'],
+					'idSrc' => $item['idSrc'] ?? null,
+					'iku' => $item['iku'] ?? null,
+					'stt' => $item['stt'] ?? null,
+					'isActive' => $item['isActive'] ?? 0,
+				];
 			} else {
-				$pendings[] = $item['id'];
+				// Items activos
+				if ($index < 5) {
+					$results[] = $item;
+				} else {
+					$pendings[] = $item['id'];
+				}
 			}
 		}
 
 		return [
 			'results' => $results,
 			'pendings' => $pendings,
+			'inactives' => $inactives,
 			'last' => $last,
 		];
 	}
