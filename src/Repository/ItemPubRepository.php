@@ -297,7 +297,7 @@ class ItemPubRepository extends ServiceEntityRepository
 
 			// Obtener items a eliminar con su slug e iku
 			$dql = 'SELECT it.id, it.slug, it.iku FROM ' . ItemPub::class . ' it '.
-			'WHERE it.stt = 501 AND it.updatedAt > :fiveDaysAgo '.
+			'WHERE it.stt = 501 AND it.updatedAt < :fiveDaysAgo '.
 			'ORDER BY it.updatedAt ASC';
 
 			$itemsToDelete = $this->_em->createQuery($dql)
