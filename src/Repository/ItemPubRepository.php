@@ -259,6 +259,88 @@ class ItemPubRepository extends ServiceEntityRepository
 		return ['abort' => false, "action" => $action, "body" => $result];
 	}
 
+	/** 
+	 * Pausa la publicación para que deje de aparecer en el catálogo.
+	 * Actualiza el item con stt = 501, isActive = false y updatedAt = ahora
+	*/
+	public function pausarPub(int $id, string $waId): array
+	{
+		try {
+			$dql = 'UPDATE ' . ItemPub::class . ' it '.
+			'SET it.stt = 501, it.isActive = false, it.updatedAt = :updatedAt, '.
+			'it.waId = :waId '.
+			'WHERE it.id = :id';
+
+			$result = $this->_em->createQuery($dql)
+				->setParameters([
+					'id' => $id,
+					'waId' => $waId,
+					'updatedAt' => new \DateTimeImmutable()
+				])
+				->execute();
+
+			return ['success' => true, 'rowsAffected' => $result];
+		} catch (\Throwable $th) {
+			return ['success' => false, 'error' => $th->getMessage()];
+		}
+	}
+
+	/** 
+	 * Elimina items pausados (stt = 501) cuyo updatedAt sea mayor a 5 días.
+	 * Retorna array con slug e iku antes de eliminarlos para limpiar imágenes.
+	*/
+	public function deleteOldPausedItems(): array
+	{
+		try {
+			// Calcular fecha hace 5 días
+			$fiveDaysAgo = new \DateTimeImmutable('now - 5 days');
+
+			// Obtener items a eliminar con su slug e iku
+			$dql = 'SELECT it.id, it.slug, it.iku FROM ' . ItemPub::class . ' it '.
+			'WHERE it.stt = 501 AND it.updatedAt > :fiveDaysAgo '.
+			'ORDER BY it.updatedAt ASC';
+
+			$itemsToDelete = $this->_em->createQuery($dql)
+				->setParameter('fiveDaysAgo', $fiveDaysAgo)
+				->getArrayResult();
+
+			// Preparar lista con slug e iku para eliminar imágenes
+			$imageData = [];
+			$ids = [];
+			foreach ($itemsToDelete as $item) {
+				$ids[] = $item['id'];
+				$imageData[] = [
+					'slug' => $item['slug'],
+					'iku' => $item['iku']
+				];
+			}
+
+			// Eliminar los items usando los IDs ya recopilados
+			if (!empty($ids)) {
+				$dql = 'DELETE FROM ' . ItemPub::class . ' it '.
+				'WHERE it.id IN (:ids)';
+
+				$rowsDeleted = $this->_em->createQuery($dql)
+					->setParameter('ids', $ids)
+					->execute();
+
+				return [
+					'success' => true,
+					'rowsDeleted' => $rowsDeleted,
+					'imageData' => $imageData
+				];
+			}
+
+			return [
+				'success' => true,
+				'rowsDeleted' => 0,
+				'imageData' => []
+			];
+		} catch (\Throwable $th) {
+			return ['success' => false, 'error' => $th->getMessage()];
+		}
+	}
+
 	/** */
 	public function delPub(int $id, string $waId): int
 	{

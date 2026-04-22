@@ -26,7 +26,6 @@ class ImageUploadService
 	/** */
 	private function buildManager(): ImageManager
 	{
-		
 		$driver = strtolower($this->imageDriver);
 		if ($driver === 'imagick' && extension_loaded('imagick')) {
 			return new ImageManager(new ImagickDriver());

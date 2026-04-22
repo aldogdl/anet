@@ -159,6 +159,60 @@ class Fsys
 		return false;
 	}
 
+	/** 
+	 * Elimina las carpetas completas de imágenes de items eliminados.
+	 * Array esperado: [['slug' => '...', 'iku' => '...'], ...]
+	*/
+	public function deleteImages(array $imageData): array
+	{
+		$result = [
+			'success' => true,
+			'deleted' => 0,
+			'failed' => [],
+			'errors' => []
+		];
+
+		if (empty($imageData)) {
+			return $result;
+		}
+
+		foreach ($imageData as $item) {
+
+			$slug = $item['slug'] ?? null;
+			$iku = $item['iku'] ?? null;
+
+			if (!$slug || !$iku) {
+				$result['failed'][] = [
+					'slug' => $slug,
+					'iku' => $iku,
+					'error' => 'slug o iku vacío'
+				];
+				continue;
+			}
+
+			try {
+				// Construir la ruta: inv/images/{slug}/{iku}
+				$imagePath = Path::canonicalize(
+					$this->params->get('invExp') . '/images/' . $slug . '/' . $iku
+				);
+
+				if ($this->filesystem->exists($imagePath)) {
+					$this->filesystem->remove($imagePath);
+					$result['deleted']++;
+				}
+			} catch (\Throwable $th) {
+				$result['success'] = false;
+				$result['failed'][] = [
+					'slug' => $slug,
+					'iku' => $iku,
+					'error' => $th->getMessage()
+				];
+			}
+		}
+
+		return $result;
+	}
+
 	/** Marcamos el inicio de sesion de un usuario */
 	public function initSesion(String $waId, int $time): void 
 	{

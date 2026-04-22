@@ -33,9 +33,9 @@ class ItemController extends AbstractController
 
 	/** */
 	#[Route('/pub', methods: ['get', 'post', 'delete'])]
-	public function itemPub(Request $req, ItemPubRepository $repo): Response
+	public function itemPub(Request $req, ItemPubRepository $repo, Fsys $fsys): Response
 	{
-		
+
 		if($req->getMethod() == 'POST' ) {
 
 			$data = $req->getContent();
@@ -65,9 +65,25 @@ class ItemController extends AbstractController
 			$id = $req->query->get('id') ?? 0;
 			$waId = $req->query->get('waId') ?? 0;
 			if($id && $waId) {
-				$res = $repo->delPub($id, $waId);
-				if($res != 0) {
+				
+				$res = $repo->pausarPub((integer)$id, $waId);
+				if($res['success']) {
+          
+				  // Aprovechamos y limpiamos la BD y folders de Imagenes
+					if($res['rowsAffected'] > 0) {
+						$res = 'Publicación pausada correctamente';
+						$del = $repo->deleteOldPausedItems();
+						if($del['success']) {
+							if($del['rowsDeleted'] > 0) {
+								$fsys->deleteImages($del['imageData']);
+							}
+						}
+					} else {
+						$res = 'No se encontró la publicación o ya estaba pausada';
+					}
+
 					return $this->json(['abort' => false, "body" => $res]);
+
 				} else {
 					return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
 				}

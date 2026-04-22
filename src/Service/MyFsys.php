@@ -12,243 +12,243 @@ use App\Dtos\WaMsgDto;
 
 class MyFsys
 {
-    private Filesystem $filesystem;
-    private ParameterBagInterface $params;
+	private Filesystem $filesystem;
+	private ParameterBagInterface $params;
 
-    public function __construct(ParameterBagInterface $contenedor)
-    {
-        $this->params = $contenedor;
-        $this->filesystem = new Filesystem();
-    }
-    
-    /** */
-    public function updateFechaLoginTo(String $slug, String $waId, String $fechHra): String
-    {
-			$filename = $slug . '.json';
-			$map = $this->getContent('dtaCtc', $filename);
-			$result = '';
-			if(array_key_exists('colabs', $map)) {
-				$colabs = $map['colabs'];
-				$has = array_search($waId, array_column($colabs, 'waId'));
-				if($has !== false) {
-						
-					$fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fechHra);
-					$fechaDateTime->add(new \DateInterval('PT23H55M'));
+	public function __construct(ParameterBagInterface $contenedor)
+	{
+		$this->params = $contenedor;
+		$this->filesystem = new Filesystem();
+	}
+	
+	/** */
+	public function updateFechaLoginTo(String $slug, String $waId, String $fechHra): String
+	{
+		$filename = $slug . '.json';
+		$map = $this->getContent('dtaCtc', $filename);
+		$result = '';
+		if(array_key_exists('colabs', $map)) {
+			$colabs = $map['colabs'];
+			$has = array_search($waId, array_column($colabs, 'waId'));
+			if($has !== false) {
+					
+				$fechaDateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s.v', $fechHra);
+				$fechaDateTime->add(new \DateInterval('PT23H55M'));
 
-					$colabs[$has]['login'] = $fechHra;
-					$colabs[$has]['kduk'] = $fechaDateTime->format('Y-m-d\TH:i:s.v');
-					$colabs[$has]['stt'] = 1;
+				$colabs[$has]['login'] = $fechHra;
+				$colabs[$has]['kduk'] = $fechaDateTime->format('Y-m-d\TH:i:s.v');
+				$colabs[$has]['stt'] = 1;
 
-					$map['colabs'] = $colabs;
-					$this->setContent('dtaCtc', $filename, $map);
-				}
+				$map['colabs'] = $colabs;
+				$this->setContent('dtaCtc', $filename, $map);
 			}
-			return $result;
-    }
+		}
+		return $result;
+	}
 
-    /** */
-    public function setStopStt(String $waIdCot): void
-    {
-			try {
-				$this->filesystem->dumpFile($waIdCot.'_stopstt.json', '');
-			} catch (FileException $e) {}
-    }
+	/** */
+	public function setStopStt(String $waIdCot): void
+	{
+		try {
+			$this->filesystem->dumpFile($waIdCot.'_stopstt.json', '');
+		} catch (FileException $e) {}
+	}
 
-    /** */
-    public function getContent(String $folder, String $filename = ''): array | String
-    {
-			$path = $this->getFolderTo($folder);
-			$tipoReturn = 'string';
-			$content = '';
+	/** */
+	public function getContent(String $folder, String $filename = ''): array | String
+	{
+		$path = $this->getFolderTo($folder);
+		$tipoReturn = 'string';
+		$content = '';
 
-			if(mb_strpos($filename, '.json') !== false) {
-				$tipoReturn = 'map';
-				$content = [];
-			}
-			if($filename != '') {
-				$path = $path . '/' .$filename;
-			}
+		if(mb_strpos($filename, '.json') !== false) {
+			$tipoReturn = 'map';
+			$content = [];
+		}
+		if($filename != '') {
+			$path = $path . '/' .$filename;
+		}
 
-			try {
-				if($this->existe($folder, $filename)) {
-					$content = file_get_contents($path);
-					if($content != '' && $tipoReturn == 'map') {
-						return json_decode($content, true);
-					}
-				}
-			} catch (FileException $e) {}
-
-			return $content;
-    }
-
-    /** */
-    public function setContent(String $folder, String $filename, array $content): void
-    {
-			$path = $this->getFolderTo($folder);
-			if($filename != '') {
-				$path = $path . '/' .$filename;
-			}
-
-			try {
-				$this->filesystem->dumpFile($path, json_encode($content));
-			} catch (FileException $e) {}
-    }
-
-    /** */
-    public function delete(String $folder, String $filename = ''): void
-    {
-			$path = $this->getFolderTo($folder);
-			if($filename != '') {
-				$path = $path . '/' .$filename;
-			}
-			try {
-				if(is_file($path)) {
-					$this->filesystem->remove($path);
-				}
-			} catch (FileException $e) {}
-    }
-
-    /** */
-    public function existe(String $folder, String $filename = ''): bool
-    {
-			$path = $this->getFolderTo($folder);
-			if($filename != '') {
-				$path = $path . '/' .$filename;
-			}
-			return $this->filesystem->exists($path);
-    }
-
-    /** */
-    public function getConmuta(): array
-    {
-			$path = $this->params->get('tkwaconm');
-			try {
+		try {
+			if($this->existe($folder, $filename)) {
 				$content = file_get_contents($path);
-				if($content != '') {
+				if($content != '' && $tipoReturn == 'map') {
 					return json_decode($content, true);
 				}
-			} catch (FileException $e) {}
+			}
+		} catch (FileException $e) {}
 
-			return [];
-    }
+		return $content;
+	}
 
-    /** 
-     * [V6]
-     * Borramos archivo de inicio de secion del cotizador o todos en caso
-     * de que $waIdCot sea con valor all
-    */
-    public function deleteInitLoginFile(String $waIdCot): int
-    {
-        $borrados = 0;
-        if($waIdCot == 'all') {
+	/** */
+	public function setContent(String $folder, String $filename, array $content): void
+	{
+		$path = $this->getFolderTo($folder);
+		if($filename != '') {
+			$path = $path . '/' .$filename;
+		}
 
-            $public = $this->params->get('phtml');
-            $finder = new Finder();
-            $finder->files()->in($public)->name('*_iniLogin.json');
-            if ($finder->hasResults()) {
-                foreach ($finder as $file) {
-                    try {
-                        if(is_file($file->getRealPath())) {
-                            $this->filesystem->remove($file->getRealPath());
-                            $borrados = $borrados + 1;
-                        }
-                    } catch (void) {
-                        $borrados = -1;
-                    }
-                }
-            }
-        }else{
-            try {
-                $this->delete('/', $waIdCot."_iniLogin.json");
-                $borrados = 1;
-            } catch (void) {
-                $borrados = -1;
-            }
-        }
+		try {
+			$this->filesystem->dumpFile($path, json_encode($content));
+		} catch (FileException $e) {}
+	}
 
-        return $borrados;
-    }
+	/** */
+	public function delete(String $folder, String $filename = ''): void
+	{
+		$path = $this->getFolderTo($folder);
+		if($filename != '') {
+			$path = $path . '/' .$filename;
+		}
+		try {
+			if(is_file($path)) {
+				$this->filesystem->remove($path);
+			}
+		} catch (FileException $e) {}
+	}
 
-    /** 
-     * [V6]
-     * Borramos todos los archivos generados al momento de enviar un SSE a AnetTrack
-     * y de un determinado item y un determinado cotizador
-    */
-    public function deleteSendmyFiles(String $idDbSr, String $waIdCot): int
-    {
-        $borrados = 0;
-        $waSendmy = $this->params->get('waSendmy');
-        $finder = new Finder();
-        $finder->files()->in($waSendmy)->name($idDbSr.'*'.$waIdCot.'.json');
-        if ($finder->hasResults()) {
-            foreach ($finder as $file) {
-                try {
-                    if(is_file($file->getRealPath())) {
-                        $this->filesystem->remove($file->getRealPath());
-                        $borrados = $borrados + 1;
-                    }
-                } catch (void) {
-                    $borrados = -1;
-                }
-            }
-        }
+	/** */
+	public function existe(String $folder, String $filename = ''): bool
+	{
+		$path = $this->getFolderTo($folder);
+		if($filename != '') {
+			$path = $path . '/' .$filename;
+		}
+		return $this->filesystem->exists($path);
+	}
 
-        return $borrados;
-    }
+	/** */
+	public function getConmuta(): array
+	{
+		$path = $this->params->get('tkwaconm');
+		try {
+			$content = file_get_contents($path);
+			if($content != '') {
+				return json_decode($content, true);
+			}
+		} catch (FileException $e) {}
 
-    /** 
-     * [V6]
-    */
-    public function existeInCooler(String $waId, String $idDbSr)
-    {    
-        $cooler = $this->getContent('coolers', $waId.'.json');
+		return [];
+	}
 
-        if(count($cooler) > 0) {
-            $items = array_column($cooler, 'idDbSr');
-            if(count($items) > 0) {
-                $has = array_search($idDbSr, $items);
-                if($has !== false) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+	/** 
+	 * [V6]
+	 * Borramos archivo de inicio de secion del cotizador o todos en caso
+	 * de que $waIdCot sea con valor all
+	*/
+	public function deleteInitLoginFile(String $waIdCot): int
+	{
+		$borrados = 0;
+		if($waIdCot == 'all') {
+
+			$public = $this->params->get('phtml');
+			$finder = new Finder();
+			$finder->files()->in($public)->name('*_iniLogin.json');
+			if ($finder->hasResults()) {
+				foreach ($finder as $file) {
+					try {
+						if(is_file($file->getRealPath())) {
+							$this->filesystem->remove($file->getRealPath());
+							$borrados = $borrados + 1;
+						}
+					} catch (void) {
+						$borrados = -1;
+					}
+				}
+			}
+		}else{
+			try {
+				$this->delete('/', $waIdCot."_iniLogin.json");
+				$borrados = 1;
+			} catch (void) {
+				$borrados = -1;
+			}
+		}
+
+		return $borrados;
+	}
+
+	/** 
+	 * [V6]
+	 * Borramos todos los archivos generados al momento de enviar un SSE a AnetTrack
+	 * y de un determinado item y un determinado cotizador
+	*/
+	public function deleteSendmyFiles(String $idDbSr, String $waIdCot): int
+	{
+		$borrados = 0;
+		$waSendmy = $this->params->get('waSendmy');
+		$finder = new Finder();
+		$finder->files()->in($waSendmy)->name($idDbSr.'*'.$waIdCot.'.json');
+		if ($finder->hasResults()) {
+			foreach ($finder as $file) {
+				try {
+					if(is_file($file->getRealPath())) {
+						$this->filesystem->remove($file->getRealPath());
+						$borrados = $borrados + 1;
+					}
+				} catch (void) {
+					$borrados = -1;
+				}
+			}
+		}
+
+		return $borrados;
+	}
+
+	/** 
+	 * [V6]
+	*/
+	public function existeInCooler(String $waId, String $idDbSr)
+	{    
+		$cooler = $this->getContent('coolers', $waId.'.json');
+
+		if(count($cooler) > 0) {
+			$items = array_column($cooler, 'idDbSr');
+			if(count($items) > 0) {
+				$has = array_search($idDbSr, $items);
+				if($has !== false) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
     
-    /** 
-     * [V6]
-     * Borramos del Cooler el item del cotizador que esta queriendo cotizar y lo enviamos
-     * a tracking para indicar que este cotizador esta cotizando.
-    */
-    public function putCotizando(WaMsgDto $waMsg, bool $withResults = false): bool | array
-    {    
-        $cooler = $this->getContent('coolers', $waMsg->from . '.json');
+	/** 
+	 * [V6]
+	 * Borramos del Cooler el item del cotizador que esta queriendo cotizar y lo enviamos
+	 * a tracking para indicar que este cotizador esta cotizando.
+	*/
+	public function putCotizando(WaMsgDto $waMsg, bool $withResults = false): bool | array
+	{    
+			$cooler = $this->getContent('coolers', $waMsg->from . '.json');
 
-        if(count($cooler) > 0) {
-            $has = array_search($waMsg->idDbSr, array_column($cooler, 'idDbSr'));
-            if($has !== false) {
-                try {
-                    $item = $cooler[$has];
-                    unset($cooler[$has]);
-                    $cooler = array_values($cooler);
-                    $this->setContent('coolers', $waMsg->from.'.json', $cooler);
-                } catch (\Throwable $th) {
-                    return ($withResults) ? [] : false;
-                }
+			if(count($cooler) > 0) {
+					$has = array_search($waMsg->idDbSr, array_column($cooler, 'idDbSr'));
+					if($has !== false) {
+							try {
+									$item = $cooler[$has];
+									unset($cooler[$has]);
+									$cooler = array_values($cooler);
+									$this->setContent('coolers', $waMsg->from.'.json', $cooler);
+							} catch (\Throwable $th) {
+									return ($withResults) ? [] : false;
+							}
 
-                if(array_key_exists('idDbSr', $item)) {
-                    $date = new \DateTime('now');
-                    $item['wamid']   = $waMsg->id;
-                    $item['current'] = 'sfto';
-                    $item['attend']  = $date->format('Y-m-d h:i:s');
-                    $this->setContent('tracking', $waMsg->from.'.json', $item);
-                    return ($withResults) ? $item : false;
-                }
-            }
-        }
+							if(array_key_exists('idDbSr', $item)) {
+									$date = new \DateTime('now');
+									$item['wamid']   = $waMsg->id;
+									$item['current'] = 'sfto';
+									$item['attend']  = $date->format('Y-m-d h:i:s');
+									$this->setContent('tracking', $waMsg->from.'.json', $item);
+									return ($withResults) ? $item : false;
+							}
+					}
+			}
 
-        return ($withResults) ? [] : false;
-    }
+			return ($withResults) ? [] : false;
+	}
     
     /** 
      * Revisamos si el cotizador tiene un item actualmente cotizando
