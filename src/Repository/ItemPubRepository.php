@@ -119,7 +119,7 @@ class ItemPubRepository extends ServiceEntityRepository
 			'results' => $results,
 			'pendings' => $pendings,
 			'inactives' => $inactives,
-			'last' => $last,
+			'last' => $last + 1000,
 		];
 	}
 
