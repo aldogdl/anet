@@ -97,7 +97,7 @@ class ItemPubRepository extends ServiceEntityRepository
 			}
 
 			// Separar items inactivos o con status 501
-			if ((!isset($item['isActive']) || $item['isActive'] == 0) || (isset($item['status']) && $item['status'] == 501)) {
+			if ((!isset($item['isActive']) || $item['isActive'] == 0) || (isset($item['stt']) && $item['stt'] == 501)) {
 				$inactives[] = [
 					'id' => $item['id'],
 					'idSrc' => $item['idSrc'] ?? null,
