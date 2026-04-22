@@ -135,7 +135,7 @@ class ItemController extends AbstractController
 				(string) $ikuItem,
 				$withThubn
 			);
-      
+
 			$body = 'Imagen subida correctamente';
       if($idItem > 0 && array_key_exists('base_path', $result)) {
 				$body = $em->updateImagePath($idItem, $result['filename'], $result['base_path']);
