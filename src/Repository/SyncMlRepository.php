@@ -32,6 +32,20 @@ class SyncMlRepository extends ServiceEntityRepository
 			->getQuery()
 			->getOneOrNullResult();
 	}
+  
+	/**
+	* Necesitamos recuperar los últimos 3 mensajes del usuario
+	*/
+	public function getLastMsgReceivedByIdUser(string $idUser): array
+	{
+		return $this->createQueryBuilder('n')
+			->where('n.user_id = :idUser')
+			->setParameter('idUser', $idUser)
+			->orderBy('n.receivedAt', 'DESC')
+			->setMaxResults(3)
+			->getQuery()
+			->getArrayResult();
+	}
 
 	/**
 	* Necesitamos recuperar el mensaje por el id del producto.
@@ -60,18 +74,25 @@ class SyncMlRepository extends ServiceEntityRepository
 			->orderBy('n.receivedAt', 'DESC');
 
 		if ($msgId !== null && $msgId !== '') {
+
 			$idType = mb_strpos($msgId, 'ML');
 			if($idType !== false && $idType < 3) {
 				$lastMsg = $this->getMsgByIdProduct($msgId);
+				if (!$lastMsg) {
+					return $this->getLastMsgReceivedByIdUser($idUser);
+				}
 			} else {
 				$lastMsg = $this->getMsgByMsgId($msgId);
 			}
+
 			if (!$lastMsg || !$lastMsg->getSendAt()) {
 				return [];
 			}
 
 			$qb->andWhere('n.receivedAt > :sendAt')
 				->setParameter('sendAt', $lastMsg->getSendAt());
+		} else {
+			$qb->setMaxResults(5);
 		}
 
     $this->deleteOlderThan48Hours($idUser);
