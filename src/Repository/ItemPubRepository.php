@@ -96,22 +96,15 @@ class ItemPubRepository extends ServiceEntityRepository
 				$last = $updatedAtMillis;
 			}
 
+      $isInactive = false;
 			// Separar items inactivos o con status 501
 			if ((!isset($item['isActive']) || $item['isActive'] == 0) || (isset($item['stt']) && $item['stt'] == 501)) {
-				$inactives[] = [
-					'id' => $item['id'],
-					'idSrc' => $item['idSrc'] ?? null,
-					'iku' => $item['iku'] ?? null,
-					'stt' => $item['stt'] ?? null,
-					'isActive' => $item['isActive'] ?? 0,
-				];
+				$isInactive = true;
+			}
+			if ($index < 5 || $isInactive) {
+				$results[] = $item;
 			} else {
-				// Items activos
-				if ($index < 5) {
-					$results[] = $item;
-				} else {
-					$pendings[] = $item['id'];
-				}
+				$pendings[] = $item['id'];
 			}
 		}
 
