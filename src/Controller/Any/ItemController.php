@@ -66,7 +66,13 @@ class ItemController extends AbstractController
 			$waId = $req->query->get('waId') ?? 0;
 			if($id && $waId) {
 				
-				$res = $repo->pausarPub((integer)$id, $waId);
+			  if(mb_strpos($id, ',') !== false) {
+					$ids = array_map('trim', explode(',', $id));
+					$res = $repo->pausarPubByIdSrc($ids, $waId);
+				} else {
+					$res = $repo->pausarPub((integer)$id, $waId);
+				}
+
 				if($res['success']) {
           
 				  // Aprovechamos y limpiamos la BD y folders de Imagenes

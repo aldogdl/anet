@@ -253,6 +253,32 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** 
+	 * Pausa publicaciones para que deje de aparecer en el catálogo.
+	 * Actualiza el item con stt = 501, isActive = false y updatedAt = ahora
+	*/
+	public function pausarPubByIdSrc(array $ids, string $waId): array
+	{
+		try {
+			$dql = 'UPDATE ' . ItemPub::class . ' it '.
+			'SET it.stt = 501, it.isActive = false, it.updatedAt = :updatedAt, '.
+			'it.waId = :waId '.
+			'WHERE it.idSrc IN (:ids)';
+
+			$result = $this->_em->createQuery($dql)
+				->setParameters([
+					'id' => $ids,
+					'waId' => $waId,
+					'updatedAt' => new \DateTimeImmutable()
+				])
+				->execute();
+
+			return ['success' => true, 'rowsAffected' => $result];
+		} catch (\Throwable $th) {
+			return ['success' => false, 'error' => $th->getMessage()];
+		}
+	}
+
+	/** 
 	 * Pausa la publicación para que deje de aparecer en el catálogo.
 	 * Actualiza el item con stt = 501, isActive = false y updatedAt = ahora
 	*/
