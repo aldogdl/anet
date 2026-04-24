@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+
 class ShopController extends AbstractController
 {
 	#[Route('/{slug}', name: 'app_shop', methods: ['GET'], priority: -1)]
