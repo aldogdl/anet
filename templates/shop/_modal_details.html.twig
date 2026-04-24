@@ -30,22 +30,26 @@
         </button>
 
         <!-- Left Column: Gallery -->
-        <div class="w-full lg:w-3/5 bg-darker p-4 lg:p-12 flex flex-col gap-6 overflow-y-auto">
+        <div class="w-full lg:w-3/5 bg-darker p-4 lg:p-12 flex flex-col gap-6 overflow-y-auto" x-data="{ activeImg: '' }" x-init="$watch('selectedItem', v => activeImg = v ? v.imgBig : '')">
             <!-- Main Image with Zoom -->
             <div class="relative aspect-square rounded-[2rem] overflow-hidden bg-slate-900 border border-slate-800 group cursor-zoom-in">
-                <img :src="selectedItem?.imgBig" 
+                <img :src="activeImg" 
+                     onerror="this.src='https://placehold.co/800x800/0f172a/64748b?text=Sin+Imagen'"
                      class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-150 origin-center" 
                      id="zoom-image">
             </div>
             
             <!-- Thumbnails Horizontal Scroll -->
             <div class="flex gap-4 overflow-x-auto pb-4 px-2 no-scrollbar">
-                <template x-for="i in 4" :key="i">
-                    <div class="w-24 h-24 flex-shrink-0 rounded-2xl border-2 border-primary overflow-hidden cursor-pointer opacity-100 transition-all hover:opacity-100">
-                         <img :src="selectedItem?.thumb" class="w-full h-full object-cover">
+                <template x-for="(pic, index) in selectedItem?.pictures" :key="index">
+                    <div class="w-24 h-24 flex-shrink-0 rounded-2xl border-2 overflow-hidden cursor-pointer transition-all hover:border-primary"
+                         :class="activeImg === (selectedItem.pathImg + '/' + pic) ? 'border-primary shadow-lg shadow-primary/20' : 'border-slate-800 opacity-60 hover:opacity-100'"
+                         @click="activeImg = selectedItem.pathImg + '/' + pic">
+                         <img :src="selectedItem.pathImg + '/' + pic" 
+                              onerror="this.src='https://placehold.co/200x200/0f172a/64748b?text=Error'"
+                              class="w-full h-full object-cover">
                     </div>
                 </template>
-                <!-- Placeholder para más fotos si existieran -->
             </div>
         </div>
 
