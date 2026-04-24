@@ -1,0 +1,67 @@
+<div class="group bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden hover:border-primary/50 transition-all duration-300 flex flex-col shadow-lg hover:shadow-primary/5 active:scale-[0.98]">
+    <!-- Image Area -->
+    <div class="relative aspect-square overflow-hidden bg-slate-950 cursor-pointer" @click="openModal({{ {
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        thumb: item.thumb,
+        imgBig: item.imgBig|default(item.thumb),
+        detalles: item.detalles|default('Sin detalles adicionales.'),
+        sku: item.iku|default('N/A'),
+        brand: item.mrkId,
+        model: item.mdlId
+    }|json_encode|e('html_attr') }})">
+        <img src="{{ item.thumb }}" 
+             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100" 
+             alt="{{ item.title }}">
+        
+        <!-- Status Badge -->
+        {% if item.isActive %}
+            <span class="absolute top-4 left-4 bg-emerald-500/10 text-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-emerald-500/20 backdrop-blur-md">
+                Disponible
+            </span>
+        {% endif %}
+
+        <!-- Quick View Overlay -->
+        <div class="absolute inset-0 bg-dark/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+            <span class="bg-white text-darker px-6 py-2 rounded-full text-sm font-bold shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform">
+                Ver Detalles
+            </span>
+        </div>
+    </div>
+
+    <!-- Info Area -->
+    <div class="p-6 flex-1 flex flex-col">
+        <div class="flex-1">
+            <h3 class="text-lg font-bold text-slate-200 line-clamp-2 leading-tight group-hover:text-primary transition-colors cursor-pointer" 
+                @click="openModal({{ {
+                    id: item.id,
+                    title: item.title,
+                    price: item.price,
+                    thumb: item.thumb,
+                    imgBig: item.imgBig|default(item.thumb),
+                    detalles: item.detalles|default('Sin detalles adicionales.'),
+                    sku: item.iku|default('N/A'),
+                    brand: item.mrkId,
+                    model: item.mdlId
+                }|json_encode|e('html_attr') }})">
+                {{ item.title }}
+            </h3>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-2">SKU: {{ item.iku|default('N/A') }}</p>
+        </div>
+
+        <div class="mt-6 flex items-center justify-between">
+            <div class="flex flex-col">
+                <span class="text-2xl font-black text-white italic">
+                    ${{ item.price|number_format(2, '.', ',') }}
+                </span>
+                <span class="text-[10px] text-slate-500">MXN + Envío</span>
+            </div>
+            
+            <button @click="addToCart({{ item.id }})" 
+                    class="p-4 bg-slate-800 hover:bg-primary text-slate-400 hover:text-darker rounded-2xl transition-all shadow-lg active:scale-90">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            </button>
+        </div>
+    </div>
+</div>

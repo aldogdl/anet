@@ -1,0 +1,93 @@
+<!-- Logo Section -->
+<div class="p-8 flex flex-col items-center border-b border-slate-800">
+    <div class="w-32 h-32 bg-slate-800 rounded-xl flex items-center justify-center overflow-hidden mb-4 border border-slate-700 shadow-inner">
+        <!-- Reemplazar con el logo real del usuario -->
+        <span class="text-3xl font-bold text-primary italic">LOGO</span>
+    </div>
+    <h2 class="text-lg font-semibold text-white tracking-tight">{{ storeName|default('Mi Tienda') }}</h2>
+    <div class="flex items-center gap-2 mt-2 text-xs text-slate-400">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        <span>En línea ahora</span>
+    </div>
+</div>
+
+<!-- Contact Info -->
+<div class="px-8 py-6 border-b border-slate-800 bg-dark/50">
+    <div class="flex flex-col gap-3">
+        <div class="flex items-center gap-3 text-sm group cursor-pointer">
+            <div class="p-2 bg-slate-800 rounded-lg group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+            </div>
+            <span class="text-slate-300">55 1234 5678</span>
+        </div>
+        <div class="flex items-center gap-3 text-sm group cursor-pointer">
+            <div class="p-2 bg-slate-800 rounded-lg group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </div>
+            <span class="text-slate-300">CDMX, México</span>
+        </div>
+    </div>
+</div>
+
+<!-- Brands Filter (Scrollable) -->
+<div class="flex-1 overflow-hidden flex flex-col p-8" x-data="{ 
+    filters: {}, 
+    loading: true,
+    async fetchFilters() {
+        try {
+            const res = await fetch('/api/filters/{{ slug }}');
+            this.filters = await res.json();
+        } finally {
+            this.loading = false;
+        }
+    }
+}" x-init="fetchFilters()">
+    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center justify-between">
+        Marcas
+        <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded-full" x-text="Object.keys(filters).length"></span>
+    </h3>
+    
+    <div class="flex-1 overflow-y-auto space-y-1 -mx-2 px-2" id="brands-list">
+        <template x-if="loading">
+            <div class="space-y-2 animate-pulse">
+                <div class="h-8 bg-slate-800 rounded"></div>
+                <div class="h-8 bg-slate-800 rounded"></div>
+                <div class="h-8 bg-slate-800 rounded w-2/3"></div>
+            </div>
+        </template>
+        
+        <template x-for="(data, id) in filters" :key="id">
+            <div class="group">
+                <button class="w-full flex items-center justify-between p-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+                    <span x-text="data.name"></span>
+                    <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </template>
+    </div>
+</div>
+
+<!-- Compact Form (Fixed) -->
+<div class="p-8 bg-dark/30 border-t border-slate-800">
+	<h4 class="text-sm font-semibold text-white mb-3">¿No encontraste tu pieza?</h4>
+	<form class="space-y-2" x-data="{ sent: false }" @submit.prevent="sent = true">
+		<div x-show="!sent" class="space-y-2">
+			<input type="text" placeholder="Nombre" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-slate-600">
+			<input type="tel" placeholder="WhatsApp" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-slate-600">
+			<textarea placeholder="¿Qué buscas?" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-slate-600 resize-none"></textarea>
+			<button class="w-full bg-primary hover:bg-emerald-500 text-darker font-bold py-2 rounded-lg text-xs transition-colors shadow-lg shadow-primary/10">
+					Enviar Solicitud
+			</button>
+		</div>
+		<div x-show="sent" class="text-center py-4 bg-emerald-500/10 rounded-lg border border-emerald-500/20" x-cloak>
+			<p class="text-primary text-xs font-medium">¡Solicitud enviada!</p>
+			<p class="text-[10px] text-slate-400 mt-1">Te contactaremos pronto.</p>
+		</div>
+	</form>
+    
+	<!-- Footer Piece -->
+	<div class="mt-6 pt-6 border-t border-slate-800/50 flex flex-col gap-1">
+		<p class="text-[10px] text-slate-500 font-medium tracking-tight">Un producto mas de</p>
+		<p class="text-xs font-bold text-slate-400 tracking-wider">YonkEros <span class="text-primary">®</span></p>
+	</div>
+</div>

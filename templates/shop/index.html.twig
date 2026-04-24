@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div x-data="{ 
+    modalOpen: false, 
+    selectedItem: null,
+    cartCount: 0,
+    openModal(item) {
+        this.selectedItem = item;
+        this.modalOpen = true;
+    },
+    async addToCart(id) {
+        const res = await fetch(`/cart/add/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            this.cartCount = data.cartCount;
+            // Podríamos añadir una notificación aquí
+        }
+    }
+}">
+
+    <!-- Hero Banner -->
+    <div class="relative h-[300px] lg:h-[400px] flex items-center justify-center overflow-hidden">
+        <!-- Background Image (Placeholder aleatorio) -->
+        <img src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&q=80&w=1600" 
+             class="absolute inset-0 w-full h-full object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000 scale-110" 
+             alt="Muro de refacciones">
+        <div class="absolute inset-0 bg-gradient-to-t from-darker via-transparent to-transparent"></div>
+        
+        <div class="relative z-10 text-center px-4">
+            <h1 class="text-4xl lg:text-6xl font-black text-white uppercase tracking-tighter hero-text-shadow">
+                Bienvenido a mi <span class="text-primary italic">MURO</span> de refacciones
+            </h1>
+            <p class="mt-4 text-lg lg:text-xl text-slate-300 font-light max-w-2xl mx-auto hero-text-shadow">
+                El lugar donde encuentras exactamente lo que tu vehículo necesita. Calidad premium garantizada.
+            </p>
+        </div>
+    </div>
+
+    <!-- Sticky Search Bar -->
+    <div class="sticky top-0 z-30 bg-darker/80 backdrop-blur-xl border-b border-slate-800 py-4 px-6 lg:px-12">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-4 items-center">
+            <!-- Search Form -->
+            <form action="{{ path('app_shop', {slug: slug}) }}" method="GET" class="flex-1 w-full flex items-stretch gap-2">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </span>
+                    <input type="text" name="q" value="{{ search }}" placeholder="Buscar por título, pieza o descripción..." 
+                           class="w-full bg-slate-800 border border-slate-700 rounded-2xl py-4 pl-12 pr-4 text-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all shadow-xl">
+                </div>
+                <button type="submit" class="bg-primary hover:bg-emerald-500 text-darker font-bold px-8 rounded-2xl transition-all flex items-center gap-2 active:scale-95 shadow-lg shadow-primary/20">
+                    <span class="hidden md:inline">Buscar Pieza</span>
+                    <svg class="w-5 h-5 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+            </form>
+
+            <!-- Cart Summary (Icon) -->
+            <button class="relative p-4 bg-slate-800 rounded-2xl border border-slate-700 hover:border-primary group transition-all">
+                <svg class="w-6 h-6 text-slate-400 group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <span x-show="cartCount > 0" class="absolute -top-1 -right-1 bg-primary text-darker text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-darker" x-text="cartCount"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="px-6 lg:px-12 py-12 max-w-7xl mx-auto">
+        {% if items|length > 0 %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {% for item in items %}
+                    {% include 'shop/_product_card.html.twig' with {'item': item} %}
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-20 flex justify-center items-center gap-2">
+                {% if pagesCount > 1 %}
+                    {% for i in 1..pagesCount %}
+                        <a href="{{ path('app_shop', {slug: slug, page: i, q: search}) }}" 
+                           class="w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all {{ i == currentPage ? 'bg-primary text-darker shadow-lg shadow-primary/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' }}">
+                            {{ i }}
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="text-center py-20 bg-slate-900/30 rounded-3xl border border-dashed border-slate-800">
+                <svg class="w-20 h-20 text-slate-700 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 class="text-2xl font-bold text-slate-400">No encontramos piezas</h3>
+                <p class="text-slate-600 mt-2">Intenta con otro término o solicita la pieza en el formulario lateral.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Product Modal -->
+    {% include 'shop/_modal_details.html.twig' %}
+
+</div>
+{% endblock %}
