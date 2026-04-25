@@ -28,7 +28,7 @@
     loading: true,
     async fetchFilters() {
         try {
-            const res = await fetch('{{ path('muro_shop_filters', {template: template, slug: slug}) }}?t=' + Date.now());
+            const res = await fetch('{{ path('app_shop_filters', {template: template, slug: slug}) }}?t=' + Date.now());
             this.filters = await res.json();
             console.log('Filtros cargados:', this.filters);
         } finally {
