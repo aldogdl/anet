@@ -142,6 +142,25 @@
       </div>
     </template>
   </div>
+
+  <!-- Confirm Remove Modal -->
+  <div x-show="itemToRemove !== null" class="fixed inset-0 z-[110] flex items-center justify-center p-4" x-cloak>
+      <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" @click="itemToRemove = null" x-transition.opacity></div>
+      <div class="relative bg-[#0b141a] border border-white/10 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
+           x-transition:enter="transition ease-out duration-300"
+           x-transition:enter-start="opacity-0 scale-90 translate-y-8"
+           x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+          <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+              <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          </div>
+          <h3 class="text-white text-lg font-black tracking-widest uppercase mb-2">¿Quitar del carrito?</h3>
+          <p class="text-white/40 text-xs mb-8 font-medium">El producto se eliminará de tu selección actual.</p>
+          <div class="flex gap-4 w-full">
+              <button @click="itemToRemove = null" class="flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest text-white hover:bg-white/5 transition-colors">Cancelar</button>
+              <button @click="confirmRemove()" class="flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest bg-red-500 text-white shadow-lg shadow-red-500/20 hover:bg-red-600 active:scale-95 transition-all">Sí, quitar</button>
+          </div>
+      </div>
+  </div>
 </div>
 
 <script>
@@ -153,6 +172,8 @@
       showModal: false,
       showFilters: false,
       cartCount: {{ app.session.get('cart')|length }},
+      cartItems: {{ app.session.get('cart') ? app.session.get('cart')|keys|json_encode|raw : '[]' }},
+      itemToRemove: null,
       toasts: [],
       currentFilters: { mk: '', md: '', page: 1, q: '{{ search }}' },
       async applyFilter(params = {}) {
@@ -185,11 +206,29 @@
           const data = await res.json();
           if (data.success) {
             this.cartCount = data.cartCount;
+            if (!this.cartItems.includes(id)) {
+                this.cartItems.push(id);
+            }
             this.addToast('Producto añadido al carrito');
           }
         } catch (e) {
           console.error('Error adding to cart', e);
         }
+      },
+      promptRemove(id) {
+        this.itemToRemove = id;
+      },
+      async confirmRemove() {
+          const id = this.itemToRemove;
+          this.itemToRemove = null;
+          // Actualizar UI optimista
+          this.cartItems = this.cartItems.filter(i => i !== id);
+          this.cartCount = Math.max(0, this.cartCount - 1);
+          this.addToast('Producto eliminado');
+          // Llamada al backend si existe (opcional)
+          try {
+              await fetch('{{ path('cart_add', {id: 0}) }}'.replace('0', id) + '?remove=1', { method: 'POST' });
+          } catch(e) {}
       },
       addToast(message) {
         const id = Date.now();
