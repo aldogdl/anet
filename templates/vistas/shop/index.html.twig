@@ -30,15 +30,20 @@
               hasMeli: {{ hasMeli|default(false) ? 'true' : 'false' }},
               meliToken: '{{ encodedMeliToken|default('') }}'
            }">
-        <div class="relative">
+        <div class="relative flex items-center w-full">
           <input type="text" x-model="currentFilters.q" 
-              @input.debounce.500ms="applyFilter({page: 1})"
+              @keydown.enter="applyFilter({page: 1})"
               placeholder="Busca por pieza, marca o código..." 
-              class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-14 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:border-[#25d366]/50 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
-          <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-24 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:border-[#25d366]/50 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
+          <svg class="w-5 h-5 absolute left-4 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          
+          <!-- Botón de Búsqueda -->
+          <button @click="applyFilter({page: 1})" class="absolute right-16 p-2 text-white/50 hover:text-[#25d366] hover:bg-white/5 rounded-xl transition-all">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
           
           <!-- Status Logos -->
-          <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+          <div class="absolute right-4 pointer-events-none">
             <template x-if="hasMeli">
               <!-- Meli Logo Style -->
               <div class="h-6 px-2 bg-white/30 rounded-md flex items-center justify-center shadow-sm font-black text-white text-[12px] tracking-tight">
@@ -118,11 +123,22 @@
       {% include 'vistas/shop/_sidebar.html.twig' %}
     </aside>
 
-    <!-- Product Grid Section (Reactive Container) -->
-    <section class="flex-1 flex flex-col gap-8" id="product-grid-container">
-      <!-- Initial Grid (Server Rendered) -->
-      {% include 'vistas/shop/_product_grid.html.twig' %}
-    </section>
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Product Grid Section (Reactive Container) -->
+      <section class="flex flex-col gap-8" id="product-grid-container">
+        <!-- Initial Grid (Server Rendered) -->
+        {% include 'vistas/shop/_product_grid.html.twig' %}
+      </section>
+
+      <!-- MeLi Results Container -->
+      <section class="w-full" x-show="meliLoading || meliItemsHtml !== ''" x-cloak>
+          <div x-show="meliLoading" class="flex flex-col items-center justify-center py-16">
+              <span class="w-10 h-10 border-4 border-[#25d366]/20 border-t-[#25d366] rounded-full animate-spin"></span>
+              <span class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-4">Consultando stock extendido...</span>
+          </div>
+          <div x-html="meliItemsHtml" x-show="!meliLoading"></div>
+      </section>
+    </div>
   </main>
 
   <!-- Footer -->
@@ -202,6 +218,8 @@
       meliToken: '{{ encodedMeliToken|default('') }}',
       storeName: '{{ storeName|default(slug|capitalize)|escape('js') }}',
       localidad: '{{ (dtaCtc.localidad ?? '')|escape('js') }}',
+      meliItemsHtml: '',
+      meliLoading: false,
       async applyFilter(params = {}) {
           this.currentFilters = { ...this.currentFilters, ...params };
           
@@ -211,19 +229,42 @@
           }
           
           const query = new URLSearchParams(queryParams).toString();
+          
+          this.meliItemsHtml = ''; // Limpiamos resultados anteriores de MeLi
 
+          // 1. Búsqueda local principal (el backend actuará como Metabuscador)
           try {
               const res = await fetch(`{{ path('app_shop_search', {template: template, slug: slug}) }}?${query}`);
               document.getElementById('product-grid-container').innerHTML = await res.text();
-              this.showFilters = false; // Cerramos drawer si estaba abierto
+              this.showFilters = false; 
               
-              // Actualizar URL sin recargar para que el usuario pueda compartir
               const urlParams = new URLSearchParams(this.currentFilters);
               const newUrl = window.location.pathname + '?' + urlParams.toString();
               window.history.pushState({}, '', newUrl);
           } catch (e) {
-              console.error('Error filtering', e);
+              console.error('Error filtering local DB', e);
           }
+      },
+      fetchMissingMeli(ids) {
+          if (!ids || ids.trim() === '') {
+              this.meliItemsHtml = '';
+              return;
+          }
+          this.meliLoading = true;
+          this.meliItemsHtml = '';
+          
+          const queryParams = { ids: ids };
+          if (this.meliToken) queryParams.mt = this.meliToken;
+          const query = new URLSearchParams(queryParams).toString();
+          
+          fetch(`{{ path('app_shop_search_meli', {slug: slug}) }}?${query}`)
+              .then(res => {
+                  if(!res.ok) throw new Error('Network response was not ok');
+                  return res.text();
+              })
+              .then(html => { this.meliItemsHtml = html; })
+              .catch(e => console.error('Error fetching missing Meli', e))
+              .finally(() => { this.meliLoading = false; });
       },
       openModal(item) {
         this.selectedItem = item;

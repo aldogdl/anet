@@ -29,15 +29,16 @@ class ShopController extends AbstractController
 		
 		if (is_array($meliLog) && !empty($meliLog['token']) && !empty($meliLog['refreshTk'])) {
 			$hasMeli = true;
-			// Codificación simple (base64 + rot13) para enviar al frontend sin exponerlo directamente
-			$encodedMeliToken = base64_encode(str_rot13($meliLog['token']));
+			// Codificación simple (base64 + rot13) incluyendo el userId
+			$userId = $meliLog['userId'] ?? '';
+			$encodedMeliToken = base64_encode(str_rot13($userId . '|' . $meliLog['token']));
 		}
 
 		$page = $request->query->getInt('page', 1);
 		$search = $request->query->get('q', '');
 		$mrkId = $request->query->get('mk', '');
 		$mdlId = $request->query->get('md', '');
-		$limit = 12;
+		$limit = 16;
 
 		// Query para obtener las piezas del usuario por slug
 		$queryBuilder = $repo->createQueryBuilder('i')
@@ -99,71 +100,115 @@ class ShopController extends AbstractController
 	public function search(string $template, string $slug, Request $request, ItemPubRepository $repo): Response
 	{
 		$page = $request->query->getInt('page', 1);
-		$search = $request->query->get('q', '');
+		$search = trim($request->query->get('q', ''));
 		$mrkId = $request->query->get('mk', '');
 		$mdlId = $request->query->get('md', '');
-		$limit = 12;
+		$limit = 16;
 
 		$encodedMeliToken = $request->query->get('mt', '');
-		$meliToken = '';
-		if ($encodedMeliToken) {
-			// Decodificamos el token si viene en la petición para usarlo en búsquedas MeLi
-			$meliToken = str_rot13(base64_decode($encodedMeliToken));
-		}
+		$missingIds = [];
+		$items = [];
+		$totalItems = 0;
 
-		// Query para obtener las piezas del usuario por slug
+		// Base query para BD local
 		$queryBuilder = $repo->createQueryBuilder('i')
 			->where('i.slug = :slug')
 			->andWhere('i.isActive = :active')
 			->setParameter('slug', $slug)
-			->setParameter('active', true)
-			->orderBy('i.created', 'DESC');
+			->setParameter('active', true);
 
-		if ($search) {
-			$queryBuilder->andWhere('i.title LIKE :search OR i.detalles LIKE :search')
-				->setParameter('search', '%' . $search . '%');
-		}
-
-		if ($mrkId) {
-			$queryBuilder->andWhere('i.mrkId = :mrkId')
-				->setParameter('mrkId', $mrkId);
-		}
-
-		if ($mdlId) {
-			$queryBuilder->andWhere('i.mdlId = :mdlId')
-				->setParameter('mdlId', $mdlId);
-		}
-
-		// Paginación manual simple
-		$totalItems = count($queryBuilder->getQuery()->getResult());
-		// MOCK DATA
-		if ($totalItems === 0 || $slug === 'demo') {
-			$items = [];
-			for ($i = 1; $i <= 8; $i++) {
-				$mock = new \App\Entity\ItemPub();
-				$mock->setTitle("Parrilla Atlas O Terramont 2024-2025 " . $i);
-				$mock->setPrice(45400.00 + ($i * 100));
-				$mock->setThumb("https://autoparnet.com/inv/images/yunkeonline/Obf0ATaa6tyc/Obf0ATaa6tyc_1.jpg");
-				$mock->setIku("REF-ABC-" . $i);
-				$mock->setDetalles("Parrilla frontal para Volkswagen Atlas o Terramont 2024. Calidad original certificada.");
-				$mock->setMrkId(1);
-				$mock->setMdlId(10);
-				$mock->setExtras([
-					'pathImg' => 'https://autoparnet.com/inv/images/yunkeonline/Obf0ATaa6tyc',
-					'pictures' => ['Obf0ATaa6tyc_1.jpg', 'Obf0ATaa6tyc_2.jpg']
-				]);
-				$mock->setIsActive(true);
-				$items[] = $mock;
+		// Si hay búsqueda con texto y tenemos token de ML, ML actúa como motor principal
+		if ($search && $encodedMeliToken) {
+			$decoded = str_rot13(base64_decode($encodedMeliToken));
+			$parts = explode('|', $decoded, 2);
+			if (count($parts) === 2) {
+				[$userId, $token] = $parts;
+				$opts = [
+					'http' => [
+						'method' => 'GET',
+						'header' => "Authorization: Bearer $token\r\n"
+					]
+				];
+				$context = stream_context_create($opts);
+				$urlIds = "https://api.mercadolibre.com/users/{$userId}/items/search?q=" . urlencode($search) . "&status=active&limit=50";
+				$json = @file_get_contents($urlIds, false, $context);
+				
+				// DEBUG: Guardar la respuesta de MeLi en un log para poder ver por qué falla
+				$debugData = [
+					'date' => date('Y-m-d H:i:s'),
+					'url' => $urlIds,
+					'token_used' => $token,
+					'http_response' => $http_response_header ?? null,
+					'json' => $json
+				];
+				@file_put_contents('meli_debug.log', print_r($debugData, true) . "\n-----------------\n", FILE_APPEND);
+				
+				if ($json) {
+					$data = json_decode($json, true);
+					$results = $data['results'] ?? [];
+					
+					if (!empty($results)) {
+						// Extraer de la BD local usando los IDs encontrados
+						$dbItems = $queryBuilder
+							->andWhere('i.idSrc IN (:ids)')
+							->setParameter('ids', $results)
+							->getQuery()
+							->getResult();
+						
+						// Preservar el orden de relevancia entregado por MeLi
+						$dbItemsMap = [];
+						$existingIds = [];
+						foreach ($dbItems as $item) {
+							$dbItemsMap[$item->getIdSrc()] = $item;
+							$existingIds[] = $item->getIdSrc();
+						}
+						
+						foreach ($results as $idSrc) {
+							if (isset($dbItemsMap[$idSrc])) {
+								$items[] = $dbItemsMap[$idSrc];
+							}
+						}
+						
+						// Faltantes para que el frontend los recupere con otro AJAX
+						$missingIds = array_diff($results, $existingIds);
+						$totalItems = count($items);
+					}
+				}
 			}
-			$pagesCount = 1;
-		} else {
-			$pagesCount = ceil($totalItems / $limit);
+		}
+
+		// Si no se encontraron items por MeLi, o no es una búsqueda con texto, usamos búsqueda estándar de BD
+		if (empty($items) && empty($missingIds)) {
+			$queryBuilder = $repo->createQueryBuilder('i')
+				->where('i.slug = :slug')
+				->andWhere('i.isActive = :active')
+				->setParameter('slug', $slug)
+				->setParameter('active', true)
+				->orderBy('i.created', 'DESC');
+
+			if ($search) {
+				$queryBuilder->andWhere('i.title LIKE :search OR i.detalles LIKE :search')
+					->setParameter('search', '%' . $search . '%');
+			}
+			if ($mrkId) {
+				$queryBuilder->andWhere('i.mrkId = :mrkId')
+					->setParameter('mrkId', $mrkId);
+			}
+			if ($mdlId) {
+				$queryBuilder->andWhere('i.mdlId = :mdlId')
+					->setParameter('mdlId', $mdlId);
+			}
+
+			$totalItems = count($queryBuilder->getQuery()->getResult());
 			$items = $queryBuilder
 				->setFirstResult(($page - 1) * $limit)
 				->setMaxResults($limit)
 				->getQuery()
 				->getResult();
 		}
+
+		$pagesCount = ceil($totalItems / $limit);
+		if ($pagesCount == 0) $pagesCount = 1;
 
 		$viewFolder = $template === 'muro' ? 'vistas/muro' : 'vistas/shop';
 		$templateFile = $viewFolder . '/_product_grid.html.twig';
@@ -176,6 +221,87 @@ class ShopController extends AbstractController
 			'pagesCount' => $pagesCount,
 			'search' => $search,
 			'storeName' => ucfirst($slug),
+			'missingIds' => implode(',', array_slice($missingIds, 0, 20))
+		]);
+	}
+
+	#[Route('/search/meli/{slug}', name: 'app_shop_search_meli', methods: ['GET'])]
+	public function searchMeli(string $slug, Request $request, ItemPubRepository $repo): Response
+	{
+		$idsStr = $request->query->get('ids', '');
+		if (empty(trim($idsStr))) return new Response('');
+
+		$encodedMeliToken = $request->query->get('mt', '');
+		if (!$encodedMeliToken) return new Response('');
+
+		$decoded = str_rot13(base64_decode($encodedMeliToken));
+		$parts = explode('|', $decoded, 2);
+		if (count($parts) !== 2) return new Response('');
+		
+		[$userId, $token] = $parts;
+
+		$opts = [
+			'http' => [
+				'method' => 'GET',
+				'header' => "Authorization: Bearer $token\r\n"
+			]
+		];
+		$context = stream_context_create($opts);
+
+		// Obtener detalles de los IDs faltantes y formatear
+		$urlItems = "https://api.mercadolibre.com/items?ids={$idsStr}&attributes=id,title,price,thumbnail,pictures,permalink,attributes";
+		$jsonItems = @file_get_contents($urlItems, false, $context);
+		if (!$jsonItems) return new Response('');
+
+		$itemsData = json_decode($jsonItems, true);
+		$items = [];
+
+		foreach ($itemsData as $itemWrapper) {
+			if ($itemWrapper['code'] !== 200) continue;
+			$meliItem = $itemWrapper['body'];
+			
+			$mock = new \App\Entity\ItemPub();
+			// Asignamos un ID 0 de manera transparente
+			$reflection = new \ReflectionClass($mock);
+			$property = $reflection->getProperty('id');
+			$property->setValue($mock, 0);
+
+			$mock->setIdSrc($meliItem['id']);
+			$mock->setTitle($meliItem['title']);
+			$mock->setPrice((float) $meliItem['price']);
+			
+			$thumb = $meliItem['thumbnail'];
+			if (!empty($meliItem['pictures'])) {
+				$thumb = $meliItem['pictures'][0]['secure_url'] ?? $meliItem['pictures'][0]['url'] ?? $thumb;
+			}
+			$mock->setThumb($thumb);
+			$mock->setSlug($slug);
+			$mock->setIsActive(true);
+			$mock->setIku($meliItem['id']); 
+			
+			$mrkName = '';
+			$mdlName = '';
+			if (!empty($meliItem['attributes'])) {
+				foreach ($meliItem['attributes'] as $attr) {
+					if ($attr['id'] === 'BRAND') $mrkName = $attr['value_name'];
+					if ($attr['id'] === 'MODEL') $mdlName = $attr['value_name'];
+				}
+			}
+			$mock->setExtras([
+				'mk' => $mrkName,
+				'md' => $mdlName,
+				'permalink' => $meliItem['permalink'],
+				'pictures' => [] 
+			]);
+
+			$items[] = $mock;
+		}
+
+		if (empty($items)) return new Response('');
+
+		return $this->render('vistas/shop/_meli_results.html.twig', [
+			'items' => $items,
+			'slug' => $slug
 		]);
 	}
 
@@ -263,7 +389,7 @@ class ShopController extends AbstractController
 			if (!isset($brandMap[$mrkId])) {
 				$brandMap[$mrkId] = [
 					'id' => $mrkId,
-					'name' => strtoupper($mrkName),
+					'name' => strtoupper((string) $mrkName),
 					'count' => 0,
 					'models' => []
 				];

@@ -18,11 +18,15 @@
 }|json_encode %}
 {% set cleanSlug = item.title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode|slice(0, 50) %}
 
+{% set isMeli = isMeli|default(false) %}
+{% set safeId = item.id ?: 0 %}
+{% set detailUrl = isMeli and extras.permalink is defined ? extras.permalink : path('app_product_detail', { id: safeId, slug: cleanSlug }) %}
+
 <div class="group bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden hover:border-[#25d366]/40 transition-all duration-500 flex flex-col shadow-sm hover:shadow-2xl hover:shadow-slate-200/60 relative">
 	<!-- Top Accent Line -->
-	<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#103928]/20 to-transparent"></div>
+	<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r {{ isMeli ? 'from-transparent via-[#ffe600] to-transparent' : 'from-transparent via-[#103928]/20 to-transparent' }}"></div>
 	<!-- Image Area (SEO Friendly Link) -->
-	<a href="{{ path('app_product_detail', { id: item.id, slug: cleanSlug }) }}" class="block relative aspect-[16/10] overflow-hidden bg-[#f8fafc] cursor-pointer" @click.prevent="openModal({{ modalData|e('html_attr') }})">
+	<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }} class="block relative aspect-[16/10] overflow-hidden bg-[#f8fafc] cursor-pointer" {{ isMeli ? '' : '@click.prevent="openModal(' ~ modalData|e('html_attr') ~ ')"' }}>
 
 	<img src="{{ mainImg }}" 
 		onerror="this.src='{{ placeholder }}'"
@@ -43,9 +47,9 @@
 <div class="p-7 flex-1 flex flex-col">
 
 	<div class="flex-1">
-		<a href="{{ path('app_product_detail', { id: item.id, slug: cleanSlug }) }}" 
+		<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }}
 		   class="block text-[15px] font-bold text-[#103928] line-clamp-3 leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem]" 
-		   @click.prevent="openModal({{ modalData|e('html_attr') }})">
+		   {{ isMeli ? '' : '@click.prevent="openModal(' ~ modalData|e('html_attr') ~ ')"' }}>
 			{{ item.title }}
 		</a>
 	</div>
@@ -58,18 +62,24 @@
 			</span>
 		</div>
 		
-		<template x-if="!cartItems.includes({{ item.id }})">
-			<button @click="addToCart({{ item.id }})" 
-						class="p-3 bg-[#25d366] text-white hover:bg-emerald-400 rounded-xl transition-all shadow-lg shadow-[#25d366]/20 active:scale-90 flex-shrink-0">
-				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-			</button>
-		</template>
-		<template x-if="cartItems.includes({{ item.id }})">
-			<button @click="promptRemove({{ item.id }})" 
-						class="p-3 bg-[#25d366]/20 text-[#25d366] hover:bg-[#25d366]/30 rounded-xl transition-all shadow-sm active:scale-90 flex-shrink-0">
-				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-			</button>
-		</template>
+		{% if isMeli %}
+			<a href="{{ detailUrl }}" target="_blank" class="px-4 py-2 bg-[#ffe600] text-[#2d3277] font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-[#ffe600]/20 hover:bg-yellow-400 active:scale-95 transition-all flex-shrink-0 flex items-center justify-center">
+				Ver en Meli
+			</a>
+		{% else %}
+			<template x-if="!cartItems.includes({{ safeId }})">
+				<button @click="addToCart({{ safeId }})" 
+							class="p-3 bg-[#25d366] text-white hover:bg-emerald-400 rounded-xl transition-all shadow-lg shadow-[#25d366]/20 active:scale-90 flex-shrink-0">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+				</button>
+			</template>
+			<template x-if="cartItems.includes({{ safeId }})">
+				<button @click="promptRemove({{ safeId }})" 
+							class="p-3 bg-[#25d366]/20 text-[#25d366] hover:bg-[#25d366]/30 rounded-xl transition-all shadow-sm active:scale-90 flex-shrink-0">
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+				</button>
+			</template>
+		{% endif %}
 	</div>
 	<div class="flex items-center gap-2 mt-1">
 		<span class="text-[12px] bg-slate-100 text-slate-500 font-black px-2 py-0.5 rounded tracking-widest">{{ item.iku|default('N/A') }}/{{ item.id }}</span>

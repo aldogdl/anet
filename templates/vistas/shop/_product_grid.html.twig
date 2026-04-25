@@ -25,6 +25,7 @@
 </div>
 
 <!-- The Grid -->
+{% if items|length > 0 or missingIds|default('') is empty %}
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 	{% for item in items %}
 		{% include 'vistas/shop/_product_card.html.twig' %}
@@ -40,6 +41,7 @@
 		</div>
 	{% endif %}
 </div>
+{% endif %}
 
 <!-- Pagination -->
 {% if pagesCount > 1 %}
@@ -55,3 +57,5 @@
 	</nav>
 </div>
 {% endif %}
+
+<div class="hidden" x-init="$nextTick(() => fetchMissingMeli('{{ missingIds|default('') }}'))"></div>
