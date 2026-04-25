@@ -3,7 +3,7 @@
     loading: true,
     async fetchFilters() {
         try {
-            const res = await fetch('{{ path('muro_shop_filters', {template: template, slug: slug}) }}?t=' + Date.now());
+            const res = await fetch('{{ path('app_shop_filters', {slug: slug}) }}?t=' + Date.now());
             this.filters = await res.json();
         } finally {
             this.loading = false;
@@ -12,7 +12,10 @@
 }" x-init="fetchFilters()" class="space-y-6">
     <div class="space-y-8">
         <div class="space-y-4">
-            <h4 class="text-[10px] font-black text-[#103928]/40 uppercase tracking-widest px-2">Selecciona una marca</h4>
+            <h4 class="text-xs font-black text-[#103928]/40 uppercase tracking-widest px-2 flex items-center justify-between">
+                Selecciona una marca
+                <button @click="applyFilter({mk: '', md: '', page: 1})" class="text-[9px] text-[#25d366] hover:underline normal-case">Limpiar</button>
+            </h4>
             
             <div class="space-y-1">
                 <template x-if="loading">
@@ -40,10 +43,16 @@
                         </button>
 
                         <div x-show="open" x-collapse class="ml-9 mt-2 space-y-1 border-l-2 border-[#25d366]/20 pl-4">
+                            <!-- Opción para ver TODA la marca -->
+                            <button @click="applyFilter({mk: brand.id, md: '', page: 1})" 
+                                    class="w-full text-left py-2 px-3 text-[11px] font-black text-slate-400 hover:text-[#25d366] transition-colors uppercase tracking-tight">
+                                Ver todo <span x-text="brand.name"></span>
+                            </button>
+                            
                             <template x-for="model in brand.models" :key="model.id">
-                                <a :href="'{{ path('app_shop', {template: template, slug: slug}) }}?mdl=' + model.id" 
-                                   class="block py-2.5 px-3 text-[11px] font-bold text-slate-500 hover:text-[#25d366] transition-colors uppercase tracking-tight"
-                                   x-text="model.name"></a>
+                                <button @click="applyFilter({mk: brand.id, md: model.id, page: 1})" 
+                                   class="w-full text-left py-2 px-3 text-[11px] font-bold text-slate-500 hover:text-[#25d366] transition-colors uppercase tracking-tight"
+                                   x-text="model.name"></button>
                             </template>
                         </div>
                     </div>

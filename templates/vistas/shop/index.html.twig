@@ -3,7 +3,7 @@
 {% block title %}{{ storeName }} | Catálogo Profesional{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f0f7f4] flex flex-col font-sans" x-data="shopState()">
+<div class="min-h-screen bg-[#e8f2ec] flex flex-col font-sans" x-data="shopState()">
     <!-- Top Header -->
     <header class="sticky top-0 z-50 bg-[#0b141a] border-b border-white/5 shadow-2xl">
         <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
@@ -21,14 +21,14 @@
                 </div>
             </div>
 
-            <!-- Search Bar -->
             <div class="flex-1 max-w-2xl relative group hidden md:block">
-                <form action="{{ path('app_shop', {template: 'shop', slug: slug}) }}" method="GET" class="relative">
-                    <input type="text" name="q" value="{{ search }}"
+                <div class="relative">
+                    <input type="text" x-model="currentFilters.q" 
+                           @input.debounce.500ms="applyFilter({page: 1})"
                            placeholder="Busca por pieza, marca o código..." 
                            class="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
                     <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </form>
+                </div>
             </div>
 
             <!-- Actions -->
@@ -61,7 +61,7 @@
              x-transition:leave-end="opacity-0"
              @click="showFilters = false"></div>
 
-        <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-[#f0f7f4] shadow-2xl flex flex-col"
+        <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-[#e8f2ec] shadow-2xl flex flex-col"
              x-show="showFilters"
              x-transition:enter="transform transition ease-in-out duration-500"
              x-transition:enter-start="-translate-x-full"
@@ -94,44 +94,10 @@
             {% include 'vistas/shop/_sidebar.html.twig' %}
         </aside>
 
-        <!-- Product Grid Section -->
-        <section class="flex-1 flex flex-col gap-8">
-            <!-- Grid Header -->
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-2xl font-black text-[#103928] tracking-tight">Todas las Piezas</h2>
-                    <p class="text-[15px] text-[#103928]/60 font-bold mt-1">Mostrando {{ items|length }} resultados</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-[#103928] font-black uppercase tracking-wider">Ordenar por:</span>
-                    <select class="bg-white border-slate-200 rounded-xl px-4 py-2 text-xs font-black text-[#103928] outline-none focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer">
-                        <option>Más recientes</option>
-                        <option>Precio: Menor a Mayor</option>
-                        <option>Precio: Mayor a Menor</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- The Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {% for item in items %}
-                    {% include 'vistas/shop/_product_card.html.twig' %}
-                {% endfor %}
-            </div>
-
-            <!-- Pagination -->
-            {% if pagesCount > 1 %}
-            <div class="mt-12 flex justify-center">
-                <nav class="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
-                    {% for p in 1..pagesCount %}
-                        <a href="{{ path('app_shop', {template: 'shop', slug: slug, page: p, q: search}) }}" 
-                           class="w-10 h-10 flex items-center justify-center rounded-xl text-sm font-bold transition-all {{ p == currentPage ? 'bg-[#25d366] text-white shadow-lg shadow-[#25d366]/20' : 'text-slate-400 hover:bg-white hover:shadow-sm' }}">
-                            {{ p }}
-                        </a>
-                    {% endfor %}
-                </nav>
-            </div>
-            {% endif %}
+        <!-- Product Grid Section (Reactive Container) -->
+        <section class="flex-1 flex flex-col gap-8" id="product-grid-container" x-html="gridHtml" x-init="applyFilter()">
+            <!-- Initial Grid (Server Rendered) -->
+            {% include 'vistas/shop/_product_grid.html.twig' %}
         </section>
     </main>
 
@@ -181,10 +147,31 @@
         return {
             selectedItem: null,
             showModal: false,
-            showCart: false,
             showFilters: false,
             cartCount: {{ app.session.get('cart')|length }},
             toasts: [],
+            gridHtml: '',
+            currentFilters: { mk: '', md: '', page: 1, q: '{{ search }}' },
+
+            async applyFilter(params = {}) {
+                this.currentFilters = { ...this.currentFilters, ...params };
+                const query = new URLSearchParams({ 
+                    ...this.currentFilters, 
+                    ajax: 1 
+                }).toString();
+
+                try {
+                    const res = await fetch(`{{ path('app_shop', {template: template, slug: slug}) }}?${query}`);
+                    this.gridHtml = await res.text();
+                    this.showFilters = false; // Cerramos drawer si estaba abierto
+                    
+                    // Actualizar URL sin recargar para que el usuario pueda compartir
+                    const newUrl = window.location.pathname + '?' + new URLSearchParams(this.currentFilters).toString();
+                    window.history.pushState({}, '', newUrl);
+                } catch (e) {
+                    console.error('Error filtering', e);
+                }
+            },
 
             openModal(item) {
                 this.selectedItem = item;

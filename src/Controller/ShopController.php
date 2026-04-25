@@ -14,11 +14,15 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 */
 class ShopController extends AbstractController
 {
+
 	#[Route('/{template}/{slug}', name: 'app_shop', methods: ['GET'], requirements: ['template' => 'muro|shop'])]
 	public function index(string $template, string $slug, Request $request, ItemPubRepository $repo): Response
 	{
 		$page = $request->query->getInt('page', 1);
 		$search = $request->query->get('q', '');
+		$mrkId = $request->query->get('mk', '');
+		$mdlId = $request->query->get('md', '');
+		$ajax = $request->query->get('ajax', false);
 		$limit = 12;
 
 		// Query para obtener las piezas del usuario por slug
@@ -32,6 +36,16 @@ class ShopController extends AbstractController
 		if ($search) {
 			$queryBuilder->andWhere('i.title LIKE :search OR i.detalles LIKE :search')
 				->setParameter('search', '%' . $search . '%');
+		}
+
+		if ($mrkId) {
+			$queryBuilder->andWhere('i.mrkId = :mrkId')
+				->setParameter('mrkId', $mrkId);
+		}
+
+		if ($mdlId) {
+			$queryBuilder->andWhere('i.mdlId = :mdlId')
+				->setParameter('mdlId', $mdlId);
 		}
 
 		// Paginación manual simple
@@ -67,46 +81,47 @@ class ShopController extends AbstractController
 		}
 
 		$viewFolder = $template === 'muro' ? 'vistas/muro' : 'vistas/shop';
+		$templateFile = $ajax ? $viewFolder . '/_product_grid.html.twig' : $viewFolder . '/index.html.twig';
 
-		return $this->render($viewFolder . '/index.html.twig', [
+		return $this->render($templateFile, [
 			'slug' => $slug,
 			'template' => $template,
 			'items' => $items,
 			'currentPage' => $page,
 			'pagesCount' => $pagesCount,
 			'search' => $search,
-			'storeName' => ucfirst($slug), // Placeholder para el nombre de la tienda
+			'storeName' => ucfirst($slug), 
 		]);
 	}
-	
+
 	/** */
 	#[Route('/cart/add/{id}', name: 'cart_add', methods: ['POST'])]
 	public function addToCart(int $id, SessionInterface $session, ItemPubRepository $itemRepo): Response
 	{
-			$cart = $session->get('cart', []);
-			
-			if (!isset($cart[$id])) {
-					$item = $itemRepo->find($id);
-					if ($item) {
-							$cart[$id] = [
-									'id' => $item->getId(),
-									'title' => $item->getTitle(),
-									'price' => $item->getPrice(),
-									'thumb' => $item->getThumb(),
-									'quantity' => 1
-							];
-					}
-			} else {
-				$cart[$id]['quantity']++;
+		$cart = $session->get('cart', []);
+		
+		if (!isset($cart[$id])) {
+			$item = $itemRepo->find($id);
+			if ($item) {
+				$cart[$id] = [
+					'id' => $item->getId(),
+					'title' => $item->getTitle(),
+					'price' => $item->getPrice(),
+					'thumb' => $item->getThumb(),
+					'quantity' => 1
+				];
 			}
+		} else {
+			$cart[$id]['quantity']++;
+		}
 
-			$session->set('cart', $cart);
-			return $this->json(['success' => true, 'cartCount' => count($cart)]);
+		$session->set('cart', $cart);
+		return $this->json(['success' => true, 'cartCount' => count($cart)]);
 	}
 
 	/** */
-	#[Route('/{template}/filters/{slug}', name: 'muro_shop_filters', methods: ['GET'], requirements: ['template' => 'muro|shop'])]
-	public function getFilters(string $template, string $slug, ItemPubRepository $itemRepo, \Doctrine\ORM\EntityManagerInterface $em): Response
+	#[Route('/filters/{slug}', name: 'app_shop_filters', methods: ['GET'])]
+	public function getFilters(string $slug, ItemPubRepository $itemRepo, \Doctrine\ORM\EntityManagerInterface $em): Response
 	{
 		// Modo Demo enriquecido
 		if ($slug === 'demo') {
@@ -136,13 +151,14 @@ class ShopController extends AbstractController
 		// Agrupar por marcas y modelos
 		$brandMap = [];
 		foreach ($items as $item) {
+
 			$mrkId = $item->getMrkId() ?? 0;
 			$mdlId = $item->getMdlId() ?? 0;
 			
 			// Intentar obtener nombres de extras si existen
 			$extras = $item->getExtras();
-			$mrkName = $extras['marca'] ?? 'Marca Desconocida';
-			$mdlName = $extras['modelo'] ?? 'Modelo Desconocido';
+			$mrkName = $extras['mk'] ?? 'Marca Desconocida';
+			$mdlName = $extras['md'] ?? 'Modelo Desconocido';
 
 			if (!isset($brandMap[$mrkId])) {
 				$brandMap[$mrkId] = [
@@ -172,4 +188,5 @@ class ShopController extends AbstractController
 
 		return $this->json($result);
 	}
+
 }
