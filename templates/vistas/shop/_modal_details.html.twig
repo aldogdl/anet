@@ -22,19 +22,43 @@
 
         <style>
           .pswp__icn { fill: white !important; }
-          .pswp__button { 
-            opacity: 1 !important; 
-            background: rgba(0,0,0,0.6) !important; 
-            margin: 8px !important; 
-            border-radius: 12px !important; 
-            width: 50px !important; 
-            height: 50px !important; 
-            display: flex !important; 
-            items-center: center !important; 
+          /* Panel flotante de controles PRO */
+          .pswp__top-bar {
+            display: flex !important;
             justify-content: center !important;
+            padding-top: 20px !important;
+            background: transparent !important;
+            height: auto !important;
+            pointer-events: none !important;
           }
-          .pswp__button--rotate-button { order: -1; } /* Poner el de rotar primero */
-          .pswp__img { transition: transform 0.3s ease-out; }
+          .pswp__top-bar > * { pointer-events: auto !important; }
+          .pswp__control-panel {
+            display: flex;
+            background: rgba(11, 20, 26, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 8px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            gap: 6px;
+          }
+          .pswp__button { 
+            background: transparent !important;
+            margin: 0 !important;
+            border-radius: 16px !important;
+            width: 48px !important;
+            height: 48px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          }
+          .pswp__button:hover { background: rgba(255,255,255,0.15) !important; transform: scale(1.1); }
+          .pswp__button--close:hover { background: rgba(239, 68, 68, 0.2) !important; }
+          .pswp__img { transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1); }
+          
+          /* Ocultar botones originales que no usaremos */
+          .pswp__button--zoom, .pswp__button--close.pswp__button--standard { display: none !important; }
         </style>
 
         <!-- Left: Image Gallery -->
@@ -47,15 +71,28 @@
                     window.lightbox = new PhotoSwipeLightbox({
                         gallery: '#gallery-pro',
                         children: 'a',
-                        pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js')
+                        pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js'),
+                        // Configuración de Zoom Industrial
+                        initialZoomLevel: 'fit',
+                        secondaryZoomLevel: 3,
+                        maxZoomLevel: 6,
                     });
                     
                     window.lightbox.on('uiRegister', function() {
+                      // Creamos el Panel de Control Central
+                      window.lightbox.pswp.ui.registerElement({
+                        name: 'control-panel',
+                        className: 'pswp__control-panel',
+                        appendTo: 'bar'
+                      });
+
+                      // Botón Rotar (Dentro del Panel)
                       window.lightbox.pswp.ui.registerElement({
                         name: 'rotate-button',
                         ariaLabel: 'Rotar',
-                        order: 9,
+                        order: 1,
                         isButton: true,
+                        appendTo: 'control-panel',
                         html: '<svg aria-hidden=\'true\' class=\'pswp__icn\' viewBox=\'0 0 24 24\' style=\'width:24px;height:24px;\'><path d=\'M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.02 5.47l-1.41 1.41C7.39 21.05 9.39 22 11.5 22c.28 0 .55-.02.82-.06l-.23-2.02c-.19.05-.39.08-.59.08-1.55 0-2.97-.65-4-1.71zm10.78-1.41l1.41 1.41C16.61 21.05 14.61 22 12.5 22c-.28 0-.55-.02-.82-.06l.23-2.02c.19.05.39.08.59.08-1.55 0-2.97-.65-4-1.71zM11 4.07V2.05c-2.01.2-3.84 1.03-5.3 2.3l1.42 1.42C8.25 4.73 9.57 4.2 11 4.07zm1.5.01c1.43.13 2.75.66 3.87 1.69l1.42-1.42C16.34 3.08 14.51 2.25 12.5 2.05v2.03zM21 12c0-4.97-4.03-9-9-9-1.55 0-3 .4-4.25 1.1l1.41 1.41C10.05 5.21 11 5 12 5c3.87 0 7 3.13 7 7s-3.13 7-7 7c-.7 0-1.37-.11-2-.31V21c.65.21 1.3.31 2 .31 4.97 0 9-4.03 9-9z\' fill=\'white\'/></svg>',
                         onClick: (event, el, pswp) => {
                           const img = pswp.currSlide.container.querySelector('.pswp__img');
@@ -65,6 +102,46 @@
                             img.dataset.rotation = r;
                           }
                         }
+                      });
+
+                      // Botón Zoom In (Dentro del Panel)
+                      window.lightbox.pswp.ui.registerElement({
+                        name: 'custom-zoom-in',
+                        order: 2,
+                        isButton: true,
+                        appendTo: 'control-panel',
+                        html: '<svg viewBox=\'0 0 24 24\' class=\'pswp__icn\' style=\'width:24px;height:24px;\'><path d=\'M12 9V15M15 12H9M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\' fill=\'none\'/></svg>',
+                        onClick: (event, el, pswp) => { pswp.zoomTo(pswp.currSlide.zoomLevels.current * 1.5, { x: window.innerWidth/2, y: window.innerHeight/2 }, 300); }
+                      });
+
+                      // Botón Zoom Out (Dentro del Panel)
+                      window.lightbox.pswp.ui.registerElement({
+                        name: 'custom-zoom-out',
+                        order: 3,
+                        isButton: true,
+                        appendTo: 'control-panel',
+                        html: '<svg viewBox=\'0 0 24 24\' class=\'pswp__icn\' style=\'width:24px;height:24px;\'><path d=\'M15 12H9M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\' fill=\'none\'/></svg>',
+                        onClick: (event, el, pswp) => { pswp.zoomTo(pswp.currSlide.zoomLevels.current / 1.5, { x: window.innerWidth/2, y: window.innerHeight/2 }, 300); }
+                      });
+
+                      // Botón Cerrar (Dentro del Panel)
+                      window.lightbox.pswp.ui.registerElement({
+                        name: 'custom-close',
+                        order: 4,
+                        isButton: true,
+                        appendTo: 'control-panel',
+                        html: '<svg viewBox=\'0 0 24 24\' class=\'pswp__icn\' style=\'width:24px;height:24px;\'><path d=\'M18 6L6 18M6 6l12 12\' stroke=\'#ff5f57\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/></svg>',
+                        onClick: 'close'
+                      });
+                    });
+
+                    // Soporte para Rueda del Mouse (Zoom)
+                    window.lightbox.on('bindEvents', () => {
+                      const pswp = window.lightbox.pswp;
+                      pswp.events.add(pswp.scrollWrap, 'wheel', (e) => {
+                        e.preventDefault();
+                        const zoomFactor = e.deltaY < 0 ? 1.2 : 0.8;
+                        pswp.zoomTo(pswp.currSlide.zoomLevels.current * zoomFactor, { x: e.clientX, y: e.clientY }, 200);
                       });
                     });
 
@@ -95,7 +172,7 @@
                              " />
                     </a>
 
-                    <!-- Control Buttons Overlay -->
+                    <!-- Control Buttons Overlay (Modal Preview) -->
                     <div class="absolute bottom-6 left-6 flex gap-3">
                         <button @click="rotation = (rotation + 90) % 360" 
                                 class="bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/10 text-white hover:bg-[#25d366] hover:scale-110 transition-all shadow-2xl group/rot"
