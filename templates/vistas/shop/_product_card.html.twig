@@ -3,24 +3,26 @@
     ? extras.pathImg ~ '/' ~ extras.pictures[0] 
     : item.thumb %}
 {% set placeholder = 'https://placehold.co/600x600/f8fafc/64748b?text=Sin+Imagen' %}
+{% set modalData = {
+    id: item.id,
+    title: item.title,
+    price: item.price,
+    thumb: mainImg,
+    imgBig: mainImg,
+    detalles: item.detalles|default('Sin detalles adicionales.'),
+    sku: item.iku|default('N/A'),
+    brand: item.mrkId,
+    model: item.mdlId,
+    pictures: extras.pictures|default([]),
+    pathImg: extras.pathImg|default('')
+}|json_encode %}
+{% set cleanSlug = item.title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode|slice(0, 50) %}
 
 <div class="group bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden hover:border-[#25d366]/40 transition-all duration-500 flex flex-col shadow-sm hover:shadow-2xl hover:shadow-slate-200/60 relative">
 	<!-- Top Accent Line -->
 	<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#103928]/20 to-transparent"></div>
-	<!-- Image Area -->
-	<div class="relative aspect-[16/10] overflow-hidden bg-[#f8fafc] cursor-pointer" @click="openModal({{ {
-			id: item.id,
-			title: item.title,
-			price: item.price,
-			thumb: mainImg,
-			imgBig: mainImg,
-			detalles: item.detalles|default('Sin detalles adicionales.'),
-			sku: item.iku|default('N/A'),
-			brand: item.mrkId,
-			model: item.mdlId,
-			pictures: extras.pictures|default([]),
-			pathImg: extras.pathImg|default('')
-	}|json_encode|e('html_attr') }})">
+	<!-- Image Area (SEO Friendly Link) -->
+	<a href="{{ path('app_product_detail', { id: item.id, slug: cleanSlug }) }}" class="block relative aspect-[16/10] overflow-hidden bg-[#f8fafc] cursor-pointer" @click.prevent="openModal({{ modalData|e('html_attr') }})">
 
 	<img src="{{ mainImg }}" 
 		onerror="this.src='{{ placeholder }}'"
@@ -35,19 +37,17 @@
 			<span class="text-[9px] font-black text-[#103928] uppercase tracking-widest">Disponible</span>
 		</div>
 	{% endif %}
-</div>
+	</a>
 
 <!-- Info Area -->
 <div class="p-7 flex-1 flex flex-col">
 
 	<div class="flex-1">
-		<div class="flex items-center gap-2 mb-3">
-			<span class="text-[12px] bg-slate-100 text-slate-500 font-black px-2 py-0.5 rounded tracking-widest">REF: {{ item.iku|default('N/A') }}/{{ item.id }}</span>
-		</div>
-		<h3 class="text-[15px] font-bold text-[#103928] line-clamp-3 leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem]" 
-			@click="openModal(...)">
+		<a href="{{ path('app_product_detail', { id: item.id, slug: cleanSlug }) }}" 
+		   class="block text-[15px] font-bold text-[#103928] line-clamp-3 leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem]" 
+		   @click.prevent="openModal({{ modalData|e('html_attr') }})">
 			{{ item.title }}
-		</h3>
+		</a>
 	</div>
 
 	<div class="mt-1 pt-6 border-t border-slate-50 flex items-center justify-between gap-4">
@@ -70,6 +70,9 @@
 				<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
 			</button>
 		</template>
+	</div>
+	<div class="flex items-center gap-2 mt-1">
+		<span class="text-[12px] bg-slate-100 text-slate-500 font-black px-2 py-0.5 rounded tracking-widest">{{ item.iku|default('N/A') }}/{{ item.id }}</span>
 	</div>
 </div>
 

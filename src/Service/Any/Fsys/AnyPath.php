@@ -10,8 +10,8 @@ class AnyPath {
     static String $DICC = 'dictionary';
     static String $NGKF = 'ngile';
     static String $DTACTC = 'dtaCtc';
-    static String $REGAUTH = 'regAuth';
     static String $DTACTCLOG = 'dtaCtcLog';
+    static String $REGAUTH = 'regAuth';
     static String $ANYMLM = 'anyMlm';
     static String $INVEXP = 'invExp';
     static String $SYNCDEV = 'sincDev';

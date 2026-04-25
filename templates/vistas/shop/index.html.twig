@@ -7,30 +7,56 @@
   
   <!-- Top Header -->
   <header class="sticky top-0 z-50 bg-[#0b141a] border-b border-white/5 shadow-2xl">
-    <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
+    <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center gap-8">
 
       <!-- Floating Graphic Logo -->
       <div class="relative w-20 lg:w-72 h-20 flex-shrink-0">
-          <div class="absolute top-3 lg:top-4 left-0 lg:left-1/2 lg:-translate-x-1/2 z-[70] group cursor-pointer" onclick="window.location.href='/'">
-              <div class="absolute inset-0 bg-[#25d366]/30 blur-2xl rounded-[3rem] transition-all group-hover:bg-[#25d366]/40"></div>
-              <div class="relative w-20 h-20 lg:w-36 lg:h-36 bg-[#25d366] rounded-[2rem] lg:rounded-[3rem] flex items-center justify-center text-[#0b141a] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] border-4 border-[#0b141a] rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                  <svg class="w-12 h-12 lg:w-20 lg:h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-              </div>
+        <div class="absolute top-3 lg:top-4 left-0 lg:left-1/2 lg:-translate-x-1/2 z-[70] group cursor-pointer" onclick="window.location.href='/'">
+          <div class="absolute inset-0 bg-[#25d366]/30 blur-2xl rounded-[3rem] transition-all group-hover:bg-[#25d366]/40"></div>
+          <div class="relative w-20 h-20 lg:w-36 lg:h-36 {{ dtaCtc.logo is defined and dtaCtc.logo is not empty ? 'bg-[#ffffff]' : 'bg-[#25d366]' }} rounded-[2rem] lg:rounded-[3rem] flex items-center justify-center text-[#0b141a] shadow-[0_20px_30px_-15px_rgba(0,0,0,0.7)] border-2 border-[#0b141a] rotate-0 group-hover:rotate-6 transition-transform duration-500 overflow-hidden">
+              {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
+                <div class="w-full h-full p-1.5 lg:p-1">
+                    <div class="w-full h-full bg-white bg-center bg-no-repeat bg-cover rounded-[1.4rem] lg:rounded-[2.4rem] shadow-sm" style="background-image: url('{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}');"></div>
+                </div>
+              {% else %}
+                <svg class="w-12 h-12 lg:w-20 lg:h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              {% endif %}
           </div>
+        </div>
       </div>
 
-      <div class="flex-1 max-w-2xl relative group hidden md:block">
+      <div class="flex-1 max-w-2xl relative group hidden md:block" 
+           x-data="{ 
+              hasMeli: {{ hasMeli|default(false) ? 'true' : 'false' }},
+              meliToken: '{{ encodedMeliToken|default('') }}'
+           }">
         <div class="relative">
           <input type="text" x-model="currentFilters.q" 
-                @input.debounce.500ms="applyFilter({page: 1})"
-                placeholder="Busca por pieza, marca o código..." 
-                class="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
+              @input.debounce.500ms="applyFilter({page: 1})"
+              placeholder="Busca por pieza, marca o código..." 
+              class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-14 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:border-[#25d366]/50 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
           <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          
+          <!-- Status Logos -->
+          <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+            <template x-if="hasMeli">
+              <!-- Meli Logo Style -->
+              <div class="h-6 px-2 bg-white/30 rounded-md flex items-center justify-center shadow-sm font-black text-white text-[12px] tracking-tight">
+                  MeLi
+              </div>
+            </template>
+            <template x-if="!hasMeli">
+              <!-- Yonkeros Logo -->
+              <div class="w-6 h-6 bg-[#25d366] rounded-full flex items-center justify-center shadow-sm">
+                  <svg class="w-3.5 h-3.5 text-[#0b141a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4 ml-auto">
         <button class="flex items-center gap-2 bg-[#25d366] hover:bg-emerald-400 text-darker px-6 py-3 rounded-2xl transition-all shadow-lg shadow-black/10 group">
           <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
           <span class="text-xs font-black hidden lg:block tracking-widest uppercase">Contactar</span>
@@ -173,20 +199,27 @@
       itemToRemove: null,
       toasts: [],
       currentFilters: { mk: '', md: '', page: 1, q: '{{ search }}' },
+      meliToken: '{{ encodedMeliToken|default('') }}',
+      storeName: '{{ storeName|default(slug|capitalize)|escape('js') }}',
+      localidad: '{{ (dtaCtc.localidad ?? '')|escape('js') }}',
       async applyFilter(params = {}) {
           this.currentFilters = { ...this.currentFilters, ...params };
-          const query = new URLSearchParams({ 
-              ...this.currentFilters, 
-              ajax: 1 
-          }).toString();
+          
+          const queryParams = { ...this.currentFilters };
+          if (this.meliToken) {
+              queryParams.mt = this.meliToken;
+          }
+          
+          const query = new URLSearchParams(queryParams).toString();
 
           try {
-              const res = await fetch(`{{ path('app_shop', {template: template, slug: slug}) }}?${query}`);
+              const res = await fetch(`{{ path('app_shop_search', {template: template, slug: slug}) }}?${query}`);
               document.getElementById('product-grid-container').innerHTML = await res.text();
               this.showFilters = false; // Cerramos drawer si estaba abierto
               
               // Actualizar URL sin recargar para que el usuario pueda compartir
-              const newUrl = window.location.pathname + '?' + new URLSearchParams(this.currentFilters).toString();
+              const urlParams = new URLSearchParams(this.currentFilters);
+              const newUrl = window.location.pathname + '?' + urlParams.toString();
               window.history.pushState({}, '', newUrl);
           } catch (e) {
               console.error('Error filtering', e);
