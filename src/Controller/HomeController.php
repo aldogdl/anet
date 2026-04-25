@@ -8,10 +8,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class HomeController extends AbstractController
 {
-    #[Route('/', methods: ['get'])]
-    public function index(): Response
-    {
-        return $this->json(['hola' => 'Bienvenido', 'en que podemos atenderte?']);
-    }
+	#[Route('/', methods: ['get'])]
+	public function index(): Response
+	{
+		return $this->json(['hola' => 'Bienvenido', 'en que podemos atenderte?']);
+	}
 
 }
