@@ -4,202 +4,201 @@
 
 {% block body %}
 <div class="min-h-screen bg-[#e8f2ec] flex flex-col font-sans" x-data="shopState()">
-    <!-- Top Header -->
-    <header class="sticky top-0 z-50 bg-[#0b141a] border-b border-white/5 shadow-2xl">
-        <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
-            <!-- Brand -->
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-[#25d366] rounded-2xl flex items-center justify-center text-[#0b141a] shadow-lg shadow-[#25d366]/20">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                </div>
-                <div>
-                    <h1 class="text-xl font-black text-white tracking-tight leading-none uppercase">{{ storeName }}</h1>
-                    <div class="flex items-center gap-1.5 mt-1.5">
-                        <span class="w-2 h-2 rounded-full bg-[#25d366] animate-pulse"></span>
-                        <p class="text-[10px] text-white/70 font-black uppercase tracking-widest">Tienda Verificada</p>
-                    </div>
-                </div>
-            </div>
+  
+  <!-- Top Header -->
+  <header class="sticky top-0 z-50 bg-[#0b141a] border-b border-white/5 shadow-2xl">
+    <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
 
-            <div class="flex-1 max-w-2xl relative group hidden md:block">
-                <div class="relative">
-                    <input type="text" x-model="currentFilters.q" 
-                           @input.debounce.500ms="applyFilter({page: 1})"
-                           placeholder="Busca por pieza, marca o código..." 
-                           class="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
-                    <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-4">
-                <button class="flex items-center gap-2 bg-[#25d366] hover:bg-emerald-400 text-darker px-6 py-3 rounded-2xl transition-all shadow-lg shadow-black/10 group">
-                    <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <span class="text-xs font-black hidden lg:block tracking-widest uppercase">Contactar</span>
-                </button>
-
-                <div class="relative">
-                    <button @click="showCart = !showCart" class="p-3.5 bg-white/10 border-none rounded-2xl text-white hover:bg-white/20 transition-all group">
-                        <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#0b141a] shadow-md" 
-                              x-show="cartCount > 0" x-text="cartCount" x-transition.scale x-cloak></span>
-                    </button>
-                </div>
-            </div>
+      <!-- Brand -->
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-[#25d366] rounded-2xl flex items-center justify-center text-[#0b141a] shadow-lg shadow-[#25d366]/20">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
         </div>
-    </header>
-
-    <!-- Sidebar Drawer (Hidden by default) -->
-    <div class="fixed inset-0 z-[60] overflow-hidden" x-show="showFilters" x-cloak>
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
-             x-show="showFilters" 
-             x-transition:enter="ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"
-             @click="showFilters = false"></div>
-
-        <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-[#e8f2ec] shadow-2xl flex flex-col"
-             x-show="showFilters"
-             x-transition:enter="transform transition ease-in-out duration-500"
-             x-transition:enter-start="-translate-x-full"
-             x-transition:enter-end="translate-x-0"
-             x-transition:leave="transform transition ease-in-out duration-500"
-             x-transition:leave-start="translate-x-0"
-             x-transition:leave-end="-translate-x-full">
-            
-            <div class="flex items-center justify-between p-6 border-b border-white/10 bg-[#0b141a] text-white">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-[#25d366] rounded-lg flex items-center justify-center text-[#0b141a]">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                    </div>
-                    <h2 class="text-xs font-black uppercase tracking-widest">Filtrar por Marca</h2>
-                </div>
-                <button @click="showFilters = false" class="p-2 hover:bg-white/10 rounded-xl transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-4">
-                {% include 'vistas/shop/_filter_drawer.html.twig' %}
-            </div>
+        <div>
+          <h1 class="text-xl font-black text-white tracking-tight leading-none uppercase">{{ storeName }}</h1>
+          <div class="flex items-center gap-1.5 mt-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#25d366] animate-pulse"></span>
+            <p class="text-[10px] text-white/70 font-black uppercase tracking-widest">Tienda Verificada</p>
+          </div>
         </div>
+      </div>
+
+      <div class="flex-1 max-w-2xl relative group hidden md:block">
+        <div class="relative">
+          <input type="text" x-model="currentFilters.q" 
+                @input.debounce.500ms="applyFilter({page: 1})"
+                placeholder="Busca por pieza, marca o código..." 
+                class="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
+          <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-4">
+        <button class="flex items-center gap-2 bg-[#25d366] hover:bg-emerald-400 text-darker px-6 py-3 rounded-2xl transition-all shadow-lg shadow-black/10 group">
+          <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+          <span class="text-xs font-black hidden lg:block tracking-widest uppercase">Contactar</span>
+        </button>
+
+        <div class="relative">
+          <button @click="showCart = !showCart" class="p-3.5 bg-white/10 border-none rounded-2xl text-white hover:bg-white/20 transition-all group">
+            <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#0b141a] shadow-md" 
+              x-show="cartCount > 0" x-text="cartCount" x-transition.scale x-cloak></span>
+          </button>
+        </div>
+      </div>
     </div>
+  </header>
 
-    <main class="flex-1 max-w-[1600px] mx-auto w-full px-6 py-8 flex gap-8">
-        <!-- Sidebar Fijo -->
-        <aside class="w-72 hidden lg:block flex-shrink-0">
-            {% include 'vistas/shop/_sidebar.html.twig' %}
-        </aside>
+  <!-- Sidebar Drawer (Hidden by default) -->
+  <div class="fixed inset-0 z-[60] overflow-hidden" x-show="showFilters" x-cloak>
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+      x-show="showFilters" 
+      x-transition:enter="ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click="showFilters = false"></div>
 
-        <!-- Product Grid Section (Reactive Container) -->
-        <section class="flex-1 flex flex-col gap-8" id="product-grid-container" x-html="gridHtml" x-init="applyFilter()">
-            <!-- Initial Grid (Server Rendered) -->
-            {% include 'vistas/shop/_product_grid.html.twig' %}
-        </section>
-    </main>
+    <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-[#e8f2ec] shadow-2xl flex flex-col"
+      x-show="showFilters"
+      x-transition:enter="transform transition ease-in-out duration-500"
+      x-transition:enter-start="-translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transform transition ease-in-out duration-500"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="-translate-x-full">
 
-    <!-- Footer -->
-    <footer class="bg-[#0b141a] border-t border-white/5 py-12">
-        <div class="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div class="flex flex-col items-center md:items-start">
-                <span class="text-sm font-black text-white tracking-widest">AUTOPARNET <span class="text-[#25d366]">SHOP</span></span>
-                <p class="text-xs text-white/20 mt-2">© 2024 Todos los derechos reservados.</p>
-            </div>
-            <div class="flex gap-8">
-                <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Privacidad</a>
-                <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Términos</a>
-                <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Soporte</a>
-            </div>
+      <div class="flex items-center justify-between p-6 border-b border-white/10 bg-[#0b141a] text-white">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#25d366] rounded-lg flex items-center justify-center text-[#0b141a]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          </div>
+          <h2 class="text-xs font-black uppercase tracking-widest">Filtrar por Marca</h2>
         </div>
-    </footer>
+        <button @click="showFilters = false" class="p-2 hover:bg-white/10 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
 
-    <!-- Modal Details -->
-    {% include 'vistas/shop/_modal_details.html.twig' %}
-
-    <!-- Toast Notifications -->
-    <div class="fixed bottom-8 right-8 z-[100] pointer-events-none">
-        <template x-for="toast in toasts" :key="toast.id">
-            <div x-show="true" 
-                 x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0 scale-95"
-                 class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 mb-4 pointer-events-auto border border-white/10">
-                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                    <svg class="w-5 h-5 text-darker" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-xs font-black tracking-wide uppercase">¡Agregado con éxito!</span>
-                    <span class="text-[10px] text-slate-400" x-text="toast.message"></span>
-                </div>
-            </div>
-        </template>
+      <div class="flex-1 overflow-y-auto p-4">
+        {% include 'vistas/shop/_filter_drawer.html.twig' %}
+      </div>
     </div>
+  </div>
+
+  <main class="flex-1 max-w-[1600px] mx-auto w-full px-6 py-8 flex gap-8">
+    <!-- Sidebar Fijo -->
+    <aside class="w-72 hidden lg:block flex-shrink-0">
+      {% include 'vistas/shop/_sidebar.html.twig' %}
+    </aside>
+
+    <!-- Product Grid Section (Reactive Container) -->
+    <section class="flex-1 flex flex-col gap-8" id="product-grid-container">
+      <!-- Initial Grid (Server Rendered) -->
+      {% include 'vistas/shop/_product_grid.html.twig' %}
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#0b141a] border-t border-white/5 py-12">
+      <div class="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div class="flex flex-col items-center md:items-start">
+              <span class="text-sm font-black text-white tracking-widest">AUTOPARNET <span class="text-[#25d366]">SHOP</span></span>
+              <p class="text-xs text-white/20 mt-2">© 2024 Todos los derechos reservados.</p>
+          </div>
+          <div class="flex gap-8">
+              <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Privacidad</a>
+              <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Términos</a>
+              <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Soporte</a>
+          </div>
+      </div>
+  </footer>
+
+  <!-- Modal Details -->
+  {% include 'vistas/shop/_modal_details.html.twig' %}
+
+  <!-- Toast Notifications -->
+  <div class="fixed bottom-8 right-8 z-[100] pointer-events-none">
+    <template x-for="toast in toasts" :key="toast.id">
+      <div x-show="true" 
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+          x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+          x-transition:leave="transition ease-in duration-200"
+          x-transition:leave-start="opacity-100"
+          x-transition:leave-end="opacity-0 scale-95"
+          class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 mb-4 pointer-events-auto border border-white/10">
+        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5 text-darker" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="text-xs font-black tracking-wide uppercase">¡Agregado con éxito!</span>
+          <span class="text-[10px] text-slate-400" x-text="toast.message"></span>
+        </div>
+      </div>
+    </template>
+  </div>
 </div>
 
 <script>
-    function shopState() {
-        return {
-            selectedItem: null,
-            showModal: false,
-            showFilters: false,
-            cartCount: {{ app.session.get('cart')|length }},
-            toasts: [],
-            gridHtml: '',
-            currentFilters: { mk: '', md: '', page: 1, q: '{{ search }}' },
 
-            async applyFilter(params = {}) {
-                this.currentFilters = { ...this.currentFilters, ...params };
-                const query = new URLSearchParams({ 
-                    ...this.currentFilters, 
-                    ajax: 1 
-                }).toString();
+  function shopState() {
 
-                try {
-                    const res = await fetch(`{{ path('app_shop', {template: template, slug: slug}) }}?${query}`);
-                    this.gridHtml = await res.text();
-                    this.showFilters = false; // Cerramos drawer si estaba abierto
-                    
-                    // Actualizar URL sin recargar para que el usuario pueda compartir
-                    const newUrl = window.location.pathname + '?' + new URLSearchParams(this.currentFilters).toString();
-                    window.history.pushState({}, '', newUrl);
-                } catch (e) {
-                    console.error('Error filtering', e);
-                }
-            },
+    return {
+      selectedItem: null,
+      showModal: false,
+      showFilters: false,
+      cartCount: {{ app.session.get('cart')|length }},
+      toasts: [],
+      currentFilters: { mk: '', md: '', page: 1, q: '{{ search }}' },
+      async applyFilter(params = {}) {
+          this.currentFilters = { ...this.currentFilters, ...params };
+          const query = new URLSearchParams({ 
+              ...this.currentFilters, 
+              ajax: 1 
+          }).toString();
 
-            openModal(item) {
-                this.selectedItem = item;
-                this.showModal = true;
-                // Preparamos PhotoSwipe si fuera necesario aquí
-            },
-
-            async addToCart(id) {
-                try {
-                    const res = await fetch('{{ path('cart_add', {id: 0}) }}'.replace('0', id), { method: 'POST' });
-                    const data = await res.json();
-                    if (data.success) {
-                        this.cartCount = data.cartCount;
-                        this.addToast('Producto añadido al carrito');
-                    }
-                } catch (e) {
-                    console.error('Error adding to cart', e);
-                }
-            },
-
-            addToast(message) {
-                const id = Date.now();
-                this.toasts.push({ id, message });
-                setTimeout(() => {
-                    this.toasts = this.toasts.filter(t => t.id !== id);
-                }, 3000);
-            }
+          try {
+              const res = await fetch(`{{ path('app_shop', {template: template, slug: slug}) }}?${query}`);
+              document.getElementById('product-grid-container').innerHTML = await res.text();
+              this.showFilters = false; // Cerramos drawer si estaba abierto
+              
+              // Actualizar URL sin recargar para que el usuario pueda compartir
+              const newUrl = window.location.pathname + '?' + new URLSearchParams(this.currentFilters).toString();
+              window.history.pushState({}, '', newUrl);
+          } catch (e) {
+              console.error('Error filtering', e);
+          }
+      },
+      openModal(item) {
+        this.selectedItem = item;
+        this.showModal = true;
+        // Preparamos PhotoSwipe si fuera necesario aquí
+      },
+      async addToCart(id) {
+        try {
+          const res = await fetch('{{ path('cart_add', {id: 0}) }}'.replace('0', id), { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            this.cartCount = data.cartCount;
+            this.addToast('Producto añadido al carrito');
+          }
+        } catch (e) {
+          console.error('Error adding to cart', e);
         }
+      },
+      addToast(message) {
+        const id = Date.now();
+        this.toasts.push({ id, message });
+        setTimeout(() => {
+          this.toasts = this.toasts.filter(t => t.id !== id);
+        }, 3000);
+      }
     }
+  }
 </script>
 {% endblock %}
