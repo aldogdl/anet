@@ -26,7 +26,7 @@
 	<!-- Top Accent Line -->
 	<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r {{ isMeli ? 'from-transparent via-[#ffe600] to-transparent' : 'from-transparent via-[#103928]/20 to-transparent' }}"></div>
 	<!-- Image Area (SEO Friendly Link) -->
-	<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }} class="block relative aspect-[16/10] overflow-hidden bg-[#f8fafc] cursor-pointer" {{ isMeli ? '' : '@click.prevent="openModal(' ~ modalData|e('html_attr') ~ ')"' }}>
+	<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }} class="block relative aspect-[16/10] overflow-hidden bg-[#f8fafc] cursor-pointer" {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 
 	<img src="{{ mainImg }}" 
 		onerror="this.src='{{ placeholder }}'"
@@ -49,7 +49,7 @@
 	<div class="flex-1">
 		<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }}
 		   class="block text-[15px] font-bold text-[#103928] line-clamp-3 leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem]" 
-		   {{ isMeli ? '' : '@click.prevent="openModal(' ~ modalData|e('html_attr') ~ ')"' }}>
+		   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 			{{ item.title }}
 		</a>
 	</div>

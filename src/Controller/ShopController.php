@@ -34,6 +34,18 @@ class ShopController extends AbstractController
 			$encodedMeliToken = base64_encode(str_rot13($userId . '|' . $meliLog['token']));
 		}
 
+		$contactPhone = '';
+		if (!empty($dtaCtc['colabs']) && is_array($dtaCtc['colabs'])) {
+			foreach ($dtaCtc['colabs'] as $colab) {
+				if (isset($colab['roles']) && is_array($colab['roles']) && in_array('ROLE_MAIN', $colab['roles'])) {
+					if (!empty($colab['waId'])) {
+						$contactPhone = $colab['waId'];
+						break;
+					}
+				}
+			}
+		}
+
 		$page = $request->query->getInt('page', 1);
 		$search = $request->query->get('q', '');
 		$mrkId = $request->query->get('mk', '');
@@ -92,7 +104,8 @@ class ShopController extends AbstractController
 			'storeName' => empty($dtaCtc) ? ucfirst($slug) : $dtaCtc['empresa'], 
 			'dtaCtc' => $dtaCtc,
 			'hasMeli' => $hasMeli,
-			'encodedMeliToken' => $encodedMeliToken
+			'encodedMeliToken' => $encodedMeliToken,
+			'contactPhone' => $contactPhone
 		]);
 	}
 
@@ -373,9 +386,15 @@ class ShopController extends AbstractController
 			$mdlId = $item->getMdlId() ?? 0;
 			
 			// Intentar obtener nombres de extras si existen
-			$extras = $item->getExtras();
+			$extras = $item->getExtras() ?? [];
 			$mrkName = $extras['mk'] ?? 'Marca Desconocida';
+			if (is_array($mrkName)) {
+				$mrkName = !empty($mrkName) ? reset($mrkName) : 'Marca Desconocida';
+			}
 			$mdlName = $extras['md'] ?? 'Modelo Desconocido';
+			if (is_array($mdlName)) {
+				$mdlName = !empty($mdlName) ? reset($mdlName) : 'Modelo Desconocido';
+			}
 
 			if (!isset($brandMap[$mrkId])) {
 				$brandMap[$mrkId] = [

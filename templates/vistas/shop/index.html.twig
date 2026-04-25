@@ -238,6 +238,9 @@
               document.getElementById('product-grid-container').innerHTML = await res.text();
               this.showFilters = false; 
               
+              // Regresar al principio de la página suavemente
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+
               const urlParams = new URLSearchParams(this.currentFilters);
               const newUrl = window.location.pathname + '?' + urlParams.toString();
               window.history.pushState({}, '', newUrl);

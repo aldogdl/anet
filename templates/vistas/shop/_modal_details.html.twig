@@ -67,15 +67,14 @@
         <div class="w-full lg:w-2/5 p-8 lg:p-16 flex flex-col justify-between overflow-y-auto">
             <div>
                 <div class="flex items-center gap-2 mb-6">
-                    <span class="bg-[#25d366] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-[#25d366]/20">Original Certificada</span>
-                    <span class="text-[10px] font-bold text-white/20 uppercase tracking-widest" x-text="'SKU: ' + selectedItem?.sku"></span>
+                    <span class="bg-[#25d366] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-[#25d366]/20" x-text="'SKU: ' + selectedItem?.sku"></span>
                 </div>
 
-                <h2 class="text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight mb-4" x-text="selectedItem?.title"></h2>
+                <h2 class="text-3xl lg:text-3xl font-black text-white leading-tight tracking-tight mb-4" x-text="selectedItem?.title"></h2>
                 
                 <div class="flex items-baseline gap-2 mb-8">
                     <span class="text-4xl font-black text-[#25d366] italic" x-text="'$' + Number(selectedItem?.price).toLocaleString()"></span>
-                    <span class="text-sm font-bold text-white/20 uppercase tracking-widest">MXN + Envío</span>
+                    <span class="text-sm font-bold text-white/45 uppercase tracking-widest">MXN + Envío</span>
                 </div>
 
                 <div class="space-y-6 mb-12">
@@ -86,11 +85,11 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="p-4 bg-[#0b141a] border border-white/5 rounded-2xl">
-                            <span class="text-[9px] font-black text-white/20 uppercase tracking-widest block mb-1">Garantía</span>
-                            <span class="text-xs font-bold text-white uppercase">90 Días Naturales</span>
+                            <span class="text-[9px] font-black text-white/45 uppercase tracking-widest block mb-1">Garantía</span>
+                            <span class="text-xs font-bold text-white uppercase">7 Días Naturales</span>
                         </div>
                         <div class="p-4 bg-[#0b141a] border border-white/5 rounded-2xl">
-                            <span class="text-[9px] font-black text-white/20 uppercase tracking-widest block mb-1">Envío</span>
+                            <span class="text-[9px] font-black text-white/45 uppercase tracking-widest block mb-1">Envío</span>
                             <span class="text-xs font-bold text-white uppercase">Todo México</span>
                         </div>
                     </div>
@@ -110,10 +109,23 @@
                         QUITAR DEL CARRITO
                     </button>
                 </template>
-                <button class="w-full bg-white/5 hover:bg-white/10 text-white font-black py-5 rounded-[1.5rem] transition-all flex items-center justify-center gap-3 border border-white/5">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.268 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                    CONSULTAR POR WHATSAPP
-                </button>
+                <div class="bg-[#0b141a] p-6 rounded-[1.5rem] border border-white/5 flex flex-col items-center justify-center gap-4 text-center mt-2 group relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-[#25d366]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                    
+                    <div class="text-[#25d366] flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.394 0 0 5.394 0 12.031c0 2.115.548 4.17 1.583 5.986L.048 23.518l5.656-1.482a12.002 12.002 0 006.327 1.785h.005c6.634 0 12.029-5.394 12.029-12.031S18.667 0 12.031 0zm0 21.821h-.004a9.986 9.986 0 01-5.088-1.385l-.365-.216-3.782.991.99-3.685-.236-.376a9.986 9.986 0 01-1.526-5.334c0-5.522 4.493-10.017 10.015-10.017 2.675 0 5.188 1.042 7.079 2.934 1.891 1.892 2.932 4.406 2.932 7.081 0 5.524-4.494 10.007-10.014 10.007zm5.493-7.513c-.301-.151-1.785-.882-2.062-.983-.277-.101-.479-.151-.68.151-.202.302-.781.983-.957 1.184-.177.202-.353.227-.654.076-.301-.151-1.275-.47-2.428-1.5-.898-.801-1.503-1.793-1.68-2.095-.177-.302-.019-.465.132-.616.135-.135.301-.353.452-.529.151-.177.202-.302.302-.504.101-.202.05-.378-.025-.529-.076-.151-.68-1.64-.932-2.245-.246-.59-.496-.51-.68-.52-.177-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.057 1.033-1.057 2.519s1.083 2.923 1.234 3.125c.151.202 2.13 3.25 5.161 4.557.72.311 1.281.497 1.722.636.723.23 1.381.197 1.902.12.583-.086 1.785-.73 2.036-1.436.252-.705.252-1.309.177-1.436-.076-.126-.277-.202-.578-.353z"></path></svg>
+                        <span class="font-black tracking-widest uppercase text-xs">Atención por WhatsApp</span>
+                    </div>
+                    
+                    <div class="bg-white p-2 rounded-xl w-32 h-32 flex items-center justify-center shadow-lg shadow-black/50 group-hover:scale-105 transition-transform duration-500">
+                        <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=1&color=0b141a&data=` + encodeURIComponent(`https://wa.me/{{ contactPhone|default('') }}?text=Hola,%20me%20interesa%20información%20del%20artículo:\n\n🚘%20${selectedItem?.title}`)" 
+                             alt="Código QR WhatsApp" class="w-full h-full object-contain mix-blend-multiply" />
+                    </div>
+                    
+                    <p class="text-[10px] text-slate-400 font-medium leading-relaxed max-w-[80%]">
+                        Escanea este código con la cámara de tu celular para consultar existencias o dudas.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
