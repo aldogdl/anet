@@ -38,17 +38,27 @@
             
             <div id="gallery-pro" class="flex-1 flex flex-col gap-8 h-full overflow-hidden">
                 <!-- Main Zoomable Image -->
-                <a :href="activeImg" 
-                   data-pswp-width="1600" 
-                   data-pswp-height="1200" 
-                   target="_blank"
-                   class="flex-1 rounded-[2.5rem] bg-[#0b141a] border border-white/5 shadow-inner overflow-hidden flex items-center justify-center p-8 group cursor-zoom-in relative">
-                    <img :src="activeImg" class="w-full h-full object-contain transition-transform duration-700 group-hover:scale-110" />
-                    <div class="absolute bottom-6 right-6 bg-black/40 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#25d366] flex items-center gap-2 border border-white/5">
+                <div class="flex-1 rounded-[2.5rem] bg-[#0b141a] border border-white/5 shadow-inner overflow-hidden relative cursor-zoom-in group"
+                     x-data="{ zoom: false, x: 50, y: 50 }"
+                     @mousemove="x = ($event.layerX / $event.currentTarget.offsetWidth) * 100; y = ($event.layerY / $event.currentTarget.offsetHeight) * 100"
+                     @mouseenter="zoom = true"
+                     @mouseleave="zoom = false">
+                    
+                    <a :href="activeImg" 
+                       data-pswp-width="2000" 
+                       data-pswp-height="1500" 
+                       target="_blank"
+                       class="w-full h-full block">
+                        <img :src="activeImg" 
+                             :style="zoom ? `transform: scale(2); transform-origin: ${x}% ${y}%` : 'transform: scale(1.01)'"
+                             class="w-full h-full object-cover transition-transform duration-200 ease-out" />
+                    </a>
+
+                    <div class="absolute bottom-6 right-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#25d366] flex items-center gap-2 border border-white/5 pointer-events-none">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         Zoom HD
                     </div>
-                </a>
+                </div>
 
                 <!-- Thumbnails -->
                 <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
@@ -56,7 +66,7 @@
                         <div class="w-24 h-24 flex-shrink-0 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden p-1 bg-[#0b141a] shadow-sm"
                              :class="activeImg === (selectedItem.pathImg + '/' + pic) ? 'border-[#25d366]' : 'border-transparent opacity-40 hover:opacity-100'"
                              @click="activeImg = selectedItem.pathImg + '/' + pic">
-                            <img :src="selectedItem.pathImg + '/' + pic" class="w-full h-full object-contain rounded-xl" />
+                            <img :src="selectedItem.pathImg + '/' + pic" class="w-full h-full object-cover rounded-xl" />
                         </div>
                     </template>
                 </div>
