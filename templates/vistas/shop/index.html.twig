@@ -34,13 +34,23 @@
           <input type="text" x-model="currentFilters.q" 
               @keydown.enter="applyFilter({page: 1})"
               placeholder="Busca por pieza, marca o código..." 
-              class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-24 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:border-[#25d366]/50 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
+              class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-40 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:border-[#25d366]/50 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
           <svg class="w-5 h-5 absolute left-4 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           
-          <!-- Botón de Búsqueda -->
-          <button @click="applyFilter({page: 1})" class="absolute right-16 p-2 text-white/50 hover:text-[#25d366] hover:bg-white/5 rounded-xl transition-all">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-          </button>
+          <div class="absolute right-16 flex items-center gap-1">
+            <!-- Botón Limpiar -->
+            <button x-show="currentFilters.q.length > 0" 
+                    @click="resetSearch()" 
+                    class="p-2 text-white/30 hover:text-red-400 hover:bg-white/5 rounded-xl transition-all"
+                    x-cloak x-transition.opacity>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Botón de Búsqueda -->
+            <button @click="applyFilter({page: 1})" class="p-2 text-white/50 hover:text-[#25d366] hover:bg-white/5 rounded-xl transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+          </div>
           
           <!-- Status Logos -->
           <div class="absolute right-4 pointer-events-none">
@@ -183,21 +193,21 @@
 
   <!-- Confirm Remove Modal -->
   <div x-show="itemToRemove !== null" class="fixed inset-0 z-[110] flex items-center justify-center p-4" x-cloak>
-      <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" @click="itemToRemove = null" x-transition.opacity></div>
-      <div class="relative bg-[#0b141a] border border-white/10 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
-           x-transition:enter="transition ease-out duration-300"
-           x-transition:enter-start="opacity-0 scale-90 translate-y-8"
-           x-transition:enter-end="opacity-100 scale-100 translate-y-0">
-          <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
-              <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-          </div>
-          <h3 class="text-white text-lg font-black tracking-widest uppercase mb-2">¿Quitar del carrito?</h3>
-          <p class="text-white/40 text-xs mb-8 font-medium">El producto se eliminará de tu selección actual.</p>
-          <div class="flex gap-4 w-full">
-              <button @click="itemToRemove = null" class="flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest text-white hover:bg-white/5 transition-colors">Cancelar</button>
-              <button @click="confirmRemove()" class="flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest bg-red-500 text-white shadow-lg shadow-red-500/20 hover:bg-red-600 active:scale-95 transition-all">Sí, quitar</button>
-          </div>
+    <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" @click="itemToRemove = null" x-transition.opacity></div>
+    <div class="relative bg-[#0b141a] border border-white/10 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90 translate-y-8"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+    <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+    </div>
+      <h3 class="text-white text-lg font-black tracking-widest uppercase mb-2">¿Quitar del carrito?</h3>
+      <p class="text-white/40 text-xs mb-8 font-medium">El producto se eliminará de tu selección actual.</p>
+      <div class="flex gap-4 w-full">
+          <button @click="itemToRemove = null" class="flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest text-white hover:bg-white/5 transition-colors">Cancelar</button>
+          <button @click="confirmRemove()" class="flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest bg-red-500 text-white shadow-lg shadow-red-500/20 hover:bg-red-600 active:scale-95 transition-all">Sí, quitar</button>
       </div>
+    </div>
   </div>
 </div>
 
@@ -221,53 +231,61 @@
       meliItemsHtml: '',
       meliLoading: false,
       async applyFilter(params = {}) {
-          this.currentFilters = { ...this.currentFilters, ...params };
-          
-          const queryParams = { ...this.currentFilters };
-          if (this.meliToken) {
-              queryParams.mt = this.meliToken;
-          }
-          
-          const query = new URLSearchParams(queryParams).toString();
-          
-          this.meliItemsHtml = ''; // Limpiamos resultados anteriores de MeLi
+        // Si el filtro viene de marcas/modelos, limpiamos la búsqueda de texto
+        if ((params.mk !== undefined || params.md !== undefined) && params.q === undefined) {
+          this.currentFilters.q = '';
+        }
 
-          // 1. Búsqueda local principal (el backend actuará como Metabuscador)
-          try {
-              const res = await fetch(`{{ path('app_shop_search', {template: template, slug: slug}) }}?${query}`);
-              document.getElementById('product-grid-container').innerHTML = await res.text();
-              this.showFilters = false; 
-              
-              // Regresar al principio de la página suavemente
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.currentFilters = { ...this.currentFilters, ...params };
+          
+        const queryParams = { ...this.currentFilters };
+        if (this.meliToken) {
+          queryParams.mt = this.meliToken;
+        }
+        
+        const query = new URLSearchParams(queryParams).toString();
+        
+        this.meliItemsHtml = ''; // Limpiamos resultados anteriores de MeLi
 
-              const urlParams = new URLSearchParams(this.currentFilters);
-              const newUrl = window.location.pathname + '?' + urlParams.toString();
-              window.history.pushState({}, '', newUrl);
-          } catch (e) {
-              console.error('Error filtering local DB', e);
-          }
+        // 1. Búsqueda local principal (el backend actuará como Metabuscador)
+        try {
+          const res = await fetch(`{{ path('app_shop_search', {template: template, slug: slug}) }}?${query}`);
+          document.getElementById('product-grid-container').innerHTML = await res.text();
+          this.showFilters = false; 
+          
+          // Regresar al principio de la página suavemente
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          const urlParams = new URLSearchParams(this.currentFilters);
+          const newUrl = window.location.pathname + '?' + urlParams.toString();
+          window.history.pushState({}, '', newUrl);
+        } catch (e) {
+          console.error('Error filtering local DB', e);
+        }
+      },
+      resetSearch() {
+        this.applyFilter({mk: '', md: '', q: '', page: 1});
       },
       fetchMissingMeli(ids) {
-          if (!ids || ids.trim() === '') {
-              this.meliItemsHtml = '';
-              return;
-          }
-          this.meliLoading = true;
+        if (!ids || ids.trim() === '') {
           this.meliItemsHtml = '';
-          
-          const queryParams = { ids: ids };
-          if (this.meliToken) queryParams.mt = this.meliToken;
-          const query = new URLSearchParams(queryParams).toString();
-          
-          fetch(`{{ path('app_shop_search_meli', {slug: slug}) }}?${query}`)
-              .then(res => {
-                  if(!res.ok) throw new Error('Network response was not ok');
-                  return res.text();
-              })
-              .then(html => { this.meliItemsHtml = html; })
-              .catch(e => console.error('Error fetching missing Meli', e))
-              .finally(() => { this.meliLoading = false; });
+          return;
+        }
+        this.meliLoading = true;
+        this.meliItemsHtml = '';
+        
+        const queryParams = { ids: ids };
+        if (this.meliToken) queryParams.mt = this.meliToken;
+        const query = new URLSearchParams(queryParams).toString();
+        
+        fetch(`{{ path('app_shop_search_meli', {slug: slug}) }}?${query}`)
+            .then(res => {
+                if(!res.ok) throw new Error('Network response was not ok');
+                return res.text();
+            })
+            .then(html => { this.meliItemsHtml = html; })
+            .catch(e => console.error('Error fetching missing Meli', e))
+            .finally(() => { this.meliLoading = false; });
       },
       openModal(item) {
         this.selectedItem = item;
