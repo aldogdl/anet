@@ -1,21 +1,17 @@
 <!-- Grid Header -->
-<div class="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 gap-4" x-init="totalItems = {{ items is defined ? items|length : 0 }}">
-    <div>
-        <h2 class="text-2xl sm:text-4xl font-black text-[#103928] tracking-tight uppercase leading-none">{{ storeName|default('AUTOPARNET') }}</h2>
-        <div class="flex items-center gap-2 mt-2 sm:mt-3">
-            <span class="w-2.5 h-2.5 rounded-full bg-[#25d366] animate-pulse shadow-sm shadow-[#25d366]/50"></span>
-            <p class="text-xs text-[#103928]/60 font-black uppercase tracking-widest">Tienda Verificada</p>
-        </div>
-    </div>
-    
-    <div class="flex items-center gap-2">
-        <span class="text-[10px] sm:text-xs text-[#103928] font-black uppercase tracking-wider">Ordenar por:</span>
-        <select class="bg-white border-slate-200 rounded-xl px-4 py-2 text-xs font-black text-[#103928] outline-none focus:ring-2 focus:ring-[#25d366]/10 transition-all cursor-pointer shadow-sm">
-            <option>Más recientes</option>
-            <option>Precio: Menor a Mayor</option>
-            <option>Precio: Mayor a Menor</option>
-        </select>
-    </div>
+<div class="flex items-center justify-between">
+	<div>
+		<h2 class="text-2xl font-black text-[#103928] tracking-tight">Todas las Piezas</h2>
+		<p class="text-[15px] text-[#103928]/60 font-bold mt-1">Mostrando {{ items|length }} resultados</p>
+	</div>
+	<div class="flex items-center gap-2">
+		<span class="text-xs text-[#103928] font-black uppercase tracking-wider">Ordenar por:</span>
+		<select class="bg-white border-slate-200 rounded-xl px-4 py-2 text-xs font-black text-[#103928] outline-none focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer">
+			<option>Más recientes</option>
+			<option>Precio: Menor a Mayor</option>
+			<option>Precio: Mayor a Menor</option>
+		</select>
+	</div>
 </div>
 
 <!-- The Grid -->
