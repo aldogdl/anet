@@ -20,42 +20,93 @@
             <svg class="w-6 h-6 group-hover:rotate-90 transition-transform text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
+        <style>
+          .pswp__icn { fill: white !important; }
+          .pswp__button { 
+            opacity: 1 !important; 
+            background: rgba(0,0,0,0.6) !important; 
+            margin: 8px !important; 
+            border-radius: 12px !important; 
+            width: 50px !important; 
+            height: 50px !important; 
+            display: flex !important; 
+            items-center: center !important; 
+            justify-content: center !important;
+          }
+          .pswp__button--rotate-button { order: -1; } /* Poner el de rotar primero */
+          .pswp__img { transition: transform 0.3s ease-out; }
+        </style>
+
         <!-- Left: Image Gallery -->
-        <div class="w-full lg:w-3/5 bg-black/10 flex flex-col p-8 lg:p-16 border-r border-white/5 overflow-hidden" 
-             x-data="{ activeImg: '', initGallery() { 
-                if (window.lightbox) window.lightbox.destroy();
-                window.lightbox = new PhotoSwipeLightbox({
-                    gallery: '#gallery-pro',
-                    children: 'a',
-                    pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js')
-                });
-                window.lightbox.init();
-             } }" 
+        <div class="w-full lg:w-3/5 bg-black/10 flex flex-col p-4 lg:p-8 border-r border-white/5 overflow-hidden" 
+             x-data="{ 
+                activeImg: '', 
+                rotation: 0, 
+                initGallery() { 
+                    if (window.lightbox) window.lightbox.destroy();
+                    window.lightbox = new PhotoSwipeLightbox({
+                        gallery: '#gallery-pro',
+                        children: 'a',
+                        pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js')
+                    });
+                    
+                    window.lightbox.on('uiRegister', function() {
+                      window.lightbox.pswp.ui.registerElement({
+                        name: 'rotate-button',
+                        ariaLabel: 'Rotar',
+                        order: 9,
+                        isButton: true,
+                        html: '<svg aria-hidden=\'true\' class=\'pswp__icn\' viewBox=\'0 0 24 24\' style=\'width:24px;height:24px;\'><path d=\'M7.11 8.53L5.7 7.11C4.8 8.27 4.24 9.61 4.07 11h2.02c.14-.87.49-1.72 1.02-2.47zM6.09 13H4.07c.17 1.39.72 2.73 1.62 3.89l1.41-1.42c-.52-.75-.87-1.59-1.01-2.47zm1.02 5.47l-1.41 1.41C7.39 21.05 9.39 22 11.5 22c.28 0 .55-.02.82-.06l-.23-2.02c-.19.05-.39.08-.59.08-1.55 0-2.97-.65-4-1.71zm10.78-1.41l1.41 1.41C16.61 21.05 14.61 22 12.5 22c-.28 0-.55-.02-.82-.06l.23-2.02c.19.05.39.08.59.08-1.55 0-2.97-.65-4-1.71zM11 4.07V2.05c-2.01.2-3.84 1.03-5.3 2.3l1.42 1.42C8.25 4.73 9.57 4.2 11 4.07zm1.5.01c1.43.13 2.75.66 3.87 1.69l1.42-1.42C16.34 3.08 14.51 2.25 12.5 2.05v2.03zM21 12c0-4.97-4.03-9-9-9-1.55 0-3 .4-4.25 1.1l1.41 1.41C10.05 5.21 11 5 12 5c3.87 0 7 3.13 7 7s-3.13 7-7 7c-.7 0-1.37-.11-2-.31V21c.65.21 1.3.31 2 .31 4.97 0 9-4.03 9-9z\' fill=\'white\'/></svg>',
+                        onClick: (event, el, pswp) => {
+                          const img = pswp.currSlide.container.querySelector('.pswp__img');
+                          if (img) {
+                            const r = (parseInt(img.dataset.rotation || '0') + 90) % 360;
+                            img.style.transform = `rotate(${r}deg)`;
+                            img.dataset.rotation = r;
+                          }
+                        }
+                      });
+                    });
+
+                    window.lightbox.init();
+                } 
+             }" 
              x-init="$watch('selectedItem', v => { 
                 activeImg = v ? v.imgBig : ''; 
+                rotation = 0;
                 $nextTick(() => initGallery());
              })">
             
             <div id="gallery-pro" class="flex-1 flex flex-col gap-8 h-full overflow-hidden">
-                <!-- Main Zoomable Image -->
+                <!-- Main Preview Image -->
                 <div class="flex-1 rounded-[2.5rem] bg-[#0b141a] border border-white/5 shadow-inner overflow-hidden relative group">
                     <a :href="activeImg" 
                        id="main-pswp-link"
                        data-pswp-width="1200" 
                        data-pswp-height="1200" 
                        target="_blank"
-                       class="w-full h-full flex items-center justify-center p-8 cursor-zoom-in">
+                       class="w-full h-full flex items-center justify-center p-4 lg:p-8 cursor-zoom-in">
                         <img :src="activeImg" 
-                             class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-105"
+                             :style="`transform: rotate(${rotation}deg)`"
+                             class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-500 group-hover:scale-110"
                              @load="
                                 $el.parentElement.setAttribute('data-pswp-width', $el.naturalWidth);
                                 $el.parentElement.setAttribute('data-pswp-height', $el.naturalHeight);
                              " />
                     </a>
 
-                    <div class="absolute bottom-6 right-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-[#25d366] flex items-center gap-2 border border-white/5 pointer-events-none">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        Zoom HD
+                    <!-- Control Buttons Overlay -->
+                    <div class="absolute bottom-6 left-6 flex gap-3">
+                        <button @click="rotation = (rotation + 90) % 360" 
+                                class="bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/10 text-white hover:bg-[#25d366] hover:scale-110 transition-all shadow-2xl group/rot"
+                                title="Rotar Imagen">
+                            <svg class="w-6 h-6 group-hover/rot:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        </button>
+                    </div>
+
+                    <div class="absolute bottom-6 right-6 bg-black/60 backdrop-blur-md px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-[#25d366] flex items-center gap-2 border border-white/10 pointer-events-none shadow-xl">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Click para Zoom HD
                     </div>
                 </div>
 
@@ -64,7 +115,7 @@
                     <template x-for="(pic, index) in selectedItem?.pictures" :key="index">
                         <div class="w-24 h-24 flex-shrink-0 rounded-2xl border-2 transition-all cursor-pointer overflow-hidden p-1 bg-[#0b141a] shadow-sm"
                              :class="activeImg === (selectedItem.pathImg + '/' + pic) ? 'border-[#25d366]' : 'border-transparent opacity-40 hover:opacity-100'"
-                             @click="activeImg = selectedItem.pathImg + '/' + pic">
+                             @click="activeImg = selectedItem.pathImg + '/' + pic; rotation = 0">
                             <img :src="selectedItem.pathImg + '/' + pic" class="w-full h-full object-contain rounded-xl" />
                         </div>
                     </template>
@@ -123,18 +174,17 @@
                     
                     <div class="text-[#25d366] flex items-center gap-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.394 0 0 5.394 0 12.031c0 2.115.548 4.17 1.583 5.986L.048 23.518l5.656-1.482a12.002 12.002 0 006.327 1.785h.005c6.634 0 12.029-5.394 12.029-12.031S18.667 0 12.031 0zm0 21.821h-.004a9.986 9.986 0 01-5.088-1.385l-.365-.216-3.782.991.99-3.685-.236-.376a9.986 9.986 0 01-1.526-5.334c0-5.522 4.493-10.017 10.015-10.017 2.675 0 5.188 1.042 7.079 2.934 1.891 1.892 2.932 4.406 2.932 7.081 0 5.524-4.494 10.007-10.014 10.007zm5.493-7.513c-.301-.151-1.785-.882-2.062-.983-.277-.101-.479-.151-.68.151-.202.302-.781.983-.957 1.184-.177.202-.353.227-.654.076-.301-.151-1.275-.47-2.428-1.5-.898-.801-1.503-1.793-1.68-2.095-.177-.302-.019-.465.132-.616.135-.135.301-.353.452-.529.151-.177.202-.302.302-.504.101-.202.05-.378-.025-.529-.076-.151-.68-1.64-.932-2.245-.246-.59-.496-.51-.68-.52-.177-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.057 1.033-1.057 2.519s1.083 2.923 1.234 3.125c.151.202 2.13 3.25 5.161 4.557.72.311 1.281.497 1.722.636.723.23 1.381.197 1.902.12.583-.086 1.785-.73 2.036-1.436.252-.705.252-1.309.177-1.436-.076-.126-.277-.202-.578-.353z"></path></svg>
-                        <span class="font-black tracking-widest uppercase text-xs">Atención por WhatsApp</span>
-                    </div>
-                    
-                    <div class="bg-white p-2 rounded-xl w-32 h-32 flex items-center justify-center shadow-lg shadow-black/50 group-hover:scale-105 transition-transform duration-500">
-                        <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=1&color=0b141a&data=` + encodeURIComponent(`https://wa.me/{{ contactPhone|default('') }}?text=Hola,%20me%20interesa%20información%20del%20artículo:\n\n🚘%20${selectedItem?.title}`)" 
-                             alt="Código QR WhatsApp" class="w-full h-full object-contain mix-blend-multiply" />
-                    </div>
-                    
-                    <p class="text-[10px] text-slate-400 font-medium leading-relaxed max-w-[80%]">
-                        Escanea este código con la cámara de tu celular para consultar existencias o dudas.
-                    </p>
+                    <span class="font-black tracking-widest uppercase text-xs">Atención por WhatsApp</span>
                 </div>
+                
+                <div class="bg-white p-2 rounded-xl w-32 h-32 flex items-center justify-center shadow-lg shadow-black/50 group-hover:scale-105 transition-transform duration-500">
+                    <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=1&color=0b141a&data=` + encodeURIComponent(`https://wa.me/{{ contactPhone|default('') }}?text=Hola,%20me%20interesa%20información%20del%20artículo:\n\n🚘%20${selectedItem?.title}`)" 
+                         alt="Código QR WhatsApp" class="w-full h-full object-contain mix-blend-multiply" />
+                </div>
+                
+                <p class="text-[10px] text-slate-400 font-medium leading-relaxed max-w-[80%]">
+                    Escanea este código con la cámara de tu celular para consultar existencias o dudas.
+                </p>
             </div>
         </div>
     </div>
