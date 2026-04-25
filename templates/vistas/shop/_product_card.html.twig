@@ -24,7 +24,7 @@
 
 	<img src="{{ mainImg }}" 
 		onerror="this.src='{{ placeholder }}'"
-		class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+		class="w-full h-full object-cover object-center p-3 rounded-[2rem] group-hover:scale-105 transition-transform duration-700" 
 		alt="{{ item.title }}"
 	>
         
@@ -42,9 +42,9 @@
 
 	<div class="flex-1">
 		<div class="flex items-center gap-2 mb-3">
-			<span class="text-[9px] bg-slate-100 text-slate-500 font-black px-2 py-0.5 rounded tracking-widest">REF: {{ item.iku|default('N/A') }}/{{ item.id }}</span>
+			<span class="text-[12px] bg-slate-100 text-slate-500 font-black px-2 py-0.5 rounded tracking-widest">REF: {{ item.iku|default('N/A') }}/{{ item.id }}</span>
 		</div>
-		<h3 class="text-[15px] font-bold text-[#103928] line-clamp-2 leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[2.5rem]" 
+		<h3 class="text-[15px] font-bold text-[#103928] line-clamp-3 leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem]" 
 			@click="openModal(...)">
 			{{ item.title }}
 		</h3>
