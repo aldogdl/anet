@@ -24,7 +24,7 @@
 				}
 			}
 		</script>
-			
+
 		<!-- Google Fonts: Inter -->
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 		
@@ -32,6 +32,13 @@
 		<script defer src="https://unpkg.com/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
 		<!-- Alpine.js Core -->
 		<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+		<!-- PhotoSwipe v5 -->
+		<link rel="stylesheet" href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
+		<script type="module">
+			import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5.4.3/dist/photoswipe-lightbox.esm.js';
+			window.PhotoSwipeLightbox = PhotoSwipeLightbox;
+		</script>
 
 		<style>
 			[x-cloak] { display: none !important; }
@@ -44,56 +51,8 @@
 
 		{% block stylesheets %}{% endblock %}
 	</head>
-    <body class="bg-darker text-slate-200 font-sans antialiased" x-data="{ sidebarOpen: false }">
-        
-			<div class="flex h-screen overflow-hidden">
-				<!-- Sidebar (Desktop) -->
-				<aside class="hidden lg:flex w-80 flex-shrink-0 flex-col border-r border-slate-800 bg-darker">
-					{% include 'shop/_sidebar.html.twig' %}
-				</aside>
-
-				<!-- Sidebar (Mobile Drawer) -->
-				<div x-show="sidebarOpen" 
-						x-transition:enter="transition ease-out duration-300"
-						x-transition:enter-start="-translate-x-full"
-						x-transition:enter-end="translate-x-0"
-						x-transition:leave="transition ease-in duration-300"
-						x-transition:leave-start="translate-x-0"
-						x-transition:leave-end="-translate-x-full"
-						class="fixed inset-0 z-40 lg:hidden" 
-						role="dialog" aria-modal="true">
-					<div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm" @click="sidebarOpen = false"></div>
-					<div class="relative flex w-full max-w-xs flex-1 flex-col bg-darker h-full shadow-xl">
-							<div class="absolute top-0 right-0 -mr-12 pt-2">
-									<button type="button" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" @click="sidebarOpen = false">
-											<span class="sr-only">Cerrar sidebar</span>
-											<svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-											</svg>
-									</button>
-							</div>
-							{% include 'shop/_sidebar.html.twig' %}
-					</div>
-			</div>
-
-			<!-- Main Content Area -->
-			<div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-				<!-- Mobile Header -->
-				<div class="lg:hidden flex items-center justify-between p-4 bg-dark border-b border-slate-800">
-					<button @click="sidebarOpen = true" class="text-slate-400 hover:text-white">
-							<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-					</button>
-					<span class="font-bold text-primary">Autoparnet</span>
-					<div class="w-6"></div> <!-- Spacer -->
-				</div>
-
-				<!-- Scrollable Container -->
-				<main class="flex-1 overflow-y-auto scroll-smooth" id="main-scroll">
-					{% block body %}{% endblock %}
-				</main>
-			</div>
-		</div>
-
+	<body class="font-sans antialiased bg-slate-50">
+		{% block body %}{% endblock %}
 		{% block javascripts %}{% endblock %}
 	</body>
 </html>

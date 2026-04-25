@@ -1,0 +1,54 @@
+<div x-data="{ 
+    filters: [], 
+    loading: true,
+    async fetchFilters() {
+        try {
+            const res = await fetch('{{ path('muro_shop_filters', {template: template, slug: slug}) }}?t=' + Date.now());
+            this.filters = await res.json();
+        } finally {
+            this.loading = false;
+        }
+    }
+}" x-init="fetchFilters()" class="space-y-6">
+    <div class="space-y-8">
+        <div class="space-y-4">
+            <h4 class="text-[10px] font-black text-[#103928]/40 uppercase tracking-widest px-2">Selecciona una marca</h4>
+            
+            <div class="space-y-1">
+                <template x-if="loading">
+                    <div class="space-y-3 animate-pulse px-2">
+                        <div class="h-10 bg-slate-200/50 rounded-xl"></div>
+                        <div class="h-10 bg-slate-200/50 rounded-xl"></div>
+                        <div class="h-10 bg-slate-200/50 rounded-xl w-2/3"></div>
+                    </div>
+                </template>
+
+                <template x-for="brand in filters" :key="brand.id">
+                    <div class="group" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                class="w-full flex items-center justify-between py-3 px-4 rounded-2xl transition-all hover:bg-white shadow-sm border border-transparent hover:border-slate-100"
+                                :class="open ? 'bg-white text-[#25d366] border-slate-100 shadow-md' : 'text-slate-600'">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-3.5 h-3.5 transition-transform duration-300" 
+                                     :class="open ? 'rotate-90 text-[#25d366]' : 'text-slate-400'"
+                                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                <span class="text-xs font-bold uppercase tracking-tight" x-text="brand.name"></span>
+                            </div>
+                            <span class="text-[10px] font-black px-2 py-0.5 rounded-lg bg-[#f0f7f4] text-[#103928]" x-text="brand.count"></span>
+                        </button>
+
+                        <div x-show="open" x-collapse class="ml-9 mt-2 space-y-1 border-l-2 border-[#25d366]/20 pl-4">
+                            <template x-for="model in brand.models" :key="model.id">
+                                <a :href="'{{ path('app_shop', {template: template, slug: slug}) }}?mdl=' + model.id" 
+                                   class="block py-2.5 px-3 text-[11px] font-bold text-slate-500 hover:text-[#25d366] transition-colors uppercase tracking-tight"
+                                   x-text="model.name"></a>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>

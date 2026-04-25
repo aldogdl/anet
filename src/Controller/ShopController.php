@@ -14,22 +14,14 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 */
 class ShopController extends AbstractController
 {
-	#[Route('/{slug}', name: 'app_shop', methods: ['GET'], priority: -1)]
-	public function index(string $slug, Request $request, ItemPubRepository $repo): Response
+	#[Route('/{template}/{slug}', name: 'app_shop', methods: ['GET'], requirements: ['template' => 'muro|shop'])]
+	public function index(string $template, string $slug, Request $request, ItemPubRepository $repo): Response
 	{
-		// Evitar que slugs comunes o archivos estáticos activen la tienda
-		$noEntrarSi = ['api', 'admin', 'login', 'logout', '_profiler', '_wdt', 'favicon.ico'];
-		if (in_array($slug, $noEntrarSi)) {
-			throw $this->createNotFoundException('Ruta no válida para tienda.');
-		}
-
 		$page = $request->query->getInt('page', 1);
 		$search = $request->query->get('q', '');
 		$limit = 12;
 
-		// Aquí buscaríamos los productos del usuario por su slug.
-		// Por ahora, usamos el repositorio para traer los items asociados a ese slug.
-		// Nota: En un futuro aquí se integraría la lógica de MeLi si fuera necesario.
+		// Query para obtener las piezas del usuario por slug
 		$queryBuilder = $repo->createQueryBuilder('i')
 			->where('i.slug = :slug')
 			->andWhere('i.isActive = :active')
@@ -74,8 +66,11 @@ class ShopController extends AbstractController
 				->getResult();
 		}
 
-		return $this->render('shop/index.html.twig', [
+		$viewFolder = $template === 'muro' ? 'vistas/muro' : 'vistas/shop';
+
+		return $this->render($viewFolder . '/index.html.twig', [
 			'slug' => $slug,
+			'template' => $template,
 			'items' => $items,
 			'currentPage' => $page,
 			'pagesCount' => $pagesCount,
@@ -110,45 +105,71 @@ class ShopController extends AbstractController
 	}
 
 	/** */
-	#[Route('/muro/filters/{slug}', name: 'muro_shop_filters', methods: ['GET'])]
-	public function getFilters(string $slug, ItemPubRepository $itemRepo, \Doctrine\ORM\EntityManagerInterface $em): Response
+	#[Route('/{template}/filters/{slug}', name: 'muro_shop_filters', methods: ['GET'], requirements: ['template' => 'muro|shop'])]
+	public function getFilters(string $template, string $slug, ItemPubRepository $itemRepo, \Doctrine\ORM\EntityManagerInterface $em): Response
 	{
-		// Modo Demo
+		// Modo Demo enriquecido
 		if ($slug === 'demo') {
 			return $this->json([
 				['id' => 1, 'name' => 'VOLKSWAGEN', 'count' => 12, 'models' => [
 					['id' => 10, 'name' => 'Terramont', 'count' => 5],
 					['id' => 11, 'name' => 'Jetta', 'count' => 7],
+					['id' => 12, 'name' => 'Taos', 'count' => 2],
 				]],
 				['id' => 2, 'name' => 'NISSAN', 'count' => 8, 'models' => [
 					['id' => 20, 'name' => 'Versa', 'count' => 4],
 					['id' => 21, 'name' => 'Sentra', 'count' => 4],
 				]],
-				['id' => 3, 'name' => 'FORD', 'count' => 5, 'models' => []],
-				['id' => 4, 'name' => 'CHEVROLET', 'count' => 15, 'models' => []],
+				['id' => 3, 'name' => 'FORD', 'count' => 5, 'models' => [
+					['id' => 30, 'name' => 'F-150', 'count' => 3],
+					['id' => 31, 'name' => 'Explorer', 'count' => 2],
+				]],
+				['id' => 4, 'name' => 'CHEVROLET', 'count' => 15, 'models' => [
+					['id' => 40, 'name' => 'Aveo', 'count' => 10],
+					['id' => 41, 'name' => 'Silverado', 'count' => 5],
+				]],
 			]);
 		}
 
 		$items = $itemRepo->findBy(['slug' => $slug, 'isActive' => true]);
-		$brandIds = array_unique(array_map(fn($i) => $i->getMrkId(), $items));
 		
-		if (empty($brandIds)) {
-			return $this->json([]);
+		// Agrupar por marcas y modelos
+		$brandMap = [];
+		foreach ($items as $item) {
+			$mrkId = $item->getMrkId() ?? 0;
+			$mdlId = $item->getMdlId() ?? 0;
+			
+			// Intentar obtener nombres de extras si existen
+			$extras = $item->getExtras();
+			$mrkName = $extras['marca'] ?? 'Marca Desconocida';
+			$mdlName = $extras['modelo'] ?? 'Modelo Desconocido';
+
+			if (!isset($brandMap[$mrkId])) {
+				$brandMap[$mrkId] = [
+					'id' => $mrkId,
+					'name' => strtoupper($mrkName),
+					'count' => 0,
+					'models' => []
+				];
+			}
+			$brandMap[$mrkId]['count']++;
+
+			if (!isset($brandMap[$mrkId]['models'][$mdlId])) {
+				$brandMap[$mrkId]['models'][$mdlId] = [
+					'id' => $mdlId,
+					'name' => $mdlName,
+					'count' => 0
+				];
+			}
+			$brandMap[$mrkId]['models'][$mdlId]['count']++;
 		}
 
-		// Obtener nombres de marcas
-		$brands = $em->getRepository(\App\Entity\MMEntity::class)->findBy(['id' => $brandIds]);
-		
-		$filters = [];
-		foreach ($brands as $brand) {
-			$filters[] = [
-				'id' => $brand->getId(),
-				'name' => $brand->getName(),
-				'count' => count(array_filter($items, fn($i) => $i->getMrkId() === $brand->getId())),
-				'models' => [] // Aquí podrías implementar la lógica real de modelos si fuera necesario
-			];
-		}
+		// Convertir a array plano para el JSON
+		$result = array_values(array_map(function($b) {
+			$b['models'] = array_values($b['models']);
+			return $b;
+		}, $brandMap));
 
-		return $this->json($filters);
+		return $this->json($result);
 	}
 }
