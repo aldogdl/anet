@@ -133,16 +133,7 @@ class ShopController extends AbstractController
 				$urlIds = "https://api.mercadolibre.com/users/{$userId}/items/search?q=" . urlencode($search) . "&status=active&limit=50";
 				$json = @file_get_contents($urlIds, false, $context);
 				
-				// DEBUG: Guardar la respuesta de MeLi en un log para poder ver por qué falla
-				$debugData = [
-					'date' => date('Y-m-d H:i:s'),
-					'url' => $urlIds,
-					'token_used' => $token,
-					'http_response' => $http_response_header ?? null,
-					'json' => $json
-				];
-				@file_put_contents('meli_debug.log', print_r($debugData, true) . "\n-----------------\n", FILE_APPEND);
-				
+
 				if ($json) {
 					$data = json_decode($json, true);
 					$results = $data['results'] ?? [];
