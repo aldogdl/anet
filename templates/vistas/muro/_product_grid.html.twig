@@ -1,0 +1,22 @@
+{% if items|length > 0 %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {% for item in items %}
+            {% include 'vistas/muro/_product_card.html.twig' with {'item': item} %}
+        {% endfor %}
+    </div>
+
+    {% if pagesCount > 1 %}
+    <div class="mt-20 flex justify-center items-center gap-2">
+        {% for i in 1..pagesCount %}
+            <button @click="applyFilter({page: {{ i }}})" 
+               class="w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all {{ i == currentPage ? 'bg-primary text-darker shadow-lg shadow-primary/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white' }}">
+                {{ i }}
+            </button>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% else %}
+    <div class="text-center py-20 bg-slate-900/30 rounded-3xl border border-dashed border-slate-800 text-slate-500 font-bold">
+        No se encontraron piezas en el muro.
+    </div>
+{% endif %}
