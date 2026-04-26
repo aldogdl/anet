@@ -166,8 +166,8 @@
     </div>
   </footer>
 
-  <!-- Modal Details -->
   {% include 'vistas/shop/_modal_details.html.twig' %}
+  {% include 'vistas/shop/_modal_cart.html.twig' %}
 
   <!-- Toast Notifications -->
   <div class="fixed bottom-8 right-8 z-[100] pointer-events-none">
@@ -218,9 +218,17 @@
     return {
       selectedItem: null,
       showModal: false,
+      showCart: false,
       showFilters: false,
-      cartCount: {{ app.session.get('cart')|length }},
-      cartItems: {{ app.session.get('cart') ? app.session.get('cart')|keys|json_encode|raw : '[]' }},
+      get cartCount() { return Object.keys(this.cartItems).length; },
+      cartItems: {{ app.session.get('cart') ? app.session.get('cart')|json_encode|raw : '{}' }},
+      get cartTotal() { 
+        return Object.values(this.cartItems).reduce((acc, item) => acc + (parseFloat(item.price) * (item.quantity || 1)), 0); 
+      },
+      get cartItemsTitles() {
+        return Object.values(this.cartItems).map(i => i.title).join(', ');
+      },
+      quoteForm: { phone: '', email: '' },
       totalItems: {{ items is defined ? items|length : 0 }},
       itemToRemove: null,
       toasts: [],
@@ -296,11 +304,8 @@
         try {
           const res = await fetch('{{ path('cart_add', {id: 0}) }}'.replace('0', id), { method: 'POST' });
           const data = await res.json();
-          if (data.success) {
-            this.cartCount = data.cartCount;
-            if (!this.cartItems.includes(id)) {
-                this.cartItems.push(id);
-            }
+          if (data.success && data.item) {
+            this.cartItems[id] = data.item;
             this.addToast('Producto añadido al carrito');
           }
         } catch (e) {
@@ -314,13 +319,21 @@
           const id = this.itemToRemove;
           this.itemToRemove = null;
           // Actualizar UI optimista
-          this.cartItems = this.cartItems.filter(i => i !== id);
-          this.cartCount = Math.max(0, this.cartCount - 1);
+          delete this.cartItems[id];
           this.addToast('Producto eliminado');
           // Llamada al backend si existe (opcional)
           try {
               await fetch('{{ path('cart_add', {id: 0}) }}'.replace('0', id) + '?remove=1', { method: 'POST' });
           } catch(e) {}
+      },
+      async submitQuote() {
+        if (!this.quoteForm.email) return;
+        this.addToast('Enviando cotización...');
+        // Aquí podrías enviar los datos al backend
+        setTimeout(() => {
+            this.showCart = false;
+            this.addToast('¡Cotización enviada con éxito!');
+        }, 1500);
       },
       addToast(message) {
         const id = Date.now();

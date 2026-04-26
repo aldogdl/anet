@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\ItemPubRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
+use App\Service\PdfGenerator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -346,7 +347,11 @@ class ShopController extends AbstractController
 		}
 
 		$session->set('cart', $cart);
-		return $this->json(['success' => true, 'cartCount' => count($cart)]);
+		return $this->json([
+			'success' => true, 
+			'cartCount' => count($cart),
+			'item' => $cart[$id] ?? null
+		]);
 	}
 
 	/** */
@@ -424,5 +429,59 @@ class ShopController extends AbstractController
 
 		return $this->json($result);
 	}
+  
+	/** */
+	#[Route('/cotizacion/pdf/{slug}', name: 'cotizacion_pdf', methods: ['GET'])]
+	public function downloadPdf(string $slug, SessionInterface $session, Fsys $fsys, PdfGenerator $pdfGenerator): Response
+	{
+		$cart = $session->get('cart', []);
+		if (empty($cart)) {
+			return new Response('El carrito está vacío.', 400);
+		}
 
+		$dtaCtc = $fsys->get(AnyPath::$DTACTC, $slug . '.json');
+		$storeName = empty($dtaCtc) ? ucfirst($slug) : $dtaCtc['empresa'];
+		$localidad = $dtaCtc['localidad'] ?? '';
+		
+		$contactPhone = '';
+		if (!empty($dtaCtc['colabs']) && is_array($dtaCtc['colabs'])) {
+			foreach ($dtaCtc['colabs'] as $colab) {
+				if (isset($colab['roles']) && in_array('ROLE_MAIN', $colab['roles'])) {
+					$contactPhone = $colab['waId'] ?? '';
+					break;
+				}
+			}
+		}
+
+		$total = 0;
+		foreach ($cart as $item) {
+			$total += ($item['price'] * ($item['quantity'] ?? 1));
+		}
+
+		$logoBase64 = null;
+		if (!empty($dtaCtc['logo'])) {
+			$logoPath = $this->getParameter('kernel.project_dir') . '/public_html/ctc_logo/' . $dtaCtc['logo'];
+			if (file_exists($logoPath)) {
+				$logoBase64 = base64_encode(file_get_contents($logoPath));
+			}
+		}
+
+		$qrUrl = "https://wa.me/{$contactPhone}?text=" . urlencode("Hola, me interesa esta cotización de " . count($cart) . " piezas.");
+
+		$pdfContent = $pdfGenerator->generate('cotizacion/pdf.html.twig', [
+			'items' => $cart,
+			'total' => $total,
+			'storeName' => $storeName,
+			'contactPhone' => $contactPhone,
+			'localidad' => $localidad,
+			'logoBase64' => $logoBase64,
+			'qrUrl' => $qrUrl,
+			'slug' => $slug
+		], 'cotizacion.pdf');
+
+		return new Response($pdfContent, 200, [
+			'Content-Type' => 'application/pdf',
+			'Content-Disposition' => 'attachment; filename="cotizacion_' . $slug . '.pdf"'
+		]);
+	}
 }
