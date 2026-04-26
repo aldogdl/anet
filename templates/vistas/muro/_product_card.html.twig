@@ -5,70 +5,82 @@
 {% set title = extras.fuente is defined and extras.fuente != ""
     ? extras.fuente 
     : item.title %}
-{% set placeholder = 'https://placehold.co/600x600/0f172a/64748b?text=Sin+Imagen' %}
+{% set placeholder = 'https://placehold.co/600x600/0b141a/64748b?text=Sin+Imagen' %}
+{% set modalData = {
+    id: item.id,
+    title: title,
+    price: item.price,
+    thumb: mainImg,
+    imgBig: mainImg,
+    detalles: item.detalles|default('Sin detalles adicionales.'),
+    sku: item.iku|default('N/A'),
+    brand: item.mrkId,
+    model: item.mdlId,
+    pictures: extras.pictures|default([]),
+    pathImg: extras.pathImg|default('')
+}|json_encode %}
+{% set safeId = item.id ?: 0 %}
 
-<div class="group bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden hover:border-primary/50 transition-all duration-300 flex flex-col shadow-lg hover:shadow-primary/5 active:scale-[0.98]">
+<div class="group bg-[#0b141a] border border-white/5 rounded-3xl overflow-hidden hover:border-[#25d366]/40 transition-all duration-300 flex flex-col h-full shadow-lg hover:shadow-[#25d366]/5 active:scale-[0.98]"
+     data-item="{{ modalData|e('html_attr') }}" 
+     @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute('data-item')))">
+    
+    <!-- Top Accent Line (Optional, but matches shop style) -->
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#25d366]/20 to-transparent"></div>
+
     <!-- Image Area -->
-    <div class="relative aspect-square overflow-hidden bg-slate-950 cursor-pointer" @click="openModal({{ {
-        id: item.id,
-        title: title,
-        price: item.price,
-        thumb: mainImg,
-        imgBig: mainImg,
-        detalles: item.detalles|default('Sin detalles adicionales.'),
-        sku: item.iku|default('N/A'),
-        brand: item.mrkId,
-        model: item.mdlId,
-        pictures: extras.pictures|default([]),
-        pathImg: extras.pathImg|default('')
-    }|json_encode|e('html_attr') }})">
+    <div class="relative aspect-[16/10] overflow-hidden bg-black/20 cursor-pointer">
         <img src="{{ mainImg }}" 
              onerror="this.src='{{ placeholder }}'"
-             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100" 
+             class="w-full h-full object-cover object-center p-2.5 rounded-3xl group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100" 
              alt="{{ title }}">
         
         <!-- Status Badge -->
         {% if item.isActive %}
-            <span class="absolute top-3 left-3 bg-emerald-500/10 text-primary text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border border-emerald-500/20 backdrop-blur-md">
-                Disponible
-            </span>
+            <div class="absolute top-5 left-5 flex items-center gap-2 bg-[#0b141a]/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-sm">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#25d366] animate-pulse"></span>
+                <span class="text-[9px] font-black text-white uppercase tracking-widest">Disponible</span>
+            </div>
         {% endif %}
     </div>
 
     <!-- Info Area -->
-    <div class="p-5 flex-1 flex flex-col">
+    <div class="p-7 flex-1 flex flex-col">
         <div class="flex-1">
-            <h3 class="text-base font-bold text-slate-200 line-clamp-2 leading-tight group-hover:text-primary transition-colors cursor-pointer min-h-[2.5rem]" 
-                @click="openModal({{ {
-                    id: item.id,
-                    title: title,
-                    price: item.price,
-                    thumb: mainImg,
-                    imgBig: mainImg,
-                    detalles: item.detalles|default('Sin detalles adicionales.'),
-                    sku: item.iku|default('N/A'),
-                    brand: item.mrkId,
-                    model: item.mdlId,
-                    pictures: extras.pictures|default([]),
-                    pathImg: extras.pathImg|default('')
-                }|json_encode|e('html_attr') }})">
+            <h3 class="text-[15px] font-bold text-white leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer overflow-hidden"
+                style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; min-height: 3.75rem; max-height: 3.75rem;">
                 {{ title }}
             </h3>
-            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-1">SKU: {{ item.iku|default('N/A') }}</p>
+            <div class="flex items-center gap-2 mt-2">
+                <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">SKU: {{ item.iku|default('N/A') }}</span>
+                <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">• ID: {{ item.id }}</span>
+            </div>
         </div>
 
-        <div class="mt-4 pt-4 border-t border-slate-800/50 flex items-center justify-between gap-2">
-            <div class="flex flex-col min-w-0">
-                <span class="text-xl font-black text-white italic truncate">
+        <div class="mt-6 pt-6 border-t border-white/5 flex items-center justify-between gap-4">
+            <div class="flex flex-col">
+                <span class="text-[10px] text-white/40 font-black uppercase tracking-widest mb-1">Precio Neto</span>
+                <span class="text-2xl font-black text-white italic truncate">
                     ${{ item.price|number_format(2, '.', ',') }}
                 </span>
-                <span class="text-[9px] text-slate-500">MXN + Envío</span>
             </div>
             
-            <button @click="addToCart({{ item.id }})" 
-                    class="p-3 bg-slate-800 hover:bg-primary text-slate-400 hover:text-darker rounded-xl transition-all shadow-lg active:scale-90 flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-            </button>
+            <div class="flex items-center">
+                <template x-if="!({{ safeId }} in cartItems)">
+                    <button @click.stop="addToCart({{ safeId }})" 
+                            class="p-3.5 bg-white/5 hover:bg-[#25d366] text-white/40 hover:text-[#0b141a] rounded-2xl transition-all shadow-xl active:scale-90 border border-white/10 hover:border-transparent">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    </button>
+                </template>
+                <template x-if="{{ safeId }} in cartItems">
+                    <button @click.stop="promptRemove({{ safeId }})" 
+                            class="p-3.5 bg-[#25d366] text-[#0b141a] rounded-2xl transition-all shadow-lg shadow-[#25d366]/20 active:scale-90">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                    </button>
+                </template>
+            </div>
         </div>
     </div>
 </div>
+
+

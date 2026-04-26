@@ -2,6 +2,10 @@
 
 {% block title %}{{ storeName }} | Catálogo Profesional{% endblock %}
 
+{% block meta %}
+<meta name="description" content="Explora el catálogo de refacciones premium de {{ storeName }}. Encuentra piezas de calidad para tu vehículo en {{ localidad }}.">
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen bg-[#e8f2ec] flex flex-col font-sans" x-data="shopState()">
   
@@ -166,8 +170,8 @@
     </div>
   </footer>
 
-  {% include 'vistas/shop/_modal_details.html.twig' %}
-  {% include 'vistas/shop/_modal_cart.html.twig' %}
+  {% include 'vistas/common/_modal_details.html.twig' %}
+  {% include 'vistas/common/_modal_cart.html.twig' %}
 
   <!-- Toast Notifications -->
   <div class="fixed bottom-8 right-8 z-[100] pointer-events-none">
