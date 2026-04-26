@@ -12,11 +12,11 @@
       <!-- Floating Graphic Logo -->
       <div class="relative w-20 lg:w-72 h-20 flex-shrink-0">
         <div class="absolute top-3 lg:top-4 left-0 lg:left-1/2 lg:-translate-x-1/2 z-[70] group cursor-pointer" onclick="window.location.href=window.location.pathname">
-          <div class="absolute inset-0 bg-[#25d366]/30 blur-2xl rounded-[3rem] transition-all group-hover:bg-[#25d366]/40"></div>
-          <div class="relative w-20 h-20 lg:w-36 lg:h-36 {{ dtaCtc.logo is defined and dtaCtc.logo is not empty ? 'bg-[#ffffff]' : 'bg-[#25d366]' }} rounded-[2rem] lg:rounded-[3rem] flex items-center justify-center text-[#0b141a] shadow-[0_20px_30px_-15px_rgba(0,0,0,0.7)] border-2 border-[#0b141a] rotate-0 group-hover:rotate-6 transition-transform duration-500 overflow-hidden">
+          <div class="absolute inset-0 bg-[#25d366]/30 blur-2xl rounded-2xl transition-all group-hover:bg-[#25d366]/40"></div>
+          <div class="relative w-20 h-20 lg:w-36 lg:h-36 {{ dtaCtc.logo is defined and dtaCtc.logo is not empty ? 'bg-[#ffffff]' : 'bg-[#25d366]' }} rounded-2xl lg:rounded-3xl flex items-center justify-center text-[#0b141a] shadow-[0_20px_10px_-15px_rgba(0,0,0,0.7)] border-2 border-[#0b141a] rotate-0 group-hover:rotate-6 transition-transform duration-500 overflow-hidden">
               {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
                 <div class="w-full h-full p-1.5 lg:p-1">
-                    <div class="w-full h-full bg-white bg-center bg-no-repeat bg-cover rounded-[1.4rem] lg:rounded-[2.4rem] shadow-sm" style="background-image: url('{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}');"></div>
+                    <div class="w-full h-full bg-white bg-center bg-no-repeat bg-cover rounded-xl lg:rounded-2xl shadow-sm" style="background-image: url('{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}');"></div>
                 </div>
               {% else %}
                 <svg class="w-12 h-12 lg:w-20 lg:h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -220,6 +220,7 @@
       showModal: false,
       showCart: false,
       showFilters: false,
+      viewMode: 'grid',
       get cartCount() { return Object.keys(this.cartItems).length; },
       cartItems: {{ app.session.get('cart') ? app.session.get('cart')|json_encode|raw : '{}' }},
       get cartTotal() { 

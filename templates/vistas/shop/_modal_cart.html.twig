@@ -24,10 +24,10 @@
                         <div class="relative">
                             <div class="absolute inset-0 bg-[#25d366]/10 blur-xl rounded-full"></div>
                             {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
-                                <img src="{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}" class="relative w-24 h-24 object-contain rounded-2xl bg-white shadow-lg border border-slate-100 p-1.5" alt="Logo">
+                                <img src="{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}" class="relative w-32 h-32 object-contain rounded-xl bg-white shadow-xl border border-slate-100 p-2" alt="Logo">
                             {% else %}
-                                <div class="relative w-24 h-24 bg-[#0b141a] rounded-2xl flex items-center justify-center text-[#25d366] shadow-lg">
-                                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                <div class="relative w-32 h-32 bg-[#0b141a] rounded-xl flex items-center justify-center text-[#25d366] shadow-xl border border-slate-800">
+                                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                                 </div>
                             {% endif %}
                         </div>

@@ -22,68 +22,79 @@
 {% set safeId = item.id ?: 0 %}
 {% set detailUrl = isMeli and extras.permalink is defined ? extras.permalink : path('app_product_detail', { id: safeId, slug: cleanSlug }) %}
 
-<div class="group bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden hover:border-[#25d366]/40 transition-all duration-500 flex flex-col shadow-sm hover:shadow-2xl hover:shadow-slate-200/60 relative">
-	<!-- Top Accent Line -->
-	<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r {{ isMeli ? 'from-transparent via-[#ffe600] to-transparent' : 'from-transparent via-[#103928]/20 to-transparent' }}"></div>
-	<!-- Image Area (SEO Friendly Link) -->
-	<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }} class="block relative aspect-[16/10] overflow-hidden bg-[#f8fafc] cursor-pointer" {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
+<div :class="viewMode === 'grid' ? 'flex flex-col h-full rounded-3xl' : 'flex flex-row items-center p-1.5 sm:p-2 gap-3 sm:gap-4 rounded-xl'"
+     class="group bg-white overflow-hidden border border-slate-200 hover:border-[#25d366]/40 transition-all duration-500 relative shadow-sm hover:shadow-2xl"
+	 {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 
-	<img src="{{ mainImg }}" 
-		onerror="this.src='{{ placeholder }}'"
-		class="w-full h-full object-cover object-center p-3 rounded-[2rem] group-hover:scale-105 transition-transform duration-700" 
-		alt="{{ item.title }}"
-	>
-        
-	<!-- Status Badge -->
-	{% if item.isActive %}
-		<div class="absolute top-5 left-5 flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
-			<span class="w-2 h-2 rounded-full bg-[#25d366] animate-pulse"></span>
-			<span class="text-[9px] font-black text-[#103928] uppercase tracking-widest">Disponible</span>
-		</div>
-	{% endif %}
+	<!-- Top Accent Line (Only Grid) -->
+	<div x-show="viewMode === 'grid'" class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r {{ isMeli ? 'from-transparent via-[#ffe600] to-transparent' : 'from-transparent via-[#103928]/20 to-transparent' }}"></div>
+
+	<!-- Image Area -->
+	<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }} 
+	   :class="viewMode === 'grid' ? 'aspect-[16/10] w-full' : 'h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0 rounded-lg'"
+	   class="block relative bg-[#f8fafc] overflow-hidden cursor-pointer" {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
+		
+		<img src="{{ mainImg }}" 
+			 onerror="this.src='{{ placeholder }}'"
+			 :class="viewMode === 'grid' ? 'p-4' : 'p-1.5'"
+			 class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 rounded-2xl" 
+			 alt="{{ item.title }}">
+
+		{% if item.isActive %}
+			<div x-show="viewMode === 'grid'" class="absolute top-4 left-4 flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-slate-100 shadow-sm">
+				<span class="w-1.5 h-1.5 rounded-full bg-[#25d366] animate-pulse"></span>
+				<span class="text-[8px] font-black text-[#103928] uppercase tracking-widest">Disponible</span>
+			</div>
+		{% endif %}
 	</a>
 
-<!-- Info Area -->
-<div class="p-7 flex-1 flex flex-col">
-
-	<div class="flex-1">
-		<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }}
-		   class="block text-[15px] font-bold text-[#103928] line-clamp-3 leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem]" 
-		   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
-			{{ item.title }}
-		</a>
-	</div>
-
-	<div class="mt-1 pt-6 border-t border-slate-50 flex items-center justify-between gap-4">
-		<div class="flex flex-col">
-			<span class="text-[10px] text-[#103928]/50 font-black uppercase tracking-widest mb-1">Precio Neto</span>
-			<span class="text-2xl font-black text-[#103928] italic">
-				${{ item.price|number_format(2, '.', ',') }}
-			</span>
-		</div>
+	<!-- Content Area -->
+	<div :class="viewMode === 'grid' ? 'p-6 flex-1 flex flex-col' : 'flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2'" class="min-w-0">
 		
-		{% if isMeli %}
-			<a href="{{ detailUrl }}" target="_blank" class="px-4 py-2 bg-[#ffe600] text-[#2d3277] font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-[#ffe600]/20 hover:bg-yellow-400 active:scale-95 transition-all flex-shrink-0 flex items-center justify-center">
-				Ver en Meli
+		<!-- Title & ID -->
+		<div class="flex-1 min-w-0">
+			<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }}
+			   :class="viewMode === 'grid' ? 'text-[15px] line-clamp-3 min-h-[3.75rem]' : 'text-[11px] sm:text-xs font-bold line-clamp-1'"
+			   class="block text-[#103928] leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer"
+			   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
+				{{ item.title }}
 			</a>
-		{% else %}
-			<template x-if="!cartItems.includes({{ safeId }})">
-				<button @click="addToCart({{ safeId }})" 
-							class="p-3 bg-[#25d366] text-white hover:bg-emerald-400 rounded-xl transition-all shadow-lg shadow-[#25d366]/20 active:scale-90 flex-shrink-0">
-					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-				</button>
-			</template>
-			<template x-if="cartItems.includes({{ safeId }})">
-				<button @click="promptRemove({{ safeId }})" 
-							class="p-3 bg-[#25d366]/20 text-[#25d366] hover:bg-[#25d366]/30 rounded-xl transition-all shadow-sm active:scale-90 flex-shrink-0">
-					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-				</button>
-			</template>
-		{% endif %}
+			<div :class="viewMode === 'grid' ? 'mt-2' : 'mt-0'" class="flex items-center gap-2">
+				<span class="text-[9px] bg-slate-100 text-slate-500 font-black px-1.5 py-0.5 rounded tracking-tighter uppercase">ID: {{ item.iku|default(item.id) }}</span>
+				<span x-show="viewMode === 'list' && !{{ isMeli ? 'true' : 'false' }}" class="text-[8px] text-[#25d366]/70 font-black uppercase tracking-widest">● Stock</span>
+			</div>
+		</div>
+
+		<!-- Price & Actions -->
+		<div :class="viewMode === 'grid' ? 'mt-4 pt-4 border-t border-slate-50' : 'flex-shrink-0'" class="flex items-center justify-between sm:justify-end gap-4 sm:gap-6">
+			<div class="flex flex-col items-end">
+				<span x-show="viewMode === 'grid'" class="text-[9px] text-[#103928]/40 font-black uppercase tracking-widest mb-0.5">Neto</span>
+				<span :class="viewMode === 'grid' ? 'text-2xl' : 'text-base sm:text-lg'" class="font-black text-[#103928] italic">
+					${{ item.price|number_format(2, '.', ',') }}
+				</span>
+			</div>
+			
+			<div class="flex items-center gap-1.5">
+				{% if isMeli %}
+					<a href="{{ detailUrl }}" target="_blank" class="px-3 py-2 bg-[#ffe600] text-[#2d3277] font-black text-[9px] uppercase tracking-widest rounded-lg shadow-md shadow-[#ffe600]/10 hover:bg-yellow-400 active:scale-95 transition-all">
+						Meli
+					</a>
+				{% else %}
+					<template x-if="!({{ safeId }} in cartItems)">
+						<button @click.stop="addToCart({{ safeId }})" 
+									class="p-2 bg-[#25d366] text-white hover:bg-emerald-400 rounded-lg transition-all shadow-md active:scale-90">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+						</button>
+					</template>
+					<template x-if="{{ safeId }} in cartItems">
+						<button @click.stop="promptRemove({{ safeId }})" 
+									class="p-2 bg-[#25d366]/20 text-[#25d366] hover:bg-[#25d366]/30 rounded-lg transition-all active:scale-90">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+						</button>
+					</template>
+				{% endif %}
+			</div>
+		</div>
 	</div>
-	<div class="flex items-center gap-2 mt-1">
-		<span class="text-[12px] bg-slate-100 text-slate-500 font-black px-2 py-0.5 rounded tracking-widest">{{ item.iku|default('N/A') }}/{{ item.id }}</span>
-	</div>
-</div>
 
 </div>
