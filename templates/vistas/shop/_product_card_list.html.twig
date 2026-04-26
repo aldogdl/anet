@@ -1,0 +1,97 @@
+{% set extras = item.extras %}
+{% set mainImg = extras.pathImg is defined and extras.pictures is defined and extras.pictures|length > 0 
+    ? extras.pathImg ~ '/' ~ extras.pictures[0] 
+    : item.thumb %}
+{% set placeholder = 'https://placehold.co/600x600/f8fafc/64748b?text=Sin+Imagen' %}
+{% set modalData = {
+    id: item.id,
+    title: item.title,
+    price: item.price,
+    thumb: mainImg,
+    imgBig: mainImg,
+    detalles: item.detalles|default('Sin detalles adicionales.'),
+    sku: item.iku|default('N/A'),
+    brand: item.mrkId,
+    model: item.mdlId,
+    pictures: extras.pictures|default([]),
+    pathImg: extras.pathImg|default('')
+}|json_encode %}
+{% set cleanSlug = item.title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode|slice(0, 50) %}
+
+{% set isMeli = isMeli|default(false) %}
+{% set safeId = item.id ?: 0 %}
+{% set detailUrl = isMeli and extras.permalink is defined ? extras.permalink : path('app_product_detail', { id: safeId, slug: cleanSlug }) %}
+
+<div class="group bg-white flex flex-row items-center p-1.5 sm:p-2 gap-3 sm:gap-4 rounded-xl border border-slate-200 hover:border-[#25d366]/40 transition-all duration-500 relative shadow-sm hover:shadow-lg"
+     {{ ('data-item="' ~ modalData|e('html_attr') ~ '"')|raw }}>
+
+	<!-- Image Area -->
+	<div class="h-14 w-14 sm:h-16 sm:w-16 flex-shrink-0 rounded-lg bg-[#f8fafc] overflow-hidden">
+		<img src="{{ mainImg }}" 
+			 onerror="this.src='{{ placeholder }}'"
+			 class="w-full h-full object-cover object-center p-1.5" 
+			 alt="{{ item.title }}">
+	</div>
+
+	<!-- Content Area -->
+	<div class="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8 min-w-0">
+		
+		<!-- Title & Metadata -->
+		<div class="flex-1 min-w-0">
+			<h3 class="text-sm sm:text-base font-black text-[#103928] leading-tight line-clamp-1 cursor-text select-text">
+				{{ item.title }}
+			</h3>
+			
+            <div class="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-3">
+				<span class="text-[9px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded uppercase tracking-tighter select-all">ID: {{ item.id }}</span>
+				<span class="text-[9px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded uppercase tracking-tighter select-all">IKU: {{ item.iku|default('N/A') }}</span>
+                
+                {% if extras.idSrc is defined and extras.idSrc is not empty %}
+				    <span class="text-[9px] bg-[#25d366]/5 text-[#103928]/60 font-bold px-2 py-0.5 rounded uppercase tracking-tighter border border-[#25d366]/10 select-all">SRC: {{ extras.idSrc }}</span>
+                {% endif %}
+
+				<span class="text-[9px] text-[#25d366] font-black uppercase tracking-widest flex items-center gap-1 ml-auto sm:ml-0">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#25d366] animate-pulse"></span>
+                    Disponible
+                </span>
+			</div>
+		</div>
+
+		<!-- Price & Actions -->
+		<div class="flex-shrink-0 flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+			<div class="flex flex-col items-end">
+				<span class="font-black text-[#103928] italic text-base sm:text-xl">
+					${{ item.price|number_format(2, '.', ',') }}
+				</span>
+			</div>
+			
+			<div class="flex items-center gap-1.5 sm:gap-2">
+                <!-- Info Button (Ficha) -->
+                <button @click.stop="openModal(JSON.parse($el.closest('[data-item]').getAttribute('data-item')))"
+                        class="p-2 sm:p-2.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all active:scale-90"
+                        title="Ver detalles">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                </button>
+
+				{% if isMeli %}
+					<a href="{{ detailUrl }}" target="_blank" class="px-3 py-2 bg-[#ffe600] text-[#2d3277] font-black text-[9px] uppercase tracking-widest rounded-lg shadow-md hover:bg-yellow-400 active:scale-95 transition-all">
+						Meli
+					</a>
+				{% else %}
+					<template x-if="!({{ safeId }} in cartItems)">
+						<button @click.stop="addToCart({{ safeId }})" 
+									class="p-2 sm:p-2.5 bg-[#25d366] text-white hover:bg-emerald-400 rounded-lg transition-all shadow-md active:scale-90">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+						</button>
+					</template>
+					<template x-if="{{ safeId }} in cartItems">
+						<button @click.stop="promptRemove({{ safeId }})" 
+									class="p-2 sm:p-2.5 bg-[#25d366]/20 text-[#25d366] hover:bg-[#25d366]/30 rounded-lg transition-all active:scale-90">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+						</button>
+					</template>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>

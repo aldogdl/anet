@@ -28,7 +28,12 @@
 {% if items|length > 0 or missingIds|default('') is empty %}
 <div :class="viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' : 'flex flex-col gap-3'">
 	{% for item in items %}
-		{% include 'vistas/shop/_product_card.html.twig' %}
+        <template x-if="viewMode === 'grid'">
+		    {% include 'vistas/shop/_product_card.html.twig' %}
+        </template>
+        <template x-if="viewMode === 'list'">
+		    {% include 'vistas/shop/_product_card_list.html.twig' %}
+        </template>
 	{% endfor %}
 	
 	{% if items|length == 0 %}
