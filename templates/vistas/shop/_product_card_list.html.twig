@@ -42,18 +42,18 @@
 				{{ item.title }}
 			</h3>
 			
-            <div class="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-3">
-				<span class="text-[9px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded uppercase tracking-tighter select-all">ID: {{ item.id }}</span>
-				<span class="text-[9px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded uppercase tracking-tighter select-all">IKU: {{ item.iku|default('N/A') }}</span>
+			<div class="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-3">
+				<span class="text-[13px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded uppercase tracking-tighter select-all">ID: {{ item.id }}</span>
+				<span class="text-[13px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded uppercase tracking-tighter select-all">IKU: {{ item.iku|default('N/A') }}</span>
                 
-                {% if extras.idSrc is defined and extras.idSrc is not empty %}
-				    <span class="text-[9px] bg-[#25d366]/5 text-[#103928]/60 font-bold px-2 py-0.5 rounded uppercase tracking-tighter border border-[#25d366]/10 select-all">SRC: {{ extras.idSrc }}</span>
-                {% endif %}
+				{% if extras.idSrc is defined and extras.idSrc is not empty %}
+				    <span class="text-[13px] bg-[#25d366]/5 text-[#103928]/60 font-bold px-2 py-0.5 rounded uppercase tracking-tighter border border-[#25d366]/10 select-all">SRC: {{ extras.idSrc }}</span>
+				{% endif %}
 
-				<span class="text-[9px] text-[#25d366] font-black uppercase tracking-widest flex items-center gap-1 ml-auto sm:ml-0">
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#25d366] animate-pulse"></span>
-                    Disponible
-                </span>
+				<span class="text-[13px] text-[#25d366] font-black uppercase tracking-widest flex items-center gap-1 ml-auto sm:ml-0">
+					<span class="w-1.5 h-1.5 rounded-full bg-[#25d366] animate-pulse"></span>
+					Disponible
+			</span>
 			</div>
 		</div>
 
@@ -66,12 +66,12 @@
 			</div>
 			
 			<div class="flex items-center gap-1.5 sm:gap-2">
-                <!-- Info Button (Ficha) -->
-                <button @click.stop="openModal(JSON.parse($el.closest('[data-item]').getAttribute('data-item')))"
-                        class="p-2 sm:p-2.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all active:scale-90"
-                        title="Ver detalles">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                </button>
+				<!-- Info Button (Ficha) -->
+				<button @click.stop="openModal(JSON.parse($el.closest('[data-item]').getAttribute('data-item')))"
+								class="p-2 sm:p-2.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all active:scale-90"
+								title="Ver detalles">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+				</button>
 
 				{% if isMeli %}
 					<a href="{{ detailUrl }}" target="_blank" class="px-3 py-2 bg-[#ffe600] text-[#2d3277] font-black text-[9px] uppercase tracking-widest rounded-lg shadow-md hover:bg-yellow-400 active:scale-95 transition-all">
