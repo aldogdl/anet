@@ -327,30 +327,37 @@ class ShopController extends AbstractController
 
 	/** */
 	#[Route('/cart/add/{id}', name: 'cart_add', methods: ['POST'])]
-	public function addToCart(int $id, SessionInterface $session, ItemPubRepository $itemRepo): Response
+	public function addToCart(int $id, Request $request, SessionInterface $session, ItemPubRepository $itemRepo): Response
 	{
 		$cart = $session->get('cart', []);
-		
-		if (!isset($cart[$id])) {
-			$item = $itemRepo->find($id);
-			if ($item) {
-				$extras = $item->getExtras();
-				$thumb = $item->getThumb();
-				if (isset($extras['pathImg']) && !empty($extras['pictures'])) {
-					$thumb = $extras['pathImg'] . '/' . $extras['pictures'][0];
-				}
+		$remove = $request->query->get('remove') === '1';
 
-				$cart[$id] = [
-					'id' => $item->getId(),
-					'title' => $item->getTitle(),
-					'price' => $item->getPrice(),
-					'thumb' => $thumb,
-					'quantity' => 1,
-                    'idSrc' => $extras['idSrc'] ?? $item->getId()
-				];
+		if ($remove) {
+			if (isset($cart[$id])) {
+				unset($cart[$id]);
 			}
 		} else {
-			$cart[$id]['quantity']++;
+			if (!isset($cart[$id])) {
+				$item = $itemRepo->find($id);
+				if ($item) {
+					$extras = $item->getExtras();
+					$thumb = $item->getThumb();
+					if (isset($extras['pathImg']) && !empty($extras['pictures'])) {
+						$thumb = $extras['pathImg'] . '/' . $extras['pictures'][0];
+					}
+
+					$cart[$id] = [
+						'id' => $item->getId(),
+						'title' => $item->getTitle(),
+						'price' => $item->getPrice(),
+						'thumb' => $thumb,
+						'quantity' => 1,
+						'idSrc' => $extras['idSrc'] ?? $item->getId()
+					];
+				}
+			} else {
+				$cart[$id]['quantity']++;
+			}
 		}
 
 		$session->set('cart', $cart);
@@ -359,6 +366,14 @@ class ShopController extends AbstractController
 			'cartCount' => count($cart),
 			'item' => $cart[$id] ?? null
 		]);
+	}
+
+	/** */
+	#[Route('/cart/clear', name: 'cart_clear', methods: ['POST'])]
+	public function clearCart(SessionInterface $session): Response
+	{
+		$session->set('cart', []);
+		return $this->json(['success' => true]);
 	}
 
 	/** */

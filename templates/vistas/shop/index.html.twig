@@ -192,7 +192,7 @@
   </div>
 
   <!-- Confirm Remove Modal -->
-  <div x-show="itemToRemove !== null" class="fixed inset-0 z-[110] flex items-center justify-center p-4" x-cloak>
+  <div x-show="itemToRemove !== null" class="fixed inset-0 z-[150] flex items-center justify-center p-4" x-cloak>
     <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" @click="itemToRemove = null" x-transition.opacity></div>
     <div class="relative bg-[#0b141a] border border-white/10 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
         x-transition:enter="transition ease-out duration-300"
@@ -319,12 +319,18 @@
       async confirmRemove() {
           const id = this.itemToRemove;
           this.itemToRemove = null;
-          // Actualizar UI optimista
           delete this.cartItems[id];
           this.addToast('Producto eliminado');
-          // Llamada al backend si existe (opcional)
           try {
               await fetch('{{ path('cart_add', {id: 0}) }}'.replace('0', id) + '?remove=1', { method: 'POST' });
+          } catch(e) {}
+      },
+      async clearCart() {
+          if (!confirm('¿Seguro que deseas vaciar todo el carrito?')) return;
+          this.cartItems = {};
+          this.addToast('Carrito vaciado');
+          try {
+              await fetch('{{ path('cart_clear') }}', { method: 'POST' });
           } catch(e) {}
       },
       async submitQuote() {

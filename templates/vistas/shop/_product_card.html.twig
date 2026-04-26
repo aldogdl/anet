@@ -50,7 +50,8 @@
 	<div class="p-7 flex-1 flex flex-col">
 		<div class="flex-1">
 			<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }}
-			   class="block text-[15px] font-bold text-[#103928] line-clamp-3 leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem]" 
+			   class="block text-[15px] font-bold text-[#103928] leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem] max-h-[3.75rem] overflow-hidden"
+               style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;"
 			   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 				{{ item.title }}
 			</a>
