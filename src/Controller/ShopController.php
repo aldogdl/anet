@@ -334,12 +334,19 @@ class ShopController extends AbstractController
 		if (!isset($cart[$id])) {
 			$item = $itemRepo->find($id);
 			if ($item) {
+				$extras = $item->getExtras();
+				$thumb = $item->getThumb();
+				if (isset($extras['pathImg']) && !empty($extras['pictures'])) {
+					$thumb = $extras['pathImg'] . '/' . $extras['pictures'][0];
+				}
+
 				$cart[$id] = [
 					'id' => $item->getId(),
 					'title' => $item->getTitle(),
 					'price' => $item->getPrice(),
-					'thumb' => $item->getThumb(),
-					'quantity' => 1
+					'thumb' => $thumb,
+					'quantity' => 1,
+                    'idSrc' => $extras['idSrc'] ?? $item->getId()
 				];
 			}
 		} else {
