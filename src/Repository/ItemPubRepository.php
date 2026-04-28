@@ -56,23 +56,30 @@ class ItemPubRepository extends ServiceEntityRepository
 	/** */
 	public function getAllMsgAfterUpdate(string $slug, int $lastUpdate): array
 	{
-		$safeLastUpdate = $lastUpdate;
-		$updatedAt = \DateTimeImmutable::createFromFormat('U.u', sprintf('%.6f', $safeLastUpdate / 1000));
-		if ($updatedAt === false) {
-			$updatedAt = new \DateTimeImmutable('@' . floor($safeLastUpdate / 1000));
-		}
+		$withFecha = '';
+		$parameters = ['slug' => $slug];
 
-		$tz = new \DateTimeZone(date_default_timezone_get()); 
-		$updatedAt = $updatedAt->setTimezone($tz);
+		if(is_int($lastUpdate) && $lastUpdate > 0) {
+
+			$safeLastUpdate = $lastUpdate;
+			$updatedAt = \DateTimeImmutable::createFromFormat('U.u', sprintf('%.6f', $safeLastUpdate / 1000));
+			if ($updatedAt === false) {
+				$updatedAt = new \DateTimeImmutable('@' . floor($safeLastUpdate / 1000));
+			}
+				
+			$withFecha = 'AND it.updatedAt >= :updatedAt ';
+			$tz = new \DateTimeZone(date_default_timezone_get()); 
+			$updatedAt = $updatedAt->setTimezone($tz);
+			$parameters['updatedAt'] = $updatedAt;
+		}
 
 		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '
 			. 'WHERE it.slug = :slug '
-			. 'AND it.updatedAt >= :updatedAt '
+			. $withFecha
 			. 'ORDER BY it.updatedAt DESC, it.id DESC';
 
 		$items = $this->_em->createQuery($dql)
-			->setParameter('slug', $slug)
-			->setParameter('updatedAt', $updatedAt)
+			->setParameters($parameters)
 			->getArrayResult();
 
 		$results = [];
