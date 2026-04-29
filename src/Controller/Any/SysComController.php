@@ -148,6 +148,33 @@ class SysComController extends AbstractController
 	/** 
 	 * 
 	*/
+	#[Route('/get-pendings', methods: ['post'])]
+	public function getPendings(Request $req, ItemPubRepository $emPub): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
+
+		$data = json_decode($data, true);
+		$slug = '';
+		if(!array_key_exists('slug', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+		}
+		$slug = $data['slug'];
+		$ids = $data['ids'] ?? [];
+
+		$pubs = $emPub->getAllItemsByIds($slug, $ids);
+		return $this->json($pubs);
+	}
+
+	/** 
+	 * 
+	*/
 	#[Route('/set-file-json/{token}', methods: ['post'])]
 	public function setFileJson(Request $req, Fsys $fsys, SecurityBasic $security, String $token): Response
 	{

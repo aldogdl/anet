@@ -54,6 +54,19 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** */
+	public function getAllItemsByIds(string $slug, array $ids): array
+	{
+		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '
+			. 'WHERE it.slug = :slug '
+			. 'AND it.id IN (:ids)'
+			. 'ORDER BY it.updatedAt DESC, it.id DESC';
+
+		return $this->_em->createQuery($dql)
+			->setParameters(['slug' => $slug, 'ids' => $ids])
+			->getArrayResult();
+	}
+
+	/** */
 	public function getAllMsgAfterUpdate(string $slug, int $lastUpdate): array
 	{
 		$withFecha = '';
