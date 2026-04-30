@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Psr\Log\LoggerInterface;
+use ZipArchive;
 
 #[Route('/any-item')]
 class ItemController extends AbstractController
@@ -176,6 +178,153 @@ class ItemController extends AbstractController
 				'abort' => true,
 				'body' => 'X Error al subir imagen: ' . $e->getMessage(),
 			], 500);
+		}
+	}
+
+	/**
+	 * Endpoint para cargar archivos ZIP pesados de importación
+	 * POST /any-item/up-import-items
+	 * 
+	 * Parameters:
+	 * - file: Archivo ZIP a cargar (form-data)
+	 * - slug: Identificador único para el archivo (form-data)
+	 * 
+	 * Response:
+	 * - 200: Archivo guardado correctamente
+	 * - 400: Parámetros incompletos o archivo inválido
+	 * - 413: Archivo demasiado grande
+	 * - 422: No es un archivo ZIP válido
+	 * - 500: Error interno del servidor
+	 */
+	#[Route('/up-import-items', methods: ['POST'])]
+	public function upZipItems(Request $request, LoggerInterface $logger): Response
+	{
+		try {
+			// 1. Obtener parámetros
+			$uploadedFile = $request->files->get('file');
+			$slug = $request->request->get('slug');
+
+			if (!$uploadedFile || !$slug) {
+				return $this->json([
+					'success' => false,
+					'message' => 'Parámetros requeridos: file y slug'
+				], Response::HTTP_BAD_REQUEST);
+			}
+
+			// 2. Validaciones de seguridad
+			$slug = preg_replace('/[^a-zA-Z0-9_-]/', '', $slug);
+			if (empty($slug)) {
+				return $this->json([
+					'success' => false,
+					'message' => 'El slug contiene caracteres inválidos'
+				], Response::HTTP_BAD_REQUEST);
+			}
+
+			// 3. Validar tamaño máximo (500MB)
+			$maxSize = 500 * 1024 * 1024; // 500MB
+			$fileSize = $uploadedFile->getSize();
+			if ($fileSize > $maxSize) {
+				return $this->json([
+					'success' => false,
+					'message' => sprintf('Archivo demasiado grande. Máximo: %dMB', $maxSize / 1024 / 1024)
+				], Response::HTTP_REQUEST_ENTITY_TOO_LARGE);
+			}
+
+			// 4. Validar que sea un ZIP
+			$mimeType = $uploadedFile->getMimeType();
+			$extension = $uploadedFile->guessExtension();
+			
+			if (!in_array($mimeType, ['application/zip', 'application/x-zip-compressed']) && $extension !== 'zip') {
+				return $this->json([
+					'success' => false,
+					'message' => 'El archivo debe ser un ZIP válido'
+				], Response::HTTP_UNPROCESSABLE_ENTITY);
+			}
+
+			// 5. Validar integridad del ZIP
+			$tempPath = $uploadedFile->getRealPath();
+			$zip = new ZipArchive();
+			$zipStatus = $zip->open($tempPath);
+
+			if ($zipStatus !== true) {
+				$logger->warning('ZIP file validation failed', [
+					'slug' => $slug,
+					'zip_status' => $zipStatus,
+					'file_size' => $fileSize
+				]);
+				return $this->json([
+					'success' => false,
+					'message' => 'El archivo ZIP no es válido o está corrupto'
+				], Response::HTTP_UNPROCESSABLE_ENTITY);
+			}
+			$zip->close();
+
+			// 6. Crear directorio de destino si no existe
+			$destDir = Path::canonicalize(
+				$this->getParameter(AnyPath::$INVEXP) . 'export'
+			);
+			
+			if (!is_dir($destDir)) {
+				if (!@mkdir($destDir, 0755, true)) {
+					throw new \RuntimeException("No se pudo crear el directorio: {$destDir}");
+				}
+			}
+
+			// 7. Generar nombre de archivo final
+			$filename = $slug . '.zip';
+			$destination = $destDir . DIRECTORY_SEPARATOR . $filename;
+
+			// 8. Guardar archivo usando move_uploaded_file (seguro)
+			if (!$uploadedFile->move($destDir, $filename)) {
+				throw new FileException('Error al guardar el archivo en el servidor');
+			}
+
+			// 9. Verificar que el archivo se guardó correctamente
+			if (!file_exists($destination)) {
+				throw new \RuntimeException('El archivo no se guardó correctamente');
+			}
+
+			$savedSize = filesize($destination);
+			
+			$logger->info('ZIP file uploaded successfully', [
+				'slug' => $slug,
+				'filename' => $filename,
+				'original_size' => $fileSize,
+				'saved_size' => $savedSize,
+				'path' => $destination
+			]);
+
+			return $this->json([
+				'success' => true,
+				'message' => "Archivo ZIP '{$slug}' recibido y guardado correctamente",
+				'data' => [
+					'filename' => $filename,
+					'slug' => $slug,
+					'size' => $savedSize,
+					'path' => "/inv/export/{$filename}"
+				]
+			], Response::HTTP_OK);
+
+		} catch (FileException $e) {
+			$logger->error('File exception during ZIP upload', [
+				'error' => $e->getMessage(),
+				'slug' => $slug ?? 'unknown'
+			]);
+			return $this->json([
+				'success' => false,
+				'message' => 'Error al procesar el archivo: ' . $e->getMessage()
+			], Response::HTTP_INTERNAL_SERVER_ERROR);
+
+		} catch (\Throwable $e) {
+			$logger->error('Unexpected error during ZIP upload', [
+				'error' => $e->getMessage(),
+				'slug' => $slug ?? 'unknown',
+				'trace' => $e->getTraceAsString()
+			]);
+			return $this->json([
+				'success' => false,
+				'message' => 'Error interno del servidor'
+			], Response::HTTP_INTERNAL_SERVER_ERROR);
 		}
 	}
 

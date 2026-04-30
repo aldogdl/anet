@@ -28,7 +28,7 @@ public_html/*.js
 public_html/anet_shop/
 public_html/req_radec/
 public_html/logs_errs/
-public_html/inv/
+public_html/inv/*
 public_html/scm/
 public_html/pnid.pni
 public_html/desc_mlm.txt
