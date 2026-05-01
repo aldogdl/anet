@@ -85,7 +85,7 @@ class ItemPubRepository extends ServiceEntityRepository
 				$updatedAt = new \DateTimeImmutable('@' . floor($safeLastUpdate / 1000));
 			}
 
-			$withFecha = 'AND it.updatedAt >= :updatedAt ';
+			$withFecha .= 'AND it.updatedAt >= :updatedAt ';
 			$tz = new \DateTimeZone(date_default_timezone_get()); 
 			$updatedAt = $updatedAt->setTimezone($tz);
 			$parameters['updatedAt'] = $updatedAt;
