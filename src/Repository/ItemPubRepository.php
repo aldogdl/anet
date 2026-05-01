@@ -274,6 +274,11 @@ class ItemPubRepository extends ServiceEntityRepository
 			$this->_em->persist($obj);
 			$this->_em->flush();
 			$id = $obj->getId();
+			if(mb_strpos($obj->getLink(), '__ID__') !== false) {
+				$obj->setLink(str_replace('__ID__', (string) $id, $obj->getLink()));
+				$this->_em->persist($obj);
+				$this->_em->flush();
+			}
 			return ['abort' => false, 'action' => $action, 'body' => ['id' => $id]];
 		} catch (\Throwable $th) {
 			return ['abort' => true, 'action' => 'error', 'body' => $th->getMessage()];
