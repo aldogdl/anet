@@ -55,11 +55,11 @@ class ImageUploadService
 		}
 
 		$originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-		$extension = strtolower($file->guessExtension() ?: 'jpg');
+		$extension = strtolower($file->guessExtension());
 		$mimeType = (string) $file->getMimeType();
 		$allowedMimeTypes = [
-			'image/jpeg' => 'jpg',
 			'image/jpeg' => 'jpeg',
+			'image/jpg' => 'jpg',
 			'image/png'  => 'png',
 			'image/webp' => 'webp',
 		];
@@ -79,7 +79,7 @@ class ImageUploadService
 				'thumb_url' => '',
 			];
 		}
-    
+
 		$filename = 'peq_' . $filename;
 		$thumbPath = $imgDir . '/' . $filename;
 		$image = $this->imageManager->read($originalPath);

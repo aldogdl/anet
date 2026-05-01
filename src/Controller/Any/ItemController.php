@@ -72,7 +72,7 @@ class ItemController extends AbstractController
 					$ids = array_map('trim', explode(',', $id));
 					$res = $repo->pausarPubByIdSrc($ids, $waId);
 				} else {
-					$res = $repo->pausarPub((integer)$id, $waId);
+					$res = $repo->pausarPub((int)$id, $waId);
 				}
 
 				if($res['success']) {
@@ -148,7 +148,7 @@ class ItemController extends AbstractController
 			$idItem = 0;
 		}else {
 			$withThubn = true;
-			$idItem = (integer) $idItem;
+			$idItem = (int) $idItem;
 		}
 
 		try {
