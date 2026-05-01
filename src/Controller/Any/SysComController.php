@@ -94,7 +94,7 @@ class SysComController extends AbstractController
 
 		$verDicc = 1;
 		if(array_key_exists('dicc_sync', $data)) {
-			$verDicc = (integer) $data['dicc_sync'];
+			$verDicc = (int) $data['dicc_sync'];
 		}
 
 		// Creamos una marca de presencia o uso de la app
@@ -136,7 +136,10 @@ class SysComController extends AbstractController
 			}
 			// Recuperamos actualizaciones de Match1
 			if(array_key_exists('pub', $last)) {
-				$pubs = $emPub->getAllMsgAfterUpdate($slug, $last['pub']);
+				if($waId == 'otra_cuenta') {
+					$waId = '';
+				}
+				$pubs = $emPub->getAllMsgAfterUpdate($slug, $waId, $last['pub']);
 				$files['pubs'] = $pubs;
 			}
 		}

@@ -67,10 +67,15 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** */
-	public function getAllMsgAfterUpdate(string $slug, int $lastUpdate): array
+	public function getAllMsgAfterUpdate(string $slug, String $waId, int $lastUpdate): array
 	{
 		$withFecha = '';
 		$parameters = ['slug' => $slug];
+    
+		if(!empty($waId)) {
+			$withFecha .= 'AND it.waId != :waId ';
+			$parameters['waId'] = $waId;
+		}
 
 		if(is_int($lastUpdate) && $lastUpdate > 0) {
 
@@ -79,7 +84,7 @@ class ItemPubRepository extends ServiceEntityRepository
 			if ($updatedAt === false) {
 				$updatedAt = new \DateTimeImmutable('@' . floor($safeLastUpdate / 1000));
 			}
-				
+
 			$withFecha = 'AND it.updatedAt >= :updatedAt ';
 			$tz = new \DateTimeZone(date_default_timezone_get()); 
 			$updatedAt = $updatedAt->setTimezone($tz);
@@ -226,8 +231,12 @@ class ItemPubRepository extends ServiceEntityRepository
 			$obj = $obj->fromJson($data);
 		}else{
 			$action = 'edt';
+			if(mb_strpos($data['link'], '__ID__') !== false) {
+				$data['link'] = str_replace('__ID__', (string) $obj->getId(), $data['link']);
+			}
 			$obj = $obj->updateFromJson($data);
 		}
+
     $dicc = json_decode(file_get_contents($pathDicc), true);
 
 		if(isset($data['lado'])) {
