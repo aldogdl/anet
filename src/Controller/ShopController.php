@@ -24,7 +24,7 @@ class ShopController extends AbstractController
 		// Leemos los archivos solo en la carga inicial
 		$dtaCtc = $fsys->get(AnyPath::$DTACTC, $slug.'.json');
 		$meliLog = $fsys->get(AnyPath::$DTACTCLOG, $slug.'.json');
-		
+
 		$hasMeli = false;
 		$encodedMeliToken = '';
 		
@@ -59,7 +59,7 @@ class ShopController extends AbstractController
 			->andWhere('i.isActive = :active')
 			->setParameter('slug', $slug)
 			->setParameter('active', true)
-			->orderBy('i.created', 'DESC');
+			->orderBy('i.updatedAt', 'DESC');
 
 		if ($search) {
 			$queryBuilder->andWhere('i.title LIKE :search OR i.detalles LIKE :search')
