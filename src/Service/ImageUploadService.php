@@ -55,7 +55,7 @@ class ImageUploadService
 		}
 
 		$originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-		$extension = strtolower($file->guessExtension());
+		$extension = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
 		$mimeType = (string) $file->getMimeType();
 		$allowedMimeTypes = [
 			'image/jpeg' => 'jpeg',
@@ -68,6 +68,7 @@ class ImageUploadService
 			throw new \RuntimeException('Formato de imagen no permitido. Solo JPG, PNG y WEBP.');
 		}
 
+		// Usar la extensión original del archivo
 		$filename = $originalName . '.' . $extension;
 		$originalPath = $imgDir . '/' . $filename;
 		$file->move($imgDir, $filename);
