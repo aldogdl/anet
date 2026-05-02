@@ -127,7 +127,7 @@ class ItemPub
     {
 			$item = new self();
 			
-			$item->setStt((int) $data['stt']);
+			$item->setStt(3);
 			$item->setType((int) $data['type']);
 			$item->setIdSrc($data['idSrc'] ?? null);
 			$item->setIku($data['iku'] ?? null);
