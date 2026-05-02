@@ -171,7 +171,7 @@ class ItemPub
     /** */
     public function updateFromJson(array $data): self
     {
-			$this->setStt((int) $data['stt']);
+			$this->setStt(3);
 			$this->setType((int) $data['type']);
 			$this->setIdSrc($data['idSrc'] ?? null);
 			$this->setIku($data['iku'] ?? null);
@@ -197,16 +197,16 @@ class ItemPub
 
 			// Extras viene como objeto JSON desde Dart
 			$this->setExtras(
-					isset($data['extras']) && is_array($data['extras'])
-									? $data['extras']
-									: null
+				isset($data['extras']) && is_array($data['extras'])
+					? $data['extras']
+					: null
 			);
 
 			// Fecha creada
 			$this->setCreated(
-					isset($data['created'])
-									? new \DateTimeImmutable($data['created'])
-									: new \DateTimeImmutable()
+				isset($data['created'])
+					? new \DateTimeImmutable($data['created'])
+					: new \DateTimeImmutable()
 			);
 
 			// Fecha de actualizacion
