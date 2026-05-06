@@ -21,15 +21,15 @@
 {% set localidad = extras.localidad is defined ? (extras.localidad is iterable ? extras.localidad|first|default('') : extras.localidad) : '' %}
 
 <div class="min-h-screen bg-[#fafafa] flex flex-col font-sans antialiased"
-     x-data="{
-        activeImg: '{{ mainImg }}',
+     x-data="{{ {
+        activeImg: mainImg,
         rotation: 0,
-        pictures: {{ pictures|json_encode|raw }},
-        pathImg: '{{ pathImg }}',
+        pictures: pictures,
+        pathImg: pathImg,
         isZoomed: false,
         zoomX: 0,
         zoomY: 0
-     }">
+     }|json_encode|e('html_attr') }}">
   
   <!-- Header -->
   <header class="sticky top-0 z-50 bg-dark border-b border-white/[0.06]">
