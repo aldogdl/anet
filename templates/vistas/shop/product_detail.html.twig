@@ -3,56 +3,242 @@
 {% block title %}{{ item.title }} | {{ storeName|default('Autoparnet') }}{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#e8f2ec] flex flex-col font-sans">
+{% set extras = item.extras|default({}) %}
+{% set mainImg = extras.pathImg is defined and extras.pictures is defined and extras.pictures|length > 0 
+    ? extras.pathImg ~ '/' ~ extras.pictures[0] 
+    : item.thumb %}
+{% set pictures = extras.pictures|default([]) %}
+{% set pathImg = extras.pathImg|default('') %}
+{% set mkName = extras.mk is defined ? (extras.mk is iterable ? extras.mk|first|default('') : extras.mk) : '' %}
+{% set mdName = extras.md is defined ? (extras.md is iterable ? extras.md|first|default('') : extras.md) : '' %}
+{% set numPart = extras.numPart is defined ? (extras.numPart is iterable ? extras.numPart|first|default('') : extras.numPart) : '' %}
+{% set localidad = extras.localidad is defined ? (extras.localidad is iterable ? extras.localidad|first|default('') : extras.localidad) : '' %}
+
+<div class="min-h-screen bg-[#fafafa] flex flex-col font-sans antialiased"
+     x-data="{
+        activeImg: '{{ mainImg }}',
+        rotation: 0,
+        pictures: {{ pictures|json_encode|raw }},
+        pathImg: '{{ pathImg }}'
+     }">
   
-  <!-- Simple Header -->
-  <header class="bg-[#0b141a] h-20 flex items-center px-6 shadow-xl">
-      <a href="javascript:history.back()" class="text-white hover:text-[#25d366] flex items-center gap-2 font-bold uppercase tracking-widest text-xs transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-          Volver al catálogo
-      </a>
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-dark border-b border-white/[0.06]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <a href="javascript:history.back()" class="text-white/60 hover:text-white flex items-center gap-2 text-xs font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Volver al catálogo
+        </a>
+        <span class="text-white font-semibold text-sm tracking-tight">{{ storeName|default('YonkEros') }}</span>
+        <div class="w-24"></div>
+    </div>
   </header>
 
-  <!-- Product Container -->
-  <main class="max-w-5xl mx-auto w-full px-6 py-12 flex-1 flex flex-col">
-      <div class="bg-white rounded-[3rem] p-8 shadow-2xl flex flex-col md:flex-row gap-12 flex-1">
-          
-          <!-- Image -->
-          <div class="flex-1 bg-[#f8fafc] rounded-[2rem] p-8 flex items-center justify-center border border-slate-100">
-              {% set extras = item.extras|default({}) %}
-              {% set mainImg = extras.pathImg is defined and extras.pictures is defined and extras.pictures|length > 0 
-                  ? extras.pathImg ~ '/' ~ extras.pictures[0] 
-                  : item.thumb %}
-              <img src="{{ mainImg }}" alt="{{ item.title }}" class="w-full h-auto max-h-[500px] object-contain rounded-xl hover:scale-105 transition-transform duration-700">
-          </div>
+  <!-- Product Detail -->
+  <main class="max-w-6xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10 flex-1">
+    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col lg:flex-row">
+        
+        <!-- Left: Image Gallery -->
+        <div class="w-full lg:w-[55%] bg-[#fafafa] flex flex-col border-r border-gray-100">
+            <div id="gallery-detail" class="flex-1 flex flex-col">
+                <!-- Main Image -->
+                <div class="flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] relative group flex items-center justify-center p-6 sm:p-10">
+                    <a :href="activeImg" 
+                       data-pswp-width="1200" 
+                       data-pswp-height="1200" 
+                       target="_blank"
+                       class="flex items-center justify-center cursor-zoom-in w-full h-full">
+                        <img :src="activeImg" 
+                             :style="`transform: rotate(${rotation}deg)`"
+                             class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-300"
+                             @load="
+                                $el.parentElement.setAttribute('data-pswp-width', $el.naturalWidth);
+                                $el.parentElement.setAttribute('data-pswp-height', $el.naturalHeight);
+                             " />
+                    </a>
 
-          <!-- Details -->
-          <div class="flex-1 flex flex-col justify-center">
-              <span class="text-xs font-black text-slate-400 tracking-widest uppercase mb-3 inline-block bg-slate-100 px-3 py-1 rounded-full w-fit">
-                  REF: {{ item.iku|default('N/A') }}/{{ item.id }}
-              </span>
-              <h1 class="text-3xl lg:text-4xl font-black text-[#103928] leading-tight mb-6">{{ item.title }}</h1>
-              
-              <div class="mb-8">
-                  <span class="text-xs text-slate-500 font-bold uppercase tracking-widest block mb-1">Precio Neto</span>
-                  <span class="text-5xl font-black text-[#103928] italic">${{ item.price|number_format(2, '.', ',') }}</span>
-              </div>
+                    <button @click="rotation = (rotation + 90) % 360" 
+                            class="absolute bottom-5 left-5 bg-white border border-gray-200 p-2.5 rounded-lg text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </button>
 
-              {% if item.detalles %}
-              <div class="mb-8">
-                  <h3 class="text-xs font-black text-slate-400 tracking-widest uppercase mb-2">Detalles del producto</h3>
-                  <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100">{{ item.detalles }}</p>
-              </div>
-              {% endif %}
+                    <div class="absolute bottom-5 right-5 bg-white/80 backdrop-blur-sm border border-gray-100 px-3 py-1.5 rounded-md text-[10px] text-gray-400 font-medium flex items-center gap-1.5 pointer-events-none">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Click para zoom HD
+                    </div>
+                </div>
 
-              <div class="flex gap-4 mt-auto">
-                  <button class="flex-1 bg-[#25d366] text-[#0b141a] font-black py-5 rounded-2xl uppercase tracking-widest hover:bg-emerald-400 transition-colors shadow-xl shadow-[#25d366]/20 active:scale-95">
-                      Consultar / Comprar
-                  </button>
-              </div>
-          </div>
+                <!-- Thumbnails -->
+                {% if pictures|length > 1 %}
+                <div class="flex gap-2 px-5 pb-5 overflow-x-auto no-scrollbar flex-shrink-0">
+                    {% for pic in pictures %}
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg border-2 transition-all cursor-pointer overflow-hidden bg-white"
+                             :class="activeImg === '{{ pathImg }}/{{ pic }}' ? 'border-primary' : 'border-gray-100 opacity-50 hover:opacity-100'"
+                             @click="activeImg = '{{ pathImg }}/{{ pic }}'; rotation = 0">
+                            <img src="{{ pathImg }}/{{ pic }}" class="w-full h-full object-cover rounded-[5px]" alt="Foto {{ loop.index }}" loading="lazy">
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
 
-      </div>
+        <!-- Right: Details -->
+        <div class="w-full lg:w-[45%] flex flex-col">
+            <div class="p-6 sm:p-8 lg:p-10 flex-1">
+
+                <!-- Badges -->
+                <div class="flex flex-wrap items-center gap-1.5 mb-3">
+                    <span class="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded">ID: {{ item.id }}</span>
+                    <span class="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded">SKU: {{ item.iku|default('N/A') }}</span>
+                    {% if numPart is not empty %}
+                        <span class="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded">N/P: {{ numPart }}</span>
+                    {% endif %}
+                    {% if item.isActive %}
+                        <span class="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">
+                            <span class="w-1 h-1 bg-emerald-500 rounded-full"></span>
+                            Disponible
+                        </span>
+                    {% endif %}
+                </div>
+
+                <!-- Title -->
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight tracking-tight mb-1">{{ item.title }}</h1>
+                
+                <!-- Brand / Model / Year -->
+                {% if mkName is not empty or mdName is not empty %}
+                <p class="text-sm text-gray-400 font-medium mb-5">
+                    {% if mkName is not empty %}{{ mkName }}{% endif %}
+                    {% if mdName is not empty %} · {{ mdName }}{% endif %}
+                    {% if item.anioInicio is defined and item.anioInicio > 0 %}
+                        · {{ item.anioInicio }}{% if item.anioFin is defined and item.anioFin < 9999 %} - {{ item.anioFin }}{% endif %}
+                    {% endif %}
+                </p>
+                {% endif %}
+
+                <!-- Price -->
+                <div class="flex items-baseline gap-2 mb-8">
+                    <span class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">${{ item.price|number_format(2, '.', ',') }}</span>
+                    <span class="text-xs text-gray-400 font-medium">MXN</span>
+                </div>
+
+                <!-- Description -->
+                {% if item.detalles %}
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 mb-4">
+                    <h4 class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Descripción</h4>
+                    <p class="text-sm text-gray-600 leading-relaxed">{{ item.detalles }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Specs Grid -->
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    {% if item.pieza is defined and item.pieza is not empty %}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Pieza</span>
+                        <span class="text-xs font-semibold text-gray-700">{{ item.pieza }}</span>
+                    </div>
+                    {% endif %}
+                    {% if mkName is not empty %}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Marca</span>
+                        <span class="text-xs font-semibold text-gray-700">{{ mkName }}</span>
+                    </div>
+                    {% endif %}
+                    {% if mdName is not empty %}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Modelo</span>
+                        <span class="text-xs font-semibold text-gray-700">{{ mdName }}</span>
+                    </div>
+                    {% endif %}
+                    {% if item.anioInicio is defined and item.anioInicio > 0 %}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Año</span>
+                        <span class="text-xs font-semibold text-gray-700">{{ item.anioInicio }}{% if item.anioFin is defined and item.anioFin < 9999 %} - {{ item.anioFin }}{% endif %}</span>
+                    </div>
+                    {% endif %}
+                    {% if item.lado is defined and item.lado is not empty and item.lado != 'A' %}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Lado</span>
+                        <span class="text-xs font-semibold text-gray-700">{{ item.lado }}</span>
+                    </div>
+                    {% endif %}
+                    {% if item.poss is defined and item.poss is not empty and item.poss != 'A' %}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Posición</span>
+                        <span class="text-xs font-semibold text-gray-700">{{ item.poss }}</span>
+                    </div>
+                    {% endif %}
+                    {% if numPart is not empty %}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Número de parte</span>
+                        <span class="text-xs font-semibold text-gray-700">{{ numPart }}</span>
+                    </div>
+                    {% endif %}
+                    {% if localidad is not empty %}
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Ubicación</span>
+                        <span class="text-xs font-semibold text-gray-700">{{ localidad }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Trust badges -->
+                <div class="flex gap-2 mb-6">
+                    <div class="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <div>
+                            <span class="text-[10px] text-gray-400 block">Garantía</span>
+                            <span class="text-[11px] font-semibold text-gray-700">7 días</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+                        <div>
+                            <span class="text-[10px] text-gray-400 block">Envío</span>
+                            <span class="text-[11px] font-semibold text-gray-700">Todo México</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky CTA -->
+            <div class="border-t border-gray-100 p-6 sm:p-8 lg:px-10 bg-white flex-shrink-0 space-y-3">
+                <button class="w-full bg-primary hover:bg-emerald-400 text-dark font-semibold py-3.5 rounded-lg transition-colors active:scale-[0.98] text-sm flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    Consultar disponibilidad
+                </button>
+                
+                <a href="https://wa.me/?text={{ ('Hola, me interesa: ' ~ item.title ~ ' - $' ~ item.price|number_format(2, '.', ',') ~ ' (ID: ' ~ item.id ~ ')')|url_encode }}"
+                   target="_blank"
+                   class="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition-colors text-xs font-medium">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.394 0 0 5.394 0 12.031c0 2.115.548 4.17 1.583 5.986L.048 23.518l5.656-1.482a12.002 12.002 0 006.327 1.785h.005c6.634 0 12.029-5.394 12.029-12.031S18.667 0 12.031 0zm0 21.821h-.004a9.986 9.986 0 01-5.088-1.385l-.365-.216-3.782.991.99-3.685-.236-.376a9.986 9.986 0 01-1.526-5.334c0-5.522 4.493-10.017 10.015-10.017 2.675 0 5.188 1.042 7.079 2.934 1.891 1.892 2.932 4.406 2.932 7.081 0 5.524-4.494 10.007-10.014 10.007zm5.493-7.513c-.301-.151-1.785-.882-2.062-.983-.277-.101-.479-.151-.68.151-.202.302-.781.983-.957 1.184-.177.202-.353.227-.654.076-.301-.151-1.275-.47-2.428-1.5-.898-.801-1.503-1.793-1.68-2.095-.177-.302-.019-.465.132-.616.135-.135.301-.353.452-.529.151-.177.202-.302.302-.504.101-.202.05-.378-.025-.529-.076-.151-.68-1.64-.932-2.245-.246-.59-.496-.51-.68-.52-.177-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.057 1.033-1.057 2.519s1.083 2.923 1.234 3.125c.151.202 2.13 3.25 5.161 4.557.72.311 1.281.497 1.722.636.723.23 1.381.197 1.902.12.583-.086 1.785-.73 2.036-1.436.252-.705.252-1.309.177-1.436-.076-.126-.277-.202-.578-.353z"></path></svg>
+                    Consultar por WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
   </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-50 border-t border-gray-100 py-6 mt-auto">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+        <span class="text-xs text-gray-400">{{ storeName|default('YonkEros') }} · © {{ 'now'|date('Y') }}</span>
+    </div>
+  </footer>
 </div>
+
+<script>
+// PhotoSwipe para la vista de detalle
+document.addEventListener('DOMContentLoaded', () => {
+    const lightbox = new PhotoSwipeLightbox({
+        gallery: '#gallery-detail',
+        children: 'a',
+        pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js'),
+        initialZoomLevel: 'fit',
+        secondaryZoomLevel: 3,
+        maxZoomLevel: 10,
+    });
+    lightbox.init();
+});
+</script>
 {% endblock %}

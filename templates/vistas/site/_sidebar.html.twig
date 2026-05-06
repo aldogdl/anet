@@ -1,0 +1,66 @@
+<div class="bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden sticky top-28 shadow-xl shadow-slate-200/60 flex flex-col pt-16">
+	<!-- Sidebar Header -->
+	<div class="px-5 pb-4 pt-4 border-b border-slate-100 bg-[#f8fafc]">
+			<h3 class="text-[11px] font-black text-[#103928] uppercase tracking-widest flex items-center gap-2">
+					<svg class="w-4 h-4 text-[#25d366]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+					Filtrar Catálogo
+			</h3>
+			<p class="text-[10px] font-bold text-[#103928]/50 uppercase tracking-widest mt-1 ml-6" x-text="`Mostrando ${totalItems} resultados`"></p>
+	</div>
+
+	<!-- Filters Content -->
+	<div class="p-5 space-y-5">
+		<!-- Main Filter Button -->
+		<div class="space-y-3">
+			<h4 class="text-[12px] text-slate-500 font-black uppercase tracking-widest">Navegación</h4>
+			<div>
+				<button @click="showFilters = true" 
+							class="w-full flex items-center justify-between py-4 px-4 bg-[#0b141a] text-white rounded-2xl hover:bg-[#111b21] transition-all shadow-lg shadow-black/10 active:scale-95 group relative">
+					<div class="flex items-center gap-3">
+							<svg class="w-5 h-5 text-[#25d366] group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+							<span class="text-xs font-black uppercase tracking-widest">Marcas y Modelos</span>
+					</div>
+					<svg class="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+					
+					<!-- Indicador de filtro activo -->
+					<span x-show="currentFilters.mk !== '' || currentFilters.md !== ''" class="absolute -top-1 -right-1 flex h-3 w-3" x-cloak>
+							<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+							<span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+					</span>
+				</button>
+
+				<!-- Botón de limpiar filtro externo -->
+				<div class="flex justify-center mt-3" x-show="currentFilters.mk !== '' || currentFilters.md !== ''" x-cloak x-transition.opacity>
+					<button @click="applyFilter({mk: '', md: '', page: 1})" 
+									class="text-[10px] font-black text-red-500 hover:text-white flex items-center gap-1.5 uppercase tracking-widest bg-red-50 px-4 py-1.5 rounded-full hover:bg-red-500 transition-colors shadow-sm border border-red-100">
+							<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+							Limpiar
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="space-y-3 pt-5 border-t border-slate-100 pb-8">
+			<h4 class="text-[11px] text-slate-500 font-black uppercase tracking-widest">
+				Modo de visualización
+			</h4>
+			<div class="space-y-2">
+				<label class="flex items-center gap-3 cursor-pointer group">
+					<input type="checkbox" :checked="viewMode === 'list'" @change="viewMode = $event.target.checked ? 'list' : 'grid'"
+                           class="w-5 h-5 rounded-lg border-slate-200 text-[#25d366] focus:ring-[#25d366]/20 transition-all cursor-pointer">
+					<span class="text-xs font-bold text-slate-600 group-hover:text-[#103928] transition-colors">Vista de Lista (más piezas)</span>
+				</label>
+			</div>
+		</div>
+
+		<!-- Help Box -->
+		<div class="bg-[#0b141a] rounded-2xl p-4 relative overflow-hidden group shadow-xl shadow-black/10 !mt-8">
+				<div class="absolute top-0 right-0 w-24 h-24 bg-[#25d366]/10 rounded-full blur-3xl -mr-12 -mt-12 group-hover:bg-[#25d366]/20 transition-colors"></div>
+				<h5 class="text-white text-[11px] font-black uppercase tracking-widest leading-tight relative">¿No encuentras tu pieza?</h5>
+				<p class="text-[10px] text-white/60 mt-1 relative">Si no la ves, la conseguimos por ti.</p>
+				<button class="mt-2 w-full bg-[#25d366] text-[#0b141a] text-[9px] font-black py-2 rounded-lg uppercase tracking-widest shadow-lg shadow-[#25d366]/20 hover:scale-105 transition-transform active:scale-95">
+						La Buscamos en todo México
+				</button>
+		</div>
+	</div>
+</div>

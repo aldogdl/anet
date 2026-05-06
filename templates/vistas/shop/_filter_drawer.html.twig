@@ -9,62 +9,56 @@
 			this.loading = false;
 		}
 	}
-}" x-init="fetchFilters()" class="space-y-6">
+}" x-init="fetchFilters()" class="space-y-1">
 
-<div class="space-y-8">
-	<div class="space-y-4">
-		<h4 class="text-xs font-black text-[#103928]/40 uppercase tracking-widest px-2 flex items-center justify-between">
-			Selecciona una marca
-			<button @click="applyFilter({mk: '', md: '', page: 1})" 
-							class="text-[10px] font-black text-red-500 hover:text-white hover:bg-red-500 px-3 py-1.5 rounded-full transition-all uppercase tracking-widest shadow-sm bg-red-50">
-					Limpiar
+<div class="flex items-center justify-between px-1 mb-3">
+	<span class="text-[11px] text-gray-400 font-medium">Selecciona una marca</span>
+	<button @click="applyFilter({mk: '', md: '', page: 1})" 
+					class="text-[10px] font-medium text-red-500 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50 transition-colors">
+			Limpiar
+	</button>
+</div>
+
+<!-- Loading skeleton -->
+<template x-if="loading">
+	<div class="space-y-2 px-1">
+		<div class="h-9 bg-gray-100 rounded-lg animate-pulse"></div>
+		<div class="h-9 bg-gray-100 rounded-lg animate-pulse w-5/6"></div>
+		<div class="h-9 bg-gray-100 rounded-lg animate-pulse w-4/6"></div>
+	</div>
+</template>
+
+<!-- Brand list -->
+<template x-for="brand in filters" :key="brand.id">
+	<div x-data="{ open: false }">
+		<button @click="open = !open" 
+						class="w-full flex items-center justify-between py-2 px-3 rounded-lg transition-colors text-left"
+						:class="open ? 'bg-primary/5 text-gray-900' : 'text-gray-600 hover:bg-gray-50'">
+			<div class="flex items-center gap-2">
+				<svg class="w-3 h-3 transition-transform duration-200 flex-shrink-0" 
+							:class="open ? 'rotate-90 text-primary' : 'text-gray-300'"
+							fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+				</svg>
+				<span class="text-xs font-medium" x-text="brand.name"></span>
+			</div>
+			<span class="text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded" x-text="brand.count"></span>
+		</button>
+
+		<div x-show="open" x-collapse class="ml-5 mt-0.5 space-y-0.5 border-l border-gray-100 pl-3">
+			<button @click="applyFilter({mk: brand.id, md: '', page: 1})" 
+						class="w-full text-left py-1.5 px-2 text-[11px] font-medium text-gray-400 hover:text-primary rounded transition-colors">
+				Ver todo <span x-text="brand.name"></span>
 			</button>
-		</h4>
-
-		<div class="space-y-1">
-			<template x-if="loading">
-				<div class="space-y-3 animate-pulse px-2">
-					<div class="h-10 bg-slate-200/50 rounded-xl"></div>
-					<div class="h-10 bg-slate-200/50 rounded-xl"></div>
-					<div class="h-10 bg-slate-200/50 rounded-xl w-2/3"></div>
-				</div>
-			</template>
-
-			<template x-for="brand in filters" :key="brand.id">
-				<div class="group" x-data="{ open: false }">
-
-					<button @click="open = !open" 
-									class="w-full flex items-center justify-between py-3 px-4 rounded-2xl transition-all hover:bg-white shadow-sm border border-transparent hover:border-slate-100"
-									:class="open ? 'bg-white text-[#25d366] border-slate-100 shadow-md' : 'text-slate-600'">
-						<div class="flex items-center gap-3">
-								<svg class="w-3.5 h-3.5 transition-transform duration-300" 
-											:class="open ? 'rotate-90 text-[#25d366]' : 'text-slate-400'"
-											fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path>
-								</svg>
-								<span class="text-xs font-bold uppercase tracking-tight" x-text="brand.name"></span>
-						</div>
-						<span class="text-[10px] font-black px-2 py-0.5 rounded-lg bg-[#f0f7f4] text-[#103928]" x-text="brand.count"></span>
-					</button>
-
-					<div x-show="open" x-collapse class="ml-9 mt-2 space-y-1 border-l-2 border-[#25d366]/20 pl-4">
-						<!-- Opción para ver TODA la marca -->
-						<button @click="applyFilter({mk: brand.id, md: '', page: 1})" 
-									class="w-full text-left py-2 px-3 text-[11px] font-black text-slate-400 hover:text-[#25d366] transition-colors uppercase tracking-tight">
-							Ver todo <span x-text="brand.name"></span>
-						</button>
-						
-						<template x-for="model in brand.models" :key="model.id">
-							<button @click="applyFilter({mk: brand.id, md: model.id, page: 1})" 
-									class="w-full text-left py-2 px-3 text-[11px] font-bold text-slate-500 hover:text-[#25d366] transition-colors uppercase tracking-tight"
-									x-text="model.name">
-							</button>
-						</template>
-					</div>
-				</div>
+			
+			<template x-for="model in brand.models" :key="model.id">
+				<button @click="applyFilter({mk: brand.id, md: model.id, page: 1})" 
+						class="w-full text-left py-1.5 px-2 text-[11px] text-gray-500 hover:text-primary rounded transition-colors"
+						x-text="model.name">
+				</button>
 			</template>
 		</div>
 	</div>
-</div>
+</template>
 
 </div>

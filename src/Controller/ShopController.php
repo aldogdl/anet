@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class ShopController extends AbstractController
 {
 
-	#[Route('/{template}/{slug}', name: 'app_shop', methods: ['GET'], requirements: ['template' => 'muro|shop'])]
+	#[Route('/{template}/{slug}', name: 'app_shop', methods: ['GET'], requirements: ['template' => 'muro|shop|site'])]
 	public function index(string $template, string $slug, Request $request, ItemPubRepository $repo, Fsys $fsys): Response
 	{
 		// Leemos los archivos solo en la carga inicial
@@ -92,7 +92,11 @@ class ShopController extends AbstractController
 				->getResult();
 		}
 
-		$viewFolder = $template === 'muro' ? 'vistas/muro' : 'vistas/shop';
+		$viewFolder = match($template) {
+			'muro' => 'vistas/muro',
+			'site' => 'vistas/site',
+			default => 'vistas/shop',
+		};
 		$templateFile = $viewFolder . '/index.html.twig';
 
 		return $this->render($templateFile, [
@@ -110,7 +114,7 @@ class ShopController extends AbstractController
 		]);
 	}
 
-	#[Route('/search/{template}/{slug}', name: 'app_shop_search', methods: ['GET'], requirements: ['template' => 'muro|shop'])]
+	#[Route('/search/{template}/{slug}', name: 'app_shop_search', methods: ['GET'], requirements: ['template' => 'muro|shop|site'])]
 	public function search(string $template, string $slug, Request $request, ItemPubRepository $repo): Response
 	{
 		$page = $request->query->getInt('page', 1);
@@ -215,7 +219,11 @@ class ShopController extends AbstractController
 		$pagesCount = ceil($totalItems / $limit);
 		if ($pagesCount == 0) $pagesCount = 1;
 
-		$viewFolder = $template === 'muro' ? 'vistas/muro' : 'vistas/shop';
+		$viewFolder = match($template) {
+			'muro' => 'vistas/muro',
+			'site' => 'vistas/site',
+			default => 'vistas/shop',
+		};
 		$templateFile = $viewFolder . '/_product_grid.html.twig';
 
 		return $this->render($templateFile, [
@@ -506,4 +514,5 @@ class ShopController extends AbstractController
 			'Content-Disposition' => 'attachment; filename="cotizacion_' . $slug . '.pdf"'
 		]);
 	}
+	
 }
