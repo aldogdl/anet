@@ -50,14 +50,31 @@
         <!-- Left: Image Gallery -->
         <div class="w-full lg:w-[55%] bg-[#fafafa] flex flex-col border-r border-gray-100" id="gallery-detail">
                 <!-- Main Image Container with Inner Zoom -->
-                <div class="flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] relative group flex items-center justify-center p-4 overflow-hidden bg-white">
-                    <div class="relative w-full h-full flex items-center justify-center overflow-hidden cursor-zoom-in"
-                         @mousemove="isZoomed = true; zoomX = ($event.offsetX / $el.offsetWidth) * 100; zoomY = ($event.offsetY / $el.offsetHeight) * 100"
+                <div class="flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] relative group bg-white overflow-hidden">
+                    
+                    <!-- Zoom Logic Wrapper -->
+                    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-8 cursor-zoom-in"
+                         @mousemove="
+                            isZoomed = true; 
+                            const rect = $el.getBoundingClientRect();
+                            let x = ($event.clientX - rect.left) / rect.width;
+                            let y = ($event.clientY - rect.top) / rect.height;
+                            
+                            if (rotation == 90) { let tmp = x; x = y; y = 1 - tmp; }
+                            else if (rotation == 180) { x = 1 - x; y = 1 - y; }
+                            else if (rotation == 270) { let tmp = x; x = 1 - y; y = tmp; }
+                            
+                            zoomX = x * 100; zoomY = y * 100;
+                         "
                          @mouseleave="isZoomed = false">
-                        <img :src="activeImg" 
-                             :style="isZoomed ? `transform: scale(2.5) rotate(${rotation}deg); transform-origin: ${zoomX}% ${zoomY}%` : `transform: rotate(${rotation}deg)`"
-                             class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-200 ease-out pointer-events-none"
-                             alt="{{ item.title }}" />
+                        
+                        <div class="w-full h-full flex items-center justify-center transition-transform duration-300"
+                             :style="`transform: rotate(${rotation}deg)`">
+                            <img :src="activeImg" 
+                                 :style="isZoomed ? `transform: scale(2.5); transform-origin: ${zoomX}% ${zoomY}%` : ''"
+                                 class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-200 ease-out pointer-events-none"
+                                 alt="{{ item.title }}" />
+                        </div>
                     </div>
 
                     <!-- Floating Buttons -->
@@ -66,29 +83,18 @@
                         <button type="button"
                            class="p-3 bg-white/90 backdrop-blur-md border border-gray-100 rounded-xl text-gray-500 hover:text-primary hover:scale-110 transition-all shadow-xl flex items-center justify-center group/lupa"
                            title="Ver pantalla completa"
-                           @click="openGallery(activeImg, pictures, pathImg)">
+                           @click.stop="openGallery(activeImg, pictures, pathImg)">
                             <svg class="w-5 h-5 group-hover/lupa:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
                             </svg>
                         </button>
                         
                         <!-- Rotate button -->
-                        <button @click="rotation = (rotation + 90) % 360" 
+                        <button @click.stop="rotation = (rotation + 90) % 360" 
                                 class="p-3 bg-white/90 backdrop-blur-md border border-gray-100 rounded-xl text-gray-500 hover:text-primary hover:scale-110 transition-all shadow-xl flex items-center justify-center"
                                 title="Rotar imagen">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                         </button>
-                    </div>
-
-                    <!-- Hidden Gallery for PhotoSwipe -->
-                    <div class="hidden">
-                        {% for pic in pictures %}
-                            <a href="{{ pathImg }}/{{ pic }}" 
-                               class="pswp-trigger"
-                               data-pswp-width="2000" 
-                               data-pswp-height="2000"
-                               data-pswp-type="image"></a>
-                        {% endfor %}
                     </div>
 
                     <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] text-white/80 font-bold tracking-wider uppercase flex items-center gap-2 pointer-events-none transition-opacity duration-300"
@@ -102,10 +108,11 @@
                 {% if pictures|length > 1 %}
                 <div class="flex gap-2 px-5 pb-5 overflow-x-auto no-scrollbar flex-shrink-0">
                     {% for pic in pictures %}
+                        {% set picUrl = (pic starts with 'http' or pic starts with '/' or pic starts with '//') ? pic : (pathImg ~ '/' ~ pic) %}
                         <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg border-2 transition-all cursor-pointer overflow-hidden bg-white"
-                             :class="activeImg === '{{ pathImg }}/{{ pic }}' ? 'border-primary' : 'border-gray-100 opacity-50 hover:opacity-100'"
-                             @click="activeImg = '{{ pathImg }}/{{ pic }}'; rotation = 0">
-                            <img src="{{ pathImg }}/{{ pic }}" class="w-full h-full object-cover rounded-[5px]" alt="Foto {{ loop.index }}" loading="lazy">
+                             :class="activeImg === '{{ picUrl }}' ? 'border-primary' : 'border-gray-100 opacity-50 hover:opacity-100'"
+                             @click="activeImg = '{{ picUrl }}'; rotation = 0">
+                            <img src="{{ picUrl }}" class="w-full h-full object-cover rounded-[5px]" alt="Foto {{ loop.index }}" loading="lazy">
                         </div>
                     {% endfor %}
                 </div>
