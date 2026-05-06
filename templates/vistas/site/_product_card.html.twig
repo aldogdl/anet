@@ -16,7 +16,9 @@
     brand: item.mrkId,
     model: item.mdlId,
     pictures: extras.pictures|default([]),
-    pathImg: extras.pathImg|default('')
+    pathImg: extras.pathImg|default(''),
+    idSrc: extras.idSrc|default(''),
+    linkSr: extras.linkSr|default('')
 }|json_encode %}
 {% set cleanSlug = item.title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode|slice(0, 50) %}
 

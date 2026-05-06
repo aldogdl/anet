@@ -26,6 +26,8 @@
     md: extras.md|default(''),
     numPart: extras.numPart|default(''),
     localidad: extras.localidad|default(''),
+    idSrc: extras.idSrc|default(''),
+    linkSr: extras.linkSr|default(''),
     fuente: extras.fuente|default(''),
     calif: extras.calif|default(0)
 }|json_encode %}
@@ -70,7 +72,7 @@
 
 		<div class="mt-auto pt-3 flex items-end justify-between gap-2">
 			<div>
-				<span class="text-[10px] text-gray-400 font-medium block mb-0.5">ID: {{ item.id }}</span>
+				<span class="text-[9px] text-white bg-slate-800 px-1.5 py-0.5 rounded font-medium block w-fit mb-1 tracking-wider uppercase">ID: <span class="font-black">{{ item.id }}</span></span>
 				<span class="text-lg font-bold text-gray-900 tracking-tight">${{ item.price|number_format(2, '.', ',') }}</span>
 			</div>
 

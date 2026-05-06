@@ -19,6 +19,8 @@
 {% set mdName = extras.md is defined ? (extras.md is iterable ? extras.md|first|default('') : extras.md) : '' %}
 {% set numPart = extras.numPart is defined ? (extras.numPart is iterable ? extras.numPart|first|default('') : extras.numPart) : '' %}
 {% set localidad = extras.localidad is defined ? (extras.localidad is iterable ? extras.localidad|first|default('') : extras.localidad) : '' %}
+{% set idSrc = extras.idSrc|default('') %}
+{% set linkSr = extras.linkSr|default('') %}
 
 <div class="min-h-screen bg-[#fafafa] flex flex-col font-sans antialiased"
      x-data="{{ {
@@ -50,10 +52,10 @@
         <!-- Left: Image Gallery -->
         <div class="w-full lg:w-[55%] bg-[#fafafa] flex flex-col border-r border-gray-100" id="gallery-detail">
                 <!-- Main Image Container with Inner Zoom -->
-                <div class="flex-1 min-h-[300px] sm:min-h-[400px] lg:min-h-[500px] relative group bg-white overflow-hidden">
+                <div class="w-full aspect-square sm:aspect-[4/3] lg:aspect-square max-h-[400px] sm:max-h-[500px] lg:max-h-[600px] relative group bg-white overflow-hidden border-b border-gray-100 lg:border-b-0">
                     
                     <!-- Zoom Logic Wrapper -->
-                    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-8 cursor-zoom-in"
+                    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 cursor-zoom-in"
                          @mousemove="
                             isZoomed = true; 
                             const rect = $el.getBoundingClientRect();
@@ -124,14 +126,20 @@
             <div class="p-4 sm:p-5 lg:p-6 flex-1">
 
                 <!-- Badges + Disponible -->
-                <div class="flex flex-wrap items-center gap-1.5 mb-3">
-                    <span class="text-[10px] font-semibold text-dark bg-primary px-2 py-0.5 rounded">ID: {{ item.id }}</span>
-                    <span class="text-[10px] font-semibold text-dark bg-primary px-2 py-0.5 rounded">SKU: {{ item.iku|default('N/A') }}</span>
+                <div class="flex flex-wrap items-center gap-2 mb-4">
+                    <span class="text-[11px] font-medium text-white bg-slate-900 px-2.5 py-1 rounded-md tracking-wider shadow-sm">
+                        ID: <span class="font-black">{{ item.id }}</span>
+                    </span>
+                    <span class="text-[11px] font-medium text-white bg-blue-600 px-2.5 py-1 rounded-md tracking-wider shadow-sm">
+                        IKU: <span class="font-black">{{ item.iku|default('N/A') }}</span>
+                    </span>
                     {% if numPart is not empty %}
-                        <span class="text-[10px] font-semibold text-dark bg-primary px-2 py-0.5 rounded">N/P: {{ numPart }}</span>
+                        <span class="text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-md tracking-wider">
+                            N/P: <span class="font-black">{{ numPart }}</span>
+                        </span>
                     {% endif %}
                     {% if item.isActive %}
-                        <span class="ml-auto text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full flex items-center gap-1.5">
+                        <span class="ml-auto text-[10px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-tighter">
                             <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                             Disponible
                         </span>
@@ -178,18 +186,6 @@
                         <span class="text-sm font-semibold text-gray-800">{{ item.pieza }}</span>
                     </div>
                     {% endif %}
-                    {% if mkName is not empty %}
-                    <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Marca</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ mkName }}</span>
-                    </div>
-                    {% endif %}
-                    {% if mdName is not empty %}
-                    <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Modelo</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ mdName }}</span>
-                    </div>
-                    {% endif %}
                     {% if item.anioInicio is defined and item.anioInicio > 0 %}
                     <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
                         <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Año</span>
@@ -208,12 +204,10 @@
                         <span class="text-sm font-semibold text-gray-800">{{ item.poss }}</span>
                     </div>
                     {% endif %}
-                    {% if numPart is not empty %}
                     <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Número de parte</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ numPart }}</span>
+                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">No. Parte</span>
+                        <span class="text-sm font-semibold text-gray-800">{{ numPart is not empty ? numPart : (idSrc|default('N/A')) }}</span>
                     </div>
-                    {% endif %}
                     {% if localidad is not empty %}
                     <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
                         <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Ubicación</span>
@@ -221,6 +215,15 @@
                     </div>
                     {% endif %}
                 </div>
+
+                {% if linkSr is not empty and 'mercadolibre' in item.id %}
+                <div class="mb-4">
+                    <a href="{{ linkSr }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-bold no-underline flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        Adquiri item por Mercado Libre
+                    </a>
+                </div>
+                {% endif %}
 
                 <!-- Trust badges -->
                 <div class="flex gap-2 mb-4">

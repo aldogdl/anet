@@ -19,7 +19,9 @@
     brand: item.mrkId,
     model: item.mdlId,
     pictures: extras.pictures|default([]),
-    pathImg: extras.pathImg|default('')
+    pathImg: extras.pathImg|default(''),
+    idSrc: extras.idSrc|default(''),
+    linkSr: extras.linkSr|default('')
 }|json_encode %}
 {% set safeId = item.id ?: 0 %}
 
@@ -54,8 +56,8 @@
                 {{ title }}
             </h3>
             <div class="flex items-center gap-2 mt-2">
-                <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">SKU: {{ item.iku|default('N/A') }}</span>
-                <span class="text-[9px] text-slate-500 font-black uppercase tracking-widest">• ID: {{ item.id }}</span>
+                <span class="text-[9px] text-white/40 font-medium uppercase tracking-wider bg-white/5 px-2 py-0.5 rounded">ID: <span class="text-white font-black">{{ item.id }}</span></span>
+                <span class="text-[9px] text-white/40 font-medium uppercase tracking-wider bg-blue-600 px-2 py-0.5 rounded">IKU: <span class="text-white font-black">{{ item.iku|default('N/A') }}</span></span>
             </div>
         </div>
 

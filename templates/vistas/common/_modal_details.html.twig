@@ -38,10 +38,10 @@
         <div class="w-full lg:w-[55%] bg-[#fafafa] flex flex-col border-r border-gray-100 overflow-hidden">
             <div id="gallery-pro" class="flex-1 flex flex-col h-full overflow-hidden">
                 <!-- Main Image Container with Inner Zoom -->
-                <div class="flex-1 min-h-[250px] sm:min-h-[350px] relative group bg-white overflow-hidden">
+                <div class="w-full aspect-square sm:aspect-[4/3] lg:aspect-square max-h-[350px] sm:max-h-[450px] lg:max-h-[550px] relative group bg-white overflow-hidden border-b border-gray-100 lg:border-b-0">
                     
                     <!-- Zoom Logic Wrapper -->
-                    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-8 cursor-zoom-in"
+                    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 cursor-zoom-in"
                          x-data="{ isZoomed: false, zX: 50, zY: 50 }"
                          @mousemove="
                             isZoomed = true; 
@@ -106,11 +106,15 @@
             <div class="p-5 sm:p-6 lg:p-8 flex-1">
 
                 <!-- Badges -->
-                <div class="flex flex-wrap items-center gap-1.5 mb-3">
-                    <span class="text-[10px] font-bold text-dark bg-primary px-2 py-0.5 rounded shadow-sm" x-text="'ID: ' + selectedItem?.id"></span>
-                    <span class="text-[10px] font-bold text-dark bg-primary px-2 py-0.5 rounded shadow-sm" x-text="'SKU: ' + selectedItem?.sku"></span>
+                <div class="flex flex-wrap items-center gap-2 mb-4">
+                    <span class="text-[11px] font-medium text-white bg-slate-900 px-2.5 py-1 rounded-md tracking-wider shadow-sm">
+                        ID: <span class="font-black" x-text="selectedItem?.id"></span>
+                    </span>
+                    <span class="text-[11px] font-medium text-white bg-blue-600 px-2.5 py-1 rounded-md tracking-wider shadow-sm">
+                        IKU: <span class="font-black" x-text="selectedItem?.sku"></span>
+                    </span>
                     <template x-if="selectedItem?.numPart">
-                        <span class="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded" x-text="'N/P: ' + selectedItem?.numPart"></span>
+                        <span class="text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-md tracking-wider" x-text="'N/P: ' + selectedItem?.numPart"></span>
                     </template>
                 </div>
 
@@ -150,18 +154,19 @@
                                 <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.pieza"></span>
                             </div>
                         </template>
-                        <template x-if="selectedItem?.mk">
+
+                        <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                            <span class="text-[10px] text-gray-400 font-medium block mb-0.5">No. Parte</span>
+                            <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.numPart || selectedItem?.idSrc || 'N/A'"></span>
+                        </div>
+
+                        <template x-if="selectedItem?.localidad">
                             <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Marca</span>
-                                <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.mk"></span>
+                                <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Ubicación</span>
+                                <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.localidad"></span>
                             </div>
                         </template>
-                        <template x-if="selectedItem?.md">
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Modelo</span>
-                                <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.md"></span>
-                            </div>
-                        </template>
+
                         <template x-if="selectedItem?.anioInicio && selectedItem?.anioInicio > 0">
                             <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
                                 <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Año</span>
@@ -170,31 +175,31 @@
                                 </span>
                             </div>
                         </template>
+
                         <template x-if="selectedItem?.lado && selectedItem?.lado !== 'A'">
                             <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
                                 <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Lado</span>
                                 <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.lado"></span>
                             </div>
                         </template>
+
                         <template x-if="selectedItem?.poss && selectedItem?.poss !== 'A'">
                             <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
                                 <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Posición</span>
                                 <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.poss"></span>
                             </div>
                         </template>
-                        <template x-if="selectedItem?.numPart">
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Número de parte</span>
-                                <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.numPart"></span>
-                            </div>
-                        </template>
-                        <template x-if="selectedItem?.localidad">
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                                <span class="text-[10px] text-gray-400 font-medium block mb-0.5">Ubicación</span>
-                                <span class="text-xs font-semibold text-gray-700" x-text="selectedItem?.localidad"></span>
-                            </div>
-                        </template>
                     </div>
+
+                    <!-- Mercado Libre Link -->
+                    <template x-if="selectedItem?.linkSr && String(selectedItem?.id).includes('mercadolibre')">
+                        <div class="mt-4">
+                            <a :href="selectedItem.linkSr" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-bold no-underline flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                Adquiri item por Mercado Libre
+                            </a>
+                        </div>
+                    </template>
 
                     <!-- Trust badges -->
                     <div class="flex gap-2">
