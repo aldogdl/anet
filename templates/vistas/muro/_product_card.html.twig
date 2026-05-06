@@ -1,7 +1,9 @@
 {% set extras = item.extras %}
-{% set mainImg = extras.pathImg is defined and extras.pictures is defined and extras.pictures|length > 0 
-    ? extras.pathImg ~ '/' ~ extras.pictures[0] 
-    : item.thumb %}
+{% set firstPic = (extras.pictures|default([]))|first %}
+{% set mainImg = item.thumb %}
+{% if extras.pathImg is defined and firstPic %}
+    {% set mainImg = (firstPic starts with 'http' or firstPic starts with '/' or firstPic starts with '//') ? firstPic : extras.pathImg ~ '/' ~ firstPic %}
+{% endif %}
 {% set title = extras.fuente is defined and extras.fuente != ""
     ? extras.fuente 
     : item.title %}

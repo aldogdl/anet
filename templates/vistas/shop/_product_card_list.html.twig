@@ -1,7 +1,9 @@
 {% set extras = item.extras %}
-{% set mainImg = extras.pathImg is defined and extras.pictures is defined and extras.pictures|length > 0 
-    ? extras.pathImg ~ '/' ~ extras.pictures[0] 
-    : item.thumb %}
+{% set firstPic = (extras.pictures|default([]))|first %}
+{% set mainImg = item.thumb %}
+{% if extras.pathImg is defined and firstPic %}
+    {% set mainImg = (firstPic starts with 'http' or firstPic starts with '/' or firstPic starts with '//') ? firstPic : extras.pathImg ~ '/' ~ firstPic %}
+{% endif %}
 {% set placeholder = 'https://placehold.co/600x600/f5f5f5/a3a3a3?text=Sin+Foto' %}
 {% set modalData = {
     id: item.id,

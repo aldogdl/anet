@@ -37,33 +37,37 @@
         <!-- Left: Image Gallery -->
         <div class="w-full lg:w-[55%] bg-[#fafafa] flex flex-col border-r border-gray-100 overflow-hidden">
             <div id="gallery-pro" class="flex-1 flex flex-col h-full overflow-hidden">
-                <!-- Main Image -->
-                <div class="flex-1 min-h-[250px] sm:min-h-[350px] relative group flex items-center justify-center p-4 sm:p-8">
-                    <a :href="activeImg" 
-                       id="main-pswp-link"
-                       data-pswp-width="1200" 
-                       data-pswp-height="1200" 
-                       target="_blank"
-                       class="flex items-center justify-center cursor-zoom-in w-full h-full">
+                <!-- Main Image Container with Inner Zoom -->
+                <div class="flex-1 min-h-[250px] sm:min-h-[350px] relative group flex items-center justify-center p-4 sm:p-8 overflow-hidden bg-white"
+                     x-data="{ isZoomed: false, zoomX: 0, zoomY: 0 }"
+                     @mousemove="isZoomed = true; zoomX = ($event.offsetX / $el.offsetWidth) * 100; zoomY = ($event.offsetY / $el.offsetHeight) * 100"
+                     @mouseleave="isZoomed = false">
+                    
+                    <div class="relative w-full h-full flex items-center justify-center overflow-hidden cursor-zoom-in">
                         <img :src="activeImg" 
-                             :style="`transform: rotate(${rotation}deg)`"
-                             class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-300"
-                             @load="
-                                $el.parentElement.setAttribute('data-pswp-width', $el.naturalWidth);
-                                $el.parentElement.setAttribute('data-pswp-height', $el.naturalHeight);
-                             " />
-                    </a>
+                             :style="isZoomed ? `transform: scale(2.5) rotate(${rotation}deg); transform-origin: ${zoomX}% ${zoomY}%` : `transform: rotate(${rotation}deg)`"
+                             class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-200 ease-out pointer-events-none"
+                             alt="Imagen del producto" />
+                    </div>
 
-                    <!-- Rotate button -->
-                    <button @click="rotation = (rotation + 90) % 360" 
-                            class="absolute bottom-4 left-4 bg-white border border-gray-200 p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    </button>
-
-                    <!-- Zoom hint -->
-                    <div class="absolute bottom-4 right-4 bg-white/80 backdrop-blur-sm border border-gray-100 px-2.5 py-1 rounded-md text-[10px] text-gray-400 font-medium flex items-center gap-1.5 pointer-events-none">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        Click para zoom
+                    <!-- Floating Buttons -->
+                    <div class="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                        <!-- Magnifying Glass for Lightbox -->
+                        <button type="button"
+                           class="p-2.5 bg-white/90 backdrop-blur-md border border-gray-100 rounded-lg text-gray-500 hover:text-primary hover:scale-110 transition-all shadow-lg flex items-center justify-center group/lupa"
+                           title="Ver pantalla completa"
+                           @click="openGalleryManual(activeImg, selectedItem.pictures, selectedItem.pathImg)">
+                            <svg class="w-4 h-4 group-hover/lupa:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                            </svg>
+                        </button>
+                        
+                        <!-- Rotate button -->
+                        <button @click="rotation = (rotation + 90) % 360" 
+                                class="p-2.5 bg-white/90 backdrop-blur-md border border-gray-100 rounded-lg text-gray-500 hover:text-primary hover:scale-110 transition-all shadow-lg flex items-center justify-center"
+                                title="Rotar imagen">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        </button>
                     </div>
                 </div>
 
@@ -71,9 +75,9 @@
                 <div class="flex gap-2 px-4 pb-4 overflow-x-auto no-scrollbar flex-shrink-0">
                     <template x-for="(pic, index) in selectedItem?.pictures" :key="index">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 rounded-lg border-2 transition-all cursor-pointer overflow-hidden bg-white"
-                             :class="activeImg === (selectedItem.pathImg + '/' + pic) ? 'border-primary' : 'border-gray-100 opacity-50 hover:opacity-100'"
-                             @click="activeImg = selectedItem.pathImg + '/' + pic; rotation = 0">
-                            <img :src="selectedItem.pathImg + '/' + pic" class="w-full h-full object-cover rounded-[5px]" />
+                             :class="activeImg === (pic.startsWith('http') ? pic : (selectedItem.pathImg + '/' + pic)) ? 'border-primary' : 'border-gray-100 opacity-50 hover:opacity-100'"
+                             @click="activeImg = (pic.startsWith('http') ? pic : (selectedItem.pathImg + '/' + pic)); rotation = 0">
+                            <img :src="pic.startsWith('http') ? pic : (selectedItem.pathImg + '/' + pic)" class="w-full h-full object-cover rounded-[5px]" />
                         </div>
                     </template>
                 </div>
@@ -86,10 +90,10 @@
 
                 <!-- Badges -->
                 <div class="flex flex-wrap items-center gap-1.5 mb-3">
-                    <span class="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded" x-text="'ID: ' + selectedItem?.id"></span>
-                    <span class="text-[10px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded" x-text="'SKU: ' + selectedItem?.sku"></span>
+                    <span class="text-[10px] font-bold text-dark bg-primary px-2 py-0.5 rounded shadow-sm" x-text="'ID: ' + selectedItem?.id"></span>
+                    <span class="text-[10px] font-bold text-dark bg-primary px-2 py-0.5 rounded shadow-sm" x-text="'SKU: ' + selectedItem?.sku"></span>
                     <template x-if="selectedItem?.numPart">
-                        <span class="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded" x-text="'N/P: ' + selectedItem?.numPart"></span>
+                        <span class="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded" x-text="'N/P: ' + selectedItem?.numPart"></span>
                     </template>
                 </div>
 
@@ -199,22 +203,22 @@
             <div class="border-t border-gray-100 p-5 sm:p-6 lg:px-8 bg-white flex-shrink-0 space-y-3">
                 <!-- Cart buttons -->
                 <template x-if="!cartItems[selectedItem?.id]">
-                    <button @click="addToCart(selectedItem.id)" class="w-full bg-primary hover:bg-emerald-400 text-dark font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                        Añadir al carrito
+                    <button @click="addToCart(selectedItem.id)" class="w-full bg-dark hover:bg-black text-primary font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-sm shadow-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        Agregar
                     </button>
                 </template>
                 <template x-if="cartItems[selectedItem?.id]">
-                    <button @click="promptRemove(selectedItem.id)" class="w-full bg-primary/10 hover:bg-primary/20 text-primary font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-sm">
+                    <button @click="promptRemove(selectedItem.id)" class="w-full bg-primary/10 hover:bg-primary/20 text-primary font-bold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-sm border border-primary/20">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                        Quitar del carrito
+                        Agregado
                     </button>
                 </template>
                 
                 <!-- WhatsApp -->
                 <a :href="`https://wa.me/{{ contactPhone|default('') }}?text=` + encodeURIComponent(`Hola, me interesa:\n\n🔧 ${selectedItem?.title}\n💰 $${Number(selectedItem?.price).toLocaleString()}\n📋 ID: ${selectedItem?.id}`)"
                    target="_blank"
-                   class="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-200 text-gray-500 hover:border-primary hover:text-primary transition-colors text-xs font-medium">
+                   class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-primary text-dark hover:bg-emerald-400 transition-all text-xs font-bold shadow-sm active:scale-[0.98]">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.394 0 0 5.394 0 12.031c0 2.115.548 4.17 1.583 5.986L.048 23.518l5.656-1.482a12.002 12.002 0 006.327 1.785h.005c6.634 0 12.029-5.394 12.029-12.031S18.667 0 12.031 0zm0 21.821h-.004a9.986 9.986 0 01-5.088-1.385l-.365-.216-3.782.991.99-3.685-.236-.376a9.986 9.986 0 01-1.526-5.334c0-5.522 4.493-10.017 10.015-10.017 2.675 0 5.188 1.042 7.079 2.934 1.891 1.892 2.932 4.406 2.932 7.081 0 5.524-4.494 10.007-10.014 10.007zm5.493-7.513c-.301-.151-1.785-.882-2.062-.983-.277-.101-.479-.151-.68.151-.202.302-.781.983-.957 1.184-.177.202-.353.227-.654.076-.301-.151-1.275-.47-2.428-1.5-.898-.801-1.503-1.793-1.68-2.095-.177-.302-.019-.465.132-.616.135-.135.301-.353.452-.529.151-.177.202-.302.302-.504.101-.202.05-.378-.025-.529-.076-.151-.68-1.64-.932-2.245-.246-.59-.496-.51-.68-.52-.177-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.057 1.033-1.057 2.519s1.083 2.923 1.234 3.125c.151.202 2.13 3.25 5.161 4.557.72.311 1.281.497 1.722.636.723.23 1.381.197 1.902.12.583-.086 1.785-.73 2.036-1.436.252-.705.252-1.309.177-1.436-.076-.126-.277-.202-.578-.353z"></path></svg>
                     Consultar por WhatsApp
                 </a>
@@ -231,64 +235,37 @@ function shopModalLogic() {
         onItemSelected(v) {
             this.activeImg = v ? v.imgBig : '';
             this.rotation = 0;
-            this.$nextTick(() => this.initGallery());
         },
-        initGallery() {
-            if (window.lightbox) window.lightbox.destroy();
-            window.lightbox = new PhotoSwipeLightbox({
-                gallery: '#gallery-pro',
-                children: 'a',
+        openGalleryManual(activeImg, pictures, pathImg) {
+            let dataSource = [];
+            
+            if (Array.isArray(pictures) && pictures.length > 0) {
+                dataSource = pictures.map(pic => {
+                    const src = (pic.startsWith('http') || pic.startsWith('/') || pic.startsWith('//')) 
+                        ? pic 
+                        : (pathImg ? `${pathImg}/${pic}` : pic);
+                    return { src, width: 2000, height: 2000 };
+                });
+            }
+            
+            let index = dataSource.findIndex(item => item.src === activeImg);
+            if (index === -1 && activeImg) {
+                dataSource.unshift({ src: activeImg, width: 2000, height: 2000 });
+                index = 0;
+            }
+            
+            if (dataSource.length === 0) return;
+
+            const pswp = new PhotoSwipe({
+                dataSource: dataSource,
+                index: index,
                 pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js'),
-                initialZoomLevel: 'fit',
-                secondaryZoomLevel: 3,
-                maxZoomLevel: 10,
+                bgOpacity: 0.98,
+                wheelToZoom: true,
+                secondaryZoomLevel: 2.5,
+                maxZoomLevel: 6,
             });
-
-            window.lightbox.on('uiRegister', function() {
-                window.lightbox.pswp.ui.registerElement({
-                    name: 'custom-panel',
-                    className: 'pswp__custom-panel',
-                    appendTo: 'wrapper',
-                    onInit: (el, pswp) => {
-                        el.innerHTML = `
-                            <div class="pswp__pro-panel">
-                                <button class="pswp__btn-pro rotate-btn" title="Rotar">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                                </button>
-                                <div class="pswp__divider"></div>
-                                <button class="pswp__btn-pro close-pro-btn" title="Cerrar">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="#ff5f57" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                                </button>
-                            </div>
-                        `;
-
-                        el.querySelector('.rotate-btn').onclick = (e) => {
-                            e.stopPropagation();
-                            const img = pswp.currSlide.container.querySelector('.pswp__img');
-                            if (img) {
-                                const r = (parseInt(img.dataset.rotation || '0') + 90) % 360;
-                                img.style.transform = `rotate(${r}deg)`;
-                                img.dataset.rotation = r;
-                            }
-                        };
-                        el.querySelector('.close-pro-btn').onclick = (e) => {
-                            e.stopPropagation();
-                            pswp.close();
-                        };
-                    }
-                });
-            });
-
-            window.lightbox.on('bindEvents', () => {
-                const pswp = window.lightbox.pswp;
-                pswp.events.add(pswp.scrollWrap, 'wheel', (e) => {
-                    e.preventDefault();
-                    const zoomFactor = e.deltaY < 0 ? 1.3 : 0.7;
-                    pswp.currSlide.zoomTo(pswp.currSlide.zoomLevels.current * zoomFactor, { x: e.clientX, y: e.clientY }, 250, true);
-                });
-            });
-
-            window.lightbox.init();
+            pswp.init();
         }
     }
 }

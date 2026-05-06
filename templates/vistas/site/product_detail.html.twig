@@ -20,9 +20,11 @@
           <!-- Image -->
           <div class="flex-1 bg-[#f8fafc] rounded-[2rem] p-8 flex items-center justify-center border border-slate-100">
               {% set extras = item.extras|default({}) %}
-              {% set mainImg = extras.pathImg is defined and extras.pictures is defined and extras.pictures|length > 0 
-                  ? extras.pathImg ~ '/' ~ extras.pictures[0] 
-                  : item.thumb %}
+              {% set firstPic = (extras.pictures|default([]))|first %}
+              {% set mainImg = item.thumb %}
+              {% if extras.pathImg is defined and firstPic %}
+                  {% set mainImg = (firstPic starts with 'http' or firstPic starts with '/' or firstPic starts with '//') ? firstPic : extras.pathImg ~ '/' ~ firstPic %}
+              {% endif %}
               <img src="{{ mainImg }}" alt="{{ item.title }}" class="w-full h-auto max-h-[500px] object-contain rounded-xl hover:scale-105 transition-transform duration-700">
           </div>
 
