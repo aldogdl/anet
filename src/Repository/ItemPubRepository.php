@@ -45,8 +45,8 @@ class ItemPubRepository extends ServiceEntityRepository
 	public function getPubsBySlug(string $slug, string $waId): \Doctrine\ORM\Query
 	{
 		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '.
-		'WHERE it.slug = :slug OR it.waId = :waId AND it.isActive = 1 '.
-		'ORDER BY it.created DESC, it.id DESC';
+		'WHERE it.slug = :slug AND it.waId != :waId AND it.isActive = 1 '.
+		'ORDER BY it.updatedAt DESC, it.id DESC';
 
 		return $this->_em->createQuery($dql)
 			->setParameter('slug', $slug)
@@ -183,7 +183,7 @@ class ItemPubRepository extends ServiceEntityRepository
 			if (!empty($inTo)) {
 				$dql .= " AND it.waId = :waId";
 			} else {
-				$dql .= " AND it.waId <> :waId";
+				$dql .= " AND it.waId != :waId";
 			}
 		}
 
@@ -192,7 +192,7 @@ class ItemPubRepository extends ServiceEntityRepository
 			if (!empty($inTo)) {
 				$dql .= " OR it.slug = :slug";
 			} else {
-				$dql .= " AND it.slug <> :slug";
+				$dql .= " AND it.slug != :slug";
 			}
 		}
 
