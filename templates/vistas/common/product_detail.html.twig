@@ -1,26 +1,23 @@
 {% extends 'base.html.twig' %}
+{% import 'vistas/common/_product_helpers.html.twig' as product %}
 
-{% block title %}{{ item.title }} | {{ storeName|default('Autoparnet') }}{% endblock %}
+{% block title %}{{ item.title }} | {{ storeName|default('YonkEros') }}{% endblock %}
 
 {% block stylesheets %}
     <link rel="stylesheet" href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
 {% endblock %}
 
 {% block body %}
+{% set mainImg = product.mainImg(item) %}
 {% set extras = item.extras|default({}) %}
-{% set firstPic = (extras.pictures|default([]))|first %}
-{% set mainImg = item.thumb %}
-{% if extras.pathImg is defined and firstPic %}
-    {% set mainImg = (firstPic starts with 'http' or firstPic starts with '/' or firstPic starts with '//') ? firstPic : extras.pathImg ~ '/' ~ firstPic %}
-{% endif %}
 {% set pictures = extras.pictures|default([]) %}
-{% set pathImg = extras.pathImg|default('') %}
-{% set mkName = extras.mk is defined ? (extras.mk is iterable ? extras.mk|first|default('') : extras.mk) : '' %}
-{% set mdName = extras.md is defined ? (extras.md is iterable ? extras.md|first|default('') : extras.md) : '' %}
-{% set numPart = extras.numPart is defined ? (extras.numPart is iterable ? extras.numPart|first|default('') : extras.numPart) : '' %}
-{% set localidad = extras.localidad is defined ? (extras.localidad is iterable ? extras.localidad|first|default('') : extras.localidad) : '' %}
-{% set idSrc = extras.idSrc|default('') %}
-{% set linkSr = extras.linkSr|default('') %}
+{% set pathImg = product.extra(item, 'pathImg', '') %}
+{% set mkName = product.extraFirst(item, 'mk') %}
+{% set mdName = product.extraFirst(item, 'md') %}
+{% set numPart = product.extraFirst(item, 'numPart') %}
+{% set localidad = product.extraFirst(item, 'localidad') %}
+{% set idSrc = product.extra(item, 'idSrc', '') %}
+{% set linkSr = product.extra(item, 'linkSr', '') %}
 
 <div class="min-h-screen bg-[#fafafa] flex flex-col font-sans antialiased"
      x-data="{{ {

@@ -1,19 +1,17 @@
+{% import 'vistas/common/_product_helpers.html.twig' as product %}
+
 {% set extras = item.extras %}
+{% set mainImg = product.cardImg(item) %}
 {% set firstPic = (extras.pictures|default([]))|first %}
-{% set mainImg = item.thumb %}
-{% if extras.pathImg is defined and firstPic %}
-    {% set mainImg = (firstPic starts with 'http' or firstPic starts with '/' or firstPic starts with '//') ? firstPic : extras.pathImg ~ '/' ~ firstPic %}
-{% endif %}
-{% set title = extras.fuente is defined and extras.fuente != ""
-    ? extras.fuente 
-    : item.title %}
+{% set imgBig = product.imgUrl(item, firstPic) %}
+{% set title = product.productTitle(item) %}
 {% set placeholder = 'https://placehold.co/600x600/0b141a/64748b?text=Sin+Imagen' %}
 {% set modalData = {
     id: item.id,
     title: title,
     price: item.price,
     thumb: mainImg,
-    imgBig: mainImg,
+    imgBig: imgBig,
     detalles: item.detalles|default('Sin detalles adicionales.'),
     sku: item.iku|default('N/A'),
     brand: item.mrkId,
@@ -23,7 +21,7 @@
     idSrc: extras.idSrc|default(''),
     linkSr: extras.linkSr|default('')
 }|json_encode %}
-{% set safeId = item.id ?: 0 %}
+{% set safeId = product.safeId(item) %}
 
 <div class="group bg-[#0b141a] border border-white/5 rounded-3xl overflow-hidden hover:border-[#25d366]/40 transition-all duration-300 flex flex-col h-full shadow-lg hover:shadow-[#25d366]/5 active:scale-[0.98]"
      data-item="{{ modalData|e('html_attr') }}" 

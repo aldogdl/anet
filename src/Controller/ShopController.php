@@ -341,7 +341,7 @@ class ShopController extends AbstractController
 		}
 
 		// Creamos una página básica por ahora
-		return $this->render('vistas/shop/product_detail.html.twig', [
+		return $this->render('vistas/common/product_detail.html.twig', [
 			'item' => $item,
 			'storeName' => $slug,
 			'pieza' => $title,

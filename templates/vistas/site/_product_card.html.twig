@@ -1,16 +1,16 @@
+{% import 'vistas/common/_product_helpers.html.twig' as product %}
+
 {% set extras = item.extras %}
+{% set mainImg = product.cardImg(item) %}
 {% set firstPic = (extras.pictures|default([]))|first %}
-{% set mainImg = item.thumb %}
-{% if extras.pathImg is defined and firstPic %}
-    {% set mainImg = (firstPic starts with 'http' or firstPic starts with '/' or firstPic starts with '//') ? firstPic : extras.pathImg ~ '/' ~ firstPic %}
-{% endif %}
+{% set imgBig = product.imgUrl(item, firstPic) %}
 {% set placeholder = 'https://placehold.co/600x600/f8fafc/64748b?text=Sin+Imagen' %}
 {% set modalData = {
     id: item.id,
     title: item.title,
     price: item.price,
     thumb: mainImg,
-    imgBig: mainImg,
+    imgBig: imgBig,
     detalles: item.detalles|default('Sin detalles adicionales.'),
     sku: item.iku|default('N/A'),
     brand: item.mrkId,
@@ -20,12 +20,12 @@
     idSrc: extras.idSrc|default(''),
     linkSr: extras.linkSr|default('')
 }|json_encode %}
-{% set cleanSlug = item.title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode|slice(0, 50) %}
-{% set cleanTitle = item.title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode %}
+{% set cleanSlug = product.cleanSlug(item.title) %}
+{% set cleanTitle = product.cleanTitle(item.title) %}
 
 {% set isMeli = isMeli|default(false) %}
-{% set safeId = item.id ?: 0 %}
-{% set detailUrl = isMeli and extras.permalink is defined ? extras.permalink : path('app_product_detail', { id: safeId, slug: cleanSlug, title: cleanTitle }) %}
+{% set safeId = product.safeId(item) %}
+{% set detailUrl = product.detailUrl(item, isMeli) %}
 
 <div class="group bg-white rounded-3xl overflow-hidden border border-slate-200 hover:border-[#25d366]/40 transition-all duration-500 flex flex-col h-full relative shadow-sm hover:shadow-2xl cursor-pointer"
 	 {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>

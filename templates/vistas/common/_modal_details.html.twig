@@ -42,7 +42,6 @@
                     
                     <!-- Zoom Logic Wrapper -->
                     <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 cursor-zoom-in"
-                         x-data="{ isZoomed: false, zX: 50, zY: 50 }"
                          @mousemove="
                             isZoomed = true; 
                             const rect = $el.getBoundingClientRect();
@@ -245,9 +244,15 @@ function shopModalLogic() {
     return {
         activeImg: '',
         rotation: 0,
+        isZoomed: false,
+        zX: 50,
+        zY: 50,
         onItemSelected(v) {
             this.activeImg = v ? v.imgBig : '';
             this.rotation = 0;
+            this.isZoomed = false;
+            this.zX = 50;
+            this.zY = 50;
         },
         openGalleryManual(activeImg, pictures, pathImg) {
             let dataSource = [];

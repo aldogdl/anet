@@ -1,0 +1,99 @@
+{% macro imgUrl(item, image) %}
+    {% set extras = item.extras|default({}) %}
+    {% set pathImg = extras.pathImg|default('') %}
+
+    {% if image is empty %}
+        {{ '' }}
+    {% elseif image starts with 'http' or image starts with '/' or image starts with '//' %}
+        {{ image }}
+    {% elseif pathImg != '' %}
+        {{ pathImg ~ '/' ~ image }}
+    {% else %}
+        {{ image }}
+    {% endif %}
+{% endmacro %}
+
+{% macro mainImg(item) %}
+    {% set extras = item.extras|default({}) %}
+    {% set firstPic = (extras.pictures|default([]))|first %}
+    {% set thumb = item.thumb|default('') %}
+    {% if thumb != '' %}
+        {{ _self.imgUrl(item, thumb) }}
+    {% elseif firstPic %}
+        {{ _self.imgUrl(item, firstPic) }}
+    {% else %}
+        {{ '' }}
+    {% endif %}
+{% endmacro %}
+
+{% macro cardImg(item) %}
+    {% set thumb = item.thumb|default('') %}
+    {% if thumb != '' %}
+        {{ _self.imgUrl(item, thumb) }}
+    {% else %}
+        {% set extras = item.extras|default({}) %}
+        {% set firstPic = (extras.pictures|default([]))|first %}
+        {% if firstPic %}
+            {{ _self.imgUrl(item, firstPic) }}
+        {% else %}
+            {{ '' }}
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{% macro cleanSlug(title) %}
+    {{ title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode|slice(0, 50) }}
+{% endmacro %}
+
+{% macro cleanTitle(title) %}
+    {{ title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode }}
+{% endmacro %}
+
+{% macro safeId(item) %}
+    {{ item.id ?: 0 }}
+{% endmacro %}
+
+{% macro detailUrl(item, isMeli=false) %}
+    {% set extras = item.extras|default({}) %}
+    {% set cleanSlug = _self.cleanSlug(item.title) %}
+    {% set cleanTitle = _self.cleanTitle(item.title) %}
+    {% set safeId = item.id ?: 0 %}
+    {% if isMeli and extras.permalink is defined %}
+        {{ extras.permalink }}
+    {% else %}
+        {{ path('app_product_detail', { id: safeId, slug: cleanSlug, title: cleanTitle }) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro extra(item, key, default='') %}
+    {% set extras = item.extras|default({}) %}
+    {{ extras[key]|default(default) }}
+{% endmacro %}
+
+{% macro extraFirst(item, key, default='') %}
+    {% set extras = item.extras|default({}) %}
+    {% if extras[key] is defined and extras[key] is iterable %}
+        {{ extras[key]|first|default(default) }}
+    {% else %}
+        {{ extras[key]|default(default) }}
+    {% endif %}
+{% endmacro %}
+
+{% macro pictures(item) %}
+    {% set extras = item.extras|default({}) %}
+    {{ extras.pictures|default([]) }}
+{% endmacro %}
+
+{% macro pathImg(item) %}
+    {% set extras = item.extras|default({}) %}
+    {{ extras.pathImg|default('') }}
+{% endmacro %}
+
+{% macro productTitle(item) %}
+    {% set extras = item.extras|default({}) %}
+    {% if extras.fuente is defined and extras.fuente != '' %}
+        {{ extras.fuente }}
+    {% else %}
+        {{ item.title }}
+    {% endif %}
+{% endmacro %}
