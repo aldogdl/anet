@@ -318,18 +318,35 @@ class ShopController extends AbstractController
 		]);
 	}
 
-	#[Route('/pieza/{id}-{slug}', name: 'app_product_detail', methods: ['GET'])]
-	public function productDetail(int $id, string $slug, ItemPubRepository $itemRepo): Response
+	#[Route('/ft-{id}/{slug}/{title}', name: 'app_product_detail', methods: ['GET'])]
+	public function productDetail(int $id, string $slug, string $title, ItemPubRepository $itemRepo, Fsys $fsys): Response
 	{
 		$item = $itemRepo->find($id);
 		if (!$item) {
 			throw $this->createNotFoundException('La pieza no fue encontrada.');
 		}
 
+		// Leemos los archivos solo en la carga inicial
+		$dtaCtc = $fsys->get(AnyPath::$DTACTC, $slug.'.json');
+		$contactPhone = '';
+		if (!empty($dtaCtc['colabs']) && is_array($dtaCtc['colabs'])) {
+			foreach ($dtaCtc['colabs'] as $colab) {
+				if (isset($colab['roles']) && is_array($colab['roles']) && in_array('ROLE_MAIN', $colab['roles'])) {
+					if (!empty($colab['waId'])) {
+						$contactPhone = $colab['waId'];
+						break;
+					}
+				}
+			}
+		}
+
 		// Creamos una página básica por ahora
 		return $this->render('vistas/shop/product_detail.html.twig', [
 			'item' => $item,
-			'storeName' => 'Autoparnet'
+			'storeName' => $slug,
+			'pieza' => $title,
+			'dtaCtc' => $dtaCtc,
+			'contactPhone' => $contactPhone
 		]);
 	}
 

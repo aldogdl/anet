@@ -220,6 +220,7 @@ class ItemPubRepository extends ServiceEntityRepository
 		$result = [];
 		$lado = '';
 		$poss = '';
+    $replace = '__ID__';
 
 		$obj = null;
     if($data['id'] ?? 0 != 0) {
@@ -231,8 +232,8 @@ class ItemPubRepository extends ServiceEntityRepository
 			$obj = $obj->fromJson($data);
 		}else{
 			$action = 'edt';
-			if(mb_strpos($data['link'], '__ID__') !== false) {
-				$data['link'] = str_replace('__ID__', (string) $obj->getId(), $data['link']);
+			if(mb_strpos($data['link'], $replace) !== false) {
+				$data['link'] = str_replace($replace, (string) $obj->getId(), $data['link']);
 			}
 			$obj = $obj->updateFromJson($data);
 		}
@@ -274,8 +275,8 @@ class ItemPubRepository extends ServiceEntityRepository
 			$this->_em->persist($obj);
 			$this->_em->flush();
 			$id = $obj->getId();
-			if(mb_strpos($obj->getLink(), '__ID__') !== false) {
-				$obj->setLink(str_replace('__ID__', (string) $id, $obj->getLink()));
+			if(mb_strpos($obj->getLink(), $replace) !== false) {
+				$obj->setLink(str_replace($replace, (string) $id, $obj->getLink()));
 				$this->_em->persist($obj);
 				$this->_em->flush();
 			}
@@ -283,7 +284,7 @@ class ItemPubRepository extends ServiceEntityRepository
 		} catch (\Throwable $th) {
 			return ['abort' => true, 'action' => 'error', 'body' => $th->getMessage()];
 		}
-		return ['abort' => false, "action" => $action, "body" => $result];
+
 	}
 
 	/** 
