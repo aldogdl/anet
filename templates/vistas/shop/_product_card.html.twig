@@ -32,10 +32,11 @@
     calif: extras.calif|default(0)
 }|json_encode %}
 {% set cleanSlug = item.title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode|slice(0, 50) %}
+{% set cleanTitle = item.title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode %}
 
 {% set isMeli = isMeli|default(false) %}
 {% set safeId = item.id ?: 0 %}
-{% set detailUrl = isMeli and extras.permalink is defined ? extras.permalink : path('app_product_detail', { id: safeId, slug: cleanSlug }) %}
+{% set detailUrl = isMeli and extras.permalink is defined ? extras.permalink : path('app_product_detail', { id: safeId, slug: cleanSlug, title: cleanTitle }) %}
 
 <div class="group bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 flex flex-col h-full overflow-hidden"
 	 {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
