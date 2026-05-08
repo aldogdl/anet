@@ -14,7 +14,8 @@ class YksMxController extends AbstractController
 	public function indexWh(Request $req): Response
 	{
 	  if($req->getMethod() == 'POST' ) {
-			file_put_contents('prueba_hook.json', json_encode($_POST));
+			$data = $req->getContent();
+			file_put_contents('prueba_hook.json', json_encode($data));
 		}
 		return $this->json(['Yonkeros' => 'Bienvenido']);
 	}
