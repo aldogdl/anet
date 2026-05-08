@@ -19,7 +19,7 @@ class YksMxController extends AbstractController
 				$data = json_decode($data, true);
 				if(isset($data['event']) && $data['event'] == 'product.restored') {
 					$data['ok'] = 'WH Recibido';
-				} else if(isset($data['event']) && $data['event'] == 'product.deleted') {
+				} else if(isset($data['event']) && $data['event'] == 'product.soft_deleted') {
 					$data['ok'] = 'WH Recibido';
 				} else {
 					$data['ok'] = 'WH Recibido';
