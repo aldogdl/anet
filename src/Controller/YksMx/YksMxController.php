@@ -15,6 +15,17 @@ class YksMxController extends AbstractController
 	{
 	  if($req->getMethod() == 'POST' ) {
 			$data = $req->getContent();
+			if($data) {
+				$data = json_decode($data, true);
+				if(isset($data['event']) && $data['event'] == 'product.restored') {
+					$data['ok'] = 'WH Recibido';
+				} else if(isset($data['event']) && $data['event'] == 'product.deleted') {
+					$data['ok'] = 'WH Recibido';
+				} else {
+					$data['ok'] = 'WH Recibido';
+					$data['event_failed'] = 'Evento no reconocido';
+				}
+			}
 			file_put_contents('prueba_hook.json', json_encode($data));
 		}
 		return $this->json(['Yonkeros' => 'Bienvenido']);
