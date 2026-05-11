@@ -6,38 +6,38 @@ use App\Enums\TypesWaMsgs;
 
 class WaMsgDto
 {
-    public bool $isTest;
-    public String $from;
-    public String $id;
-    public String $idDbSr;
-    public String $context;
-    public String $creado;
-    public String $recibido;
-    public TypesWaMsgs $tipoMsg;
-    public String|array $content;
-    public String $status;
-    public String $subEvento;
+	public String $id;
+	public String $from;
+	public bool $isTest;
+	public String $idDbSr;
+	public String $context;
+	public String $creado;
+	public String $recibido;
+	public TypesWaMsgs $tipoMsg;
+	public String|array $content;
+	public String $status;
+	public String $subEvento;
 
-    private String $eventName = 'whatsapp_api';
+	private String $eventName = 'whatsapp_api';
 
-    /** */
-    public function __construct(
-        bool $isTest, String $from, String $id, String $idDbSr, String $context, String $creado, String $recibido,
-        TypesWaMsgs $type, String|array $content, String $status, String $subEvento = ''
-    )
-    {
-        $this->from      = $from;
-        $this->id        = $id;
-        $this->idDbSr    = $idDbSr;
-        $this->context   = $context;
-        $this->creado    = $creado;
-        $this->recibido  = $recibido;
-        $this->tipoMsg   = $type;
-        $this->content   = $content;
-        $this->status    = $status;
-        $this->subEvento = $subEvento;
-        $this->isTest    = $isTest;
-    }
+	/** */
+	public function __construct(
+		bool $isTest, String $from, String $id, String $idDbSr, String $context, String $creado, String $recibido,
+		TypesWaMsgs $type, String|array $content, String $status, String $subEvento = ''
+	)
+	{
+		$this->from      = $from;
+		$this->id        = $id;
+		$this->idDbSr    = $idDbSr;
+		$this->context   = $context;
+		$this->creado    = $creado;
+		$this->recibido  = $recibido;
+		$this->tipoMsg   = $type;
+		$this->content   = $content;
+		$this->status    = $status;
+		$this->subEvento = $subEvento;
+		$this->isTest    = $isTest;
+	}
 
     /** */
     public function toArray(): array

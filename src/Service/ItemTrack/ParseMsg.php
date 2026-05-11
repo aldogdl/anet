@@ -30,39 +30,39 @@ class ParseMsg {
      */
     public function parse(bool $isTest) : WaMsgDto | null
     {
-        $this->isTest = $isTest;
-        $this->isQC = false;
+			$this->isTest = $isTest;
+			$this->isQC = false;
 
-        if(array_key_exists('entry', $this->waMsg)) {
+			if(array_key_exists('entry', $this->waMsg)) {
 
-            if(count($this->waMsg['entry']) > 1) {
-                return null;
-            }
+				if(count($this->waMsg['entry']) > 1) {
+					return null;
+				}
 
-            $this->waMsg = $this->waMsg['entry'][0];
-            if(array_key_exists('changes', $this->waMsg)) {
+				$this->waMsg = $this->waMsg['entry'][0];
+				if(array_key_exists('changes', $this->waMsg)) {
 
-                if(count($this->waMsg['changes']) > 1) {
-                    return null;
-                }
+					if(count($this->waMsg['changes']) > 1) {
+						return null;
+					}
 
-                $this->waMsg = $this->waMsg['changes'][0]['value'];
-                if(array_key_exists('statuses', $this->waMsg)) {
-                    $this->waMsg = $this->waMsg['statuses'][0];
-                    return $this->extractMsgTypeStatus();
-                }
+					$this->waMsg = $this->waMsg['changes'][0]['value'];
+					if(array_key_exists('statuses', $this->waMsg)) {
+						$this->waMsg = $this->waMsg['statuses'][0];
+						return $this->extractMsgTypeStatus();
+					}
 
-                if(array_key_exists('messages', $this->waMsg)) {
-                    if(count($this->waMsg['messages']) > 1) {
-                        return null;
-                    }
-                    $this->waMsg = $this->waMsg['messages'][0];
-                    return $this->extractMessageType();
-                }
-            }
-        }
+					if(array_key_exists('messages', $this->waMsg)) {
+						if(count($this->waMsg['messages']) > 1) {
+							return null;
+						}
+						$this->waMsg = $this->waMsg['messages'][0];
+						return $this->extractMessageType();
+					}
+				}
+			}
 
-        return null;
+			return null;
     }
 
     /**
@@ -71,7 +71,7 @@ class ParseMsg {
     function extractMessageType(): ?WaMsgDto
     {
         if(!array_key_exists('type', $this->waMsg)) {
-            return null;
+					return null;
         }
 
         // Detectar si es un QuienCon

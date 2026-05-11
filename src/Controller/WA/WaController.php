@@ -37,7 +37,8 @@ class WaController extends AbstractController
 			}
 			
 			$message = json_decode($has, true);
-			$consumer->exe($message, ($test == '') ? false : true);
+			file_put_contents('mensaje_ws.json', json_encode($message));
+			// $consumer->exe($message, ($test == '') ? false : true);
 		}
 		return new Response('', 200);
 	}
