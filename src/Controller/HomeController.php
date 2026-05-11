@@ -13,5 +13,4 @@ class HomeController extends AbstractController
 	{
 		return $this->json(['hola' => 'Bienvenido', 'en que podemos atenderte?']);
 	}
-
 }

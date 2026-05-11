@@ -7,18 +7,18 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ItemPubRepository::class)]
 #[ORM\Table(name: 'item_pub', indexes: [
-    new ORM\Index(
-        name: 'idx_itempub_mrk_mdl_active_year',
-        columns: ['mrk_id', 'mdl_id', 'is_active', 'anio_inicio', 'anio_fin']
-    ),
-    new ORM\Index(
-        name: 'idx_itempub_mrk_mdl_active_created_id',
-        columns: ['mrk_id', 'mdl_id', 'is_active', 'created', 'id']
-    ),
-    new ORM\Index(
-        name: 'idx_itempub_mrk_mdl_lado_active',
-        columns: ['mrk_id', 'mdl_id', 'is_active', 'lado', 'poss']
-    ),
+	new ORM\Index(
+		name: 'idx_itempub_mrk_mdl_active_year',
+		columns: ['mrk_id', 'mdl_id', 'is_active', 'anio_inicio', 'anio_fin']
+	),
+	new ORM\Index(
+		name: 'idx_itempub_mrk_mdl_active_created_id',
+		columns: ['mrk_id', 'mdl_id', 'is_active', 'created', 'id']
+	),
+	new ORM\Index(
+		name: 'idx_itempub_mrk_mdl_lado_active',
+		columns: ['mrk_id', 'mdl_id', 'is_active', 'lado', 'poss']
+	),
 ])]
 
 class ItemPub
@@ -154,15 +154,15 @@ class ItemPub
 			// Extras viene como objeto JSON desde Dart
 			$item->setExtras(
 				isset($data['extras']) && is_array($data['extras'])
-						? $data['extras']
-						: null
+					? $data['extras']
+					: null
 			);
 
 			// Fecha creada
 			$item->setCreated(
 				isset($data['created'])
-						? new \DateTimeImmutable($data['created'])
-						: new \DateTimeImmutable()
+					? new \DateTimeImmutable($data['created'])
+					: new \DateTimeImmutable()
 			);
 
 			return $item;
