@@ -166,7 +166,7 @@
                             <div class="absolute -inset-1 bg-gradient-to-tr from-[#25d366] to-emerald-400 opacity-10 blur-xl rounded-full group-hover:opacity-20 transition-opacity"></div>
                             <div class="relative bg-white rounded-2xl shadow-lg border border-slate-300 h-full flex flex-col items-center justify-center p-4">
                                 <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 group-hover:scale-105 transition-transform duration-500 shadow-inner">
-                                    <img :src="'/qr?data=' + encodeURIComponent('https://wa.me/{{ contactPhone }}?text=' + encodeURIComponent('Hola, me interesa esta cotización: ' + cartItemsTitles)) + '&size=300'" 
+                                    <img :src="'/qr?data=' + btoa(unescape(encodeURIComponent('https://wa.me/{{ contactPhone }}?text=' + encodeURIComponent('Hola, me interesa esta cotización: ' + cartItemsTitles)))) + '&size=300'" 
                                          class="w-32 h-32 object-contain" alt="QR WhatsApp">
                                 </div>
                             </div>
