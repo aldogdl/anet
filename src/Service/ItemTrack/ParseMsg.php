@@ -10,132 +10,132 @@ use App\Enums\TypesWaMsgs;
 */
 class ParseMsg {
 
-    private String $code = '#';
-    private bool $isTest;
-    private array $waMsg;
-    private String $recibido;
-    public bool $isQC;
+	private String $code = '#';
+	private bool $isTest;
+	private array $waMsg;
+	private String $recibido;
+	public bool $isQC;
 
-    /** */
-    public function __construct(array $message)
-    {
-        $this->waMsg = $message;
-        $date = round(microtime(true) * 1000);
-        $this->recibido = $date."";
-    }
+	/** */
+	public function __construct(array $message)
+	{
+			$this->waMsg = $message;
+			$date = round(microtime(true) * 1000);
+			$this->recibido = $date."";
+	}
 
-    /** 
-     * Analizamos si el contenido del mensaje esta comprendido de listas unicas,
-     * es decir, que venga solo un nivel de anidamiento en todos sus campos
-     */
-    public function parse(bool $isTest) : WaMsgDto | null
-    {
-			$this->isTest = $isTest;
-			$this->isQC = false;
+	/** 
+	 * Analizamos si el contenido del mensaje esta comprendido de listas unicas,
+	 * es decir, que venga solo un nivel de anidamiento en todos sus campos
+	 */
+	public function parse(bool $isTest) : WaMsgDto | null
+	{
+		$this->isTest = $isTest;
+		$this->isQC = false;
 
-			if(array_key_exists('entry', $this->waMsg)) {
+		if(array_key_exists('entry', $this->waMsg)) {
 
-				if(count($this->waMsg['entry']) > 1) {
-					return null;
-				}
-
-				$this->waMsg = $this->waMsg['entry'][0];
-				if(array_key_exists('changes', $this->waMsg)) {
-
-					if(count($this->waMsg['changes']) > 1) {
-						return null;
-					}
-
-					$this->waMsg = $this->waMsg['changes'][0]['value'];
-					if(array_key_exists('statuses', $this->waMsg)) {
-						$this->waMsg = $this->waMsg['statuses'][0];
-						return $this->extractMsgTypeStatus();
-					}
-
-					if(array_key_exists('messages', $this->waMsg)) {
-						if(count($this->waMsg['messages']) > 1) {
-							return null;
-						}
-						$this->waMsg = $this->waMsg['messages'][0];
-						return $this->extractMessageType();
-					}
-				}
+			if(count($this->waMsg['entry']) > 1) {
+				return null;
 			}
 
-			return null;
-    }
+			$this->waMsg = $this->waMsg['entry'][0];
+			if(array_key_exists('changes', $this->waMsg)) {
 
-    /**
-     * Cuando no es un status el mensaje lo analizamos aqui
-    */
-    function extractMessageType(): ?WaMsgDto
-    {
-        if(!array_key_exists('type', $this->waMsg)) {
+				if(count($this->waMsg['changes']) > 1) {
 					return null;
-        }
+				}
 
-        // Detectar si es un QuienCon
-        $this->isQCMsg();
+				$this->waMsg = $this->waMsg['changes'][0]['value'];
+				if(array_key_exists('statuses', $this->waMsg)) {
+					$this->waMsg = $this->waMsg['statuses'][0];
+					return $this->extractMsgTypeStatus();
+				}
 
-        switch ($this->waMsg['type']) {
-            case 'button':
-                return $this->extractDataFromButton();
-                break;
-            case 'interactive':
-                return $this->extractInteractive();
-                break;
-            case 'text':
-                return $this->extractText();
-                break;
-            case 'image':
-                return $this->extractImage();
-                break;
-            default:
-                return new WaMsgDto(
-                    $this->isTest,
-                    $this->waMsg['from'],
-                    $this->waMsg['id'],
-                    '',
-                    '',
-                    $this->waMsg['timestamp'],
-                    $this->recibido,
-                    TypesWaMsgs::DOC,
-                    'Un '.$this->waMsg['type'].' fué enviado por el cliente',
-                    "delivered",
-                    "errorDeTipos"
-                );
-            break;
-        }
-    }
+				if(array_key_exists('messages', $this->waMsg)) {
+					if(count($this->waMsg['messages']) > 1) {
+						return null;
+					}
+					$this->waMsg = $this->waMsg['messages'][0];
+					return $this->extractMessageType();
+				}
+			}
+		}
 
-    /** */
-    private function isQCMsg(): void
-    {
-        $txt = '';
-        if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {
-            $txt = $this->waMsg[$this->waMsg['type']]['body'];
-        }
+		return null;
+	}
 
-        if(array_key_exists('caption', $this->waMsg[$this->waMsg['type']])) {
-            $txt = $this->waMsg[$this->waMsg['type']]['caption'];
-        }
+	/**
+	 * Cuando no es un status el mensaje lo analizamos aqui
+	*/
+	function extractMessageType(): ?WaMsgDto
+	{
+			if(!array_key_exists('type', $this->waMsg)) {
+				return null;
+			}
 
-        $txt = mb_strtolower($txt);
-        if(mb_strpos($txt, $this->code) !== false) {
-            
-            $partes = explode(' ', $txt);
-            $rota = count($partes);
-            if($rota > 0) {
-                if($partes[0] == $this->code) {
-                    if($partes[0].$partes[1] == $this->code.'qc') {
-                        $this->isQC = true;
-                    }
-                }else if($partes[0] == $this->code.'qc') {
-                    $this->isQC = true;
-                }
-            }
-        }
-    }
+			// Detectar si es un QuienCon
+			$this->isQCMsg();
+
+			switch ($this->waMsg['type']) {
+					case 'button':
+							return $this->extractDataFromButton();
+							break;
+					case 'interactive':
+							return $this->extractInteractive();
+							break;
+					case 'text':
+							return $this->extractText();
+							break;
+					case 'image':
+							return $this->extractImage();
+							break;
+					default:
+							return new WaMsgDto(
+									$this->isTest,
+									$this->waMsg['from'],
+									$this->waMsg['id'],
+									'',
+									'',
+									$this->waMsg['timestamp'],
+									$this->recibido,
+									TypesWaMsgs::DOC,
+									'Un '.$this->waMsg['type'].' fué enviado por el cliente',
+									"delivered",
+									"errorDeTipos"
+							);
+					break;
+			}
+	}
+
+	/** */
+	private function isQCMsg(): void
+	{
+			$txt = '';
+			if(array_key_exists('body', $this->waMsg[$this->waMsg['type']])) {
+					$txt = $this->waMsg[$this->waMsg['type']]['body'];
+			}
+
+			if(array_key_exists('caption', $this->waMsg[$this->waMsg['type']])) {
+					$txt = $this->waMsg[$this->waMsg['type']]['caption'];
+			}
+
+			$txt = mb_strtolower($txt);
+			if(mb_strpos($txt, $this->code) !== false) {
+					
+					$partes = explode(' ', $txt);
+					$rota = count($partes);
+					if($rota > 0) {
+							if($partes[0] == $this->code) {
+									if($partes[0].$partes[1] == $this->code.'qc') {
+											$this->isQC = true;
+									}
+							}else if($partes[0] == $this->code.'qc') {
+									$this->isQC = true;
+							}
+					}
+			}
+	}
 
     /** */
     function extractText(): WaMsgDto

@@ -188,6 +188,7 @@ class SysComController extends AbstractController
 			$partes = explode('::', $token);
 			$token = base64_encode($partes[1]);
 		}
+
 		if(!$security->isValid($token)) {
 			return $this->json(['body' => 'Ok, gracias'], 400);
 		}
@@ -233,7 +234,28 @@ class SysComController extends AbstractController
 			$url = $urlGen->generate($path);
 			return $this->json(['abort' => true, 'body' => 'Ok:' . $url], 200);
 		}
-		return new Response(400);
+	}
+
+	/** */
+	#[Route('/test-fb', methods: ['GET', 'POST'])]
+	public function testFB(Request $req, Pushes $push, SecurityBasic $security): Response
+	{
+		$met = $req->getMethod();
+		if($met != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
+    $data = json_decode($data, true);
+		if(!$security->isValid($data['token'])) {
+			return $this->json(['body' => 'Acceso restringido'], 401);
+		}
+
+		$push->test($data['to']);
+		return new Response(200);
 	}
 
 	/** Datos para any shop */

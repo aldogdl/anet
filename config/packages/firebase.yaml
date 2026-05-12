@@ -1,5 +1,5 @@
 kreait_firebase:
     projects:
-        rasterfy_pro:
+        yonkeros:
             credentials: '%kernel.project_dir%/config/saf.json'
-            public : false
+            public: false

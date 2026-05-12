@@ -25,7 +25,7 @@ parameters:
     comLoc     : '%scm%/com_loc.json'
     report     : '%scm%/report.txt'
     dictionary : '%scm%/dicc.json'
-    
+
     ngile      : '%scm%ng_file.json'
     cnxFile    : '%scm%cnx_file.json'
     verapps    : '%scm%versions.json'
@@ -34,7 +34,6 @@ parameters:
     getWaToken : '%env(resolve:WA_TOKEN)%'
     sufixUri   : '%env(resolve:SUFIX_URI)%'
     getAnToken : '%env(resolve:ANET_TOKEN)%'
-    getShopCTk : '%env(resolve:SHOP_TOKEN)%'
     anetCnx    : '%env(resolve:ANET_CNX)%'
     anyToken   : '%env(resolve:ANY_TOKEN)%'
     certWebFb  : '%env(resolve:CERT_WEBFB)%'
