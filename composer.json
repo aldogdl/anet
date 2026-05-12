@@ -11,7 +11,7 @@
         "doctrine/doctrine-migrations-bundle": "^3.2",
         "doctrine/orm": "^2.11",
         "dompdf/dompdf": "*",
-        "endroid/qr-code": "^6.0",
+        "endroid/qr-code": "^5.0",
         "intervention/image": "^3.11",
         "kreait/firebase-bundle": "^5.5.0",
         "lexik/jwt-authentication-bundle": "^2.14",
