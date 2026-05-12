@@ -3,19 +3,16 @@
 namespace App\Service\RasterHub;
 
 use App\Dtos\WaMsgDto;
-use App\Repository\FcmRepository;
 use App\Service\ItemTrack\WaSender;
 
 class SendQC
 {
     private WaSender $waSender;
-    private FcmRepository $fcmEm;
     private WaMsgDto $msg;
 
     /** */
-    public function __construct(FcmRepository $fbm, WaSender $waS)
+    public function __construct(WaSender $waS)
     {
-        $this->fcmEm = $fbm;
         $this->waSender = $waS;
     }
 
@@ -32,9 +29,8 @@ class SendQC
             return;
         }
 
-        $dql = $this->fcmEm->getAllByWaIdExcept($this->msg->from);
-        $contacts = $dql->getResult();
-        $rota = count($contacts);
+        $contacts = [];
+        $rota = 0;
 
         if($rota > 0) {
 

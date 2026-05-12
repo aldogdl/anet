@@ -15,7 +15,6 @@ use App\Service\ItemTrack\WaBtnNtgX;
 use App\Service\ItemTrack\WaSender;
 use App\Service\ItemTrack\WaInitSess;
 use App\Service\RasterHub\TrackProv;
-use App\Repository\FcmRepository;
 use App\Service\RasterHub\ExampleQC;
 use App\Service\RasterHub\SendQC;
 
@@ -24,15 +23,13 @@ class WaConsumer
     private WaSender $waSender;
     private MyFsys $fsys;
     private Pushes $push;
-    private FcmRepository $fcmEm;
 
     /** 
      * Analizamos si el mensaje es parte de una cotizacion
     */
-    public function __construct(FcmRepository $fbm, MyFsys $fSys, WaSender $waS, Pushes $push)
+    public function __construct(MyFsys $fSys, WaSender $waS, Pushes $push)
     {
         $this->fsys = $fSys;
-        $this->fcmEm = $fbm;
         $this->waSender = $waS;
         $this->push = $push;
     }
@@ -103,7 +100,7 @@ class WaConsumer
 
         }elseif ($obj->tipoMsg == TypesWaMsgs::LOGIN) {
 
-            $clase = new WaInitSess($this->fcmEm, $this->push, $this->waSender, $obj);
+            $clase = new WaInitSess($this->push, $this->waSender, $obj);
             $clase->exe();
             return;
 
@@ -131,7 +128,7 @@ class WaConsumer
         //
         if ($obj->tipoMsg == TypesWaMsgs::IMAGE && $parser->isQC) {
 
-            $sendQC = new SendQC($this->fcmEm, $this->waSender);
+            $sendQC = new SendQC($this->waSender);
             $sendQC->exe($obj);
             return;
 

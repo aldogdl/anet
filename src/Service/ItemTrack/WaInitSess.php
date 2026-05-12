@@ -5,7 +5,6 @@ namespace App\Service\ItemTrack;
 use App\Service\Pushes;
 use App\Dtos\HeaderDto;
 use App\Dtos\WaMsgDto;
-use App\Repository\FcmRepository;
 
 class WaInitSess
 {
@@ -15,18 +14,14 @@ class WaInitSess
     private WaMsgDto $waMsg;
     private WaSender $waSender;
     private Pushes $push;
-    private FcmRepository $fcmEm;
     
     /** */
     public function __construct(
-        ?FcmRepository $fbm, ?Pushes $push, WaSender $waS, WaMsgDto $msg
+        ?Pushes $push, WaSender $waS, WaMsgDto $msg
     )
     {
         $this->waMsg   = $msg;
         $this->waSender= $waS;
-        if($fbm != null) {
-            $this->fcmEm = $fbm;
-        }
         if($push != null) {
             $this->push = $push;
         }
@@ -73,7 +68,7 @@ class WaInitSess
         $this->waSender->fSys->setContent('/', $this->fileTmp, ['init' => $fechHra]);
         
         // Guardamos la marca de login en la BD de FB
-        $slugFrom = $this->fcmEm->setLoggedFromWhats($this->waMsg->from, $fechHra);
+        $slugFrom = [];
         if(count($slugFrom) > 0) {
             // Guardamos la marca de login en el archivo del expediente del usuario
             $this->waSender->fSys->updateFechaLoginTo($slugFrom[0]['slug'], $this->waMsg->from, $fechHra);

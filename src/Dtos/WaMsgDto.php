@@ -82,15 +82,15 @@ class WaMsgDto
         }
 
         if(array_key_exists('stt', $this->content)) {
-            $headers = HeaderDto::setValue($headers, $this->content['stt']);
+					$headers = HeaderDto::setValue($headers, $this->content['stt']);
         }
 
         if(count($this->content) > 1) {
-            if(array_key_exists('expi', $this->content)) {
-                $headers = HeaderDto::campoValor($headers, '', 'Conv', $this->content['conv']);
-                $headers = HeaderDto::campoValor($headers, '', 'Expi', $this->content['expi']);
-                $headers = HeaderDto::campoValor($headers, '', 'Type', $this->content['type']);
-            }
+					if(array_key_exists('expi', $this->content)) {
+						$headers = HeaderDto::campoValor($headers, '', 'Conv', $this->content['conv']);
+						$headers = HeaderDto::campoValor($headers, '', 'Expi', $this->content['expi']);
+						$headers = HeaderDto::campoValor($headers, '', 'Type', $this->content['type']);
+					}
         }
         return ['header' => $headers];
     }
