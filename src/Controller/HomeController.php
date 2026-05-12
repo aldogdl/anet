@@ -17,9 +17,21 @@ class HomeController extends AbstractController
 	}
 
 	#[Route('/qr', methods: ['get'])]
-	public function qr(string $data, int $size = 300): Response
+	public function qr(\Symfony\Component\HttpFoundation\Request $request): Response
 	{
-		$qrCode = QrCode::create($data);
+		$data = $request->query->get('data', '');
+		$size = $request->query->getInt('size', 300);
+
+		// Si los datos vienen en Base64, los decodificamos
+		// Comprobamos si es un base64 válido
+		if (base64_encode(base64_decode($data, true)) === $data) {
+			$data = base64_decode($data);
+		}
+
+		$qrCode = QrCode::create($data)
+			->setSize($size)
+			->setMargin(10);
+
 		$writer = new PngWriter();
 		$result = $writer->write($qrCode);
 

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build-css": "tailwindcss -i ./public_html/css/tailwind.css -o ./public_html/css/output.css",
+    "build-css": "tailwindcss -i ./public_html/css/tailwind.css -o ./public_html/css/output.css --minify",
     "watch-css": "tailwindcss -i ./public_html/css/tailwind.css -o ./public_html/css/output.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
