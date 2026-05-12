@@ -49,6 +49,13 @@ public_html/.well-known/
 public_html/bundles/
 public_html/ftos/
 
+# Node.js dependencies
+node_modules/
+
+# Tailwind build
+public_html/css/output.css
+tailwindcss.exe
+
 public_html/anyshoper/
 logs/
 

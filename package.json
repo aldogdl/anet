@@ -1,0 +1,28 @@
+{
+  "name": "autoparnet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build-css": "tailwindcss -i ./public_html/css/tailwind.css -o ./public_html/css/output.css",
+    "watch-css": "tailwindcss -i ./public_html/css/tailwind.css -o ./public_html/css/output.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aldogdl/anet.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/aldogdl/anet/issues"
+  },
+  "homepage": "https://github.com/aldogdl/anet#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.14",
+    "tailwindcss": "^4.3.0"
+  }
+}
