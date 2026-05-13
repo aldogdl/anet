@@ -4,7 +4,7 @@
 {% set mainImg = product.cardImg(item) %}
 {% set firstPic = (extras.pictures|default([]))|first %}
 {% set imgBig = product.imgUrl(item, firstPic) %}
-{% set placeholder = 'https://placehold.co/600x600/f8fafc/64748b?text=Sin+Imagen' %}
+{% set placeholder = product.placeholder() %}
 {% set modalData = {
     id: item.id,
     title: item.title,
@@ -39,7 +39,7 @@
        {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 		
 		<img src="{{ mainImg }}" 
-			 onerror="this.src='{{ placeholder }}'"
+			 onerror="this.onerror=null;this.src='{{ placeholder }}'"
 			 class="w-full h-full object-cover object-center p-2.5 rounded-2xl group-hover:scale-105 transition-transform duration-700" 
 			 alt="{{ item.title }}">
 

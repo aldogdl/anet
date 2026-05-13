@@ -1,6 +1,6 @@
 {% import 'vistas/common/_product_helpers.html.twig' as product %}
 
-{% set placeholder = 'https://placehold.co/600x600/f5f5f5/a3a3a3?text=Sin+Foto' %}
+{% set placeholder = product.placeholder() %}
 
 {% set extras = item.extras %}
 {% set mainImg = product.cardImg(item) %}
@@ -48,7 +48,7 @@
        {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 		
 		<img src="{{ mainImg }}" 
-			 onerror="this.src='{{ placeholder }}'"
+			 onerror="this.onerror=null;this.src='{{ placeholder }}'"
 			 class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out" 
 			 alt="{{ item.title }}" loading="lazy">
 

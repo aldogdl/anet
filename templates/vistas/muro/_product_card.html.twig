@@ -5,7 +5,7 @@
 {% set firstPic = (extras.pictures|default([]))|first %}
 {% set imgBig = product.imgUrl(item, firstPic) %}
 {% set title = product.productTitle(item) %}
-{% set placeholder = 'https://placehold.co/600x600/0b141a/64748b?text=Sin+Imagen' %}
+{% set placeholder = product.placeholder() %}
 {% set modalData = {
     id: item.id,
     title: title,
@@ -33,7 +33,7 @@
     <!-- Image Area -->
     <div class="relative aspect-[16/10] overflow-hidden bg-black/20 cursor-pointer">
         <img src="{{ mainImg }}" 
-             onerror="this.src='{{ placeholder }}'"
+             onerror="this.onerror=null;this.src='{{ placeholder }}'"
              class="w-full h-full object-cover object-center p-2.5 rounded-3xl group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100" 
              alt="{{ title }}">
         
