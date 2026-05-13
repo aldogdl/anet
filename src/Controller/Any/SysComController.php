@@ -12,6 +12,7 @@ use App\Service\Any\GetDataShop;
 use App\Service\Any\PublicAssetUrlGenerator;
 use App\Service\Pushes;
 use App\Service\SecurityBasic;
+use App\Service\InventoryImportService;
 use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -173,6 +174,52 @@ class SysComController extends AbstractController
 
 		$pubs = $emPub->getAllItemsByIds($slug, $ids);
 		return $this->json($pubs);
+	}
+
+	/** 
+	 * 
+	*/
+	#[Route('/public-from-csv/{token}', methods: ['post'])]
+	public function publicFromCsv(Request $req, SecurityBasic $security, InventoryImportService $importService, String $token): Response
+	{
+
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		if(mb_strpos($token, 'test::') !== false) {
+			$partes = explode('::', $token);
+			$token = base64_encode($partes[1]);
+		}
+
+		if(!$security->isValid($token)) {
+			return $this->json(['body' => 'Ok, gracias Acceso denegado'], 400);
+		}
+
+		$uploadedFile = $req->files->get('file');
+		$slug = $req->request->get('slug');
+
+		if (!$uploadedFile || !$slug) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Parámetros requeridos: file y slug'
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		try {
+			$stats = $importService->importFromCsv($uploadedFile, $slug);
+			return $this->json([
+				'success' => true,
+				'message' => 'Proceso completado exitosamente',
+				'data' => $stats
+			]);
+		} catch (\Exception $e) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Error al procesar el archivo: ' . $e->getMessage()
+			], 500);
+		}
+
 	}
 
 	/** 
