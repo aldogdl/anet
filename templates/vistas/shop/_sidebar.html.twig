@@ -1,97 +1,50 @@
-<div class="sticky top-20 flex flex-col h-[calc(100vh-6rem)]">
-	
-	<!-- Logo grande -->
-	<div class="mb-4 flex-shrink-0">
-		{% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
-			<div class="w-full aspect-[3/2] bg-white rounded-xl border border-gray-100 overflow-hidden flex items-center justify-center p-4">
-				<img src="{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}" alt="Logo" class="max-w-full max-h-full object-contain">
-			</div>
-		{% else %}
-			<div class="w-full aspect-[3/2] bg-dark rounded-xl flex flex-col items-center justify-center p-4">
-				<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center mb-2">
-					<svg class="w-5 h-5 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-				</div>
-				<span class="text-white font-bold text-sm tracking-tight" x-text="storeName">{{ storeName|default('YonkEros') }}</span>
-				<span class="text-white/30 text-[10px] font-medium mt-0.5">Autopartes profesionales</span>
-			</div>
-		{% endif %}
-	</div>
-
-	<!-- Brand list header -->
-	<div class="flex items-center justify-between px-1 mb-2 flex-shrink-0">
-		<span class="text-[11px] text-gray-400 font-medium">Marcas</span>
-		<button @click="applyFilter({mk: '', md: '', page: 1})" 
-				x-show="currentFilters.mk !== '' || currentFilters.md !== ''"
-				x-cloak
-				class="text-[10px] font-medium text-red-500 hover:text-red-600 px-2 py-0.5 rounded hover:bg-red-50 transition-colors">
-			Limpiar
-		</button>
-	</div>
-
-	<!-- Scrollable brand list -->
-	<div class="flex-1 overflow-y-auto min-h-0 -mx-1 px-1 space-y-0.5" x-data="{ 
-		filters: [], 
-		loading: true,
-		async fetchFilters() {
-			try {
-				const res = await fetch('{{ path('app_shop_filters', {slug: slug}) }}?t=' + Date.now());
-				this.filters = await res.json();
-			} finally {
-				this.loading = false;
-			}
-		}
-	}" x-init="fetchFilters()">
-
-		<!-- Loading -->
-		<template x-if="loading">
-			<div class="space-y-2">
-				<div class="h-8 bg-gray-100 rounded-lg animate-pulse"></div>
-				<div class="h-8 bg-gray-100 rounded-lg animate-pulse w-5/6"></div>
-				<div class="h-8 bg-gray-100 rounded-lg animate-pulse w-4/6"></div>
-			</div>
-		</template>
-
-		<!-- Brands -->
-		<template x-for="brand in filters" :key="brand.id">
-			<div x-data="{ open: false }">
-				<button @click="open = !open" 
-								class="w-full flex items-center justify-between py-1.5 px-2.5 rounded-lg transition-colors text-left"
-								:class="open ? 'bg-primary/5 text-gray-900' : 'text-gray-600 hover:bg-gray-50'">
-					<div class="flex items-center gap-2">
-						<svg class="w-3 h-3 transition-transform duration-200 flex-shrink-0" 
-									:class="open ? 'rotate-90 text-primary' : 'text-gray-300'"
-									fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
-						</svg>
-						<span class="text-[12px] font-medium" x-text="brand.name"></span>
-					</div>
-					<span class="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded font-medium" x-text="brand.count"></span>
+<div class="bg-white border border-slate-200 overflow-hidden sticky top-28 shadow-xl shadow-slate-200/60 flex flex-col pt-16" style="border-radius: 1.3rem;">
+	<!-- Sidebar Header -->
+	<div class="px-5 pb-4 pt-5 border-b border-slate-300 border-l-4 border-[#25d366]" style="background-color: #e2e8f0;">
+			<div class="flex items-center justify-between">
+				<h3 class="text-[11px] font-black text-black uppercase tracking-widest flex items-center gap-2">
+						<svg class="w-4 h-4 text-[#25d366]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+						Filtrar Catálogo
+				</h3>
+				
+				<!-- Botón Limpiar Global -->
+				<button @click="applyFilter({mk: '', md: '', page: 1})" 
+								x-show="currentFilters.mk !== '' || currentFilters.md !== ''"
+								x-cloak x-transition.opacity
+								class="text-[9px] font-black bg-red-500 text-white hover:bg-red-600 px-3 py-1.5 rounded-full transition-all uppercase tracking-widest shadow-lg shadow-red-500/20 border-none">
+						Limpiar
 				</button>
-
-				<div x-show="open" x-collapse class="ml-5 mt-0.5 space-y-0.5 border-l border-gray-100 pl-2.5">
-					<button @click="applyFilter({mk: brand.id, md: '', page: 1})" 
-								class="w-full text-left py-1 px-2 text-[11px] font-medium text-gray-400 hover:text-primary rounded transition-colors">
-						Todo <span x-text="brand.name"></span>
-					</button>
-					<template x-for="model in brand.models" :key="model.id">
-						<button @click="applyFilter({mk: brand.id, md: model.id, page: 1})" 
-								class="w-full text-left py-1 px-2 text-[11px] text-gray-500 hover:text-primary rounded transition-colors"
-								x-text="model.name">
-						</button>
-					</template>
-				</div>
 			</div>
-		</template>
+			<p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest mt-1 ml-0.5" x-text="`Mostrando ${totalItems} resultados`"></p>
 	</div>
 
-	<!-- Fixed help card at bottom -->
-	<div class="flex-shrink-0 mt-4 pt-4 border-t border-gray-100">
-		<div class="bg-dark rounded-lg p-3.5">
-			<h5 class="text-white text-xs font-semibold mb-1">¿No encuentras tu pieza?</h5>
-			<p class="text-white/40 text-[10px] leading-relaxed mb-3">Escríbenos y te ayudamos a localizarla en todo México.</p>
-			<button class="w-full bg-primary text-dark text-[10px] font-semibold py-2 rounded-md hover:bg-emerald-400 transition-colors">
-				Solicitar búsqueda
-			</button>
+	<!-- Filters Content con Scroll Interno -->
+	<div class="p-5 space-y-5 overflow-y-auto" style="max-height: 350px;">
+		<!-- Filtros de Marcas y Modelos -->
+		<div class="space-y-3">
+			
+			<!-- Vista Móvil: Botón que abre el drawer -->
+			<div class="lg:hidden">
+				<button @click="showFilters = true" 
+							class="w-full flex items-center justify-between py-4 px-4 bg-[#0b141a] text-white rounded-2xl hover:bg-[#111b21] transition-all shadow-lg shadow-black/10 active:scale-95 group relative">
+					<div class="flex items-center gap-3">
+							<svg class="w-5 h-5 text-[#25d366] group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+							<span class="text-xs font-black uppercase tracking-widest">Marcas y Modelos</span>
+					</div>
+					<svg class="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+					
+					<!-- Indicador de filtro activo -->
+					<span x-show="currentFilters.mk !== '' || currentFilters.md !== ''" class="absolute -top-1 -right-1 flex h-3 w-3" x-cloak>
+							<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+							<span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+					</span>
+				</button>
+			</div>
+
+			<!-- Vista Desktop: Lista de marcas presente (inline) -->
+			<div class="hidden lg:block">
+				{% include viewBase ~ '/_filter_drawer.html.twig' %}
+			</div>
 		</div>
 	</div>
 </div>

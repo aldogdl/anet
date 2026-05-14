@@ -1,8 +1,0 @@
-{% set viewBase = viewBase|default('vistas/site') %}
-{% if items|length > 0 %}
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-3">
-	{% for item in items %}
-		{% include viewBase ~ '/_product_card.html.twig' with { 'isMeli': true } %}
-	{% endfor %}
-</div>
-{% endif %}

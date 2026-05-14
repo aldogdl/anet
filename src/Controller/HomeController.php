@@ -16,7 +16,7 @@ class HomeController extends AbstractController
 		return $this->json(['hola' => 'Bienvenido', 'en que podemos atenderte?']);
 	}
 
-	#[Route('/qr', methods: ['get'])]
+	#[Route('/qr', name: 'app_home_qr', methods: ['get'])]
 	public function qr(\Symfony\Component\HttpFoundation\Request $request): Response
 	{
 		$data = $request->query->get('data', '');

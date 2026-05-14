@@ -1,36 +1,24 @@
 {% import 'vistas/common/_product_helpers.html.twig' as product %}
 
-{% set placeholder = product.placeholder() %}
-
 {% set extras = item.extras %}
 {% set mainImg = product.cardImg(item) %}
 {% set firstPic = (extras.pictures|default([]))|first %}
 {% set imgBig = product.imgUrl(item, firstPic) %}
+{% set placeholder = product.placeholder() %}
 {% set modalData = {
     id: item.id,
     title: item.title,
     price: item.price,
     thumb: mainImg,
     imgBig: imgBig,
-    detalles: item.detalles|default(''),
+    detalles: item.detalles|default('Sin detalles adicionales.'),
     sku: item.iku|default('N/A'),
     brand: item.mrkId,
     model: item.mdlId,
-    pieza: item.pieza|default(''),
-    lado: item.lado|default(''),
-    poss: item.poss|default(''),
-    anioInicio: item.anioInicio|default(0),
-    anioFin: item.anioFin|default(9999),
     pictures: extras.pictures|default([]),
     pathImg: extras.pathImg|default(''),
-    mk: extras.mk|default(''),
-    md: extras.md|default(''),
-    numPart: extras.numPart|default(''),
-    localidad: extras.localidad|default(''),
     idSrc: extras.idSrc|default(''),
-    linkSr: extras.linkSr|default(''),
-    fuente: extras.fuente|default(''),
-    calif: extras.calif|default(0)
+    linkSr: extras.linkSr|default('')
 }|json_encode %}
 {% set cleanSlug = product.cleanSlug(item.title) %}
 {% set cleanTitle = product.cleanTitle(item.title) %}
@@ -39,65 +27,75 @@
 {% set safeId = product.safeId(item) %}
 {% set detailUrl = product.detailUrl(item, isMeli) %}
 
-<div class="group bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300 flex flex-col h-full overflow-hidden"
+<div class="group bg-white rounded-3xl overflow-hidden border border-slate-200 hover:border-[#25d366]/40 transition-all duration-500 flex flex-col h-full relative shadow-sm hover:shadow-2xl cursor-pointer"
 	 {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 
-	<!-- Image -->
+	<!-- Top Accent Line -->
+	<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r {{ isMeli ? 'from-transparent via-[#ffe600] to-transparent' : 'from-transparent via-[#103928]/20 to-transparent' }}"></div>
+
+	<!-- Image Area -->
 	<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }} 
-	   class="block relative aspect-[4/3] bg-gray-50 overflow-hidden" 
+	   class="block relative aspect-[16/10] bg-[#f8fafc] overflow-hidden cursor-pointer" 
        {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 		
+        <!-- Blurred Background for small images -->
+        <div class="absolute inset-0 bg-cover bg-center opacity-30 blur-2xl scale-110" style="background-image: url('{{ mainImg }}')"></div>
+
 		<img src="{{ mainImg }}" 
 			 onerror="this.onerror=null;this.src='{{ placeholder }}'"
-			 class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out" 
-			 alt="{{ item.title }}" loading="lazy">
+			 class="relative z-10 w-full h-full object-contain object-center p-2.5 rounded-2xl group-hover:scale-105 transition-transform duration-700" 
+			 alt="{{ item.title }}">
 
 		{% if item.isActive %}
-		<div class="absolute top-2.5 left-2.5 flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md">
-			<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-			<span class="text-[10px] font-semibold text-gray-600">En stock</span>
-		</div>
-		{% endif %}
-
-		{% if isMeli %}
-		<div class="absolute top-2.5 right-2.5 bg-[#ffe600] text-[#2d3277] text-[9px] font-bold px-2 py-0.5 rounded">ML</div>
+			<div class="absolute top-5 left-5 z-20 flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm">
+				<span class="w-2 h-2 rounded-full bg-[#25d366] animate-pulse"></span>
+				<span class="text-[9px] font-black text-[#103928] uppercase tracking-widest">Disponible</span>
+			</div>
 		{% endif %}
 	</a>
 
-	<!-- Info -->
-	<div class="p-3.5 sm:p-4 flex-1 flex flex-col">
-		<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }}
-		   class="text-[13px] font-medium text-gray-800 leading-snug line-clamp-2 hover:text-primary transition-colors min-h-[2.5rem]"
-		   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
-			{{ item.title }}
-		</a>
+	<!-- Info Area -->
+	<div class="p-7 flex-1 flex flex-col">
+		<div class="flex-1">
+			<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }}
+			   class="block text-[15px] font-bold text-[#103928] leading-tight group-hover:text-[#25d366] transition-colors cursor-pointer min-h-[3.75rem] max-h-[3.75rem] overflow-hidden"
+               style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;"
+			   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
+				{{ item.title }}
+			</a>
+		</div>
 
-		<div class="mt-auto pt-3 flex items-end justify-between gap-2">
-			<div>
-				<span class="text-[9px] text-white bg-slate-800 px-1.5 py-0.5 rounded font-medium block w-fit mb-1 tracking-wider uppercase">ID: <span class="font-black">{{ item.id }}</span></span>
-				<span class="text-lg font-bold text-gray-900 tracking-tight">${{ item.price|number_format(2, '.', ',') }}</span>
+		<div class="mt-1 pt-6 border-t border-slate-50 flex items-center justify-between gap-4">
+			<div class="flex flex-col">
+				<span class="text-[10px] text-[#103928]/50 font-black uppercase tracking-widest mb-1">Precio Neto</span>
+				<span class="text-2xl font-black text-[#103928] italic">
+					${{ item.price|number_format(2, '.', ',') }}
+				</span>
 			</div>
 
-			<div class="flex items-center gap-1.5">
+			<div class="flex items-center gap-2">
 				{% if isMeli %}
-					<a href="{{ detailUrl }}" target="_blank" class="w-8 h-8 bg-[#ffe600] text-[#2d3277] rounded-lg flex items-center justify-center hover:bg-yellow-300 active:scale-95 transition-all">
-						<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+					<a href="{{ detailUrl }}" target="_blank" class="px-4 py-2 bg-[#ffe600] text-[#2d3277] font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-[#ffe600]/20 hover:bg-yellow-400 active:scale-95 transition-all flex items-center justify-center">
+						Meli
 					</a>
 				{% else %}
 					<template x-if="!({{ safeId }} in cartItems)">
 						<button @click.stop="addToCart({{ safeId }})" 
-									class="w-8 h-8 bg-primary text-dark rounded-lg flex items-center justify-center hover:bg-emerald-400 active:scale-95 transition-all">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+									class="p-3 bg-[#25d366] text-white hover:bg-emerald-400 rounded-xl transition-all shadow-lg shadow-[#25d366]/20 active:scale-90">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
 						</button>
 					</template>
 					<template x-if="{{ safeId }} in cartItems">
 						<button @click.stop="promptRemove({{ safeId }})" 
-									class="w-8 h-8 bg-primary/15 text-primary rounded-lg flex items-center justify-center hover:bg-primary/25 active:scale-95 transition-all">
-							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+									class="p-3 bg-[#25d366]/20 text-[#25d366] hover:bg-[#25d366]/30 rounded-xl transition-all active:scale-90">
+							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
 						</button>
 					</template>
 				{% endif %}
 			</div>
+		</div>
+		<div class="flex items-center gap-2 mt-2">
+			<span class="text-[10px] bg-slate-100 text-slate-500 font-black px-2 py-0.5 rounded tracking-widest uppercase">ID: {{ item.id }} / IKU: {{ item.iku|default('N/A') }}</span>
 		</div>
 	</div>
 </div>

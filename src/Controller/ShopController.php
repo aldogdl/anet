@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 class ShopController extends AbstractController
 {
 
-	#[Route('/{template}/{slug}', name: 'app_shop', methods: ['GET'], requirements: ['template' => 'muro|shop|site'])]
+	#[Route('/{template}/{slug}', name: 'app_shop', methods: ['GET'], requirements: ['template' => 'muro|shop'])]
 	public function index(string $template, string $slug, Request $request, ItemPubRepository $repo, Fsys $fsys): Response
 	{
 		// Leemos los archivos solo en la carga inicial
@@ -94,7 +94,6 @@ class ShopController extends AbstractController
 
 		$viewFolder = match($template) {
 			'muro' => 'vistas/muro',
-			'site' => 'vistas/site',
 			default => 'vistas/shop',
 		};
 		$templateFile = $viewFolder . '/index.html.twig';
@@ -114,7 +113,7 @@ class ShopController extends AbstractController
 		]);
 	}
 
-	#[Route('/search/{template}/{slug}', name: 'app_shop_search', methods: ['GET'], requirements: ['template' => 'muro|shop|site'])]
+	#[Route('/search/{template}/{slug}', name: 'app_shop_search', methods: ['GET'], requirements: ['template' => 'muro|shop'])]
 	public function search(string $template, string $slug, Request $request, ItemPubRepository $repo): Response
 	{
 		$page = $request->query->getInt('page', 1);
@@ -221,7 +220,6 @@ class ShopController extends AbstractController
 
 		$viewFolder = match($template) {
 			'muro' => 'vistas/muro',
-			'site' => 'vistas/site',
 			default => 'vistas/shop',
 		};
 		$templateFile = $viewFolder . '/_product_grid.html.twig';

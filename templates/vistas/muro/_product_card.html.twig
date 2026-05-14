@@ -32,14 +32,17 @@
 
     <!-- Image Area -->
     <div class="relative aspect-[16/10] overflow-hidden bg-black/20 cursor-pointer">
+        <!-- Blurred Background for small images -->
+        <div class="absolute inset-0 bg-cover bg-center opacity-40 blur-2xl scale-110" style="background-image: url('{{ mainImg }}')"></div>
+
         <img src="{{ mainImg }}" 
              onerror="this.onerror=null;this.src='{{ placeholder }}'"
-             class="w-full h-full object-cover object-center p-2.5 rounded-3xl group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100" 
+             class="relative z-10 w-full h-full object-contain object-center p-2.5 rounded-3xl group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100" 
              alt="{{ title }}">
         
         <!-- Status Badge -->
         {% if item.isActive %}
-            <div class="absolute top-5 left-5 flex items-center gap-2 bg-[#0b141a]/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-sm">
+            <div class="absolute top-5 left-5 z-20 flex items-center gap-2 bg-[#0b141a]/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-sm">
                 <span class="w-1.5 h-1.5 rounded-full bg-[#25d366] animate-pulse"></span>
                 <span class="text-[9px] font-black text-white uppercase tracking-widest">Disponible</span>
             </div>
@@ -71,7 +74,7 @@
                 <template x-if="!({{ safeId }} in cartItems)">
                     <button @click.stop="addToCart({{ safeId }})" 
                             class="p-3.5 bg-white/5 hover:bg-[#25d366] text-white/40 hover:text-[#0b141a] rounded-2xl transition-all shadow-xl active:scale-90 border border-white/10 hover:border-transparent">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4(5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     </button>
                 </template>
                 <template x-if="{{ safeId }} in cartItems">

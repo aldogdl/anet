@@ -8,113 +8,131 @@
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#fafafa] flex flex-col font-sans antialiased" x-data="shopState()">
+<div class="min-h-screen bg-[#e8f2ec] flex flex-col font-sans" x-data="shopState()">
   
-  <!-- Header -->
-  <header class="sticky top-0 z-50 bg-dark border-b border-white/[0.06]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4 sm:gap-6">
+  <!-- Top Header -->
+  <header class="sticky top-0 z-50 bg-[#0b141a] border-b border-white/5 shadow-2xl">
+    <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center gap-8">
 
-      <!-- Logo -->
-      <div class="flex items-center gap-2.5 flex-shrink-0 cursor-pointer select-none" onclick="window.location.href=window.location.pathname">
-        {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
-          <div class="w-8 h-8 rounded-lg overflow-hidden bg-white flex-shrink-0">
-            <img src="{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}" alt="Logo" class="w-full h-full object-cover">
+      <!-- Floating Graphic Logo -->
+      <div class="relative w-20 lg:w-72 h-20 flex-shrink-0">
+        <div class="absolute top-3 lg:top-4 left-0 lg:left-1/2 lg:-translate-x-1/2 z-[70] group cursor-pointer" onclick="window.location.href=window.location.pathname">
+          <div class="absolute inset-0 bg-[#25d366]/30 blur-2xl rounded-2xl transition-all group-hover:bg-[#25d366]/40"></div>
+          <div class="relative w-20 h-20 lg:w-36 lg:h-36 {{ dtaCtc.logo is defined and dtaCtc.logo is not empty ? 'bg-[#ffffff]' : 'bg-[#25d366]' }} rounded-2xl lg:rounded-3xl flex items-center justify-center text-[#0b141a] shadow-[0_20px_10px_-15px_rgba(0,0,0,0.7)] border-2 border-[#0b141a] rotate-0 group-hover:rotate-6 transition-transform duration-500 overflow-hidden">
+              {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
+                <div class="w-full h-full p-1.5 lg:p-1">
+                    <div class="w-full h-full bg-white bg-center bg-no-repeat bg-cover rounded-xl lg:rounded-2xl shadow-sm" style="background-image: url('{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}');"></div>
+                </div>
+              {% else %}
+                <svg class="w-12 h-12 lg:w-20 lg:h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              {% endif %}
           </div>
-        {% else %}
-          <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-            <svg class="w-4.5 h-4.5 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-          </div>
-        {% endif %}
-        <span class="text-white font-bold text-sm tracking-tight hidden sm:block">{{ storeName|default('YonkEros') }}</span>
+        </div>
       </div>
 
-      <!-- Search -->
-      <div class="flex-1 max-w-md relative hidden md:block" 
+      <div class="flex-1 max-w-2xl relative group hidden md:block" 
            x-data="{ 
               hasMeli: {{ hasMeli|default(false) ? 'true' : 'false' }},
               meliToken: '{{ encodedMeliToken|default('') }}'
            }">
-        <div class="relative">
-          <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <div class="relative flex items-center w-full">
           <input type="text" x-model="currentFilters.q" 
               @keydown.enter="applyFilter({page: 1})"
-              placeholder="Buscar pieza, marca o modelo..." 
-              class="w-full bg-white/[0.12] border border-white/[0.15] rounded-lg pl-10 pr-20 py-2.5 text-sm text-white placeholder:text-white/40 focus:bg-white/[0.18] focus:border-primary/40 focus:ring-1 focus:ring-primary/20 outline-none transition-all">
+              placeholder="Busca por pieza, marca o código..." 
+              class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-40 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:border-[#25d366]/50 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
+          <svg class="w-5 h-5 absolute left-4 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           
-          <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-            <button x-show="currentFilters.q.length > 0" @click="resetSearch()" 
-                    class="p-1 text-white/30 hover:text-red-400 rounded transition-colors" x-cloak>
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+          <div class="absolute right-16 flex items-center gap-1">
+            <!-- Botón Limpiar -->
+            <button x-show="currentFilters.q.length > 0" 
+                    @click="resetSearch()" 
+                    class="p-2 text-white/30 hover:text-red-400 hover:bg-white/5 rounded-xl transition-all"
+                    x-cloak x-transition.opacity>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <button @click="applyFilter({page: 1})" class="p-1.5 bg-primary/20 text-primary hover:bg-primary/30 rounded-md transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+
+            <!-- Botón de Búsqueda -->
+            <button @click="applyFilter({page: 1})" class="p-2 text-white/50 hover:text-[#25d366] hover:bg-white/5 rounded-xl transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
+          </div>
+          
+          <!-- Status Logos -->
+          <div class="absolute right-4 pointer-events-none">
             <template x-if="hasMeli">
-              <span class="text-[9px] font-bold text-yellow-300/80 bg-yellow-400/10 px-1.5 py-0.5 rounded ml-1">ML</span>
+              <!-- Meli Logo Style -->
+              <div class="h-6 px-2 bg-white/30 rounded-md flex items-center justify-center shadow-sm font-black text-white text-[12px] tracking-tight">
+                  MeLi
+              </div>
+            </template>
+            <template x-if="!hasMeli">
+              <!-- Yonkeros Logo -->
+              <div class="w-6 h-6 bg-[#25d366] rounded-full flex items-center justify-center shadow-sm">
+                  <svg class="w-3.5 h-3.5 text-[#0b141a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              </div>
             </template>
           </div>
         </div>
       </div>
 
-      <!-- Quick Filters -->
-      <div class="hidden lg:flex items-center gap-1.5 flex-shrink-0">
-        <button class="px-3 py-1.5 text-[11px] font-medium text-white/50 hover:text-white hover:bg-white/[0.08] rounded-md transition-colors">Recientes</button>
-        <button class="px-3 py-1.5 text-[11px] font-medium text-white/50 hover:text-white hover:bg-white/[0.08] rounded-md transition-colors">Económicos</button>
-        <button class="px-3 py-1.5 text-[11px] font-medium text-white/50 hover:text-white hover:bg-white/[0.08] rounded-md transition-colors">Populares</button>
-      </div>
+      <!-- Actions -->
+      <div class="flex items-center gap-4 ml-auto">
+        <!-- Ayuda Personalizada -->
+        <div class="hidden lg:flex flex-col items-end leading-none text-right">
+          <h5 class="text-white text-[12px] font-black uppercase tracking-widest mb-1">¿No encuentras tu pieza?</h5>
+          <p class="text-[13px] text-[#25d366] font-bold uppercase tracking-widest">La conseguimos por ti.</p>
+        </div>
 
-      <!-- Right Actions -->
-      <div class="flex items-center gap-2 sm:gap-3 ml-auto">
-        <!-- Mobile search toggle -->
-        <button class="md:hidden p-2 text-white/50 hover:text-white rounded-lg transition-colors"
-                @click="$refs.mobileSearch.classList.toggle('hidden')">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        </button>
-
-        <button class="hidden sm:flex items-center gap-2 bg-primary hover:bg-emerald-400 text-dark px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-          Contactar
-        </button>
+        <!-- Botón Lupa Personalizado -->
+        <div class="relative">
+          <button class="w-10 h-10 bg-[#25d366] border-none rounded-xl text-[#0b141a] hover:bg-emerald-400 flex items-center justify-center transition-all group">
+            <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+        </div>
 
         <div class="relative">
-          <button @click="showCart = !showCart" class="p-2 text-white/60 hover:text-white rounded-lg hover:bg-white/[0.06] transition-all relative">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            <span class="absolute -top-0.5 -right-0.5 bg-primary text-dark text-[9px] font-bold min-w-[16px] h-4 flex items-center justify-center rounded-full" 
+          <button @click="showCart = !showCart" class="w-12 h-12 bg-white/10 border-none rounded-2xl text-white hover:bg-white/20 flex items-center justify-center transition-all group">
+            <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#0b141a] shadow-md" 
               x-show="cartCount > 0" x-text="cartCount" x-transition.scale x-cloak></span>
           </button>
         </div>
       </div>
     </div>
-
-    <!-- Mobile Search Bar -->
-    <div class="md:hidden px-4 pb-3 hidden" x-ref="mobileSearch">
-      <div class="relative">
-        <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        <input type="text" x-model="currentFilters.q" 
-            @keydown.enter="applyFilter({page: 1})"
-            placeholder="Buscar pieza..." 
-            class="w-full bg-white/[0.12] border border-white/[0.15] rounded-lg pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:bg-white/[0.18] focus:border-primary/40 outline-none transition-all">
-      </div>
-    </div>
   </header>
 
-  <!-- Filter Drawer (Mobile & Desktop trigger) -->
+  <!-- Sidebar Drawer (Hidden by default) -->
   <div class="fixed inset-0 z-[60] overflow-hidden" x-show="showFilters" x-cloak>
-    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" 
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
       x-show="showFilters" 
-      x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-      x-transition:leave="ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+      x-transition:enter="ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
       @click="showFilters = false"></div>
 
-    <div class="fixed inset-y-0 left-0 max-w-[300px] w-full bg-white shadow-xl flex flex-col"
+    <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-[#e8f2ec] shadow-2xl flex flex-col"
       x-show="showFilters"
-      x-transition:enter="transform transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-      x-transition:leave="transform transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full">
+      x-transition:enter="transform transition ease-in-out duration-500"
+      x-transition:enter-start="-translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transform transition ease-in-out duration-500"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="-translate-x-full">
 
-      <div class="flex items-center justify-between px-5 h-14 border-b border-gray-100 flex-shrink-0">
-        <span class="text-sm font-semibold text-gray-900">Filtrar por marca</span>
-        <button @click="showFilters = false" class="p-1.5 text-gray-400 hover:text-gray-600 rounded-md hover:bg-gray-50 transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      <div class="flex items-center justify-between p-6 border-b border-white/10 bg-[#0b141a] text-white">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#25d366] rounded-lg flex items-center justify-center text-[#0b141a]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          </div>
+          <h2 class="text-xs font-black uppercase tracking-widest">Filtrar por Marca</h2>
+        </div>
+        <button @click="showFilters = false" class="p-2 hover:bg-white/10 rounded-xl transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
 
@@ -124,32 +142,34 @@
     </div>
   </div>
 
-  <!-- Main Content -->
-  <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex gap-6">
-    <!-- Desktop Sidebar -->
-    <aside class="w-60 hidden lg:block flex-shrink-0">
+  <main class="flex-1 max-w-[1600px] mx-auto w-full px-6 py-8 flex gap-8">
+    <!-- Sidebar Fijo -->
+    <aside class="w-72 hidden lg:block flex-shrink-0">
       {% include viewBase ~ '/_sidebar.html.twig' %}
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-      <section id="product-grid-container">
+      <!-- Product Grid Section (Reactive Container) -->
+      <section class="flex flex-col gap-8" id="product-grid-container">
+        <!-- Initial Grid (Server Rendered) -->
         {% include viewBase ~ '/_product_grid.html.twig' %}
       </section>
 
+      <!-- MeLi Results Container -->
       <section class="w-full" x-show="meliLoading || meliItemsHtml !== ''" x-cloak>
-          <div x-show="meliLoading" class="flex items-center justify-center py-12 gap-3">
-              <span class="w-5 h-5 border-2 border-gray-200 border-t-primary rounded-full animate-spin"></span>
-              <span class="text-xs text-gray-400 font-medium">Buscando stock extendido...</span>
+          <div x-show="meliLoading" class="flex flex-col items-center justify-center py-16">
+              <span class="w-10 h-10 border-4 border-[#25d366]/20 border-t-[#25d366] rounded-full animate-spin"></span>
+              <span class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-4">Consultando stock extendido...</span>
           </div>
           <div x-html="meliItemsHtml" x-show="!meliLoading"></div>
       </section>
     </div>
   </main>
-  
+
   <!-- Floating WhatsApp -->
   <a href="https://wa.me/?text='Hola, estoy en tu sitio web de Yonkeros y me interesé por:"
      target="_blank"
-     class="fixed bottom-12 right-12 z-[100] w-16 h-16 bg-[#25d366] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all active:scale-95 group">
+     class="fixed bottom-24 right-12 z-[100] w-16 h-16 bg-[#25d366] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all active:scale-95 group">
       <div class="absolute inset-0 rounded-full bg-white scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-20 transition-all duration-300"></div>
       <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12.031 0C5.394 0 0 5.394 0 12.031c0 2.115.548 4.17 1.583 5.986L.048 23.518l5.656-1.482a12.002 12.002 0 006.327 1.785h.005c6.634 0 12.029-5.394 12.029-12.031S18.667 0 12.031 0zm0 21.821h-.004a9.986 9.986 0 01-5.088-1.385l-.365-.216-3.782.991.99-3.685-.236-.376a9.986 9.986 0 01-1.526-5.334c0-5.522 4.493-10.017 10.015-10.017 2.675 0 5.188 1.042 7.079 2.934 1.891 1.892 2.932 4.406 2.932 7.081 0 5.524-4.494 10.007-10.014 10.007zm5.493-7.513c-.301-.151-1.785-.882-2.062-.983-.277-.101-.479-.151-.68.151-.202.302-.781.983-.957 1.184-.177.202-.353.227-.654.076-.301-.151-1.275-.47-2.428-1.5-.898-.801-1.503-1.793-1.68-2.095-.177-.302-.019-.465.132-.616.135-.135.301-.353.452-.529.151-.177.202-.302.302-.504.101-.202.05-.378-.025-.529-.076-.151-.68-1.64-.932-2.245-.246-.59-.496-.51-.68-.52-.177-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.057 1.033-1.057 2.519s1.083 2.923 1.234 3.125c.151.202 2.13 3.25 5.161 4.557.72.311 1.281.497 1.722.636.723.23 1.381.197 1.902.12.583-.086 1.785-.73 2.036-1.436.252-.705.252-1.309.177-1.436-.076-.126-.277-.202-.578-.353z"></path>
@@ -157,19 +177,16 @@
   </a>
 
   <!-- Footer -->
-  <footer class="bg-gray-50 border-t border-gray-100 py-8 mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <div class="flex items-center gap-2">
-        <div class="w-5 h-5 bg-dark rounded flex items-center justify-center">
-          <svg class="w-3 h-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-        </div>
-        <span class="text-sm font-semibold text-gray-500">{{ storeName|default('YonkEros') }}</span>
-        <span class="text-xs text-gray-300">· © {{ 'now'|date('Y') }}</span>
+  <footer class="bg-[#0b141a] border-t border-white/5 py-12">
+    <div class="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+      <div class="flex flex-col items-center md:items-start">
+        <span class="text-2xl font-black text-white tracking-widest">Yonk<span class="text-[#25d366]">Eros</span></span>
+        <p class="text-xs text-white/20 mt-2">© 2024 Todos los derechos reservados.</p>
       </div>
-      <div class="flex gap-6">
-          <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Privacidad</a>
-          <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Términos</a>
-          <a href="#" class="text-xs text-gray-400 hover:text-gray-600 transition-colors">Soporte</a>
+      <div class="flex gap-8">
+          <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Privacidad</a>
+          <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Términos</a>
+          <a href="#" class="text-xs font-bold text-slate-500 hover:text-primary transition-colors uppercase tracking-widest">Soporte</a>
       </div>
     </div>
   </footer>
@@ -178,39 +195,42 @@
   {% include 'vistas/common/_modal_cart.html.twig' %}
 
   <!-- Toast Notifications -->
-  <div class="fixed bottom-6 right-6 z-[100] pointer-events-none flex flex-col gap-2">
+  <div class="fixed bottom-8 right-8 z-[100] pointer-events-none">
     <template x-for="toast in toasts" :key="toast.id">
       <div x-show="true" 
-          x-transition:enter="transition ease-out duration-200"
-          x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+          x-transition:enter="transition ease-out duration-300"
+          x-transition:enter-start="opacity-0 translate-y-4 scale-95"
           x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-          x-transition:leave="transition ease-in duration-150"
+          x-transition:leave="transition ease-in duration-200"
           x-transition:leave-start="opacity-100"
           x-transition:leave-end="opacity-0 scale-95"
-          class="bg-dark text-white pl-4 pr-5 py-3 rounded-lg shadow-lg flex items-center gap-3 pointer-events-auto text-sm">
-        <div class="w-5 h-5 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-          <svg class="w-3 h-3 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+          class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 mb-4 pointer-events-auto border border-white/10">
+        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+          <svg class="w-5 h-5 text-darker" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
         </div>
-        <span class="text-xs font-medium" x-text="toast.message"></span>
+        <div class="flex flex-col">
+          <span class="text-xs font-black tracking-wide uppercase">¡Agregado con éxito!</span>
+          <span class="text-[10px] text-slate-400" x-text="toast.message"></span>
+        </div>
       </div>
     </template>
   </div>
 
   <!-- Confirm Remove Modal -->
   <div x-show="itemToRemove !== null" class="fixed inset-0 z-[150] flex items-center justify-center p-4" x-cloak>
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="itemToRemove = null" x-transition.opacity></div>
-    <div class="relative bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl flex flex-col items-center text-center"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100">
-      <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-      </div>
-      <h3 class="text-gray-900 text-sm font-semibold mb-1">¿Quitar del carrito?</h3>
-      <p class="text-gray-400 text-xs mb-5">Se eliminará de tu selección.</p>
-      <div class="flex gap-3 w-full">
-          <button @click="itemToRemove = null" class="flex-1 py-2 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">Cancelar</button>
-          <button @click="confirmRemove()" class="flex-1 py-2 rounded-lg text-sm font-medium bg-red-500 text-white hover:bg-red-600 active:scale-[0.98] transition-all">Quitar</button>
+    <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" @click="itemToRemove = null" x-transition.opacity></div>
+    <div class="relative bg-[#0b141a] border border-white/10 rounded-[2.5rem] p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-90 translate-y-8"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+    <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+    </div>
+      <h3 class="text-white text-lg font-black tracking-widest uppercase mb-2">¿Quitar del carrito?</h3>
+      <p class="text-white/40 text-xs mb-8 font-medium">El producto se eliminará de tu selección actual.</p>
+      <div class="flex gap-4 w-full">
+          <button @click="itemToRemove = null" class="flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest text-white hover:bg-white/5 transition-colors">Cancelar</button>
+          <button @click="confirmRemove()" class="flex-1 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest bg-red-500 text-white shadow-lg shadow-red-500/20 hover:bg-red-600 active:scale-95 transition-all">Sí, quitar</button>
       </div>
     </div>
   </div>
@@ -245,6 +265,7 @@
       meliItemsHtml: '',
       meliLoading: false,
       async applyFilter(params = {}) {
+        // Si el filtro viene de marcas/modelos, limpiamos la búsqueda de texto
         if ((params.mk !== undefined || params.md !== undefined) && params.q === undefined) {
           this.currentFilters.q = '';
         }
@@ -258,13 +279,15 @@
         
         const query = new URLSearchParams(queryParams).toString();
         
-        this.meliItemsHtml = '';
+        this.meliItemsHtml = ''; // Limpiamos resultados anteriores de MeLi
 
+        // 1. Búsqueda local principal (el backend actuará como Metabuscador)
         try {
           const res = await fetch(`{{ path('app_shop_search', {template: template, slug: slug}) }}?${query}`);
           document.getElementById('product-grid-container').innerHTML = await res.text();
           this.showFilters = false; 
           
+          // Regresar al principio de la página suavemente
           window.scrollTo({ top: 0, behavior: 'smooth' });
 
           const urlParams = new URLSearchParams(this.currentFilters);
@@ -301,6 +324,7 @@
       openModal(item) {
         this.selectedItem = item;
         this.showModal = true;
+        // Preparamos PhotoSwipe si fuera necesario aquí
       },
       async addToCart(id) {
         try {
@@ -337,6 +361,7 @@
       async submitQuote() {
         if (!this.quoteForm.email) return;
         this.addToast('Enviando cotización...');
+        // Aquí podrías enviar los datos al backend
         setTimeout(() => {
             this.showCart = false;
             this.addToast('¡Cotización enviada con éxito!');

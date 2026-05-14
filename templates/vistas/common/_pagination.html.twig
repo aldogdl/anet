@@ -1,0 +1,86 @@
+{# templates/vistas/common/_pagination.html.twig #}
+{# 
+    Paginador Pro - Diseñado para impactar
+    Variables:
+    - pagesCount: Total de páginas
+    - currentPage: Página actual
+    - dark: true/false
+#}
+
+{% set dark = dark|default(false) %}
+{% set adj = 3 %} {# Páginas adyacentes a mostrar #}
+
+{% if pagesCount > 1 %}
+<div class="mt-20 mb-12 flex flex-col items-center gap-6">
+    <!-- Contador de estado (Opcional, muy pro) -->
+    <div class="text-[10px] font-black uppercase tracking-[0.2em] {{ dark ? 'text-white/40' : 'text-slate-500' }}">
+        Página <span class="{{ dark ? 'text-[#25d366]' : 'text-[#103928]' }}">{{ currentPage }}</span> de {{ pagesCount }}
+    </div>
+
+    <nav class="inline-flex items-center p-1.5 {{ dark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50' }} border rounded-2xl backdrop-blur-2xl gap-1 sm:gap-1.5">
+        
+        <!-- Botón Primera -->
+        <button @click="applyFilter({page: 1})" 
+                :disabled="currentFilters.page == 1"
+                title="Primera página"
+                class="group relative w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 {{ dark ? 'text-white/70 hover:text-[#25d366]' : 'text-slate-600 hover:text-[#25d366]' }} disabled:opacity-10 disabled:cursor-not-allowed">
+            <svg class="w-5 h-5 translate-x-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+            <span class="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black text-white text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none uppercase tracking-widest whitespace-nowrap">Inicio</span>
+        </button>
+
+        <!-- Botón Anterior -->
+        <button @click="applyFilter({page: Math.max(1, currentFilters.page - 1)})"
+                :disabled="currentFilters.page == 1"
+                class="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 {{ dark ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }} disabled:opacity-10 disabled:cursor-not-allowed mr-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+
+        <!-- Contenedor de Números -->
+        <div class="flex items-center gap-1.5">
+            {% for i in 1..pagesCount %}
+                {# Lógica de visualización: Primera, Última, y rango alrededor de la actual #}
+                {% if i == 1 or i == pagesCount or (i >= currentPage - adj and i <= currentPage + adj) %}
+                    {% set isFar = (i < currentPage - 1 or i > currentPage + 1) and (i != 1 and i != pagesCount) %}
+                    <button @click="applyFilter({page: {{ i }}})" 
+                            class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl text-xs font-black transition-all duration-300 overflow-hidden group
+                            {{ isFar ? 'hidden md:flex' : 'flex' }}
+                            {{ i == currentPage ? 
+                                'bg-[#25d366] text-[#0b141a] shadow-lg shadow-[#25d366]/20 z-10' : 
+                                (dark ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50') }}">
+                        
+                        <span class="relative z-10">{{ i }}</span>
+                    </button>
+                {% elseif (i == 2 and currentPage > adj + 2) or (i == pagesCount - 1 and currentPage < pagesCount - adj - 1) %}
+                    <div class="w-8 flex flex-col items-center justify-center gap-1 opacity-30">
+                        <span class="w-1 h-1 rounded-full {{ dark ? 'bg-white' : 'bg-slate-400' }}"></span>
+                        <span class="w-1 h-1 rounded-full {{ dark ? 'bg-white' : 'bg-slate-400' }}"></span>
+                        <span class="w-1 h-1 rounded-full {{ dark ? 'bg-white' : 'bg-slate-400' }}"></span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Botón Siguiente -->
+        <button @click="applyFilter({page: Math.min({{ pagesCount }}, currentFilters.page + 1)})"
+                :disabled="currentFilters.page == {{ pagesCount }}"
+                class="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 {{ dark ? 'text-white/70 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50' }} disabled:opacity-10 disabled:cursor-not-allowed ml-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+
+        <!-- Botón Última -->
+        <button @click="applyFilter({page: {{ pagesCount }}})" 
+                :disabled="currentFilters.page == {{ pagesCount }}"
+                title="Última página"
+                class="group relative w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300 {{ dark ? 'text-white/70 hover:text-[#25d366]' : 'text-slate-600 hover:text-[#25d366]' }} disabled:opacity-10 disabled:cursor-not-allowed">
+            <svg class="w-5 h-5 -translate-x-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+            <span class="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-black text-white text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none uppercase tracking-widest whitespace-nowrap">Fin</span>
+        </button>
+    </nav>
+
+    <!-- Barra de progreso sutil -->
+    <div class="w-64 h-1 {{ dark ? 'bg-white/5' : 'bg-slate-100' }} rounded-full overflow-hidden">
+        <div class="h-full bg-[#25d366] transition-all duration-700 ease-out"
+             style="width: {{ (currentPage / pagesCount * 100)|round }}%"></div>
+    </div>
+</div>
+{% endif %}
