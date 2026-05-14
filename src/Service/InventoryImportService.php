@@ -11,12 +11,68 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 class InventoryImportService
 {
-	private $conn;
-	private $batchSize = 500;
+	private Connection $conn;
+	private int $batchSize = 500;
+	private string $invExp;
 
-	public function __construct(Connection $conn)
+	public function __construct(Connection $conn, string $invExp)
 	{
 		$this->conn = $conn;
+		$this->invExp = $invExp;
+	}
+
+	/**
+	 * Exporta registros desde la BD a un CSV usando SQL nativo para máxima eficiencia.
+	 */
+	public function exportFromDbToCsv(string $slug): array
+	{
+		$sql = "SELECT id, type, stt, id_src, iku, src, title, thumb, img_big, price, costo, link, is_active, pieza, mrk_id, mdl_id, anio_inicio, anio_fin, lado, poss, detalles, extras, wa_id, ta_id, created 
+				FROM item_pub 
+				WHERE slug = :slug AND stt <= 499";
+		
+		$result = $this->conn->iterateAssociative($sql, ['slug' => $slug]);
+
+		$filename = $slug . '_export.csv';
+		$exportDir = $this->invExp . 'export/';
+		$path = $exportDir . $filename;
+		
+		if (!is_dir($exportDir)) {
+			mkdir($exportDir, 0777, true);
+		}
+
+		$handle = fopen($path, 'w');
+		if (!$handle) {
+			throw new \Exception("No se pudo crear el archivo de exportación en: " . $path);
+		}
+
+		// Encabezado (opcional, importFromCsv lo salta)
+		fputcsv($handle, [
+			'id', 'type', 'stt', 'id_src', 'iku', 'src', 'title', 'thumb', 'img_big', 
+			'price', 'costo', 'link', 'is_active', 'pieza', 'mrk_id', 'mdl_id', 
+			'anio_inicio', 'anio_fin', 'lado', 'poss', 'detalles', 'extras', 'wa_id', 'ta_id', 'created'
+		]);
+
+		$count = 0;
+		foreach ($result as $row) {
+			// Formatear booleanos para el CSV
+			$row['is_active'] = $row['is_active'] ? '1' : '0';
+			
+			// Asegurar que extras sea una cadena
+			if (isset($row['extras']) && (is_array($row['extras']) || is_object($row['extras']))) {
+				$row['extras'] = json_encode($row['extras']);
+			}
+			
+			fputcsv($handle, array_values($row));
+			$count++;
+		}
+
+		fclose($handle);
+
+		return [
+			'total'    => $count,
+			'filename' => $filename,
+			'path'     => '/inv/export/' . $filename
+		];
 	}
 
 	/**

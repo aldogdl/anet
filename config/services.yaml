@@ -64,6 +64,10 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Service\InventoryImportService:
+        arguments:
+            $invExp: '%invExp%'
+
     App\Service\ImageUploadService:
         arguments:
             $projectDir: '%phtml%'

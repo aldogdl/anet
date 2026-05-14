@@ -225,6 +225,49 @@ class SysComController extends AbstractController
 	/** 
 	 * 
 	*/
+	#[Route('/import-from-csv/{token}', methods: ['post'])]
+	public function importFromCsv(Request $req, SecurityBasic $security, InventoryImportService $importService, String $token): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		if(mb_strpos($token, 'test::') !== false) {
+			$partes = explode('::', $token);
+			$token = base64_encode($partes[1]);
+		}
+
+		if(!$security->isValid($token)) {
+			return $this->json(['body' => 'Ok, gracias Acceso denegado'], 400);
+		}
+
+		$slug = $req->request->get('slug');
+
+		if (!$slug) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Parámetros requeridos: slug'
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		try {
+			$stats = $importService->exportFromDbToCsv($slug);
+			return $this->json([
+				'success' => true,
+				'message' => 'Proceso completado exitosamente',
+				'data' => $stats
+			]);
+		} catch (\Exception $e) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Error al procesar el archivo: ' . $e->getMessage()
+			], 500);
+		}
+	}
+
+	/** 
+	 * 
+	*/
 	#[Route('/set-file-json/{token}', methods: ['post'])]
 	public function setFileJson(Request $req, Fsys $fsys, SecurityBasic $security, String $token): Response
 	{
