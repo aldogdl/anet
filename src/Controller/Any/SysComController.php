@@ -243,7 +243,7 @@ class SysComController extends AbstractController
 		}
 
 		$header = $req->headers->get('any-token') ?? '';
-		if($header == $this->getParameter('getAnToken')) {
+		if($header == $this->getParameter('anyToken')) {
 			$data = $req->getContent();
 			if($data) {
 

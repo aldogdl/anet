@@ -33,7 +33,6 @@ parameters:
 
     getWaToken : '%env(resolve:WA_TOKEN)%'
     sufixUri   : '%env(resolve:SUFIX_URI)%'
-    getAnToken : '%env(resolve:ANET_TOKEN)%'
     anetCnx    : '%env(resolve:ANET_CNX)%'
     anyToken   : '%env(resolve:ANY_TOKEN)%'
     certWebFb  : '%env(resolve:CERT_WEBFB)%'
