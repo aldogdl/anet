@@ -16,33 +16,53 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class SysComRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, SysCom::class);
-    }
+	public function __construct(ManagerRegistry $registry)
+	{
+			parent::__construct($registry, SysCom::class);
+	}
 
-//    /**
-//     * @return SysCom[] Returns an array of SysCom objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+	/**
+	 * Undocumented function
+	 *
+	 * @param SysCom $entity
+	 * @param boolean $flush
+	 * @return SysCom
+	 */
+	public function add(SysCom $entity, bool $flush = true): SysCom
+	{
+		$this->_em->persist($entity);
+		if ($flush) {
+			$this->_em->flush();
+		}
+		return $entity;
+	}
 
-//    public function findOneBySomeField($value): ?SysCom
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+	/** */
+	public function fetchUser(array $data): ?SysCom
+	{
+		$sql = 'SELECT sc FROM sys_com sc '.
+				'WHERE sc.waId = :waId AND sc.device = :device LIMIT 1';
+		$res = $this->_em->createQuery($sql)->setParameters([
+			'waId' => $data['waId'], 'device' => $data['device']
+		])->getOneOrNullResult();
+		return $res;
+	}
+
+	/** */
+	public function updateDataCom(array $data): array
+	{
+		$exist = $this->fetchUser($data);
+		if($exist) {
+			$exist->setLastUpdate(new \DateTimeImmutable('now'));
+			$exist->setFbtok($data['tkfb']);
+			$exist->setTaId($data['taId']);
+			$user = $exist;
+		}else{
+			$user = new SysCom();
+			$user = $user->fromJson($data);
+		}
+		$this->add($user);
+		return $user->toJson();
+	}
+
 }

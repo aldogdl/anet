@@ -43,6 +43,34 @@ class SysCom
 	{
 		$this->lastUpdate = new \DateTimeImmutable('now');
 	}
+  
+	/** */
+	public function fromJson(array $data): static
+	{
+		$this->setSlug($data['slug']);
+		$this->setWaId($data['waId']);
+		$this->setDevice($data['device']);
+		$this->setTaId($data['taId']);
+		$this->setName($data['name']);
+		$this->setIp($data['ip']);
+		$this->setFbtok($data['tkfb']);
+		$this->setLastUpdate(new \DateTimeImmutable('now'));
+		return $this;
+	}
+
+	/** */
+	public function toJson(): array {
+		return [
+			'slug'     => $this->slug,
+			'waId'     => $this->waId,
+			'taId'     => $this->taId,
+			'name'     => $this->name,
+			'device'   => $this->device,
+			'ip'       => $this->ip,
+			'fbtok'    => $this->fbtok,
+			'lastUpdate' => $this->lastUpdate,
+		];
+	}
 
 	public function getId(): ?int
 	{

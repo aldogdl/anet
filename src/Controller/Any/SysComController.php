@@ -3,9 +3,11 @@
 namespace App\Controller\Any;
 
 use App\Entity\UsCom;
+use App\Repository\UsComRepository;
+use App\Repository\SysComRepository;
+
 use App\Repository\ItemPubRepository;
 use App\Repository\SyncMlRepository;
-use App\Repository\UsComRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use App\Service\Any\GetDataShop;
@@ -25,7 +27,7 @@ use Symfony\Component\Filesystem\Path;
 class SysComController extends AbstractController
 {
 
-	/** **/
+	/** [PENDIENTE] **/
 	#[Route('/init-app-mob', methods: ['post'])]
 	public function initAppMob(Request $req, Fsys $fsys): Response
 	{
@@ -62,6 +64,204 @@ class SysComController extends AbstractController
 		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'local+'.$data['slug'].'.json');
 		$data = $fsys->getByPath($path);
 		return $this->json(($data) ? $data : ['error' => 'No se encontraron datos']);
+	}
+
+	/** 
+	 * [PENDIENTE]
+	*/
+	#[Route('/set-file-json/{token}', methods: ['post'])]
+	public function setFileJson(Request $req, Fsys $fsys, SecurityBasic $security, String $token): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+		if(mb_strpos($token, 'test::') !== false) {
+			$partes = explode('::', $token);
+			$token = base64_encode($partes[1]);
+		}
+
+		if(!$security->isValid($token)) {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
+		
+		$data = json_decode($data, true);
+		if(!array_key_exists('waId', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Falta el WaId del Usuario'], 402);
+		}
+		if(!array_key_exists('topic', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Falta el topico del Archivo'], 402);
+		}
+		if(!array_key_exists('body', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Falta el body'], 402);
+		}
+		$time = (integer) microtime(true) * 1000;
+		$filename = $data['waId']."_".$time;
+		// Si es local no se agrega el timestamp
+		if($data['topic'] == 'local') {
+			$filename = $data['slug'];
+		}
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, $data['topic'] .'+'.$filename.'.json');
+		$path = $fsys->setByPath($path, $data);
+
+		return $this->json(['file' => $path]);
+	}
+
+	/** [PENDIENTE] */
+	#[Route('/test', methods: ['get'])]
+	public function test(Request $req, PublicAssetUrlGenerator $urlGen): Response
+	{
+		$prodSols = $this->getParameter(AnyPath::$PRODSOLS);
+		$originalFilename = $req->query->get('file');
+		$path = Path::canonicalize($prodSols.'/'.$originalFilename);
+
+		if (!file_exists($path)) {
+			return $this->json(['abort' => true, 'body' => 'X No existe archivo' . $path], 402);
+		}else{
+			$url = $urlGen->generate($path);
+			return $this->json(['abort' => true, 'body' => 'Ok:' . $url], 200);
+		}
+	}
+
+	/** [PENDIENTE] */
+	#[Route('/test-fb', methods: ['GET', 'POST'])]
+	public function testFB(Request $req, Pushes $push, SecurityBasic $security): Response
+	{
+		$met = $req->getMethod();
+		if($met != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
+    $data = json_decode($data, true);
+		if(!$security->isValid($data['token'])) {
+			return $this->json(['body' => 'Acceso restringido'], 401);
+		}
+
+		$push->test($data['to']);
+		return new Response(200);
+	}
+
+	/** [PENDIENTE] Datos para any shop */
+	#[Route('/get-data-any', methods: ['post'])]
+	public function getDataAnyShop(Request $req, GetDataShop $shop): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Ok, gracias'], 400);
+		}
+
+		$data = $req->getContent();
+		if(!$data) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		}
+
+		$data = json_decode($data, true);
+		if(!array_key_exists('slug', $data) || !array_key_exists('dev', $data)) {
+			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+		}
+
+		$res = $shop->getSimpleData($data);
+		return $this->json($res);
+	}
+
+	/** [PENDIENTE] */
+	#[Route('/update-data-com', methods: ['post'])]
+	public function updateDataCom(Request $req, UsComRepository $em): Response
+	{
+		if( $req->getMethod() == 'POST' ) {
+			$data = $req->getContent();
+			if(!$data) {
+				return new Response(403);
+			}
+
+			$data = json_decode($data, true);
+			if(array_key_exists('dev', $data)) {
+				$obj = new UsCom();
+				$obj->fromJson($data);
+				$res = $em->updateDataCom($obj);
+				return $this->json(['abort' => false, 'body' => $res]);
+			}else{
+				return $this->json(['abort' => true, 'body' => 'X Faltaron datos, Inténtalo nuevamente']);
+			}
+		}
+		return new Response(400);
+	}
+
+	/** 
+	 * [PENDIENTE] Si el cliente falla en enviar desde el FRM la notif a core, este mismo
+	 * hace reintentos para que core este enterado del nuevo item
+	*/
+	#[Route('/push-core', methods: ['post'])]
+	public function sendPushToCore(Request $req, UsComRepository $em, Pushes $push): Response 
+	{
+		$data = json_decode($req->getContent(), true);
+		if(array_key_exists('code', $data)) {
+
+			$how = file_get_contents($this->getParameter('report'));
+			$token = $em->getTokenByWaId($how);
+			$notif = Notification::create('Refuerzo de Solicitud', $data['code'], '');
+			$result = $push->sendTo($token, $notif, ['ownApp' => $data['slugApp']]);
+			if(array_key_exists('sended', $result)) {
+				return $this->json(['abort' => false, 'id' => $result['sended']['name']]);
+			}
+		}
+
+		return $this->json([]);
+	}
+
+	/** [PENDIENTE] Desde el core subimos los datos de com-int */
+	#[Route('/set-comloc', methods: ['post'])]
+	public function setComLoc(Request $req): Response 
+	{
+		if($req->getMethod() == 'POST') {
+			$header = $req->headers->get('any-token') ?? '';
+			if($header == $this->getParameter('getAnToken')) {
+				$data = $req->getContent();
+				if($data) {
+					$scm = $this->getParameter(AnyPath::$COMMLOC);
+					file_put_contents(Path::canonicalize($scm), $data);
+					return $this->json(['abort' => false]);
+				}
+			}
+		}
+		return $this->json(['abort' => true]);
+	}
+
+	/** Seteamos los datos de FB */
+	#[Route('/set-fbtok', methods: ['post'])]
+	public function setFbTok(Request $req, SysComRepository $em): Response 
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['abort' => true, 'body' => 'Método no permitido']);
+		}
+
+		$header = $req->headers->get('any-token') ?? '';
+		if($header == $this->getParameter('getAnToken')) {
+			$data = $req->getContent();
+			if($data) {
+
+				$data = json_decode($data, true);
+				if(!array_key_exists('slug', $data) || !array_key_exists('fb', $data)) {
+					return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperación']);
+				}
+
+				$user = $em->updateDataCom($data);
+				if($user) {
+					return $this->json(['abort' => false, 'body' => $user]);
+				}else{
+					return $this->json(['abort' => true, 'body' => 'Error al guardar Datos']);
+				}
+			}
+		}
+
+		return $this->json(['abort' => true, 'body' => 'Acceso no autorizado']);
 	}
 
 	/** 
@@ -263,174 +463,6 @@ class SysComController extends AbstractController
 				'message' => 'Error al procesar el archivo: ' . $e->getMessage()
 			], 500);
 		}
-	}
-
-	/** 
-	 * 
-	*/
-	#[Route('/set-file-json/{token}', methods: ['post'])]
-	public function setFileJson(Request $req, Fsys $fsys, SecurityBasic $security, String $token): Response
-	{
-		if($req->getMethod() != 'POST') {
-			return $this->json(['body' => 'Ok, gracias'], 400);
-		}
-		if(mb_strpos($token, 'test::') !== false) {
-			$partes = explode('::', $token);
-			$token = base64_encode($partes[1]);
-		}
-
-		if(!$security->isValid($token)) {
-			return $this->json(['body' => 'Ok, gracias'], 400);
-		}
-
-		$data = $req->getContent();
-		if(!$data) {
-			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
-		}
-		
-		$data = json_decode($data, true);
-		if(!array_key_exists('waId', $data)) {
-			return $this->json(['abort' => true, 'body' => 'Falta el WaId del Usuario'], 402);
-		}
-		if(!array_key_exists('topic', $data)) {
-			return $this->json(['abort' => true, 'body' => 'Falta el topico del Archivo'], 402);
-		}
-		if(!array_key_exists('body', $data)) {
-			return $this->json(['abort' => true, 'body' => 'Falta el body'], 402);
-		}
-		$time = (integer) microtime(true) * 1000;
-		$filename = $data['waId']."_".$time;
-		// Si es local no se agrega el timestamp
-		if($data['topic'] == 'local') {
-			$filename = $data['slug'];
-		}
-		$path = $fsys->buildPath(AnyPath::$SYNCDEV, $data['topic'] .'+'.$filename.'.json');
-		$path = $fsys->setByPath($path, $data);
-
-		return $this->json(['file' => $path]);
-	}
-
-	/** */
-	#[Route('/test', methods: ['get'])]
-	public function test(Request $req, PublicAssetUrlGenerator $urlGen): Response
-	{
-		$prodSols = $this->getParameter(AnyPath::$PRODSOLS);
-		$originalFilename = $req->query->get('file');
-		$path = Path::canonicalize($prodSols.'/'.$originalFilename);
-
-		if (!file_exists($path)) {
-			return $this->json(['abort' => true, 'body' => 'X No existe archivo' . $path], 402);
-		}else{
-			$url = $urlGen->generate($path);
-			return $this->json(['abort' => true, 'body' => 'Ok:' . $url], 200);
-		}
-	}
-
-	/** */
-	#[Route('/test-fb', methods: ['GET', 'POST'])]
-	public function testFB(Request $req, Pushes $push, SecurityBasic $security): Response
-	{
-		$met = $req->getMethod();
-		if($met != 'POST') {
-			return $this->json(['body' => 'Ok, gracias'], 400);
-		}
-
-		$data = $req->getContent();
-		if(!$data) {
-			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
-		}
-    $data = json_decode($data, true);
-		if(!$security->isValid($data['token'])) {
-			return $this->json(['body' => 'Acceso restringido'], 401);
-		}
-
-		$push->test($data['to']);
-		return new Response(200);
-	}
-
-	/** Datos para any shop */
-	#[Route('/get-data-any', methods: ['post'])]
-	public function getDataAnyShop(Request $req, GetDataShop $shop): Response
-	{
-		if($req->getMethod() != 'POST') {
-			return $this->json(['body' => 'Ok, gracias'], 400);
-		}
-
-		$data = $req->getContent();
-		if(!$data) {
-			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
-		}
-
-		$data = json_decode($data, true);
-		if(!array_key_exists('slug', $data) || !array_key_exists('dev', $data)) {
-			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
-		}
-
-		$res = $shop->getSimpleData($data);
-		return $this->json($res);
-	}
-
-	/** */
-	#[Route('/update-data-com', methods: ['post'])]
-	public function updateDataCom(Request $req, UsComRepository $em): Response
-	{
-		if( $req->getMethod() == 'POST' ) {
-			$data = $req->getContent();
-			if(!$data) {
-				return new Response(403);
-			}
-
-			$data = json_decode($data, true);
-			if(array_key_exists('dev', $data)) {
-				$obj = new UsCom();
-				$obj->fromJson($data);
-				$res = $em->updateDataCom($obj);
-				return $this->json(['abort' => false, 'body' => $res]);
-			}else{
-				return $this->json(['abort' => true, 'body' => 'X Faltaron datos, Inténtalo nuevamente']);
-			}
-		}
-		return new Response(400);
-	}
-
-	/** 
-	 * Si el cliente falla en enviar desde el FRM la notif a core, este mismo
-	 * hace reintentos para que core este enterado del nuevo item
-	*/
-	#[Route('/push-core', methods: ['post'])]
-	public function sendPushToCore(Request $req, UsComRepository $em, Pushes $push): Response 
-	{
-		$data = json_decode($req->getContent(), true);
-		if(array_key_exists('code', $data)) {
-
-			$how = file_get_contents($this->getParameter('report'));
-			$token = $em->getTokenByWaId($how);
-			$notif = Notification::create('Refuerzo de Solicitud', $data['code'], '');
-			$result = $push->sendTo($token, $notif, ['ownApp' => $data['slugApp']]);
-			if(array_key_exists('sended', $result)) {
-				return $this->json(['abort' => false, 'id' => $result['sended']['name']]);
-			}
-		}
-
-		return $this->json([]);
-	}
-
-	/** Desde el core subimos los datos de com-int */
-	#[Route('/set-comloc', methods: ['post'])]
-	public function setComLoc(Request $req): Response 
-	{
-		if($req->getMethod() == 'POST') {
-			$header = $req->headers->get('any-token') ?? '';
-			if($header == $this->getParameter('getAnToken')) {
-				$data = $req->getContent();
-				if($data) {
-					$scm = $this->getParameter(AnyPath::$COMMLOC);
-					file_put_contents(Path::canonicalize($scm), $data);
-					return $this->json(['abort' => false]);
-				}
-			}
-		}
-		return $this->json(['abort' => true]);
 	}
 
 	/** */
