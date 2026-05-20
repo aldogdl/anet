@@ -7,7 +7,7 @@
 {% set placeholder = 'https://placehold.co/600x600/f8fafc/64748b?text=Sin+Imagen' %}
 {% set modalData = {
     id: item.id,
-    title: item.title,
+    title: item.fuente,
     price: item.price,
     thumb: mainImg,
     imgBig: imgBig,
@@ -20,8 +20,8 @@
     idSrc: extras.idSrc|default(''),
     linkSr: extras.linkSr|default('')
 }|json_encode %}
-{% set cleanSlug = product.cleanSlug(item.title) %}
-{% set cleanTitle = product.cleanTitle(item.title) %}
+{% set cleanSlug = product.cleanSlug(item.fuente) %}
+{% set cleanTitle = product.cleanTitle(item.fuente) %}
 
 {% set isMeli = isMeli|default(false) %}
 {% set safeId = product.safeId(item) %}
@@ -35,7 +35,7 @@
 		<img src="{{ mainImg }}" 
 			 onerror="this.src='{{ placeholder }}'"
 			 class="w-full h-full object-cover object-center p-1.5" 
-			 alt="{{ item.title }}">
+			 alt="{{ item.fuente }}">
 	</div>
 
 	<!-- Content Area -->
@@ -44,7 +44,7 @@
 		<!-- Title & Metadata -->
 		<div class="flex-1 min-w-0">
 			<h3 class="text-sm sm:text-base font-black text-[#103928] leading-tight line-clamp-1 cursor-text select-text">
-				{{ item.title }}
+				{{ item.fuente }}
 			</h3>
 			
 			<div class="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-3">

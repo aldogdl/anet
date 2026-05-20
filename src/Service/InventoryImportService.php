@@ -26,7 +26,7 @@ class InventoryImportService
 	 */
 	public function exportFromDbToCsv(string $slug): array
 	{
-		$sql = "SELECT id, type, stt, id_src, iku, src, title, thumb, img_big, price, costo, link, is_active, pieza, mrk_id, mdl_id, anio_inicio, anio_fin, lado, poss, detalles, extras, wa_id, ta_id, created 
+		$sql = "SELECT id, type, stt, id_src, iku, src, fuente, thumb, img_big, price, costo, link, is_active, pieza, mrk_id, mdl_id, anio_inicio, anio_fin, lado, poss, detalles, extras, wa_id, ta_id, created 
 				FROM item_pub 
 				WHERE slug = :slug AND stt <= 499";
 		
@@ -47,7 +47,7 @@ class InventoryImportService
 
 		// Encabezado (opcional, importFromCsv lo salta)
 		fputcsv($handle, [
-			'id', 'type', 'stt', 'id_src', 'iku', 'src', 'title', 'thumb', 'img_big', 
+			'id', 'type', 'stt', 'id_src', 'iku', 'src', 'fuente', 'thumb', 'img_big', 
 			'price', 'costo', 'link', 'is_active', 'pieza', 'mrk_id', 'mdl_id', 
 			'anio_inicio', 'anio_fin', 'lado', 'poss', 'detalles', 'extras', 'wa_id', 'ta_id', 'created'
 		]);
@@ -111,7 +111,7 @@ class InventoryImportService
 				'id_src'     => $row[3],
 				'iku'        => $row[4],
 				'src'        => $row[5],
-				'title'      => $row[6],
+				'fuente'      => $row[6],
 				'thumb'      => $row[7],
 				'img_big'    => $row[8],
 				'price'      => (float) $row[9],

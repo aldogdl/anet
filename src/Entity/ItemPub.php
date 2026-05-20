@@ -38,7 +38,7 @@ class ItemPub
     private ?string $src = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $title = null;
+    private ?string $fuente = null;
 
     #[ORM\Column(length: 255)]
     private ?string $thumb = null;
@@ -133,7 +133,7 @@ class ItemPub
 			$item->setIku($data['iku'] ?? null);
 			$item->setSlug($data['slug'] ?? '');
 			$item->setSrc($data['src'] ?? null);
-			$item->setTitle($data['title'] ?? null);
+			$item->setFuente($data['fuente'] ?? null);
 			$item->setThumb($data['thumb'] ?? null);
 			$item->setImgBig($data['imgBig'] ?? null);
 			$item->setPrice((float) $data['price']);
@@ -176,7 +176,7 @@ class ItemPub
 			$this->setIdSrc($data['idSrc'] ?? null);
 			$this->setIku($data['iku'] ?? null);
 			$this->setSrc($data['src'] ?? null);
-			$this->setTitle($data['title'] ?? null);
+			$this->setFuente($data['fuente'] ?? null);
 			$this->setThumb($data['thumb'] ?? null);
 			$this->setImgBig($data['imgBig'] ?? null);
 			$this->setPrice((float) $data['price']);
@@ -235,14 +235,14 @@ class ItemPub
 			return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getFuente(): ?string
     {
-			return $this->title;
+			return $this->fuente;
     }
 
-    public function setTitle(string $title): static
+    public function setFuente(string $fuente): static
     {
-			$this->title = $title;
+			$this->fuente = $fuente;
 
 			return $this;
     }

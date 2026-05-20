@@ -3,7 +3,7 @@
 namespace App\Service\DemoSol;
 
 use App\Dtos\WaMsgDto;
-use App\Entity\Items;
+// use App\Entity\Items;
 use App\Service\MyFsys;
 
 class DemoSol {
@@ -22,24 +22,41 @@ class DemoSol {
         $trackjson = $this->fSys->getContent('waTemplates', '_track.json');
         if(array_key_exists('type', $trackjson)) {
             
-            $item = new Items();
-            $item = $item->fromMapItem($demojson);
+            // Reemplazo de Items para evitar dependencias
+            $pieza = $demojson['pieza'] ?? '';
+            $lado = $demojson['lado'] ?? '';
+            $poss = $demojson['poss'] ?? '';
+            if ($poss != '') {
+                $lado = ($lado == '') ? ' ' . $poss : ' ' . $lado . ' ' . $poss;
+            } else {
+                $lado = $lado != '' ? ' ' . $lado : '';
+            }
+            $aniosArr = $demojson['anios'] ?? [];
+            $anios = '';
+            if (count($aniosArr) > 0) {
+                $anios = ' aplica a: ' . implode(', ', $aniosArr);
+            }
+            $title = $pieza . $lado . ' para ' . ($demojson['marca'] ?? '') . ' ' . ($demojson['model'] ?? '') . $anios;
+            $condicion = $demojson['condicion'] ?? '';
+            $thumbnail = $demojson['thumbnail'] ?? '';
+            $id = $demojson['id'] ?? 0;
+
             $demojson = [];
             $body = $trackjson[$trackjson['type']]['body']['text'];
-            $body = str_replace('{:token}', $item->buildTitle(), $body);
-            $body = str_replace('{:detalles}', $item->getCondicion().'. Demostración', $body);
+            $body = str_replace('{:token}', $title, $body);
+            $body = str_replace('{:detalles}', $condicion . '. Demostración', $body);
             $trackjson[$trackjson['type']]['body']['text'] = $body;
             
             $trackjson[$trackjson['type']]['header'] = [
                 "type" => "image",
-                "image" => ["link" => $item->getThumbnail()]
+                "image" => ["link" => $thumbnail]
             ];
 
             $btns = $trackjson[$trackjson['type']]['action']['buttons'];
             $rota = count($btns);
             for ($i=0; $i < $rota; $i++) { 
                 $btns[$i][ $btns[$i]['type'] ]['id'] = str_replace(
-                    '{:uuid}', 'demo-'.$item->getId(), $btns[$i][ $btns[$i]['type'] ]['id']
+                    '{:uuid}', 'demo-'.$id, $btns[$i][ $btns[$i]['type'] ]['id']
                 );
             }
 

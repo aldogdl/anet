@@ -62,7 +62,7 @@ class ShopController extends AbstractController
 			->orderBy('i.updatedAt', 'DESC');
 
 		if ($search) {
-			$queryBuilder->andWhere('i.title LIKE :search OR i.detalles LIKE :search')
+			$queryBuilder->andWhere('i.fuente LIKE :search OR i.detalles LIKE :search')
 				->setParameter('search', '%' . $search . '%');
 		}
 
@@ -195,7 +195,7 @@ class ShopController extends AbstractController
 				->orderBy('i.created', 'DESC');
 
 			if ($search) {
-				$queryBuilder->andWhere('i.title LIKE :search OR i.detalles LIKE :search')
+				$queryBuilder->andWhere('i.fuente LIKE :search OR i.detalles LIKE :search')
 					->setParameter('search', '%' . $search . '%');
 			}
 			if ($mrkId) {
@@ -278,7 +278,7 @@ class ShopController extends AbstractController
 			$property->setValue($mock, 0);
 
 			$mock->setIdSrc($meliItem['id']);
-			$mock->setTitle($meliItem['title']);
+			$mock->setFuente($meliItem['title']);
 			$mock->setPrice((float) $meliItem['price']);
 			
 			$thumb = $meliItem['thumbnail'];
@@ -289,7 +289,7 @@ class ShopController extends AbstractController
 			$mock->setSlug($slug);
 			$mock->setIsActive(true);
 			$mock->setIku($meliItem['id']); 
-			
+
 			$mrkName = '';
 			$mdlName = '';
 			if (!empty($meliItem['attributes'])) {
@@ -316,8 +316,8 @@ class ShopController extends AbstractController
 		]);
 	}
 
-	#[Route('/ft-{id}/{slug}/{title}', name: 'app_product_detail', methods: ['GET'])]
-	public function productDetail(int $id, string $slug, string $title, ItemPubRepository $itemRepo, Fsys $fsys): Response
+	#[Route('/ft-{id}/{slug}/{fuente}', name: 'app_product_detail', methods: ['GET'])]
+	public function productDetail(int $id, string $slug, string $fuente, ItemPubRepository $itemRepo, Fsys $fsys): Response
 	{
 		$item = $itemRepo->find($id);
 		if (!$item) {
@@ -342,7 +342,7 @@ class ShopController extends AbstractController
 		return $this->render('vistas/common/product_detail.html.twig', [
 			'item' => $item,
 			'storeName' => $slug,
-			'pieza' => $title,
+			'pieza' => $fuente,
 			'dtaCtc' => $dtaCtc,
 			'contactPhone' => $contactPhone
 		]);
@@ -371,7 +371,7 @@ class ShopController extends AbstractController
 
 					$cart[$id] = [
 						'id' => $item->getId(),
-						'title' => $item->getTitle(),
+						'title' => $item->getFuente(),
 						'price' => $item->getPrice(),
 						'thumb' => $thumb,
 						'quantity' => 1,

@@ -55,13 +55,13 @@
 
 {% macro detailUrl(item, isMeli=false) %}
     {% set extras = item.extras|default({}) %}
-    {% set cleanSlug = _self.cleanSlug(item.title) %}
-    {% set cleanTitle = _self.cleanTitle(item.title) %}
+    {% set cleanSlug = _self.cleanSlug(item.fuente) %}
+    {% set cleanTitle = _self.cleanTitle(item.fuente) %}
     {% set safeId = item.id ?: 0 %}
     {% if isMeli and extras.permalink is defined %}
         {{ extras.permalink }}
     {% else %}
-        {{ path('app_product_detail', { id: safeId, slug: cleanSlug, title: cleanTitle }) }}
+        {{ path('app_product_detail', { id: safeId, slug: cleanSlug, fuente: cleanTitle }) }}
     {% endif %}
 {% endmacro %}
 
@@ -94,7 +94,7 @@
     {% if extras.fuente is defined and extras.fuente != '' %}
         {{ extras.fuente }}
     {% else %}
-        {{ item.title }}
+        {{ item.fuente }}
     {% endif %}
 {% endmacro %}
 

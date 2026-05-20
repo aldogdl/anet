@@ -2,7 +2,7 @@
 
 namespace App\Controller\ComCore;
 
-use App\Repository\ItemsRepository;
+// use App\Repository\ItemsRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -46,7 +46,7 @@ class PostController extends AbstractController
     return $this->json($response);
   }
 
-  /** */
+  /**
   #[Route('com-core/cotizacion/', methods:['post'])]
   public function setCotizacion(Request $req, ItemsRepository $itemEm): Response
   {
@@ -56,5 +56,6 @@ class PostController extends AbstractController
     
     return $this->json($response);
   }
+  */
 
 }
