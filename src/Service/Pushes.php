@@ -130,25 +130,19 @@ class Pushes
 	 * Enviamos los push a multiples contactos
 	 * @param array $push
 	*/
-	public function sendMultiple(array $push): array
+	public function sendMultiple(array $push, array $payload): array
 	{
 		$thubm = 'https://autoparnet.com/ic_launcher.png';
 		if(array_key_exists('thubmnail', $push)) {
 			$thubm = $push['thubmnail'];
 		}
 		$notification = Notification::create($push['title'], $push['body'], $thubm);
-		$payload = ['idDbSr' => $push['idDbSr'], 'type' => $push['type']];
-		if(array_key_exists('srcIdDbSr', $push)) {
-			if($push['srcIdDbSr'] > 0) {
-				$payload['srcIdDbSr'] = $push['srcIdDbSr'];
-			}
-		}
 
 		$fails = [];
-		for ($i=0; $i < $push['cant']; $i++) {
-			if($push['tokens'][$i] != '') {
-					
-				$result = $this->sendTo($push['tokens'][$i], $notification, $payload);
+    $rota = count($push);
+		for ($i=0; $i < $rota; $i++) {
+			if($push[$i]['token'] != '') {
+				$result = $this->sendTo($push[$i], $notification, $payload);
 				if(array_key_exists('fails', $result)) {
 					$fails[] = $result['fails'];
 				}

@@ -100,7 +100,8 @@ class SysComController extends AbstractController
 	*/
 	#[Route('/centinela', methods: ['post'])]
 	public function centinela(
-		Request $req, Fsys $fsys, SyncMlRepository $emMl, ItemPubRepository $emPub
+		Request $req, Fsys $fsys, SyncMlRepository $emMl,
+		ItemPubRepository $emPub, SysComRepository $sysCom, Pushes $push
 	): Response
 	{
 		if($req->getMethod() != 'POST') {
@@ -177,7 +178,11 @@ class SysComController extends AbstractController
 		}
 
 		$files['ctc'] = $ctcLog;
-		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'sys_com_cent+'.$data['slug'].'.json');
+		if(!array_key_exists('push', $data)) {
+			$users = $sysCom->getTokensBySlug($slug);
+			$pay = ['from' => $waId, 'slug' => $slug];
+			$push->sendMultiple($users, $pay);
+		}
 		$fsys->setByPath($path, $files);
 		return $this->json($files);
 	}

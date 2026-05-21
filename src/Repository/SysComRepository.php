@@ -49,6 +49,17 @@ class SysComRepository extends ServiceEntityRepository
 	}
 
 	/** */
+	public function getTokensBySlug(string $slug): array
+	{
+		$sql = 'SELECT sc.fbtok FROM '. SysCom::class .' sc '.
+				'WHERE sc.slug = :slug';
+		$res = $this->_em->createQuery($sql)->setParameters([
+			'slug' => $slug
+		])->getArrayResult();
+		return array_column($res, 'fbtok');
+	}
+
+	/** */
 	public function updateDataCom(array $data): array
 	{
 		$exist = $this->fetchUser($data);
