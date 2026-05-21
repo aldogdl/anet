@@ -183,7 +183,7 @@ class SysComController extends AbstractController
 			$users = $sysCom->getTokensBySlug($slug);
 			$pay = [
 				'event' => 'sync_centinela',
-				'from' => $waId, 'slug' => $slug,
+				'waId' => $waId, 'slug' => $slug,
 				'title' => 'Sincronizacion Centinela',
 				'body' => 'Ejecutando Sincronizacioón desde el Centilena',
 			];
