@@ -54,7 +54,7 @@ class SysComRepository extends ServiceEntityRepository
 		$exist = $this->fetchUser($data);
 		if($exist) {
 			$exist->setLastUpdate(new \DateTimeImmutable('now'));
-			$exist->setFbtok($data['tkfb']);
+			$exist->setFbtok($data['fbtok']);
 			$exist->setTaId($data['taId']);
 			$user = $exist;
 		}else{

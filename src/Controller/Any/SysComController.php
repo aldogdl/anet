@@ -248,10 +248,11 @@ class SysComController extends AbstractController
 			if($data) {
 
 				$data = json_decode($data, true);
-				if(!array_key_exists('slug', $data) || !array_key_exists('fb', $data)) {
+				if(!array_key_exists('slug', $data) || !array_key_exists('fbtok', $data)) {
 					return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperación']);
 				}
 
+				$data['ip'] = $req->getClientIp();
 				$user = $em->updateDataCom($data);
 				if($user) {
 					return $this->json(['abort' => false, 'body' => $user]);

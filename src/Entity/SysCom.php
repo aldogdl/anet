@@ -50,10 +50,10 @@ class SysCom
 		$this->setSlug($data['slug']);
 		$this->setWaId($data['waId']);
 		$this->setDevice($data['device']);
-		$this->setTaId($data['taId']);
 		$this->setName($data['name']);
 		$this->setIp($data['ip']);
-		$this->setFbtok($data['tkfb']);
+		$this->setFbtok($data['fbtok']);
+		$this->setTaId($data['taId']);
 		$this->setLastUpdate(new \DateTimeImmutable('now'));
 		return $this;
 	}
