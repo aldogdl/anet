@@ -133,10 +133,11 @@ class Pushes
 	public function sendMultiple(array $push, array $payload): array
 	{
 		$thubm = 'https://autoparnet.com/ic_launcher.png';
-		if(array_key_exists('thubmnail', $push)) {
-			$thubm = $push['thubmnail'];
+		if(array_key_exists('thubmnail', $payload)) {
+			$thubm = $payload['thubmnail'];
 		}
-		$notification = Notification::create($push['title'], $push['body'], $thubm);
+		$notification = Notification::create($payload['title'], $payload['body'], $thubm);
+		unset($payload['title'], $payload['body'], $payload['thubmnail']);
 
 		$fails = [];
     $rota = count($push);

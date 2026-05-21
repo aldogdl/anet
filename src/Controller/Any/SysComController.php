@@ -178,13 +178,15 @@ class SysComController extends AbstractController
 		}
 
 		$files['ctc'] = $ctcLog;
-		file_put_contents('seg_1.json', '');
 		
 		if(!array_key_exists('push', $data)) {
-			file_put_contents('seg_2.json', '');
 			$users = $sysCom->getTokensBySlug($slug);
-			file_put_contents('seg_3.json', json_encode($users));
-			$pay = ['from' => $waId, 'slug' => $slug];
+			$pay = [
+				'event' => 'sync_centinela',
+				'from' => $waId, 'slug' => $slug,
+				'title' => 'Sincronizacion Centinela',
+				'body' => 'Ejecutando Sincronizacioón desde el Centilena',
+			];
 			$push->sendMultiple($users, $pay);
 			file_put_contents('seg_4.json', '');
 		}
