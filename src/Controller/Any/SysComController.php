@@ -48,7 +48,7 @@ class SysComController extends AbstractController
 	public function testFB(Request $req, Pushes $push, SecurityBasic $security): Response
 	{
 		if($req->getMethod() != 'POST') {
-			return $this->json(['body' => 'Ok, gracias'], 400);
+			return $this->json(['abort' => true, 'body' => 'Ok, gracias'], 400);
 		}
 
 		$data = $req->getContent();
@@ -57,11 +57,11 @@ class SysComController extends AbstractController
 		}
     $data = json_decode($data, true);
 		if(!$security->isValid($data['token'])) {
-			return $this->json(['body' => 'Acceso restringido'], 401);
+			return $this->json(['abort' => true, 'body' => 'Acceso restringido'], 401);
 		}
 
-		$push->test($data['to']);
-		return new Response(200);
+		$resp = $push->test($data['to']);
+		return $this->json(['abort' => false, 'body' => $resp], 200);
 	}
 
 	/** Seteamos los datos de FB */
