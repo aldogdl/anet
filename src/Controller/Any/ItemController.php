@@ -76,7 +76,7 @@ class ItemController extends AbstractController
 				}
 
 				if($res['success']) {
-          
+
 				  // Aprovechamos y limpiamos la BD y folders de Imagenes
 					if($res['rowsAffected'] > 0) {
 						$res = 'Publicación pausada correctamente';

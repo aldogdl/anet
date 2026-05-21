@@ -177,6 +177,8 @@ class SysComController extends AbstractController
 		}
 
 		$files['ctc'] = $ctcLog;
+		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'sys_com_cent+'.$data['slug'].'.json');
+		$fsys->setByPath($path, $files);
 		return $this->json($files);
 	}
 
