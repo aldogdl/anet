@@ -40,7 +40,7 @@ class SysComRepository extends ServiceEntityRepository
 	/** */
 	public function fetchUser(array $data): ?SysCom
 	{
-		$sql = 'SELECT sc FROM sys_com sc '.
+		$sql = 'SELECT sc FROM '. SysCom::class .' sc '.
 				'WHERE sc.waId = :waId AND sc.device = :device LIMIT 1';
 		$res = $this->_em->createQuery($sql)->setParameters([
 			'waId' => $data['waId'], 'device' => $data['device']
