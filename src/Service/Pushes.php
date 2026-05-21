@@ -142,7 +142,7 @@ class Pushes
 		$fails = [];
     $rota = count($push);
 		for ($i=0; $i < $rota; $i++) {
-			if($push[$i]['token'] != '') {
+			if($push[$i] != '') {
 				$result = $this->sendTo($push[$i], $notification, $payload);
 				if(array_key_exists('fails', $result)) {
 					$fails[] = $result['fails'];
