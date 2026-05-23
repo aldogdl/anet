@@ -49,6 +49,25 @@ class SysComRepository extends ServiceEntityRepository
 	}
 
 	/** */
+	public function checkIsOk(string $target, string $waId, string $slug): string
+	{
+		$sql = 'SELECT sc FROM '. SysCom::class .' sc '.
+			'WHERE sc.waId = :waId AND sc.slug = :slug';
+
+		$res = $this->_em->createQuery($sql)->setParameters([
+			'waId' => $waId, 'slug' => $slug
+		])->setMaxResults(1)->getOneOrNullResult();
+
+		if($res) {
+			if($res->getFbTok() == $target) {
+				return $target;
+			}
+		}
+
+		return '';
+	}
+
+	/** */
 	public function getTokensBySlug(string $slug): array
 	{
 		$sql = 'SELECT sc.fbtok FROM '. SysCom::class .' sc '.

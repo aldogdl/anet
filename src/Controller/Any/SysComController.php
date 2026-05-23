@@ -45,7 +45,9 @@ class SysComController extends AbstractController
 
 	/**  */
 	#[Route('/test-fb', methods: ['GET', 'POST'])]
-	public function testFB(Request $req, Pushes $push, SecurityBasic $security): Response
+	public function testFB(
+		Request $req, Pushes $push, SecurityBasic $security, SysComRepository $sysCom
+	): Response
 	{
 		if($req->getMethod() != 'POST') {
 			return $this->json(['abort' => true, 'body' => 'Ok, gracias'], 400);
@@ -60,6 +62,10 @@ class SysComController extends AbstractController
 			return $this->json(['abort' => true, 'body' => 'Acceso restringido'], 401);
 		}
 
+    $data['to'] = $sysCom->checkIsOk($data['to'], $data['waId'], $data['slug']);
+		if($data['to'] == '') {
+			return $this->json(['abort' => true, 'body' => 'Token no registrado o Actualiazado'], 200);
+		}
 		$resp = $push->test($data['to']);
 		return $this->json(['abort' => false, 'body' => $resp], 200);
 	}
@@ -183,14 +189,15 @@ class SysComController extends AbstractController
 			$users = $sysCom->getTokensBySlug($slug);
 			$pay = [
 				'event' => 'sync_centinela',
-				'waId' => $waId, 'slug' => $slug,
+				'waId' => $waId.'',
+				'slug' => $slug.'',
 				'title' => 'Sincronizacion Centinela',
 				'body' => 'Ejecutando Sincronizacioón desde el Centilena',
 			];
+			file_put_contents('prueba_push.json', json_encode($pay));
 			$push->sendMultiple($users, $pay);
 		}
 
-		$fsys->setByPath($path, $files);
 		return $this->json($files);
 	}
 
