@@ -178,7 +178,7 @@ class SysComController extends AbstractController
 		}
 
 		$files['ctc'] = $ctcLog;
-		
+
 		if(!array_key_exists('push', $data)) {
 			$users = $sysCom->getTokensBySlug($slug);
 			$pay = [
@@ -188,8 +188,8 @@ class SysComController extends AbstractController
 				'body' => 'Ejecutando Sincronizacioón desde el Centilena',
 			];
 			$push->sendMultiple($users, $pay);
-			file_put_contents('seg_4.json', '');
 		}
+
 		$fsys->setByPath($path, $files);
 		return $this->json($files);
 	}
