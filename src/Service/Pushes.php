@@ -151,7 +151,7 @@ class Pushes
 		}
 
 		$errs = count($fails);
-		$msg = 'Enviado a '.($push['cant'] - $errs).' de '.$push['cant'].' contactos';
+		$msg = 'Enviado a '.($rota - $errs).' de '.$rota.' contactos';
 		$result = ['abort' => false, 'msg' => $msg];
 		if($errs > 0) {
 			$result['fails'] = $fails;
