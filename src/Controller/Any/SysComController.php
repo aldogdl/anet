@@ -195,7 +195,6 @@ class SysComController extends AbstractController
 				'body' => 'Ejecutando Sincronizacioón desde el Centilena',
 			];
 
-			file_put_contents('prueba_push.json', json_encode(['users' => $users, 'pay' => $pay]));
 			$push->sendMultiple($users, $pay);
 		}
 
