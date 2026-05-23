@@ -144,7 +144,7 @@ class Pushes
 		for ($i=0; $i < $rota; $i++) {
 			if($push[$i] != '') {
 				$result = $this->sendTo($push[$i], $notification, $payload);
-				file_put_contents('prueba_push.json', json_encode($pay));
+				file_put_contents('prueba_push.json', json_encode($result));
 				if(array_key_exists('fails', $result)) {
 					$fails[] = $result['fails'];
 				}
