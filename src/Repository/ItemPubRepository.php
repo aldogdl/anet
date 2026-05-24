@@ -67,12 +67,15 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** */
-	public function getAllMsgAfterUpdate(string $slug, String $waId, int $lastUpdate): array
+	public function getAllMsgAfterUpdate(string $slug, String $waId, int $lastUpdate, string $src = ''): array
 	{
 		$withFecha = '';
 		$parameters = ['slug' => $slug];
     
-		if(!empty($waId)) {
+		if(!empty($src)) {
+			$withFecha .= 'AND it.src != :src ';
+			$parameters['src'] = $src;
+		} elseif(!empty($waId)) {
 			$withFecha .= 'AND it.waId != :waId ';
 			$parameters['waId'] = $waId;
 		}

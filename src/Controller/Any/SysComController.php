@@ -124,11 +124,16 @@ class SysComController extends AbstractController
 		if(!array_key_exists('slug', $data)) {
 			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
 		}
-
+  
 		$slug = $data['slug'];
 		$waId = 'otra_cuenta';
 		if(array_key_exists('waId', $data)) {
 			$waId = $data['waId'];
+		}
+
+		$src = '';
+		if(array_key_exists('src', $data)) {
+			$src = $data['src'];
 		}
 
 		$verDicc = 1;
@@ -178,7 +183,7 @@ class SysComController extends AbstractController
 				if($waId == 'otra_cuenta') {
 					$waId = '';
 				}
-				$pubs = $emPub->getAllMsgAfterUpdate($slug, $waId, $last['pub']);
+				$pubs = $emPub->getAllMsgAfterUpdate($slug, $waId, $last['pub'], $src);
 				$files['pubs'] = $pubs;
 			}
 		}
