@@ -72,12 +72,11 @@ class ItemPubRepository extends ServiceEntityRepository
 		$withFecha = '';
 		$parameters = ['slug' => $slug];
     
+		$withFecha .= 'AND it.waId != :waId ';
+		$parameters['waId'] = $waId;
 		if(!empty($src)) {
-			$withFecha .= 'AND it.src != :src ';
+			$withFecha .= 'OR it.src != :src ';
 			$parameters['src'] = $src;
-		} elseif(!empty($waId)) {
-			$withFecha .= 'AND it.waId != :waId ';
-			$parameters['waId'] = $waId;
 		}
 
 		if(is_int($lastUpdate) && $lastUpdate > 0) {
