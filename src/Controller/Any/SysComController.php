@@ -124,7 +124,7 @@ class SysComController extends AbstractController
 		if(!array_key_exists('slug', $data)) {
 			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
 		}
-  
+
 		$slug = $data['slug'];
 		$waId = 'otra_cuenta';
 		if(array_key_exists('waId', $data)) {
@@ -134,6 +134,15 @@ class SysComController extends AbstractController
 		$src = '';
 		if(array_key_exists('src', $data)) {
 			$src = $data['src'];
+		}
+
+    $device = 'any';
+		if($src == 'yd') {
+      $device = 'desktop';
+		}elseif($src == 'ym') {
+			$device = 'movil';
+		} elseif($src == 'yw') {
+			$device = 'web';
 		}
 
 		$verDicc = 1;
@@ -196,6 +205,7 @@ class SysComController extends AbstractController
 				'event' => 'sync_centinela',
 				'waId' => $waId.'',
 				'slug' => $slug.'',
+				'device' => $device,
 				'title' => 'Sincronizacion Centinela',
 				'body' => 'Ejecutando Sincronizacioón desde el Centilena',
 			];
