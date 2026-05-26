@@ -63,11 +63,15 @@ class Pushes
 	public function test(String $token): array
 	{
 		$notification = Notification::create(
-			"👌 Test Yonkeros",
+			"👌 Test Push Yonkeros",
 			"Notificación Web Push Éxitosa",
 			'https://autoparnet.com/ic_launcher.png'
 		);
-		return $this->sendTo($token, $notification, ['type' => 'test']);
+		return $this->sendTo($token, $notification, [
+			'event' => 'test_push',
+			'title' => 'Prueba de Funcionamiento',
+			'body' => 'Envio de Notificación Push exitosa desde Yonkeros SR',
+		]);
 	}
 
 	/** 
