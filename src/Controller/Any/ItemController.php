@@ -384,4 +384,21 @@ class ItemController extends AbstractController
 		return $this->json(['abort' => true, 'body' => 'Error inesperado']);
 	}
 
+	/**
+	 * Endpoint para obtener el idSr de un item a partir de su idSrc
+	 */
+	#[Route('/item-pub/check', methods: ['GET'])]
+	public function checkItemPub(Request $req, ItemPubRepository $repo): Response
+	{
+		$idSrc = $req->query->get('idSrc');
+		if (!$idSrc) {
+			return new Response('0', Response::HTTP_BAD_REQUEST);
+		}
+
+		$item = $repo->findOneBy(['idSrc' => $idSrc]);
+		$idSr = $item ? $item->getId() : 0;
+
+		return new Response((string) $idSr);
+	}
+
 }
