@@ -106,9 +106,14 @@ class ItemController extends AbstractController
 			$items = [];
 
 			if($id) {
-				$res = $repo->getIfExistPubById($id);
-				if($res) {
-					$items = [$res];
+				if(mb_strpos($id, ',') !== false) {
+					$ids = array_map('trim', explode(',', $id));
+					$items = $repo->getAllItemsByIds((string)$slug, $ids);
+				} else {
+					$res = $repo->getIfExistPubById((int)$id);
+					if($res) {
+						$items = [$res];
+					}
 				}
 			} elseif($slug && $waId) {
 

@@ -2,20 +2,16 @@
 
 namespace App\Controller\Any;
 
-use App\Entity\UsCom;
-use App\Repository\UsComRepository;
 use App\Repository\SysComRepository;
 
 use App\Repository\ItemPubRepository;
 use App\Repository\SyncMlRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
-use App\Service\Any\GetDataShop;
 use App\Service\Any\PublicAssetUrlGenerator;
 use App\Service\Pushes;
 use App\Service\SecurityBasic;
 use App\Service\InventoryImportService;
-use Kreait\Firebase\Messaging\Notification;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -216,9 +212,7 @@ class SysComController extends AbstractController
 		return $this->json($files);
 	}
 
-	/** 
-	 * 
-	*/
+ 	/** */
 	#[Route('/get-pendings', methods: ['post'])]
 	public function getPendings(Request $req, ItemPubRepository $emPub): Response
 	{
