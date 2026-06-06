@@ -110,10 +110,7 @@ class ItemController extends AbstractController
 					$ids = array_map('trim', explode(',', $id));
 					$items = $repo->getAllItemsByIds((string)$slug, $ids);
 				} else {
-					$res = $repo->getIfExistPubByIdToArray((int)$id);
-					if($res) {
-						$items = [$res];
-					}
+					$items = $repo->getIfExistPubByIdToArray((int)$id);
 				}
 			} elseif($slug && $waId) {
 
