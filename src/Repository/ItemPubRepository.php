@@ -42,6 +42,16 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** */
+	public function getIfExistPubByIdToArray(int $id): array
+	{
+		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '.
+		'WHERE it.id = :id';
+
+		return $this->_em->createQuery($dql)
+			->setParameter('id', $id)->getArrayResult();
+	}
+
+	/** */
 	public function getPubsBySlug(string $slug, string $waId): \Doctrine\ORM\Query
 	{
 		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '.
