@@ -146,6 +146,11 @@ class SysComController extends AbstractController
 			$verDicc = (int) $data['dicc_sync'];
 		}
 
+		$synInv = true;
+		if(array_key_exists('synInv', $data)) {
+			$synInv = (bool) $data['synInv'];
+		}
+
 		// Creamos una marca de presencia o uso de la app
 		$path = $fsys->buildPath(AnyPath::$SYNCDEV, 'presence+'.$data['slug'].'_'.$waId.'.json');
 		$date = new \DateTime('now');
@@ -154,7 +159,8 @@ class SysComController extends AbstractController
 		// Timestamp en milisegundos
 		$timestampMilliseconds = $timestampSeconds * 1000;
 		$fsys->setByPath($path, ['last' => $timestampMilliseconds]);
-
+    
+		// Recuperamos el expediente
 		$ctcLog = $fsys->get(AnyPath::$DTACTC, $data['slug'].'.json');
 		if(array_key_exists('filenames', $data)) {
 			$lista = $data['filenames'];
@@ -174,39 +180,43 @@ class SysComController extends AbstractController
 				}
 			}
 		}
-
-		if(array_key_exists('last', $data)) {
-
-			$last = $data['last'];
-			// Recuperamos notificaciones de MeLi
-			if(array_key_exists('meli', $last) && array_key_exists('idUserMl', $data)) {
-				$meli = $emMl->getAllMsgAfterByMsgId($data['idUserMl'], $last['meli']);
-				$files['meli'] = $meli;
-			}
-			// Recuperamos actualizaciones de Match1
-			if(array_key_exists('pub', $last)) {
-				if($waId == 'otra_cuenta') {
-					$waId = '';
-				}
-				$pubs = $emPub->getAllMsgAfterUpdate($slug, $waId, $last['pub'], $src);
-				$files['pubs'] = $pubs;
-			}
-		}
-
 		$files['ctc'] = $ctcLog;
+    
+		// Recuperacion del inv si el cliente lo pide
+		if($synInv) {
 
-		if(!array_key_exists('push', $data)) {
-			$users = $sysCom->getTokensBySlug($slug);
-			$pay = [
-				'event' => 'sync_centinela',
-				'waId' => $waId.'',
-				'slug' => $slug.'',
-				'device' => $device,
-				'title' => 'Sincronizacion Centinela',
-				'body' => 'Ejecutando Sincronizacioón desde el Centilena',
-			];
+			if(array_key_exists('last', $data)) {
+	
+				$last = $data['last'];
+				// Recuperamos notificaciones de MeLi
+				if(array_key_exists('meli', $last) && array_key_exists('idUserMl', $data)) {
+					$meli = $emMl->getAllMsgAfterByMsgId($data['idUserMl'], $last['meli']);
+					$files['meli'] = $meli;
+				}
+				// Recuperamos actualizaciones de Match1
+				if(array_key_exists('pub', $last)) {
+					if($waId == 'otra_cuenta') {
+						$waId = '';
+					}
+					$pubs = $emPub->getAllMsgAfterUpdate($slug, $waId, $last['pub'], $src);
+					$files['pubs'] = $pubs;
+				}
+			}
 
-			$push->sendMultiple($users, $pay);
+			// Envio de noti desde desktop a movil
+			if(!array_key_exists('push', $data)) {
+				$users = $sysCom->getTokensBySlug($slug);
+				$pay = [
+					'event' => 'sync_centinela',
+					'waId' => $waId.'',
+					'slug' => $slug.'',
+					'device' => $device,
+					'title' => 'Sincronizacion Centinela',
+					'body' => 'Ejecutando Sincronizacioón desde el Centilena',
+				];
+	
+				$push->sendMultiple($users, $pay);
+			}
 		}
 
 		return $this->json($files);
