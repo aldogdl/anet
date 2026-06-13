@@ -79,13 +79,13 @@ class ItemPubRepository extends ServiceEntityRepository
 	/** */
 	public function getAllMsgAfterUpdate(string $slug, String $waId, int $lastUpdate, string $src = ''): array
 	{
-		$withFecha = '';
+		$moreQuery = '';
 		$parameters = ['slug' => $slug];
     
-		$withFecha .= 'AND it.waId != :waId ';
+		$moreQuery .= 'AND it.waId != :waId ';
 		$parameters['waId'] = $waId;
 		if(!empty($src)) {
-			$withFecha .= 'OR it.src != :src ';
+			$moreQuery .= 'OR it.src != :src ';
 			$parameters['src'] = $src;
 		}
 
@@ -97,7 +97,7 @@ class ItemPubRepository extends ServiceEntityRepository
 				$updatedAt = new \DateTimeImmutable('@' . floor($safeLastUpdate / 1000));
 			}
 
-			$withFecha .= 'AND it.updatedAt >= :updatedAt ';
+			$moreQuery .= 'AND it.updatedAt >= :updatedAt ';
 			$tz = new \DateTimeZone(date_default_timezone_get()); 
 			$updatedAt = $updatedAt->setTimezone($tz);
 			$parameters['updatedAt'] = $updatedAt;
@@ -105,7 +105,7 @@ class ItemPubRepository extends ServiceEntityRepository
 
 		$dql = 'SELECT it FROM ' . ItemPub::class . ' it '
 			. 'WHERE it.slug = :slug '
-			. $withFecha
+			. $moreQuery
 			. 'AND it.stt < 299 AND it.stt != 399 ORDER BY it.updatedAt DESC, it.id DESC';
 
 		$items = $this->_em->createQuery($dql)
@@ -116,6 +116,17 @@ class ItemPubRepository extends ServiceEntityRepository
 		$pendings = [];
 		$inactives = [];
 		$last = $lastUpdate;
+    $rota = count($items);
+
+		if($rota > 50) {
+			return [
+				'results' => $results,
+				'pendings' => $pendings,
+				'inactives' => $inactives,
+				'last' => $last + 1000,
+				'import' => $rota
+			];
+		}
 
 		foreach ($items as $index => $item) {
 
