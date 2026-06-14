@@ -146,7 +146,7 @@ class SysComController extends AbstractController
 			$verDicc = (int) $data['dicc_sync'];
 		}
 
-		$synInv = true;
+		$synInv = false;
 		if(array_key_exists('synInv', $data)) {
 			$synInv = (bool) $data['synInv'];
 		}
