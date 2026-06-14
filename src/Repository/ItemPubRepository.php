@@ -138,10 +138,21 @@ class ItemPubRepository extends ServiceEntityRepository
 			if ((!isset($item['isActive']) || $item['isActive'] == 0) || (isset($item['stt']) && $item['stt'] == 501)) {
 				$isInactive = true;
 			}
-			if ($index < 5 || $isInactive) {
-				$results[] = $item;
+			if($isInactive) {
+        $inactives[] = [
+					'id' => $item['id'],
+					'idSrc' => $item['idSrc'],
+					'iku' => $item['iku'],
+					'src' => $item['src'],
+					'stt' => $item['stt'],
+					'isActive' => $item['isActive'],
+				];
 			} else {
-				$pendings[] = $item['id'];
+				if ($index < 5) {
+					$results[] = $item;
+				} else {
+					$pendings[] = $item['id'];
+				}
 			}
 		}
 
