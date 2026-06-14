@@ -5,9 +5,10 @@
 {% set firstPic = (extras.pictures|default([]))|first %}
 {% set imgBig = product.imgUrl(item, firstPic) %}
 {% set placeholder = product.placeholder() %}
+{% set pTitle = product.productTitle(item) %}
 {% set modalData = {
     id: item.id,
-    title: item.fuente,
+    title: pTitle,
     price: item.price,
     thumb: mainImg,
     imgBig: imgBig,
@@ -20,8 +21,8 @@
     idSrc: extras.idSrc|default(''),
     linkSr: extras.linkSr|default('')
 }|json_encode %}
-{% set cleanSlug = product.cleanSlug(item.fuente) %}
-{% set cleanTitle = product.cleanTitle(item.fuente) %}
+{% set cleanSlug = product.cleanSlug(pTitle) %}
+{% set cleanTitle = product.cleanTitle(pTitle) %}
 
 {% set isMeli = isMeli|default(false) %}
 {% set safeId = product.safeId(item) %}
@@ -45,7 +46,7 @@
 		<img src="{{ mainImg }}" 
 			 onerror="this.onerror=null;this.src='{{ placeholder }}'"
 			 class="relative z-10 w-full h-full object-contain p-4 group-hover:scale-102 transition-transform duration-500 pointer-events-none" 
-			 alt="{{ item.fuente }}">
+			 alt="{{ pTitle }}">
 
 		<!-- Badge de Disponibilidad (delicado y elegante) -->
 		<div class="absolute top-3 left-3 z-20 flex items-center gap-1 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200/60 shadow-sm text-[9px] font-semibold text-slate-600 uppercase tracking-wide">
@@ -71,10 +72,10 @@
 		<!-- Technical Chips -->
 		<div class="flex flex-wrap gap-1 mb-2.5">
 			{% if brandName is not empty %}
-				<span class="text-[9px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5 font-semibold uppercase tracking-wider leading-none">{{ brandName }}</span>
+				<span class="text-[9px] text-slate-800 bg-slate-200 rounded px-1.5 py-0.5 font-bold uppercase tracking-wider leading-none">{{ brandName }}</span>
 			{% endif %}
 			{% if modelName is not empty %}
-				<span class="text-[9px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5 font-semibold uppercase tracking-wider leading-none">{{ modelName }}</span>
+				<span class="text-[9px] text-slate-800 bg-slate-200 rounded px-1.5 py-0.5 font-bold uppercase tracking-wider leading-none">{{ modelName }}</span>
 			{% endif %}
 		</div>
 
@@ -85,11 +86,11 @@
                data-product-title
                x-init="$nextTick(() => { if ($el.scrollHeight > $el.clientHeight || $el.scrollWidth > $el.clientWidth) { $el.setAttribute('title', $el.textContent.trim()); } })"
 			   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
-				{{ item.fuente }}
+				{{ pTitle }}
 			</a>
 
 			{% if item.detalles is defined and item.detalles is not empty %}
-				<p class="mt-1 text-slate-400 text-[11px] leading-relaxed line-clamp-1">
+				<p class="mt-1 text-slate-800 text-[12px] leading-relaxed line-clamp-1">
 					{{ item.detalles }}
 				</p>
 			{% endif %}
@@ -98,7 +99,7 @@
 		<!-- Footer Area (Precio neto compacto y botón de solo icono) -->
 		<div class="mt-3 pt-3 border-t border-slate-100 flex items-end justify-between gap-4">
 			<div class="flex flex-col">
-				<span class="text-[9px] tracking-wider text-slate-400 font-semibold uppercase mb-0.5">Precio Neto</span>
+				<span class="text-[9px] tracking-wider text-slate-600 font-semibold uppercase mb-0.5">{{ extras.sku is defined and extras.sku != '' ? 'SKU: ' ~ extras.sku : 'PRECIO GENRAL' }}</span>
 				<span class="text-[16px] font-bold tracking-tight text-slate-800 leading-none">
 					${{ item.price|number_format(2, '.', ',') }}
 				</span>
@@ -127,8 +128,8 @@
 		</div>
 
 		<!-- SKU / ID -->
-		<div class="mt-2 text-[9px] text-slate-300 font-medium uppercase tracking-wider">
-			ID: {{ item.id }} · IKU: {{ item.iku|default('N/A') }}
+		<div class="mt-2 text-[9px] text-slate-800 font-medium tracking-wider">
+			<span class="text-blue-800 font-semibold mb-0.5">ID:</span> {{ item.id }} · <span class="text-blue-800 font-semibold mb-0.5">IKU:</span> <span class="text-[#0e7045] text-[13px] font-semibold mb-0.5">{{ item.iku|default('N/A') }}</span>
 		</div>
 	</div>
 </div>

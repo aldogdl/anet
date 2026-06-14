@@ -240,7 +240,6 @@ class ItemPubRepository extends ServiceEntityRepository
 	{
 
 		$action = 'add';
-		$result = [];
 		$lado = '';
 		$poss = '';
     $replace = '__ID__';

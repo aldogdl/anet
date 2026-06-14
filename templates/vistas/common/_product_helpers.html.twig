@@ -55,8 +55,9 @@
 
 {% macro detailUrl(item, isMeli=false) %}
     {% set extras = item.extras|default({}) %}
-    {% set cleanSlug = _self.cleanSlug(item.fuente) %}
-    {% set cleanTitle = _self.cleanTitle(item.fuente) %}
+    {% set pTitle = _self.productTitle(item) %}
+    {% set cleanSlug = _self.cleanSlug(pTitle) %}
+    {% set cleanTitle = _self.cleanTitle(pTitle) %}
     {% set safeId = item.id ?: 0 %}
     {% if isMeli and extras.permalink is defined %}
         {{ extras.permalink }}
@@ -90,11 +91,54 @@
 {% endmacro %}
 
 {% macro productTitle(item) %}
-    {% set extras = item.extras|default({}) %}
-    {% if extras.fuente is defined and extras.fuente != '' %}
-        {{ extras.fuente }}
+    {% if item.stt is defined and item.stt == 3 %}
+        {% set extras = item.extras|default({}) %}
+        {% set parts = [] %}
+        
+        {# PIEZA #}
+        {% if item.pieza is defined and item.pieza is not empty %}
+            {% set parts = parts|merge([item.pieza]) %}
+        {% endif %}
+        
+        {# LADO #}
+        {% if item.lado is defined and item.lado is not empty and item.lado|upper != 'A' %}
+            {% set parts = parts|merge([item.lado]) %}
+        {% endif %}
+        
+        {# POSICION #}
+        {% if item.poss is defined and item.poss is not empty and item.poss|upper != 'A' %}
+            {% set parts = parts|merge([item.poss]) %}
+        {% endif %}
+        
+        {# MARCA #}
+        {% set brand = extras.marca|default(extras.mk|default('')) %}
+        {% if brand is not empty %}
+            {% set parts = parts|merge([brand]) %}
+        {% endif %}
+        
+        {# MODELO #}
+        {% set model = extras.modelo|default(extras.md|default('')) %}
+        {% if model is not empty %}
+            {% set parts = parts|merge([model]) %}
+        {% endif %}
+        
+        {# AÑO #}
+        {% if item.anioInicio is defined and item.anioInicio > 0 %}
+            {% if item.anioFin is defined and item.anioFin > 0 and item.anioFin != 9999 and item.anioFin != item.anioInicio %}
+                {% set parts = parts|merge([item.anioInicio ~ '-' ~ item.anioFin]) %}
+            {% else %}
+                {% set parts = parts|merge([item.anioInicio]) %}
+            {% endif %}
+        {% endif %}
+        
+        {{ parts|join(' ') }}
     {% else %}
-        {{ item.fuente }}
+        {% set extras = item.extras|default({}) %}
+        {% if extras.fuente is defined and extras.fuente != '' %}
+            {{ extras.fuente }}
+        {% else %}
+            {{ item.fuente|default('') }}
+        {% endif %}
     {% endif %}
 {% endmacro %}
 

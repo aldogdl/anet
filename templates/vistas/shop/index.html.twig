@@ -8,26 +8,26 @@
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#f7f9fb] flex flex-col font-sans" x-data="shopState()">
-  
-  <!-- Top Header -->
-  <header class="sticky top-0 z-50 bg-white border-b border-slate-200/80 shadow-sm">
+<div class="min-h-screen bg-slate-100 flex flex-col font-sans" x-data="shopState()">
+
+  <!-- Top Header (Gradiente Verde Premium de WhatsApp/Marca) -->
+  <header class="sticky top-0 z-50 bg-gradient-to-r from-[#0c5e3a] to-[#128c7e] text-white border-b border-[#0c5e3a]/20 shadow-md">
     <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center gap-8">
 
       <!-- Logo de la Empresa Integrado y Limpio -->
       <div class="flex items-center gap-3 flex-shrink-0 cursor-pointer" onclick="window.location.href=window.location.pathname">
-        <div class="relative w-11 h-11 lg:w-12 h-12 {{ dtaCtc.logo is defined and dtaCtc.logo is not empty ? 'bg-white' : 'bg-[#0e7045]' }} rounded-xl flex items-center justify-center text-slate-800 shadow-sm border border-slate-200 overflow-hidden">
+        <div class="relative w-11 h-11 lg:w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md border border-white/20 overflow-hidden">
             {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
               <div class="w-full h-full p-0.5">
                   <div class="w-full h-full bg-white bg-center bg-no-repeat bg-cover rounded-lg" style="background-image: url('{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}');"></div>
               </div>
             {% else %}
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <svg class="w-6 h-6 text-[#0c5e3a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             {% endif %}
         </div>
         <div class="flex flex-col leading-tight">
-          <span class="text-xs font-black text-slate-800 tracking-wider uppercase">{{ storeName }}</span>
-          <span class="text-[9px] font-semibold text-slate-400 tracking-wider uppercase">Catálogo</span>
+          <span class="text-xs font-black text-white tracking-wider uppercase">{{ storeName }}</span>
+          <span class="text-[9px] font-semibold text-emerald-200/80 tracking-wider uppercase">Catálogo</span>
         </div>
       </div>
 
@@ -41,20 +41,20 @@
           <input type="text" x-model="currentFilters.q" 
               @keydown.enter="applyFilter({page: 1})"
               placeholder="Busca por pieza, marca o código..." 
-              class="w-full bg-slate-100/80 border border-transparent rounded-full pl-10 pr-24 py-2 text-xs focus:ring-2 focus:ring-[#0e7045]/20 focus:border-[#0e7045]/50 focus:bg-white placeholder:text-slate-400 transition-all outline-none text-slate-800 font-medium">
-          <svg class="w-4 h-4 absolute left-3.5 text-slate-400 group-focus-within:text-[#0e7045] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              class="w-full bg-white/10 hover:bg-white/15 focus:bg-white border border-white/10 focus:border-transparent rounded-full pl-10 pr-24 py-2 text-xs focus:ring-2 focus:ring-white/20 focus:text-slate-800 placeholder:text-emerald-100/60 focus:placeholder:text-slate-400 transition-all outline-none text-white font-medium">
+          <svg class="w-4 h-4 absolute left-3.5 text-emerald-100/70 group-focus-within:text-[#0c5e3a] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           
           <div class="absolute right-12 flex items-center gap-1">
             <!-- Botón Limpiar -->
             <button x-show="currentFilters.q.length > 0" 
                     @click="resetSearch()" 
-                    class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-200/50 rounded-lg transition-all"
+                    class="p-1.5 text-emerald-100/70 hover:text-white hover:bg-white/10 rounded-lg transition-all group-focus-within:text-slate-400 group-focus-within:hover:text-red-500 group-focus-within:hover:bg-slate-100"
                     x-cloak x-transition.opacity>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
 
             <!-- Botón de Búsqueda -->
-            <button @click="applyFilter({page: 1})" class="p-1.5 text-slate-400 hover:text-[#0e7045] hover:bg-slate-200/50 rounded-lg transition-all">
+            <button @click="applyFilter({page: 1})" class="p-1.5 text-emerald-100/70 hover:text-white hover:bg-white/10 rounded-lg transition-all group-focus-within:text-slate-400 group-focus-within:hover:text-[#0c5e3a] group-focus-within:hover:bg-slate-100">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
           </div>
@@ -67,8 +67,8 @@
               </div>
             </template>
             <template x-if="!hasMeli">
-              <div class="w-5 h-5 bg-[#0e7045]/10 rounded-full flex items-center justify-center border border-[#0e7045]/20">
-                  <svg class="w-3 text-[#0e7045]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center border border-white/20 group-focus-within:bg-[#0c5e3a]/10 group-focus-within:border-[#0c5e3a]/20">
+                  <svg class="w-3 text-white group-focus-within:text-[#0c5e3a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
               </div>
             </template>
           </div>
@@ -79,19 +79,19 @@
       <div class="flex items-center gap-4 ml-auto">
         <!-- Ayuda Personalizada (Banner Clickeable Refinado) -->
         <a href="{{ path('app_shop_no_encuentro', {slug: slug}) }}" 
-           class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#0e7045]/10 hover:bg-[#0e7045]/15 border border-[#0e7045]/30 rounded-full transition-all duration-300 group">
+           class="hidden lg:flex items-center gap-2.5 px-3.5 py-1.5 bg-white/10 hover:bg-white/20 border border-white/15 rounded-full transition-all duration-300 group">
           <div class="flex flex-col text-right leading-tight">
-            <span class="text-slate-600 text-[10px] font-semibold uppercase tracking-wider">¿No encuentras tu pieza?</span>
-            <span class="text-[12px] text-[#0e7045] font-extrabold uppercase tracking-wide">La conseguimos por ti</span>
+            <span class="text-emerald-100/80 text-[9px] font-bold uppercase tracking-wider">¿No encuentras tu pieza?</span>
+            <span class="text-[11px] text-white font-extrabold uppercase tracking-wide">La conseguimos</span>
           </div>
-          <div class="w-6 h-6 bg-[#0e7045] text-white rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+          <div class="w-5.5 h-5.5 bg-white text-[#0c5e3a] rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5 shadow-sm">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
           </div>
         </a>
 
         <!-- Botón Lupa (Buscador Móvil o Alternativo) -->
         <div class="relative md:hidden">
-          <button @click="showFilters = !showFilters" class="w-9 h-9 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/60 rounded-xl text-slate-600 flex items-center justify-center transition-all group">
+          <button @click="showFilters = !showFilters" class="w-9 h-9 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white flex items-center justify-center transition-all group">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
@@ -100,7 +100,7 @@
 
         <!-- Carrito de Compras Estilizado -->
         <div class="relative">
-          <button @click="showCart = !showCart" class="w-10 h-10 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/60 rounded-xl text-slate-600 flex items-center justify-center transition-all group">
+          <button @click="showCart = !showCart" class="w-10 h-10 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl text-white flex items-center justify-center transition-all group">
             <svg class="w-5 h-5 group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white shadow-sm" 
               x-show="cartCount > 0" x-text="cartCount" x-transition.scale x-cloak></span>

@@ -5,9 +5,10 @@
 {% set firstPic = (extras.pictures|default([]))|first %}
 {% set imgBig = product.imgUrl(item, firstPic) %}
 {% set placeholder = 'https://placehold.co/600x600/f8fafc/64748b?text=Sin+Imagen' %}
+{% set pTitle = product.productTitle(item) %}
 {% set modalData = {
     id: item.id,
-    title: item.fuente,
+    title: pTitle,
     price: item.price,
     thumb: mainImg,
     imgBig: imgBig,
@@ -20,8 +21,8 @@
     idSrc: extras.idSrc|default(''),
     linkSr: extras.linkSr|default('')
 }|json_encode %}
-{% set cleanSlug = product.cleanSlug(item.fuente) %}
-{% set cleanTitle = product.cleanTitle(item.fuente) %}
+{% set cleanSlug = product.cleanSlug(pTitle) %}
+{% set cleanTitle = product.cleanTitle(pTitle) %}
 
 {% set isMeli = isMeli|default(false) %}
 {% set safeId = product.safeId(item) %}
@@ -35,7 +36,7 @@
 		<img src="{{ mainImg }}" 
 			 onerror="this.src='{{ placeholder }}'"
 			 class="w-full h-full object-contain p-1" 
-			 alt="{{ item.fuente }}">
+			 alt="{{ pTitle }}">
 	</div>
 
 	<!-- Content Area -->
@@ -44,7 +45,7 @@
 		<!-- Title & Metadata -->
 		<div class="flex-1 min-w-0">
 			<h3 class="text-xs sm:text-sm font-normal text-slate-800 leading-tight line-clamp-1 cursor-text select-text group-hover:text-[#0e7045] transition-colors">
-				{{ item.fuente }}
+				{{ pTitle }}
 			</h3>
 			
 			<div class="mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10px]">
