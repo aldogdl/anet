@@ -101,13 +101,19 @@
         {% endif %}
         
         {# LADO #}
-        {% if item.lado is defined and item.lado is not empty and item.lado|upper != 'A' %}
-            {% set parts = parts|merge([item.lado]) %}
+        {% if item.lado is defined and item.lado is not empty %}
+            {% set decodedLado = item.lado|lp_decode %}
+            {% if decodedLado != '' %}
+                {% set parts = parts|merge([decodedLado]) %}
+            {% endif %}
         {% endif %}
         
         {# POSICION #}
-        {% if item.poss is defined and item.poss is not empty and item.poss|upper != 'A' %}
-            {% set parts = parts|merge([item.poss]) %}
+        {% if item.poss is defined and item.poss is not empty %}
+            {% set decodedPoss = item.poss|lp_decode %}
+            {% if decodedPoss != '' %}
+                {% set parts = parts|merge([decodedPoss]) %}
+            {% endif %}
         {% endif %}
         
         {# MARCA #}

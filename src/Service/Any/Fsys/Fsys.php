@@ -11,6 +11,7 @@ class Fsys
 
 	private Filesystem $filesystem;
 	private ParameterBagInterface $params;
+	private ?array $cachedDicc = null;
 
 	public function __construct(ParameterBagInterface $contenedor)
 	{
@@ -79,6 +80,9 @@ class Fsys
 	/** */
 	public function getDiccionary(): array
 	{
+		if ($this->cachedDicc !== null) {
+			return $this->cachedDicc;
+		}
 		$path = Path::canonicalize($this->params->get(AnyPath::$DICC));
 		if($this->filesystem->exists($path)) {
 			$content = file_get_contents($path);
@@ -88,6 +92,7 @@ class Fsys
 				if($bytes > 1700) {
 					file_put_contents($path, json_encode($decode));
 				}
+				$this->cachedDicc = $decode;
 				return $decode;
 			}
 		}
