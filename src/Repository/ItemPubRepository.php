@@ -116,17 +116,6 @@ class ItemPubRepository extends ServiceEntityRepository
 		$pendings = [];
 		$inactives = [];
 		$last = $lastUpdate;
-    $rota = count($items);
-
-		if($rota > 50) {
-			return [
-				'results' => $results,
-				'pendings' => $pendings,
-				'inactives' => $inactives,
-				'last' => $last + 1000,
-				'import' => $rota
-			];
-		}
 
 		foreach ($items as $index => $item) {
 
@@ -156,9 +145,10 @@ class ItemPubRepository extends ServiceEntityRepository
 			}
 		}
 
+		$rota = count($pendings);
 		return [
 			'results' => $results,
-			'pendings' => $pendings,
+			'pendings' => ($rota > 100) ? [] : $pendings,
 			'inactives' => $inactives,
 			'last' => $last + 1000,
 		];
