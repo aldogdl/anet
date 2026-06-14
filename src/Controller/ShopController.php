@@ -496,6 +496,19 @@ class ShopController extends AbstractController
 			return $b;
 		}, $brandMap));
 
+		// Ordenar las marcas alfabéticamente por nombre
+		usort($result, function($a, $b) {
+			return strcasecmp($a['name'], $b['name']);
+		});
+
+		// Ordenar los modelos de cada marca alfabéticamente por nombre
+		foreach ($result as &$brand) {
+			usort($brand['models'], function($a, $b) {
+				return strcasecmp($a['name'], $b['name']);
+			});
+		}
+		unset($brand);
+
 		return $this->json($result);
 	}
   
