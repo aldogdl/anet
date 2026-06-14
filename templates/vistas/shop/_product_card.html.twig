@@ -31,58 +31,56 @@
 {% set brandName = extras.marca|default(extras.mk|default('')) %}
 {% set modelName = extras.modelo|default(extras.md|default('')) %}
 
-<div class="group bg-white rounded-[18px] overflow-hidden border border-slate-900/5 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative cursor-pointer shadow-[0_18px_48px_rgba(15,23,42,0.08)] hover:shadow-[0_28px_70px_rgba(15,23,42,0.13)]"
+<div class="group bg-white rounded-xl overflow-hidden border border-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative cursor-pointer shadow-sm hover:shadow-md hover:border-slate-300"
 	 {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 
-	<!-- Image Area (White Background, Full Width Cover Image) -->
+	<!-- Image Area (Light Slate Background, Clean Border) -->
 	<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }} 
-	   class="block relative h-[150px] bg-white overflow-hidden flex items-center justify-center cursor-pointer w-full" 
+	   class="block relative h-[160px] bg-slate-50 border-b border-slate-100 overflow-hidden flex items-center justify-center cursor-pointer w-full" 
        {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
 		
         <!-- Blurred Background for small images -->
-        <div class="absolute inset-0 bg-cover bg-center opacity-10 blur-2xl scale-110" style="background-image: url('{{ mainImg }}')"></div>
+        <div class="absolute inset-0 bg-cover bg-center opacity-5 blur-2xl scale-110" style="background-image: url('{{ mainImg }}')"></div>
 
 		<img src="{{ mainImg }}" 
 			 onerror="this.onerror=null;this.src='{{ placeholder }}'"
-			 class="relative z-10 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 pointer-events-none" 
+			 class="relative z-10 w-full h-full object-contain p-4 group-hover:scale-102 transition-transform duration-500 pointer-events-none" 
 			 alt="{{ item.fuente }}">
 
-		<!-- Badge de Disponibilidad (legible y contrastante) -->
-		<div class="absolute top-4 left-4 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-[12px] px-3 py-1.5 rounded-full border border-slate-200/80 shadow-[0_4px_12px_rgba(0,0,0,0.15)] text-[10px] font-bold text-[#102d24] uppercase tracking-wider">
+		<!-- Badge de Disponibilidad (delicado y elegante) -->
+		<div class="absolute top-3 left-3 z-20 flex items-center gap-1 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full border border-slate-200/60 shadow-sm text-[9px] font-semibold text-slate-600 uppercase tracking-wide">
 			{% if item.stt == 3 %}
-				<!-- Estrella Amarilla -->
-				<svg class="w-3.5 h-3.5 text-[#d9a441] fill-current" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+				<svg class="w-3 h-3 text-yellow-500 fill-current" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
 				<span>Disponible</span>
 			{% else %}
-				<!-- Relojito Rojo Contrastante -->
-				<svg class="w-3.5 h-3.5 text-[#ef4444] fill-none stroke-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-				<span class="text-[#ef4444]">Pregunta disponibilidad</span>
+				<svg class="w-3 h-3 text-red-500 fill-none stroke-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+				<span class="text-red-500">Consultar</span>
 			{% endif %}
 		</div>
 
-		<!-- Badge de Mercado Libre (MeLi) en el lugar de la condición -->
+		<!-- Badge de Mercado Libre (MeLi) -->
 		{% if isMeli %}
-			<div class="absolute top-4 right-4 z-20 bg-[#ffe600] text-black font-black text-[9px] uppercase tracking-widest px-3 py-1.5 rounded-full border border-[#ffe600]/20 shadow-sm">
+			<div class="absolute top-3 right-3 z-20 bg-[#ffe600] text-slate-800 font-black text-[9px] uppercase tracking-wider px-2 py-1 rounded shadow-sm border border-yellow-300">
 				MeLi
 			</div>
 		{% endif %}
 	</a>
 
 	<!-- Info Area -->
-	<div class="p-[22px] flex-1 flex flex-col">
-		<!-- Technical Chips (Marca y Modelo resueltos de forma compatible) -->
-		<div class="flex flex-wrap gap-1.5 mb-3">
+	<div class="p-4 flex-1 flex flex-col">
+		<!-- Technical Chips -->
+		<div class="flex flex-wrap gap-1 mb-2.5">
 			{% if brandName is not empty %}
-				<span class="text-[10px] text-[#475569] bg-[#f1f5f9] border border-[#e2e8f0] rounded-full px-[9px] py-[7px] font-black uppercase tracking-[0.1em] leading-none">{{ brandName }}</span>
+				<span class="text-[9px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5 font-semibold uppercase tracking-wider leading-none">{{ brandName }}</span>
 			{% endif %}
 			{% if modelName is not empty %}
-				<span class="text-[10px] text-[#475569] bg-[#f1f5f9] border border-[#e2e8f0] rounded-full px-[9px] py-[7px] font-black uppercase tracking-[0.1em] leading-none">{{ modelName }}</span>
+				<span class="text-[9px] text-slate-500 bg-slate-100 rounded px-1.5 py-0.5 font-semibold uppercase tracking-wider leading-none">{{ modelName }}</span>
 			{% endif %}
 		</div>
 
 		<div class="flex-1">
 			<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }}
-			   class="block text-[18px] font-semibold text-[#102d24] leading-[1.18] tracking-[-0.015em] group-hover:text-[#25d366] transition-colors duration-300 cursor-pointer min-h-[42px] max-h-[42px] overflow-hidden"
+			   class="block text-[14px] font-normal text-slate-700 leading-[1.3] tracking-normal group-hover:text-[#0e7045] transition-colors duration-200 cursor-pointer min-h-[36px] max-h-[36px] overflow-hidden"
                style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"
                data-product-title
                x-init="$nextTick(() => { if ($el.scrollHeight > $el.clientHeight || $el.scrollWidth > $el.clientWidth) { $el.setAttribute('title', $el.textContent.trim()); } })"
@@ -91,37 +89,37 @@
 			</a>
 
 			{% if item.detalles is defined and item.detalles is not empty %}
-				<p class="mt-[9px] text-[#64748b] text-[13px] leading-[1.35] line-clamp-1">
+				<p class="mt-1 text-slate-400 text-[11px] leading-relaxed line-clamp-1">
 					{{ item.detalles }}
 				</p>
 			{% endif %}
 		</div>
 
 		<!-- Footer Area (Precio neto compacto y botón de solo icono) -->
-		<div class="mt-5 pt-[18px] border-t border-[#eef2f7] flex items-end justify-between gap-4">
+		<div class="mt-3 pt-3 border-t border-slate-100 flex items-end justify-between gap-4">
 			<div class="flex flex-col">
-				<span class="text-[10px] tracking-[0.15em] text-[#94a3b8] font-black uppercase mb-1">Precio Neto</span>
-				<span class="text-[20px] font-black tracking-[-0.03em] text-[#0b241c] mt-0.5 leading-none">
+				<span class="text-[9px] tracking-wider text-slate-400 font-semibold uppercase mb-0.5">Precio Neto</span>
+				<span class="text-[16px] font-bold tracking-tight text-slate-800 leading-none">
 					${{ item.price|number_format(2, '.', ',') }}
 				</span>
 			</div>
 
 			<div class="flex items-center gap-2">
 				{% if isMeli %}
-					<a href="{{ detailUrl }}" target="_blank" class="px-5 py-3.5 bg-[#ffe600] text-[#2d3277] font-black text-[10px] uppercase tracking-widest rounded-[16px] shadow-lg shadow-[#ffe600]/25 hover:bg-yellow-400 active:scale-95 transition-all flex items-center justify-center leading-none">
-						Meli
+					<a href="{{ detailUrl }}" target="_blank" class="px-3 py-1.5 bg-yellow-400 text-slate-800 font-bold text-[9px] uppercase tracking-wider rounded-lg shadow-sm hover:bg-yellow-500 transition-all flex items-center justify-center leading-none">
+						Ver
 					</a>
 				{% else %}
 					<template x-if="!({{ safeId }} in cartItems)">
 						<button @click.stop="addToCart({{ safeId }})" 
-								class="p-3.5 bg-gradient-to-br from-[#0f2f24] to-[#174a39] text-white hover:from-[#174a39] hover:to-[#0f2f24] rounded-[16px] shadow-lg shadow-[#0f2f24]/20 active:scale-90 transition-all flex items-center justify-center leading-none">
-							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+								class="p-2 bg-slate-100 text-slate-600 hover:bg-[#0e7045]/10 hover:text-[#0e7045] hover:border-[#0e7045]/20 rounded-lg border border-slate-200/60 active:scale-95 transition-all flex items-center justify-center leading-none">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
 						</button>
 					</template>
 					<template x-if="{{ safeId }} in cartItems">
 						<button @click.stop="promptRemove({{ safeId }})" 
-								class="p-3.5 bg-[#102d24]/10 text-[#102d24] hover:bg-[#102d24]/20 rounded-[16px] active:scale-90 transition-all flex items-center justify-center border border-[#102d24]/20 leading-none">
-							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+								class="p-2 bg-[#0e7045]/10 text-[#0e7045] hover:bg-red-55 hover:text-red-650 hover:border-red-200 rounded-lg border border-[#0e7045]/20 active:scale-95 transition-all flex items-center justify-center leading-none">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
 						</button>
 					</template>
 				{% endif %}
@@ -129,7 +127,7 @@
 		</div>
 
 		<!-- SKU / ID -->
-		<div class="mt-[13px] text-[11px] text-[#94a3b8] font-extrabold uppercase tracking-wider">
+		<div class="mt-2 text-[9px] text-slate-300 font-medium uppercase tracking-wider">
 			ID: {{ item.id }} · IKU: {{ item.iku|default('N/A') }}
 		</div>
 	</div>

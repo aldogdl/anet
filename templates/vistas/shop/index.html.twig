@@ -8,29 +8,31 @@
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-[#e8f2ec] flex flex-col font-sans" x-data="shopState()">
+<div class="min-h-screen bg-[#f7f9fb] flex flex-col font-sans" x-data="shopState()">
   
   <!-- Top Header -->
-  <header class="sticky top-0 z-50 bg-[#0b141a] border-b border-white/5 shadow-2xl">
-    <div class="max-w-[1600px] mx-auto px-6 h-20 flex items-center gap-8">
+  <header class="sticky top-0 z-50 bg-white border-b border-slate-200/80 shadow-sm">
+    <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center gap-8">
 
-      <!-- Floating Graphic Logo -->
-      <div class="relative w-20 lg:w-72 h-20 flex-shrink-0">
-        <div class="absolute top-3 lg:top-4 left-0 lg:left-1/2 lg:-translate-x-1/2 z-[70] group cursor-pointer" onclick="window.location.href=window.location.pathname">
-          <div class="absolute inset-0 bg-[#25d366]/30 blur-2xl rounded-2xl transition-all group-hover:bg-[#25d366]/40"></div>
-          <div class="relative w-20 h-20 lg:w-36 lg:h-36 {{ dtaCtc.logo is defined and dtaCtc.logo is not empty ? 'bg-[#ffffff]' : 'bg-[#25d366]' }} rounded-2xl lg:rounded-3xl flex items-center justify-center text-[#0b141a] shadow-[0_20px_10px_-15px_rgba(0,0,0,0.7)] border-2 border-[#0b141a] rotate-0 group-hover:rotate-6 transition-transform duration-500 overflow-hidden">
-              {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
-                <div class="w-full h-full p-1.5 lg:p-1">
-                    <div class="w-full h-full bg-white bg-center bg-no-repeat bg-cover rounded-xl lg:rounded-2xl shadow-sm" style="background-image: url('{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}');"></div>
-                </div>
-              {% else %}
-                <svg class="w-12 h-12 lg:w-20 lg:h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-              {% endif %}
-          </div>
+      <!-- Logo de la Empresa Integrado y Limpio -->
+      <div class="flex items-center gap-3 flex-shrink-0 cursor-pointer" onclick="window.location.href=window.location.pathname">
+        <div class="relative w-11 h-11 lg:w-12 h-12 {{ dtaCtc.logo is defined and dtaCtc.logo is not empty ? 'bg-white' : 'bg-[#0e7045]' }} rounded-xl flex items-center justify-center text-slate-800 shadow-sm border border-slate-200 overflow-hidden">
+            {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
+              <div class="w-full h-full p-0.5">
+                  <div class="w-full h-full bg-white bg-center bg-no-repeat bg-cover rounded-lg" style="background-image: url('{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}');"></div>
+              </div>
+            {% else %}
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            {% endif %}
+        </div>
+        <div class="flex flex-col leading-tight">
+          <span class="text-xs font-black text-slate-800 tracking-wider uppercase">{{ storeName }}</span>
+          <span class="text-[9px] font-semibold text-slate-400 tracking-wider uppercase">Catálogo</span>
         </div>
       </div>
 
-      <div class="flex-1 max-w-2xl relative group hidden md:block" 
+      <!-- Buscador en Píldora Elegante -->
+      <div class="flex-1 max-w-xl relative group hidden md:block" 
            x-data="{ 
               hasMeli: {{ hasMeli|default(false) ? 'true' : 'false' }},
               meliToken: '{{ encodedMeliToken|default('') }}'
@@ -39,36 +41,34 @@
           <input type="text" x-model="currentFilters.q" 
               @keydown.enter="applyFilter({page: 1})"
               placeholder="Busca por pieza, marca o código..." 
-              class="w-full bg-white/5 border border-white/20 rounded-2xl pl-12 pr-40 py-3 text-sm focus:ring-4 focus:ring-[#25d366]/10 focus:border-[#25d366]/50 focus:bg-white/10 placeholder:text-white/30 transition-all outline-none text-white font-medium">
-          <svg class="w-5 h-5 absolute left-4 text-white/30 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              class="w-full bg-slate-100/80 border border-transparent rounded-full pl-10 pr-24 py-2 text-xs focus:ring-2 focus:ring-[#0e7045]/20 focus:border-[#0e7045]/50 focus:bg-white placeholder:text-slate-400 transition-all outline-none text-slate-800 font-medium">
+          <svg class="w-4 h-4 absolute left-3.5 text-slate-400 group-focus-within:text-[#0e7045] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
           
-          <div class="absolute right-16 flex items-center gap-1">
+          <div class="absolute right-12 flex items-center gap-1">
             <!-- Botón Limpiar -->
             <button x-show="currentFilters.q.length > 0" 
                     @click="resetSearch()" 
-                    class="p-2 text-white/30 hover:text-red-400 hover:bg-white/5 rounded-xl transition-all"
+                    class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-slate-200/50 rounded-lg transition-all"
                     x-cloak x-transition.opacity>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
 
             <!-- Botón de Búsqueda -->
-            <button @click="applyFilter({page: 1})" class="p-2 text-white/50 hover:text-[#25d366] hover:bg-white/5 rounded-xl transition-all">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <button @click="applyFilter({page: 1})" class="p-1.5 text-slate-400 hover:text-[#0e7045] hover:bg-slate-200/50 rounded-lg transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
           </div>
           
           <!-- Status Logos -->
-          <div class="absolute right-4 pointer-events-none">
+          <div class="absolute right-3.5 pointer-events-none">
             <template x-if="hasMeli">
-              <!-- Meli Logo Style -->
-              <div class="h-6 px-2 bg-white/30 rounded-md flex items-center justify-center shadow-sm font-black text-white text-[12px] tracking-tight">
+              <div class="h-5 px-1.5 bg-[#ffe600] text-slate-800 rounded flex items-center justify-center shadow-sm font-black text-[9px] tracking-tight">
                   MeLi
               </div>
             </template>
             <template x-if="!hasMeli">
-              <!-- Yonkeros Logo -->
-              <div class="w-6 h-6 bg-[#25d366] rounded-full flex items-center justify-center shadow-sm">
-                  <svg class="w-3.5 h-3.5 text-[#0b141a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <div class="w-5 h-5 bg-[#0e7045]/10 rounded-full flex items-center justify-center border border-[#0e7045]/20">
+                  <svg class="w-3 text-[#0e7045]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
               </div>
             </template>
           </div>
@@ -77,25 +77,32 @@
 
       <!-- Actions -->
       <div class="flex items-center gap-4 ml-auto">
-        <!-- Ayuda Personalizada -->
-        <div class="hidden lg:flex flex-col items-end leading-none text-right">
-          <h5 class="text-white text-[12px] font-black uppercase tracking-widest mb-1">¿No encuentras tu pieza?</h5>
-          <p class="text-[13px] text-[#25d366] font-bold uppercase tracking-widest">La conseguimos por ti.</p>
-        </div>
+        <!-- Ayuda Personalizada (Banner Clickeable Refinado) -->
+        <a href="{{ path('app_shop_no_encuentro', {slug: slug}) }}" 
+           class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#0e7045]/10 hover:bg-[#0e7045]/15 border border-[#0e7045]/30 rounded-full transition-all duration-300 group">
+          <div class="flex flex-col text-right leading-tight">
+            <span class="text-slate-600 text-[10px] font-semibold uppercase tracking-wider">¿No encuentras tu pieza?</span>
+            <span class="text-[12px] text-[#0e7045] font-extrabold uppercase tracking-wide">La conseguimos por ti</span>
+          </div>
+          <div class="w-6 h-6 bg-[#0e7045] text-white rounded-full flex items-center justify-center transition-transform group-hover:translate-x-0.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+          </div>
+        </a>
 
-        <!-- Botón Lupa Personalizado -->
-        <div class="relative">
-          <button class="w-10 h-10 bg-[#25d366] border-none rounded-xl text-[#0b141a] hover:bg-emerald-400 flex items-center justify-center transition-all group">
-            <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Botón Lupa (Buscador Móvil o Alternativo) -->
+        <div class="relative md:hidden">
+          <button @click="showFilters = !showFilters" class="w-9 h-9 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/60 rounded-xl text-slate-600 flex items-center justify-center transition-all group">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </button>
         </div>
 
+        <!-- Carrito de Compras Estilizado -->
         <div class="relative">
-          <button @click="showCart = !showCart" class="w-12 h-12 bg-white/10 border-none rounded-2xl text-white hover:bg-white/20 flex items-center justify-center transition-all group">
-            <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#0b141a] shadow-md" 
+          <button @click="showCart = !showCart" class="w-10 h-10 bg-slate-100 hover:bg-slate-200/80 border border-slate-200/60 rounded-xl text-slate-600 flex items-center justify-center transition-all group">
+            <svg class="w-5 h-5 group-hover:scale-105 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white shadow-sm" 
               x-show="cartCount > 0" x-text="cartCount" x-transition.scale x-cloak></span>
           </button>
         </div>
@@ -105,7 +112,7 @@
 
   <!-- Sidebar Drawer (Hidden by default) -->
   <div class="fixed inset-0 z-[60] overflow-hidden" x-show="showFilters" x-cloak>
-    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+    <div class="absolute inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity" 
       x-show="showFilters" 
       x-transition:enter="ease-out duration-300"
       x-transition:enter-start="opacity-0"
@@ -115,7 +122,7 @@
       x-transition:leave-end="opacity-0"
       @click="showFilters = false"></div>
 
-    <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-[#e8f2ec] shadow-2xl flex flex-col"
+    <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-[#f7f9fb] shadow-2xl flex flex-col"
       x-show="showFilters"
       x-transition:enter="transform transition ease-in-out duration-500"
       x-transition:enter-start="-translate-x-full"
@@ -124,15 +131,15 @@
       x-transition:leave-start="translate-x-0"
       x-transition:leave-end="-translate-x-full">
 
-      <div class="flex items-center justify-between p-6 border-b border-white/10 bg-[#0b141a] text-white">
+      <div class="flex items-center justify-between p-5 border-b border-slate-200 bg-white text-slate-800">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-[#25d366] rounded-lg flex items-center justify-center text-[#0b141a]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          <div class="w-8 h-8 bg-[#0e7045]/10 rounded-lg flex items-center justify-center text-[#0e7045] border border-[#0e7045]/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           </div>
-          <h2 class="text-xs font-black uppercase tracking-widest">Filtrar por Marca</h2>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-800">Filtrar por Marca</h2>
         </div>
-        <button @click="showFilters = false" class="p-2 hover:bg-white/10 rounded-xl transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <button @click="showFilters = false" class="p-2 hover:bg-slate-100 text-slate-500 rounded-xl transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
 
@@ -142,7 +149,7 @@
     </div>
   </div>
 
-  <main class="flex-1 max-w-[1600px] mx-auto w-full px-6 py-8 flex gap-8">
+  <main class="flex-1 max-w-[1440px] mx-auto w-full px-6 py-6 flex gap-8">
     <!-- Sidebar Fijo -->
     <aside class="w-72 hidden lg:block flex-shrink-0">
       {% include viewBase ~ '/_sidebar.html.twig' %}
@@ -158,7 +165,7 @@
       <!-- MeLi Results Container -->
       <section class="w-full" x-show="meliLoading || meliItemsHtml !== ''" x-cloak>
           <div x-show="meliLoading" class="flex flex-col items-center justify-center py-16">
-              <span class="w-10 h-10 border-4 border-[#25d366]/20 border-t-[#25d366] rounded-full animate-spin"></span>
+              <span class="w-10 h-10 border-4 border-[#0e7045]/20 border-t-[#0e7045] rounded-full animate-spin"></span>
               <span class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-4">Consultando stock extendido...</span>
           </div>
           <div x-html="meliItemsHtml" x-show="!meliLoading"></div>
@@ -166,21 +173,21 @@
     </div>
   </main>
 
-  <!-- Floating WhatsApp -->
-  <a href="https://wa.me/?text='Hola, estoy en tu sitio web de Yonkeros y me interesé por:"
+  <!-- Pestaña lateral derecha de WhatsApp (Más visible y elegante) -->
+  {% if contactPhone is not empty %}
+  <a href="https://wa.me/{{ contactPhone }}?text=Hola,%20estoy%20visitando%20tu%20catálogo%20y%20me%20gustaría%20realizar%20una%20consulta."
      target="_blank"
-     class="fixed bottom-8 right-8 z-[100] w-12 h-12 bg-[#25d366] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all active:scale-95 group">
-      <div class="absolute inset-0 rounded-full bg-white scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-20 transition-all duration-300"></div>
-      <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+     class="fixed right-0 top-1/2 -translate-y-1/2 z-[100] flex items-center justify-center bg-[#25d366] hover:bg-[#22c35e] text-white w-12 h-12 sm:w-14 sm:h-14 rounded-l-2xl shadow-[0_10px_30px_rgba(37,211,102,0.4)] hover:pr-1.5 active:scale-95 transition-all duration-300 group">
+      <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
           <path d="M12.031 0C5.394 0 0 5.394 0 12.031c0 2.115.548 4.17 1.583 5.986L.048 23.518l5.656-1.482a12.002 12.002 0 006.327 1.785h.005c6.634 0 12.029-5.394 12.029-12.031S18.667 0 12.031 0zm0 21.821h-.004a9.986 9.986 0 01-5.088-1.385l-.365-.216-3.782.991.99-3.685-.236-.376a9.986 9.986 0 01-1.526-5.334c0-5.522 4.493-10.017 10.015-10.017 2.675 0 5.188 1.042 7.079 2.934 1.891 1.892 2.932 4.406 2.932 7.081 0 5.524-4.494 10.007-10.014 10.007zm5.493-7.513c-.301-.151-1.785-.882-2.062-.983-.277-.101-.479-.151-.68.151-.202.302-.781.983-.957 1.184-.177.202-.353.227-.654.076-.301-.151-1.275-.47-2.428-1.5-.898-.801-1.503-1.793-1.68-2.095-.177-.302-.019-.465.132-.616.135-.135.301-.353.452-.529.151-.177.202-.302.302-.504.101-.202.05-.378-.025-.529-.076-.151-.68-1.64-.932-2.245-.246-.59-.496-.51-.68-.52-.177-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.057 1.033-1.057 2.519s1.083 2.923 1.234 3.125c.151.202 2.13 3.25 5.161 4.557.72.311 1.281.497 1.722.636.723.23 1.381.197 1.902.12.583-.086 1.785-.73 2.036-1.436.252-.705.252-1.309.177-1.436-.076-.126-.277-.202-.578-.353z"></path>
-      </svg>
   </a>
+  {% endif %}
 
   <!-- Footer -->
   <footer class="bg-[#0b141a] border-t border-white/5 py-12">
     <div class="max-w-[1600px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
       <div class="flex flex-col items-center md:items-start">
-        <span class="text-2xl font-black text-white tracking-widest">Yonk<span class="text-[#25d366]">Eros</span></span>
+        <span class="text-2xl font-black text-white tracking-widest">Yonk<span class="text-[#0e7045]">Eros</span></span>
         <p class="text-xs text-white/20 mt-2">© 2024 Todos los derechos reservados.</p>
       </div>
       <div class="flex gap-8">

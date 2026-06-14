@@ -348,6 +348,30 @@ class ShopController extends AbstractController
 		]);
 	}
 
+	#[Route('/shop/no-encuentro/{slug}', name: 'app_shop_no_encuentro', methods: ['GET'])]
+	public function noEncuentro(string $slug, Fsys $fsys): Response
+	{
+		$dtaCtc = $fsys->get(AnyPath::$DTACTC, $slug.'.json');
+		$storeName = empty($dtaCtc) ? ucfirst($slug) : $dtaCtc['empresa'];
+		
+		$contactPhone = '';
+		if (!empty($dtaCtc['colabs']) && is_array($dtaCtc['colabs'])) {
+			foreach ($dtaCtc['colabs'] as $colab) {
+				if (isset($colab['roles']) && in_array('ROLE_MAIN', $colab['roles'])) {
+					$contactPhone = $colab['waId'] ?? '';
+					break;
+				}
+			}
+		}
+
+		return $this->render('vistas/shop/no_encuentro.html.twig', [
+			'slug' => $slug,
+			'storeName' => $storeName,
+			'dtaCtc' => $dtaCtc,
+			'contactPhone' => $contactPhone
+		]);
+	}
+
 	/** */
 	#[Route('/cart/add/{id}', name: 'cart_add', methods: ['POST'])]
 	public function addToCart(int $id, Request $request, SessionInterface $session, ItemPubRepository $itemRepo): Response

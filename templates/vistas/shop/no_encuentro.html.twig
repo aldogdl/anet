@@ -1,0 +1,85 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Localizador de Piezas | {{ storeName }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-[#f7f9fb] flex flex-col font-sans">
+  
+  <!-- Header Minimalista -->
+  <header class="bg-white border-b border-slate-200/80 shadow-sm">
+    <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='{{ path('app_shop', {template: 'shop', slug: slug}) }}'">
+        <div class="relative w-11 h-11 lg:w-12 h-12 {{ dtaCtc.logo is defined and dtaCtc.logo is not empty ? 'bg-white' : 'bg-[#0e7045]' }} rounded-xl flex items-center justify-center text-slate-800 shadow-sm border border-slate-200 overflow-hidden">
+            {% if dtaCtc.logo is defined and dtaCtc.logo is not empty %}
+              <div class="w-full h-full p-0.5">
+                  <div class="w-full h-full bg-white bg-center bg-no-repeat bg-cover rounded-lg" style="background-image: url('{{ app.request.getSchemeAndHttpHost() }}{{ app.request.getBasePath() }}/ctc_logo/{{ dtaCtc.logo }}');"></div>
+              </div>
+            {% else %}
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            {% endif %}
+        </div>
+        <div class="flex flex-col leading-tight">
+          <span class="text-xs font-black text-slate-800 tracking-wider uppercase">{{ storeName }}</span>
+          <span class="text-[9px] font-semibold text-slate-400 tracking-wider uppercase">Catálogo</span>
+        </div>
+      </div>
+      
+      <a href="{{ path('app_shop', {template: 'shop', slug: slug}) }}" class="text-xs font-bold text-[#0e7045] hover:underline uppercase tracking-wider flex items-center gap-1.5 transition-all">
+        <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+        Volver al Catálogo
+      </a>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="flex-1 flex items-center justify-center px-6 py-16">
+    <div class="max-w-md w-full bg-white border border-slate-200/80 rounded-2xl p-8 md:p-10 shadow-sm text-center flex flex-col items-center">
+      
+      <!-- Icono Ilustrativo Moderno -->
+      <div class="w-20 h-20 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center text-[#0e7045] mb-8 relative shadow-inner">
+        <div class="absolute inset-0 bg-[#0e7045]/5 rounded-full animate-ping opacity-25"></div>
+        <svg class="w-10 h-10 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m4-3H6"></path>
+        </svg>
+      </div>
+
+      <!-- Textos -->
+      <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight mb-3 uppercase">¿Buscas una pieza especial?</h1>
+      <p class="text-xs md:text-sm text-slate-500 leading-relaxed mb-8 font-medium">
+        Próximamente aquí encontrarás lo que estás buscando de forma totalmente automatizada. Estamos desarrollando un buscador avanzado y personalizado para localizar cualquier refacción en tiempo récord.
+      </p>
+
+      <div class="w-full border-t border-slate-100 pt-6 mb-8 text-left">
+        <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 text-center">¿La necesitas con urgencia?</h4>
+        <p class="text-xs text-slate-500 text-center leading-relaxed font-normal">
+          No te preocupes. Nuestro equipo de soporte técnico puede buscarla manualmente por ti hoy mismo.
+        </p>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex flex-col sm:flex-row gap-3 w-full justify-center">
+        <a href="{{ path('app_shop', {template: 'shop', slug: slug}) }}" 
+           class="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs uppercase tracking-wider hover:bg-slate-50 transition-colors text-center">
+          Ver Catálogo
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#0b141a] border-t border-white/5 py-8 mt-auto">
+    <div class="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex flex-col items-center md:items-start">
+        <span class="text-lg font-black text-white tracking-widest">Yonk<span class="text-[#0e7045]">Eros</span></span>
+        <p class="text-[10px] text-white/20 mt-1">© 2024 Todos los derechos reservados.</p>
+      </div>
+      <div class="flex gap-6">
+          <a href="#" class="text-[10px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-wider">Privacidad</a>
+          <a href="#" class="text-[10px] font-bold text-slate-500 hover:text-white transition-colors uppercase tracking-wider">Términos</a>
+      </div>
+    </div>
+  </footer>
+
+</div>
+{% endblock %}

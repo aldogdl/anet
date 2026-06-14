@@ -1,38 +1,38 @@
 {% set viewBase = viewBase|default('vistas/shop') %}
 <!-- Grid Header -->
-<div class="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 gap-4" x-init="totalItems = {{ items is defined ? items|length : 0 }}">
+<div class="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-6 gap-4" x-init="totalItems = {{ items is defined ? items|length : 0 }}">
 	<div>
-		<h2 class="text-2xl sm:text-4xl font-black text-[#103928] tracking-tight uppercase leading-none" x-text="storeName">{{ storeName|default('YonkEros - Autopartes Online') }}</h2>
-		<div class="flex items-center gap-2 mt-2 sm:mt-3">
-			<span class="w-2.5 h-2.5 rounded-full bg-[#25d366] animate-pulse shadow-sm shadow-[#25d366]/50"></span>
-			<p class="text-xs text-[#103928]/60 font-black uppercase tracking-widest">
+		<h2 class="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight uppercase leading-none" x-text="storeName">{{ storeName|default('YonkEros - Autopartes Online') }}</h2>
+		<div class="flex items-center gap-2 mt-2">
+			<span class="w-2 h-2 rounded-full bg-[#25d366] animate-pulse shadow-sm shadow-[#25d366]/30"></span>
+			<p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
 				Tienda Verificada 
 				{% if dtaCtc.localidad is defined and dtaCtc.localidad is not empty %}
-					<span x-show="!localidad">&bull; <span class="text-[#103928]/80">{{ dtaCtc.localidad }}</span></span>
+					<span x-show="!localidad">&bull; <span class="text-slate-500">{{ dtaCtc.localidad }}</span></span>
 				{% endif %}
-				<span x-show="localidad" x-cloak>&bull; <span class="text-[#103928]/80" x-text="localidad"></span></span>
+				<span x-show="localidad" x-cloak>&bull; <span class="text-slate-500" x-text="localidad"></span></span>
 			</p>
 		</div>
 	</div>
 	
-	<div class="flex flex-col items-end gap-3">
+	<div class="flex items-center gap-4">
 		<!-- View toggle -->
-		<div class="flex bg-slate-200/50 rounded-xl p-1 shadow-inner">
+		<div class="flex bg-slate-100 rounded-lg p-0.5 border border-slate-200">
 			<button @click="viewMode = 'grid'" 
-					:class="viewMode === 'grid' ? 'bg-white shadow-md text-[#103928]' : 'text-slate-400 hover:text-slate-600'"
-					class="p-2 rounded-lg transition-all duration-300">
-				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+					:class="viewMode === 'grid' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'"
+					class="p-1.5 rounded-md transition-all duration-200">
+				<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
 			</button>
 			<button @click="viewMode = 'list'" 
-					:class="viewMode === 'list' ? 'bg-white shadow-md text-[#103928]' : 'text-slate-400 hover:text-slate-600'"
-					class="p-2 rounded-lg transition-all duration-300">
-				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+					:class="viewMode === 'list' ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'"
+					class="p-1.5 rounded-md transition-all duration-200">
+				<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path></svg>
 			</button>
 		</div>
 
 		<div class="flex items-center gap-2">
-			<span class="text-[10px] sm:text-xs text-[#103928] font-black uppercase tracking-wider">Ordenar por:</span>
-			<select class="bg-white border-slate-200 rounded-xl px-4 py-2 text-xs font-black text-[#103928] outline-none focus:ring-2 focus:ring-[#25d366]/10 transition-all cursor-pointer shadow-sm">
+			<span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Ordenar:</span>
+			<select class="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-[#25d366]/10 focus:border-[#25d366] transition-all cursor-pointer shadow-sm">
 				<option>Más recientes</option>
 				<option>Precio: Menor a Mayor</option>
 				<option>Precio: Mayor a Menor</option>
@@ -41,9 +41,9 @@
 	</div>
 </div>
 
-<!-- The Grid -->
+<!-- The Grid con espaciado amplio y columnas controladas -->
 {% if items|length > 0 or missingIds|default('') is empty %}
-<div :class="viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-3.5 lg:gap-4' : 'flex flex-col gap-3'">
+<div :class="viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8' : 'flex flex-col gap-4'">
 	{% for item in items %}
         <template x-if="viewMode === 'grid'">
 		    {% include viewBase ~ '/_product_card.html.twig' %}
@@ -54,12 +54,12 @@
 	{% endfor %}
 	
 	{% if items|length == 0 %}
-		<div class="col-span-full py-20 flex flex-col items-center justify-center bg-white rounded-[3rem] border border-dashed border-slate-200">
-			<div class="w-20 h-20 bg-[#f0f7f4] rounded-full flex items-center justify-center text-[#25d366] mb-4">
-					<svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+		<div class="col-span-full py-16 flex flex-col items-center justify-center bg-white rounded-2xl border border-dashed border-slate-200">
+			<div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4 border border-slate-100">
+					<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
 			</div>
-			<h3 class="text-lg font-black text-[#103928]">No se encontraron piezas</h3>
-			<p class="text-sm text-slate-500">Prueba con otros filtros o términos de búsqueda.</p>
+			<h3 class="text-sm font-bold text-slate-800">No se encontraron piezas</h3>
+			<p class="text-xs text-slate-400 mt-1">Prueba con otros filtros o términos de búsqueda.</p>
 		</div>
 	{% endif %}
 </div>
