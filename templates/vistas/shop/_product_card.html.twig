@@ -96,10 +96,10 @@
 			{% endif %}
 		</div>
 
-		<!-- Footer Area (Precio neto compacto y botón de solo icono) -->
+		<!-- Footer Area (Precio publico compacto y botón de solo icono) -->
 		<div class="mt-3 pt-3 border-t border-slate-100 flex items-end justify-between gap-4">
 			<div class="flex flex-col">
-				<span class="text-[9px] tracking-wider text-slate-600 font-semibold uppercase mb-0.5">{{ extras.sku is defined and extras.sku != '' ? 'SKU: ' ~ extras.sku : 'PRECIO GENRAL' }}</span>
+				<span class="text-[9px] tracking-wider text-slate-600 font-semibold uppercase mb-0.5">{{ extras.sku is defined and extras.sku != '' ? 'SKU: ' ~ extras.sku : 'PRECIO PÚBLICO' }}</span>
 				<span class="text-[16px] font-bold tracking-tight text-slate-800 leading-none">
 					${{ item.price|number_format(2, '.', ',') }}
 				</span>
