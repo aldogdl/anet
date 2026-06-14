@@ -171,7 +171,7 @@
     <table class="contact-grid">
         <tr>
             <td class="qr-box">
-                <img src="{{ app.request.getSchemeAndHttpHost() }}{{ path('app_home_qr') }}?data={{ qrUrl|base64_encode }}&size=150" class="qr-img"><br>
+                <img src="{{ app.request.getSchemeAndHttpHost() }}{{ path('app_home_qr') }}?data={{ qrUrlEncoded }}&size=150" class="qr-img"><br>
                 <span style="font-size: 8px; font-weight: bold; text-transform: uppercase; color: #718096;">Escanear para WhatsApp</span>
             </td>
             <td style="padding-left: 20px; font-size: 12px; vertical-align: middle;">

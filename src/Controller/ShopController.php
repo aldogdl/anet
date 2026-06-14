@@ -536,6 +536,7 @@ class ShopController extends AbstractController
 		}
 
 		$qrUrl = "https://wa.me/{$contactPhone}?text=" . urlencode("Hola, me interesa esta cotización de " . count($cart) . " piezas.");
+		$qrUrlEncoded = base64_encode($qrUrl);
 
 		$pdfContent = $pdfGenerator->generate('cotizacion/pdf.html.twig', [
 			'items' => $cart,
@@ -544,7 +545,7 @@ class ShopController extends AbstractController
 			'contactPhone' => $contactPhone,
 			'localidad' => $localidad,
 			'logoBase64' => $logoBase64,
-			'qrUrl' => $qrUrl,
+			'qrUrlEncoded' => $qrUrlEncoded,
 			'slug' => $slug
 		], 'cotizacion.pdf');
 
