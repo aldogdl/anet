@@ -102,7 +102,7 @@
         
         {# LADO #}
         {% if item.lado is defined and item.lado is not empty %}
-            {% set decodedLado = item.lado|lp_decode %}
+            {% set decodedLado = item.lado|lp_decode(item.pieza|default('')) %}
             {% if decodedLado != '' %}
                 {% set parts = parts|merge([decodedLado]) %}
             {% endif %}
@@ -110,7 +110,7 @@
         
         {# POSICION #}
         {% if item.poss is defined and item.poss is not empty %}
-            {% set decodedPoss = item.poss|lp_decode %}
+            {% set decodedPoss = item.poss|lp_decode(item.pieza|default('')) %}
             {% if decodedPoss != '' %}
                 {% set parts = parts|merge([decodedPoss]) %}
             {% endif %}
