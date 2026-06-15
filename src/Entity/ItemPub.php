@@ -8,17 +8,17 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ItemPubRepository::class)]
 #[ORM\Table(name: 'item_pub', indexes: [
 	new ORM\Index(
-		name: 'idx_itempub_mrk_mdl_active_year',
-		columns: ['mrk_id', 'mdl_id', 'is_active', 'anio_inicio', 'anio_fin']
-	),
+         		name: 'idx_itempub_mrk_mdl_active_year',
+         		columns: ['mrk_id', 'mdl_id', 'is_active', 'anio_inicio', 'anio_fin']
+         	),
 	new ORM\Index(
-		name: 'idx_itempub_mrk_mdl_active_created_id',
-		columns: ['mrk_id', 'mdl_id', 'is_active', 'created', 'id']
-	),
+         		name: 'idx_itempub_mrk_mdl_active_created_id',
+         		columns: ['mrk_id', 'mdl_id', 'is_active', 'created', 'id']
+         	),
 	new ORM\Index(
-		name: 'idx_itempub_mrk_mdl_lado_active',
-		columns: ['mrk_id', 'mdl_id', 'is_active', 'lado', 'poss']
-	),
+         		name: 'idx_itempub_mrk_mdl_lado_active',
+         		columns: ['mrk_id', 'mdl_id', 'is_active', 'lado', 'poss']
+         	),
 ])]
 
 class ItemPub
@@ -108,6 +108,9 @@ class ItemPub
 
     #[ORM\Column(length: 50)]
     private ?string $slug = null;
+
+    #[ORM\Column(length: 10)]
+    private ?string $fromDev = null;
 
     /** */
     public function __construct()
@@ -555,6 +558,18 @@ class ItemPub
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getFromDev(): ?string
+    {
+        return $this->fromDev;
+    }
+
+    public function setFromDev(string $fromDev): static
+    {
+        $this->fromDev = $fromDev;
 
         return $this;
     }

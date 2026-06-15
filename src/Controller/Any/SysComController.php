@@ -162,10 +162,12 @@ class SysComController extends AbstractController
     
 		// Recuperamos el expediente
 		$ctcLog = $fsys->get(AnyPath::$DTACTC, $data['slug'].'.json');
+
+		$files = ['device' => $device];
 		if(array_key_exists('filenames', $data)) {
+
 			$lista = $data['filenames'];
 			$rota = count($lista);
-			$files = [];
 			for ($i=0; $i < $rota; $i++) {
 				$partes = explode('/', $lista[$i]);
 				$partes = explode('.', $partes[1]);
@@ -181,7 +183,7 @@ class SysComController extends AbstractController
 			}
 		}
 		$files['ctc'] = $ctcLog;
-    
+
 		// Recuperacion del inv si el cliente lo pide
 		if($synInv) {
 
@@ -212,7 +214,7 @@ class SysComController extends AbstractController
 					'slug' => $slug.'',
 					'device' => $device,
 					'title' => 'Sincronizacion Centinela',
-					'body' => 'Ejecutando Sincronizacioón desde el Centilena',
+					'body' => 'Ejecutando Sincronizacioón desde el Centinela',
 				];
 	
 				$push->sendMultiple($users, $pay);
