@@ -123,7 +123,7 @@ class ItemPub
 			$this->isActive = true;
 			$this->created = new \DateTimeImmutable('now');
 			$this->updatedAt = new \DateTimeImmutable('now');
-			$this->fromDev = 'unknow';
+			$this->fromDev = 'desktop';
     }
 
     /** */
@@ -154,7 +154,7 @@ class ItemPub
 			$item->setDetalles($data['detalles'] ?? null);
 			$item->setWaId($data['waId'] ?? null);
 			$item->setTaId((int) $data['taId']);
-			$item->setFromDev($data['fromDev'] ?? 'unknow');
+			$item->setFromDev($data['fromDev'] ?? 'desktop');
 			// Extras viene como objeto JSON desde Dart
 			$item->setExtras(
 				isset($data['extras']) && is_array($data['extras'])
@@ -198,7 +198,7 @@ class ItemPub
 			$this->setSlug($data['slug'] ?? '');
 			$this->setWaId($data['waId'] ?? null);
 			$this->setTaId((int) $data['taId']);
-			$this->setFromDev($data['fromDev'] ?? 'unknow');
+			$this->setFromDev($data['fromDev'] ?? 'desktop');
 			// Extras viene como objeto JSON desde Dart
 			$this->setExtras(
 				isset($data['extras']) && is_array($data['extras'])

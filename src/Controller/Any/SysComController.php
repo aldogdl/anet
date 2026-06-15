@@ -200,7 +200,7 @@ class SysComController extends AbstractController
 					if($waId == 'otra_cuenta') {
 						$waId = '';
 					}
-					$pubs = $emPub->getAllMsgAfterUpdate($slug, $waId, $last['pub'], $src);
+					$pubs = $emPub->getAllMsgAfterUpdate($slug, $waId, $last['pub'], $device);
 					$files['pubs'] = $pubs;
 				}
 			}
