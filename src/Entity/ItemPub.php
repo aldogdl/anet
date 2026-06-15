@@ -8,17 +8,17 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ItemPubRepository::class)]
 #[ORM\Table(name: 'item_pub', indexes: [
 	new ORM\Index(
-         		name: 'idx_itempub_mrk_mdl_active_year',
-         		columns: ['mrk_id', 'mdl_id', 'is_active', 'anio_inicio', 'anio_fin']
-         	),
+		name: 'idx_itempub_mrk_mdl_active_year',
+		columns: ['mrk_id', 'mdl_id', 'is_active', 'anio_inicio', 'anio_fin']
+	),
 	new ORM\Index(
-         		name: 'idx_itempub_mrk_mdl_active_created_id',
-         		columns: ['mrk_id', 'mdl_id', 'is_active', 'created', 'id']
-         	),
+		name: 'idx_itempub_mrk_mdl_active_created_id',
+		columns: ['mrk_id', 'mdl_id', 'is_active', 'created', 'id']
+	),
 	new ORM\Index(
-         		name: 'idx_itempub_mrk_mdl_lado_active',
-         		columns: ['mrk_id', 'mdl_id', 'is_active', 'lado', 'poss']
-         	),
+		name: 'idx_itempub_mrk_mdl_lado_active',
+		columns: ['mrk_id', 'mdl_id', 'is_active', 'lado', 'poss']
+	),
 ])]
 
 class ItemPub
@@ -123,6 +123,7 @@ class ItemPub
 			$this->isActive = true;
 			$this->created = new \DateTimeImmutable('now');
 			$this->updatedAt = new \DateTimeImmutable('now');
+			$this->fromDev = 'unknow';
     }
 
     /** */
@@ -153,7 +154,7 @@ class ItemPub
 			$item->setDetalles($data['detalles'] ?? null);
 			$item->setWaId($data['waId'] ?? null);
 			$item->setTaId((int) $data['taId']);
-
+			$item->setFromDev($data['fromDev'] ?? 'unknow');
 			// Extras viene como objeto JSON desde Dart
 			$item->setExtras(
 				isset($data['extras']) && is_array($data['extras'])
@@ -197,7 +198,7 @@ class ItemPub
 			$this->setSlug($data['slug'] ?? '');
 			$this->setWaId($data['waId'] ?? null);
 			$this->setTaId((int) $data['taId']);
-
+			$this->setFromDev($data['fromDev'] ?? 'unknow');
 			// Extras viene como objeto JSON desde Dart
 			$this->setExtras(
 				isset($data['extras']) && is_array($data['extras'])
