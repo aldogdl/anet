@@ -77,46 +77,53 @@ class ItemController extends AbstractController
 
 			  if(mb_strpos($id, ',') !== false) {
 					$ids = array_map('trim', explode(',', $id));
+					if(count($ids) == 0) {
+						return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
+					}
+					if($ids[0] == '0') {
+						unset($ids[0]);
+					}
 					$res = $repo->pausarPubByIdSrc($ids, $waId, $dev);
 				} else {
 					$res = $repo->pausarPub((int)$id, $waId, $dev);
 				}
 
-				if($res['success']) {
-
-				  // Aprovechamos y limpiamos la BD y folders de Imagenes
-					if($res['rowsAffected'] > 0) {
-						$res = 'Publicación pausada correctamente';
-						$del = $repo->deleteOldPausedItems();
-						if($del['success']) {
-							if($del['rowsDeleted'] > 0) {
-								$fsys->deleteImages($del['imageData']);
-							}
-						}
-					} else {
-						$res = 'No se encontró la publicación o ya estaba pausada';
-					}
-
-					// Envio de noti desde desktop a movil
-					if($dev == 'desktop' || $dev == 'web') {
-						$users = $sysCom->getTokensBySlug($slug);
-						$pay = [
-							'event' => 'sync_centinela',
-							'waId' => $waId.'',
-							'slug' => $slug.'',
-							'device' => $dev,
-							'title' => 'Sincronizacion Centinela',
-							'body' => 'Ejecutando Sincronizacioón desde el Centinela',
-						];
-			
-						$push->sendMultiple($users, $pay);
-					}
-
-					return $this->json(['abort' => false, "body" => $res]);
-
-				} else {
+				if($res['success'] === false) {
 					return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
 				}
+
+				// Aprovechamos y limpiamos la BD y folders de Imagenes
+				if($res['rowsAffected'] > 0) {
+					$res = 'Publicación pausada correctamente';
+					$del = $repo->deleteOldPausedItems();
+					if($del['success']) {
+						if($del['rowsDeleted'] > 0) {
+							$fsys->deleteImages($del['imageData']);
+						}
+					}
+				} else {
+					$res = 'No se encontró la publicación o ya estaba pausada';
+				}
+
+				// Envio de noti desde desktop a movil
+				$waIdExcepto = '0';
+				if($dev == 'desktop' || $dev == 'web') {
+					$waIdExcepto = (string)$waId;
+				}
+
+				$users = $sysCom->getTokensBySlug($slug, $waIdExcepto);
+				$pay = [
+					'event' => 'sync_centinela',
+					'waId' => $waId.'',
+					'slug' => $slug.'',
+					'device' => $dev,
+					'title' => 'Sincronizacion Centinela',
+					'body' => 'Ejecutando Sincronizacioón desde el Centinela',
+				];
+				$push->sendMultiple($users, $pay);
+
+				return $this->json(['abort' => false, "body" => $res]);
+
 			}
 
 		} elseif( $req->getMethod() == 'GET' ) {

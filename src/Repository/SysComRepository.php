@@ -68,13 +68,18 @@ class SysComRepository extends ServiceEntityRepository
 	}
 
 	/** */
-	public function getTokensBySlug(string $slug): array
+	public function getTokensBySlug(string $slug, string $waIdExcepto = '0'): array
 	{
 		$sql = 'SELECT sc.fbtok FROM '. SysCom::class .' sc '.
 				'WHERE sc.slug = :slug';
-		$res = $this->_em->createQuery($sql)->setParameters([
-			'slug' => $slug
-		])->getArrayResult();
+		$params = ['slug' => $slug];
+
+		if($waIdExcepto != '0') {
+			$sql .= ' AND sc.waId != :waIdExcepto';
+			$params['waIdExcepto'] = $waIdExcepto;
+		}
+
+		$res = $this->_em->createQuery($sql)->setParameters($params)->getArrayResult();
 		return array_column($res, 'fbtok');
 	}
 
