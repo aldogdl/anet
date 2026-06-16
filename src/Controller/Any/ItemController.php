@@ -4,10 +4,12 @@ namespace App\Controller\Any;
 
 use App\Repository\ItemPubRepository;
 use App\Repository\PaginatorQuery;
+use App\Repository\SysComRepository;
 use Symfony\Component\Filesystem\Path;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use App\Service\ImageUploadService;
+use App\Service\Pushes;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,7 +26,7 @@ class ItemController extends AbstractController
 	 * Endpoint para subir las imagenes desde el form del catalogo
 	 */
 	#[Route('/only-test', methods: ['get'])]
-	public function onlyTest(Request $req, ItemPubRepository $em): Response {
+	public function onlyTest(ItemPubRepository $em): Response {
     
 	  $res = $em->getIfExistPubById(1);
 		if($res) {
@@ -35,7 +37,10 @@ class ItemController extends AbstractController
 
 	/** */
 	#[Route('/pub', methods: ['get', 'post', 'delete'])]
-	public function itemPub(Request $req, ItemPubRepository $repo, Fsys $fsys): Response
+	public function itemPub(
+		Request $req, ItemPubRepository $repo, Fsys $fsys, 
+		SysComRepository $sysCom, Pushes $push
+	): Response
 	{
 
 		if($req->getMethod() == 'POST' ) {
@@ -65,7 +70,9 @@ class ItemController extends AbstractController
 
 			$id = $req->query->get('id') ?? 0;
 			$waId = $req->query->get('waId') ?? 0;
+			$slug = $req->query->get('slug') ?? '';
 			$dev = $req->query->get('dev') ?? 'desktop';
+
 			if($id && $waId) {
 
 			  if(mb_strpos($id, ',') !== false) {
@@ -88,6 +95,21 @@ class ItemController extends AbstractController
 						}
 					} else {
 						$res = 'No se encontró la publicación o ya estaba pausada';
+					}
+
+					// Envio de noti desde desktop a movil
+					if($dev == 'desktop' || $dev == 'web') {
+						$users = $sysCom->getTokensBySlug($slug);
+						$pay = [
+							'event' => 'sync_centinela',
+							'waId' => $waId.'',
+							'slug' => $slug.'',
+							'device' => $dev,
+							'title' => 'Sincronizacion Centinela',
+							'body' => 'Ejecutando Sincronizacioón desde el Centinela',
+						];
+			
+						$push->sendMultiple($users, $pay);
 					}
 
 					return $this->json(['abort' => false, "body" => $res]);
