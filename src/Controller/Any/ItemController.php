@@ -90,7 +90,7 @@ class ItemController extends AbstractController
 				}
 
 				if($res['success'] === false) {
-					return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
+					return $this->json(['abort' => true, "body" => $res['error'] ?? 'Error desconocido'], 400);
 				}
 
 				// Aprovechamos y limpiamos la BD y folders de Imagenes
