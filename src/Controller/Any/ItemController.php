@@ -78,14 +78,16 @@ class ItemController extends AbstractController
 			  if(mb_strpos($id, ',') !== false) {
 					$ids = array_map('trim', explode(',', $id));
 					if(count($ids) == 0) {
-						return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
+						return $this->json(['abort' => true, "body" => 'Sin Ids para eliminar'], 400);
 					}
 					if($ids[0] == '0') {
 						unset($ids[0]);
 					}
 					$res = $repo->pausarPubByIdSrc($ids, $waId, $dev);
+					file_put_contents('delete_con_comas.json', json_encode([$ids, $waId, $dev, $res]));
 				} else {
 					$res = $repo->pausarPub((int)$id, $waId, $dev);
+					file_put_contents('delete_son_comas.json', json_encode([$id, $waId, $dev, $res]));
 				}
 
 				if($res['success'] === false) {
