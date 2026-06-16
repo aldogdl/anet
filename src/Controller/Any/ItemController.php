@@ -41,11 +41,10 @@ class ItemController extends AbstractController
 		if($req->getMethod() == 'POST' ) {
 
 			$data = $req->getContent();
-			$diccPath = $this->getParameter(AnyPath::$DICC);
-
 			if($data) {
 
 				$data = json_decode($data, true);
+				$diccPath = $this->getParameter(AnyPath::$DICC);
 				if(array_key_exists('list', $data)) {
 					$res = $repo->setPubs($data, $diccPath);
 					if($res != 0) {
@@ -66,13 +65,14 @@ class ItemController extends AbstractController
 
 			$id = $req->query->get('id') ?? 0;
 			$waId = $req->query->get('waId') ?? 0;
+			$dev = $req->query->get('dev') ?? 'desktop';
 			if($id && $waId) {
-				
+
 			  if(mb_strpos($id, ',') !== false) {
 					$ids = array_map('trim', explode(',', $id));
-					$res = $repo->pausarPubByIdSrc($ids, $waId);
+					$res = $repo->pausarPubByIdSrc($ids, $waId, $dev);
 				} else {
-					$res = $repo->pausarPub((int)$id, $waId);
+					$res = $repo->pausarPub((int)$id, $waId, $dev);
 				}
 
 				if($res['success']) {

@@ -316,18 +316,19 @@ class ItemPubRepository extends ServiceEntityRepository
 	 * Pausa publicaciones para que deje de aparecer en el catálogo.
 	 * Actualiza el item con stt = 501, isActive = false y updatedAt = ahora
 	*/
-	public function pausarPubByIdSrc(array $ids, string $waId): array
+	public function pausarPubByIdSrc(array $ids, string $waId, string $dev): array
 	{
 		try {
 			$dql = 'UPDATE ' . ItemPub::class . ' it '.
 			'SET it.stt = 501, it.isActive = false, it.updatedAt = :updatedAt, '.
-			'it.waId = :waId '.
+			'it.waId = :waId, it.fromDev = :dev '.
 			'WHERE it.idSrc IN (:ids)';
 
 			$result = $this->_em->createQuery($dql)
 				->setParameters([
 					'id' => $ids,
 					'waId' => $waId,
+					'dev' => $dev,
 					'updatedAt' => new \DateTimeImmutable()
 				])
 				->execute();
@@ -342,18 +343,19 @@ class ItemPubRepository extends ServiceEntityRepository
 	 * Pausa la publicación para que deje de aparecer en el catálogo.
 	 * Actualiza el item con stt = 501, isActive = false y updatedAt = ahora
 	*/
-	public function pausarPub(int $id, string $waId): array
+	public function pausarPub(int $id, string $waId, string $dev): array
 	{
 		try {
 			$dql = 'UPDATE ' . ItemPub::class . ' it '.
 			'SET it.stt = 501, it.isActive = false, it.updatedAt = :updatedAt, '.
-			'it.waId = :waId '.
+			'it.waId = :waId, it.fromDev = :dev '.
 			'WHERE it.id = :id';
 
 			$result = $this->_em->createQuery($dql)
 				->setParameters([
 					'id' => $id,
 					'waId' => $waId,
+					'dev' => $dev,
 					'updatedAt' => new \DateTimeImmutable()
 				])
 				->execute();
