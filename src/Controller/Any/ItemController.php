@@ -82,12 +82,11 @@ class ItemController extends AbstractController
 					}
 					if($ids[0] == '0') {
 						unset($ids[0]);
+						sort($ids);
 					}
 					$res = $repo->pausarPubByIdSrc($ids, $waId, $dev);
-					file_put_contents('delete_con_comas.json', json_encode([$ids, $waId, $dev, $res]));
 				} else {
 					$res = $repo->pausarPub((int)$id, $waId, $dev);
-					file_put_contents('delete_son_comas.json', json_encode([$id, $waId, $dev, $res]));
 				}
 
 				if($res['success'] === false) {

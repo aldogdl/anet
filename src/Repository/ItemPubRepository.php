@@ -318,6 +318,7 @@ class ItemPubRepository extends ServiceEntityRepository
 	*/
 	public function pausarPubByIdSrc(array $ids, string $waId, string $dev): array
 	{
+
 		try {
 			$dql = 'UPDATE ' . ItemPub::class . ' it '.
 			'SET it.stt = 501, it.isActive = false, it.updatedAt = :updatedAt, '.
@@ -326,7 +327,7 @@ class ItemPubRepository extends ServiceEntityRepository
 
 			$result = $this->_em->createQuery($dql)
 				->setParameters([
-					'id' => $ids,
+					'ids' => $ids,
 					'waId' => $waId,
 					'dev' => $dev,
 					'updatedAt' => new \DateTimeImmutable()
