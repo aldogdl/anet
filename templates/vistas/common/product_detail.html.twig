@@ -131,7 +131,7 @@
             },
             shareProduct() {
                 const shareUrl = this.selectedItem?.detailUrl 
-                    ? (window.location.origin + this.selectedItem.detailUrl) 
+                    ? (window.location.origin + this.selectedItem.detailUrl.trim()) 
                     : window.location.href;
                 
                 const title = this.selectedItem?.title || 'Refacción de Auto';

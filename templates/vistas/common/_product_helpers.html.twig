@@ -53,18 +53,18 @@
     {{ item.id ?: 0 }}
 {% endmacro %}
 
-{% macro detailUrl(item, isMeli=false) %}
+{% macro detailUrl(item, isMeli=false) -%}
     {% set extras = item.extras|default({}) %}
     {% set pTitle = _self.productTitle(item) %}
     {% set cleanTitle = _self.cleanTitle(pTitle) %}
     {% set safeId = item.id ?: 0 %}
     {% set shopSlug = item.slug|default('demo') %}
     {% if isMeli and extras.permalink is defined %}
-        {{ extras.permalink }}
+        {{- extras.permalink|trim -}}
     {% else %}
-        {{ path('app_product_detail', { id: safeId, slug: shopSlug, fuente: cleanTitle }) }}
+        {{- path('app_product_detail', { id: safeId, slug: shopSlug, fuente: cleanTitle })|trim -}}
     {% endif %}
-{% endmacro %}
+{%- endmacro %}
 
 {% macro extra(item, key, default='') %}
     {% set extras = item.extras|default({}) %}
