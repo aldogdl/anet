@@ -8,6 +8,10 @@
 {% set pTitle = product.productTitle(item) %}
 {% set brandName = extras.marca|default(extras.mk|default('')) %}
 {% set modelName = extras.modelo|default(extras.md|default('')) %}
+{% set isMeli = isMeli|default(false) %}
+{% set safeId = product.safeId(item) %}
+{% set detailUrl = product.detailUrl(item, isMeli) %}
+
 {% set modalData = {
     id: item.id,
     title: pTitle,
@@ -30,14 +34,11 @@
     pictures: extras.pictures|default([]),
     pathImg: extras.pathImg|default(''),
     idSrc: extras.idSrc|default(''),
-    linkSr: extras.linkSr|default('')
+    linkSr: extras.linkSr|default(''),
+    detailUrl: detailUrl
 }|json_encode %}
 {% set cleanSlug = product.cleanSlug(pTitle) %}
 {% set cleanTitle = product.cleanTitle(pTitle) %}
-
-{% set isMeli = isMeli|default(false) %}
-{% set safeId = product.safeId(item) %}
-{% set detailUrl = product.detailUrl(item, isMeli) %}
 
 
 <div class="group bg-white rounded-xl overflow-hidden border border-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative cursor-pointer shadow-sm hover:shadow-md hover:border-slate-300"
