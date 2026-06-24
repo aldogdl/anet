@@ -135,7 +135,7 @@
                     : window.location.href;
                 
                 const title = this.selectedItem?.title || 'Refacción de Auto';
-                const text = `Mira esta refacción: ${title} en Autoparnet.`;
+                const text = `Mira esta refacción: ${title} en Mi Shop.\n\n${shareUrl}`;
 
                 const showNotification = (msg) => {
                     const toast = document.createElement('div');
@@ -158,8 +158,7 @@
                 if (navigator.share) {
                     navigator.share({
                         title: title,
-                        text: text,
-                        url: shareUrl
+                        text: text
                     }).catch(err => {
                         console.log('Compartido cancelado o fallido', err);
                     });
