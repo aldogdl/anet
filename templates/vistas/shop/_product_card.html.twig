@@ -42,12 +42,12 @@
 
 
 <div class="group bg-white rounded-xl overflow-hidden border border-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative cursor-pointer shadow-sm hover:shadow-md hover:border-slate-300"
-	 {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
+	 {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click="if (window.innerWidth >= 1024) { $event.preventDefault(); openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\'))); } else { window.location.href = \'' ~ detailUrl ~ '\'; }"')|raw }}>
 
 	<!-- Image Area (Light Slate Background, Clean Border) -->
 	<a href="{{ detailUrl }}" {{ isMeli ? 'target="_blank"' : '' }} 
 	   class="block relative h-[160px] bg-slate-50 border-b border-slate-100 overflow-hidden flex items-center justify-center cursor-pointer w-full" 
-       {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
+       {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click="if (window.innerWidth >= 1024) { $event.preventDefault(); openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\'))); }"')|raw }}>
 		
         <!-- Blurred Background for small images -->
         <div class="absolute inset-0 bg-cover bg-center opacity-5 blur-2xl scale-110" style="background-image: url('{{ mainImg }}')"></div>
@@ -94,7 +94,7 @@
                style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;"
                data-product-title
                x-init="$nextTick(() => { if ($el.scrollHeight > $el.clientHeight || $el.scrollWidth > $el.clientWidth) { $el.setAttribute('title', $el.textContent.trim()); } })"
-			   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>
+			   {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click="if (window.innerWidth >= 1024) { $event.preventDefault(); openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\'))); }"')|raw }}>
 				{{ pTitle }}
 			</a>
 

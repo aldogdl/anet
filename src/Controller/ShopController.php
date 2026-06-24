@@ -62,8 +62,17 @@ class ShopController extends AbstractController
 			->orderBy('i.updatedAt', 'DESC');
 
 		if ($search) {
-			$queryBuilder->andWhere('i.fuente LIKE :search OR i.detalles LIKE :search')
-				->setParameter('search', '%' . $search . '%');
+			$words = array_filter(explode(' ', $search), function($word) {
+				return strlen(trim($word)) > 0;
+			});
+
+			$idx = 0;
+			foreach ($words as $word) {
+				$paramName = 'search_idx_' . $idx;
+				$queryBuilder->andWhere('(i.fuente LIKE :' . $paramName . ' OR i.detalles LIKE :' . $paramName . ')');
+				$queryBuilder->setParameter($paramName, '%' . trim($word) . '%');
+				$idx++;
+			}
 		}
 
 		if ($mrkId) {
@@ -195,8 +204,17 @@ class ShopController extends AbstractController
 				->orderBy('i.created', 'DESC');
 
 			if ($search) {
-				$queryBuilder->andWhere('i.fuente LIKE :search OR i.detalles LIKE :search')
-					->setParameter('search', '%' . $search . '%');
+				$words = array_filter(explode(' ', $search), function($word) {
+					return strlen(trim($word)) > 0;
+				});
+
+				$idx = 0;
+				foreach ($words as $word) {
+					$paramName = 'search_s_idx_' . $idx;
+					$queryBuilder->andWhere('(i.fuente LIKE :' . $paramName . ' OR i.detalles LIKE :' . $paramName . ')');
+					$queryBuilder->setParameter($paramName, '%' . trim($word) . '%');
+					$idx++;
+				}
 			}
 			if ($mrkId) {
 				$queryBuilder->andWhere('i.mrkId = :mrkId')

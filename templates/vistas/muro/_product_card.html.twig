@@ -33,10 +33,11 @@
     linkSr: extras.linkSr|default('')
 }|json_encode %}
 {% set safeId = product.safeId(item) %}
+{% set detailUrl = product.detailUrl(item, false)|trim %}
 
 <div class="group bg-[#0b141a] border border-white/5 rounded-3xl overflow-hidden hover:border-[#25d366]/40 transition-all duration-300 flex flex-col h-full shadow-lg hover:shadow-[#25d366]/5 active:scale-[0.98]"
      data-item="{{ modalData|e('html_attr') }}" 
-     @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute('data-item')))">
+     @click="if (window.innerWidth >= 1024) { $event.preventDefault(); openModal(JSON.parse($event.currentTarget.getAttribute('data-item'))); } else { window.location.href = '{{ detailUrl }}'; }">
     
     <!-- Top Accent Line (Optional, but matches shop style) -->
     <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#25d366]/20 to-transparent"></div>
