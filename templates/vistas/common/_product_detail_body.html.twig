@@ -6,7 +6,9 @@
             
             <!-- Zoom Logic Wrapper -->
             <div class="absolute inset-0 flex items-center justify-center p-2.5 sm:p-6 cursor-zoom-in"
+                 @click="if (isTouchDevice) { openGalleryManual(activeImg, selectedItem.pictures, selectedItem.pathImg); }"
                  @mousemove="
+                    if (isTouchDevice) return;
                     isZoomed = true; 
                     const rect = $el.getBoundingClientRect();
                     let x = ($event.clientX - rect.left) / rect.width;
@@ -65,7 +67,7 @@
             <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] text-white/80 font-bold tracking-wider uppercase flex items-center gap-2 pointer-events-none transition-opacity duration-300"
                  :class="isZoomed ? 'opacity-0' : 'opacity-100'">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"></path></svg>
-                Pasa el mouse para Zoom
+                <span x-text="isTouchDevice ? 'Toca para ampliar' : 'Pasa el mouse para Zoom'"></span>
             </div>
         </div>
 

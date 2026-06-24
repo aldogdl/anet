@@ -46,6 +46,7 @@ function shopModalLogic(initialItem = null) {
         isZoomed: false,
         zX: 50,
         zY: 50,
+        isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
         init() {
             if (initialItem) {
                 this.activeImg = initialItem.imgBig;
