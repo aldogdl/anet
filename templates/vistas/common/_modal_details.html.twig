@@ -116,13 +116,42 @@ function shopModalLogic(initialItem = null) {
                 }, 2500);
             };
 
+            const shareData = {
+                title: title,
+                text: text
+            };
+
             if (navigator.share) {
-                navigator.share({
-                    title: title,
-                    text: text
-                }).catch(err => {
-                    console.log('Compartido cancelado o fallido', err);
-                });
+                const imageUrl = this.activeImg || this.selectedItem?.imgBig;
+                
+                if (imageUrl && navigator.canShare) {
+                    const shareWithImage = async () => {
+                        try {
+                            const response = await fetch(imageUrl);
+                            const blob = await response.blob();
+                            let mimeType = blob.type || 'image/jpeg';
+                            let extension = mimeType.split('/')[1] || 'jpg';
+                            if (extension === 'jpeg') extension = 'jpg';
+                            
+                            const file = new File([blob], `refaccion.${extension}`, { type: mimeType });
+                            
+                            if (navigator.canShare({ files: [file] })) {
+                                shareData.files = [file];
+                            }
+                        } catch (err) {
+                            console.warn('No se pudo descargar la imagen para compartir (CORS o red). Compartiendo solo texto.', err);
+                        }
+                        return navigator.share(shareData);
+                    };
+
+                    shareWithImage().catch(err => {
+                        console.log('Compartido cancelado o fallido', err);
+                    });
+                } else {
+                    navigator.share(shareData).catch(err => {
+                        console.log('Compartido cancelado o fallido', err);
+                    });
+                }
             } else {
                 navigator.clipboard.writeText(shareUrl).then(() => {
                     showNotification('Enlace copiado al portapapeles');
