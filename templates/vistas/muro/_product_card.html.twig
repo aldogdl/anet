@@ -6,6 +6,8 @@
 {% set imgBig = product.imgUrl(item, firstPic) %}
 {% set title = product.productTitle(item) %}
 {% set placeholder = product.placeholder() %}
+{% set brandName = extras.marca|default(extras.mk|default('')) %}
+{% set modelName = extras.modelo|default(extras.md|default('')) %}
 {% set modalData = {
     id: item.id,
     title: title,
@@ -16,6 +18,15 @@
     sku: item.iku|default('N/A'),
     brand: item.mrkId,
     model: item.mdlId,
+    mk: brandName,
+    md: modelName,
+    pieza: item.pieza|default(''),
+    numPart: extras.numPart|default(extras.idSrc|default('')),
+    localidad: extras.localidad|default(''),
+    anioInicio: item.anioInicio|default(0),
+    anioFin: item.anioFin|default(9999),
+    lado: (item.lado|default('A') == 'A') ? '' : (item.lado|lp_decode(item.pieza|default(''))),
+    poss: (item.poss|default('A') == 'A') ? '' : (item.poss|lp_decode(item.pieza|default(''))),
     pictures: extras.pictures|default([]),
     pathImg: extras.pathImg|default(''),
     idSrc: extras.idSrc|default(''),

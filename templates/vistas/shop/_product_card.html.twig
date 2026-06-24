@@ -6,6 +6,8 @@
 {% set imgBig = product.imgUrl(item, firstPic) %}
 {% set placeholder = product.placeholder() %}
 {% set pTitle = product.productTitle(item) %}
+{% set brandName = extras.marca|default(extras.mk|default('')) %}
+{% set modelName = extras.modelo|default(extras.md|default('')) %}
 {% set modalData = {
     id: item.id,
     title: pTitle,
@@ -16,6 +18,15 @@
     sku: item.iku|default('N/A'),
     brand: item.mrkId,
     model: item.mdlId,
+    mk: brandName,
+    md: modelName,
+    pieza: item.pieza|default(''),
+    numPart: extras.numPart|default(extras.idSrc|default('')),
+    localidad: extras.localidad|default(''),
+    anioInicio: item.anioInicio|default(0),
+    anioFin: item.anioFin|default(9999),
+    lado: (item.lado|default('A') == 'A') ? '' : (item.lado|lp_decode(item.pieza|default(''))),
+    poss: (item.poss|default('A') == 'A') ? '' : (item.poss|lp_decode(item.pieza|default(''))),
     pictures: extras.pictures|default([]),
     pathImg: extras.pathImg|default(''),
     idSrc: extras.idSrc|default(''),
@@ -28,9 +39,6 @@
 {% set safeId = product.safeId(item) %}
 {% set detailUrl = product.detailUrl(item, isMeli) %}
 
-{# Asignación compatible para Marca y Modelo de extras #}
-{% set brandName = extras.marca|default(extras.mk|default('')) %}
-{% set modelName = extras.modelo|default(extras.md|default('')) %}
 
 <div class="group bg-white rounded-xl overflow-hidden border border-slate-200/60 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative cursor-pointer shadow-sm hover:shadow-md hover:border-slate-300"
 	 {{ isMeli ? '' : ('data-item="' ~ modalData|e('html_attr') ~ '" @click.prevent="openModal(JSON.parse($event.currentTarget.getAttribute(\'data-item\')))"')|raw }}>

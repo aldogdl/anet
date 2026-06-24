@@ -18,244 +18,51 @@
 {% set localidad = product.extraFirst(item, 'localidad') %}
 {% set idSrc = product.extra(item, 'idSrc', '') %}
 {% set linkSr = product.extra(item, 'linkSr', '') %}
+{% set pTitle = product.productTitle(item) %}
+{% set firstPic = (extras.pictures|default([]))|first %}
+{% set imgBig = product.imgUrl(item, firstPic) %}
+
+{% set modalData = {
+    id: item.id,
+    title: pTitle,
+    price: item.price,
+    thumb: mainImg,
+    imgBig: imgBig,
+    detalles: item.detalles|default('Sin detalles adicionales.'),
+    sku: item.iku|default('N/A'),
+    brand: item.mrkId,
+    model: item.mdlId,
+    mk: mkName,
+    md: mdName,
+    pieza: item.pieza|default(''),
+    numPart: numPart|default(idSrc|default('')),
+    localidad: localidad,
+    anioInicio: item.anioInicio|default(0),
+    anioFin: item.anioFin|default(9999),
+    lado: (item.lado|default('A') == 'A') ? '' : (item.lado|lp_decode(item.pieza|default(''))),
+    poss: (item.poss|default('A') == 'A') ? '' : (item.poss|lp_decode(item.pieza|default(''))),
+    pictures: pictures,
+    pathImg: pathImg,
+    idSrc: idSrc,
+    linkSr: linkSr
+} %}
 
 <div class="min-h-screen bg-[#fafafa] flex flex-col font-sans antialiased"
-     x-data="{{ {
-        activeImg: mainImg,
-        rotation: 0,
-        pictures: pictures,
-        pathImg: pathImg,
-        isZoomed: false,
-        zoomX: 0,
-        zoomY: 0
-     }|json_encode|e('html_attr') }}">
-  
-  <!-- Header -->
-  <header class="sticky top-0 z-50 bg-dark border-b border-white/[0.06]">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        <a href="javascript:history.back()" class="text-white/60 hover:text-white flex items-center gap-2 text-xs font-medium transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Volver al catálogo
-        </a>
-        <span class="text-white font-semibold text-sm tracking-tight">{{ storeName|default('YonkEros') }}</span>
-        <div class="w-24"></div>
-    </div>
-  </header>
+     x-data="shopModalLogic({{ modalData|json_encode|e('html_attr') }})">
 
   <!-- Product Detail -->
-  <main class="max-w-6xl mx-auto w-full px-4 sm:px-6 py-2 sm:py-4 flex-1">
-    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col lg:flex-row">
-        
-        <!-- Left: Image Gallery -->
-        <div class="w-full lg:w-[55%] bg-[#fafafa] flex flex-col border-r border-gray-100" id="gallery-detail">
-                <!-- Main Image Container with Inner Zoom -->
-                <div class="w-full aspect-square sm:aspect-[4/3] lg:aspect-square max-h-[400px] sm:max-h-[500px] lg:max-h-[600px] relative group bg-white overflow-hidden border-b border-gray-100 lg:border-b-0">
-                    
-                    <!-- Zoom Logic Wrapper -->
-                    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 cursor-zoom-in"
-                         @mousemove="
-                            isZoomed = true; 
-                            const rect = $el.getBoundingClientRect();
-                            let x = ($event.clientX - rect.left) / rect.width;
-                            let y = ($event.clientY - rect.top) / rect.height;
-                            
-                            if (rotation == 90) { let tmp = x; x = y; y = 1 - tmp; }
-                            else if (rotation == 180) { x = 1 - x; y = 1 - y; }
-                            else if (rotation == 270) { let tmp = x; x = 1 - y; y = tmp; }
-                            
-                            zoomX = x * 100; zoomY = y * 100;
-                         "
-                         @mouseleave="isZoomed = false">
-                        
-                        <div class="w-full h-full flex items-center justify-center transition-transform duration-300"
-                             :style="`transform: rotate(${rotation}deg)`">
-                            <img :src="activeImg" 
-                                 :style="isZoomed ? `transform: scale(2.5); transform-origin: ${zoomX}% ${zoomY}%` : ''"
-                                 class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-200 ease-out pointer-events-none"
-                                 alt="{{ item.fuente }}" />
-                        </div>
-                    </div>
-
-                    <!-- Floating Buttons -->
-                    <div class="absolute top-4 right-4 flex flex-col gap-2 z-10">
-                        <!-- Magnifying Glass for Lightbox -->
-                        <button type="button"
-                           class="p-3 bg-white/90 backdrop-blur-md border border-gray-100 rounded-xl text-gray-500 hover:text-primary hover:scale-110 transition-all shadow-xl flex items-center justify-center group/lupa"
-                           title="Ver pantalla completa"
-                           @click.stop="openGallery(activeImg, pictures, pathImg)">
-                            <svg class="w-5 h-5 group-hover/lupa:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
-                            </svg>
-                        </button>
-                        
-                        <!-- Rotate button -->
-                        <button @click.stop="rotation = (rotation + 90) % 360" 
-                                class="p-3 bg-white/90 backdrop-blur-md border border-gray-100 rounded-xl text-gray-500 hover:text-primary hover:scale-110 transition-all shadow-xl flex items-center justify-center"
-                                title="Rotar imagen">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                        </button>
-                    </div>
-
-                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] text-white/80 font-bold tracking-wider uppercase flex items-center gap-2 pointer-events-none transition-opacity duration-300"
-                         :class="isZoomed ? 'opacity-0' : 'opacity-100'">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"></path></svg>
-                        Pasa el mouse para Zoom
-                    </div>
-                </div>
-
-                <!-- Thumbnails -->
-                {% if pictures|length > 1 %}
-                <div class="flex gap-2 px-5 pb-5 overflow-x-auto no-scrollbar flex-shrink-0">
-                    {% for pic in pictures %}
-                        {% set picUrl = (pic starts with 'http' or pic starts with '/' or pic starts with '//') ? pic : (pathImg ~ '/' ~ pic) %}
-                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg border-2 transition-all cursor-pointer overflow-hidden bg-white"
-                             :class="activeImg === '{{ picUrl }}' ? 'border-primary' : 'border-gray-100 opacity-50 hover:opacity-100'"
-                             @click="activeImg = '{{ picUrl }}'; rotation = 0">
-                            <img src="{{ picUrl }}" class="w-full h-full object-cover rounded-[5px]" alt="Foto {{ loop.index }}" loading="lazy">
-                        </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-        </div>
-
-        <!-- Right: Details -->
-        <div class="w-full lg:w-[45%] flex flex-col">
-            <div class="p-4 sm:p-5 lg:p-6 flex-1">
-
-                <!-- Badges + Disponible -->
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-[11px] font-medium text-white bg-slate-900 px-2.5 py-1 rounded-md tracking-wider shadow-sm">
-                        ID: <span class="font-black">{{ item.id }}</span>
-                    </span>
-                    <span class="text-[11px] font-medium text-white bg-blue-600 px-2.5 py-1 rounded-md tracking-wider shadow-sm">
-                        IKU: <span class="font-black">{{ item.iku|default('N/A') }}</span>
-                    </span>
-                    {% if numPart is not empty %}
-                        <span class="text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-md tracking-wider">
-                            N/P: <span class="font-black">{{ numPart }}</span>
-                        </span>
-                    {% endif %}
-                    {% if item.isActive %}
-                        <span class="ml-auto text-[10px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-tighter">
-                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                            Disponible
-                        </span>
-                    {% endif %}
-                </div>
-
-                <!-- Title -->
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight tracking-tight mb-1">{{ item.fuente }}</h1>
-                
-                <!-- Brand / Model / Year -->
-                {% if mkName is not empty or mdName is not empty %}
-                <p class="text-sm text-gray-400 font-medium mb-5">
-                    {% if mkName is not empty %}{{ mkName }}{% endif %}
-                    {% if mdName is not empty %} · {{ mdName }}{% endif %}
-                    {% if item.anioInicio is defined and item.anioInicio > 0 %}
-                        · {{ item.anioInicio }}{% if item.anioFin is defined and item.anioFin < 9999 %} - {{ item.anioFin }}{% endif %}
-                    {% endif %}
-                </p>
-                {% endif %}
-
-                <!-- Price + Contact -->
-                <div class="flex items-center gap-2 mb-5">
-                    <span class="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">${{ item.price|number_format(2, '.', ',') }}</span>
-                    <span class="text-xs text-gray-400 font-medium">MXN</span>
-                    
-                    <a href="https://wa.me/?text={{ ('Hola, me interesa: ' ~ item.fuente ~ ' - $' ~ item.price|number_format(2, '.', ',') ~ ' (IKU: ' ~ item.iku ~ ')')|url_encode }}"
-                       target="_blank"
-                       class="ml-auto bg-[#25d366] hover:bg-[#20bd5c] text-black font-bold py-2.5 px-5 rounded-lg transition-all active:scale-[0.98] text-sm flex items-center gap-2 shadow-sm">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.394 0 0 5.394 0 12.031c0 2.115.548 4.17 1.583 5.986L.048 23.518l5.656-1.482a12.002 12.002 0 006.327 1.785h.005c6.634 0 12.029-5.394 12.029-12.031S18.667 0 12.031 0zm0 21.821h-.004a9.986 9.986 0 01-5.088-1.385l-.365-.216-3.782.991.99-3.685-.236-.376a9.986 9.986 0 01-1.526-5.334c0-5.522 4.493-10.017 10.015-10.017 2.675 0 5.188 1.042 7.079 2.934 1.891 1.892 2.932 4.406 2.932 7.081 0 5.524-4.494 10.007-10.014 10.007zm5.493-7.513c-.301-.151-1.785-.882-2.062-.983-.277-.101-.479-.151-.68.151-.202.302-.781.983-.957 1.184-.177.202-.353.227-.654.076-.301-.151-1.275-.47-2.428-1.5-.898-.801-1.503-1.793-1.68-2.095-.177-.302-.019-.465.132-.616.135-.135.301-.353.452-.529.151-.177.202-.302.302-.504.101-.202.05-.378-.025-.529-.076-.151-.68-1.64-.932-2.245-.246-.59-.496-.51-.68-.52-.177-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.057 1.033-1.057 2.519s1.083 2.923 1.234 3.125c.151.202 2.13 3.25 5.161 4.557.72.311 1.281.497 1.722.636.723.23 1.381.197 1.902.12.583-.086 1.785-.73 2.036-1.436.252-.705.252-1.309.177-1.436-.076-.126-.277-.202-.578-.353z"></path></svg>
-                        Contactar
-                    </a>
-                </div>
-
-                <!-- Description -->
-                {% if item.detalles %}
-                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100 mb-3">
-                    <h4 class="text-[11px] font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Descripción</h4>
-                    <p class="text-sm text-gray-700 leading-relaxed">{{ item.detalles }}</p>
-                </div>
-                {% endif %}
-
-                <!-- Specs Grid -->
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    {% if item.pieza is defined and item.pieza is not empty %}
-                    <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Pieza</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ item.pieza }}</span>
-                    </div>
-                    {% endif %}
-                    {% if item.anioInicio is defined and item.anioInicio > 0 %}
-                    <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Año</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ item.anioInicio }}{% if item.anioFin is defined and item.anioFin < 9999 %} - {{ item.anioFin }}{% endif %}</span>
-                    </div>
-                    {% endif %}
-                    {% if item.lado is defined and item.lado is not empty and item.lado != 'A' %}
-                    <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Lado</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ item.lado }}</span>
-                    </div>
-                    {% endif %}
-                    {% if item.poss is defined and item.poss is not empty and item.poss != 'A' %}
-                    <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Posición</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ item.poss }}</span>
-                    </div>
-                    {% endif %}
-                    <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">No. Parte</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ numPart is not empty ? numPart : (idSrc|default('N/A')) }}</span>
-                    </div>
-                    {% if localidad is not empty %}
-                    <div class="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <span class="text-[11px] text-gray-600 font-medium block mb-0.5">Ubicación</span>
-                        <span class="text-sm font-semibold text-gray-800">{{ localidad }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-
-                {% if linkSr is not empty and 'mercadolibre' in linkSr %}
-                <div class="mb-4">
-                    <a href="{{ linkSr }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-bold no-underline flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                        Adquirir por Mercado Libre
-                    </a>
-                </div>
-                {% endif %}
-
-                <!-- Trust badges -->
-                <div class="flex gap-2 mb-4">
-                    <div class="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        <div>
-                            <span class="text-[10px] text-gray-600 block">Garantía</span>
-                            <span class="text-[11px] font-semibold text-gray-700">7 días</span>
-                        </div>
-                    </div>
-                    <div class="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg p-2.5 border border-gray-100">
-                        <svg class="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
-                        <div>
-                            <span class="text-[10px] text-gray-600 block">Envío</span>
-                            <span class="text-[11px] font-semibold text-gray-700">Todo México</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CTA -->
-            <div class="border-t border-gray-100 p-2 sm:p-3 lg:px-8 bg-white flex-shrink-0">
-                <!-- Se eliminó el botón de comprar ahora -->
-            </div>
-        </div>
+  <main class="max-w-5xl mx-auto w-full px-4 sm:px-6 py-4 flex-1 flex items-center justify-center">
+    <div class="bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col lg:flex-row shadow-lg w-full">
+         {% include 'vistas/common/_product_detail_body.html.twig' with {'isModal': false} %}
     </div>
   </main>
 
   <!-- Footer -->
   <footer class="bg-gray-50 border-t border-gray-100 py-6 mt-auto">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-        <span class="text-xs text-gray-400">{{ storeName|default('YonkEros') }} · © {{ 'now'|date('Y') }}</span>
+        <a href="{{ path('app_shop', { template: 'shop', slug: item.slug|default('demo') }) }}" class="text-xs font-bold text-slate-700 hover:text-emerald-700 transition-colors">
+            {{ storeName|default('YonkEros') }} · © {{ 'now'|date('Y') }}
+        </a>
     </div>
   </footer>
 </div>
@@ -265,57 +72,69 @@
 <script type="module">
     import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5.4.3/dist/photoswipe-lightbox.esm.js';
     import PhotoSwipe from 'https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js';
-    
-    // Función global para abrir la galería manualmente
-    window.openGallery = function(activeImg, pictures, pathImg) {
-        let dataSource = [];
-        
-        // Si hay array de fotos, construimos la galería
-        if (Array.isArray(pictures) && pictures.length > 0) {
-            dataSource = pictures.map(pic => {
-                const src = (pic.startsWith('http') || pic.startsWith('//') || pic.startsWith('/') || pic.startsWith('data:')) 
-                    ? pic 
-                    : (pathImg ? `${pathImg}/${pic}` : pic);
-                return { src, width: 2000, height: 2000 };
-            });
-        }
-        
-        // Verificamos si la imagen activa está en el dataSource
-        let index = dataSource.findIndex(item => item.src === activeImg);
-        
-        // Si no está (caso de items de MeLi sin galería o fotos externas), la agregamos al inicio
-        if (index === -1 && activeImg) {
-            dataSource.unshift({
-                src: activeImg,
-                width: 2000,
-                height: 2000
-            });
-            index = 0;
-        }
-        
-        if (dataSource.length === 0) return;
+    window.PhotoSwipe = PhotoSwipe;
+</script>
+<script>
+    window.contactPhone = "{{ contactPhone }}";
 
-        const pswp = new PhotoSwipe({
-            dataSource: dataSource,
-            index: index,
-            pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js'),
-            bgOpacity: 0.98,
-            wheelToZoom: true,
-            secondaryZoomLevel: 2.5,
-            maxZoomLevel: 6,
-        });
-        
-        pswp.init();
-    };
+    function shopModalLogic(initialItem = null) {
+        const data = {
+            activeImg: '',
+            rotation: 0,
+            isZoomed: false,
+            zX: 50,
+            zY: 50,
+            contactPhone: window.contactPhone,
+            init() {
+                if (this.selectedItem) {
+                    this.activeImg = this.selectedItem.imgBig;
+                }
+            },
+            onItemSelected(v) {
+                this.activeImg = v ? v.imgBig : '';
+                this.rotation = 0;
+                this.isZoomed = false;
+                this.zX = 50;
+                this.zY = 50;
+            },
+            openGalleryManual(activeImg, pictures, pathImg) {
+                let dataSource = [];
+                
+                if (Array.isArray(pictures) && pictures.length > 0) {
+                    dataSource = pictures.map(pic => {
+                        const src = (pic.startsWith('http') || pic.startsWith('/') || pic.startsWith('//')) 
+                            ? pic 
+                            : (pathImg ? `${pathImg}/${pic}` : pic);
+                        return { src, width: 2000, height: 2000 };
+                    });
+                }
+                
+                let index = dataSource.findIndex(item => item.src === activeImg);
+                if (index === -1 && activeImg) {
+                    dataSource.unshift({ src: activeImg, width: 2000, height: 2000 });
+                    index = 0;
+                }
+                
+                if (dataSource.length === 0) return;
 
-    // También inicializamos el lightbox tradicional por si acaso se usan los links ocultos
-    const lightbox = new PhotoSwipeLightbox({
-        gallery: '#gallery-detail',
-        children: 'a.pswp-trigger',
-        pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js'),
-        bgOpacity: 0.98,
-        wheelToZoom: true,
-    });
-    lightbox.init();
+                const pswp = new PhotoSwipe({
+                    dataSource: dataSource,
+                    index: index,
+                    pswpModule: () => import('https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.esm.js'),
+                    bgOpacity: 0.98,
+                    wheelToZoom: true,
+                    secondaryZoomLevel: 2.5,
+                    maxZoomLevel: 6,
+                });
+                pswp.init();
+            }
+        };
+
+        if (initialItem) {
+            data.selectedItem = initialItem;
+        }
+
+        return data;
+    }
 </script>
 {% endblock %}

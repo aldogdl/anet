@@ -41,13 +41,13 @@
     {% endif %}
 {% endmacro %}
 
-{% macro cleanSlug(title) %}
-    {{ title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode|slice(0, 50) }}
-{% endmacro %}
+{% macro cleanSlug(title) -%}
+    {{- title|trim|lower|replace({' ': '-', '/': '-', '\\': '-', '--': '-', '---': '-'})|url_encode|slice(0, 50) -}}
+{%- endmacro %}
 
-{% macro cleanTitle(title) %}
-    {{ title|lower|replace({' ': '-', '/': '-', '\\': '-'})|url_encode }}
-{% endmacro %}
+{% macro cleanTitle(title) -%}
+    {{- title|trim|lower|replace({' ': '-', '/': '-', '\\': '-', '--': '-', '---': '-'})|url_encode -}}
+{%- endmacro %}
 
 {% macro safeId(item) %}
     {{ item.id ?: 0 }}
@@ -56,13 +56,13 @@
 {% macro detailUrl(item, isMeli=false) %}
     {% set extras = item.extras|default({}) %}
     {% set pTitle = _self.productTitle(item) %}
-    {% set cleanSlug = _self.cleanSlug(pTitle) %}
     {% set cleanTitle = _self.cleanTitle(pTitle) %}
     {% set safeId = item.id ?: 0 %}
+    {% set shopSlug = item.slug|default('demo') %}
     {% if isMeli and extras.permalink is defined %}
         {{ extras.permalink }}
     {% else %}
-        {{ path('app_product_detail', { id: safeId, slug: cleanSlug, fuente: cleanTitle }) }}
+        {{ path('app_product_detail', { id: safeId, slug: shopSlug, fuente: cleanTitle }) }}
     {% endif %}
 {% endmacro %}
 
@@ -90,63 +90,63 @@
     {{ extras.pathImg|default('') }}
 {% endmacro %}
 
-{% macro productTitle(item) %}
-    {% if item.stt is defined and item.stt == 3 %}
-        {% set extras = item.extras|default({}) %}
-        {% set parts = [] %}
+{% macro productTitle(item) -%}
+    {%- if item.stt is defined and item.stt == 3 -%}
+        {%- set extras = item.extras|default({}) -%}
+        {%- set parts = [] -%}
         
         {# PIEZA #}
-        {% if item.pieza is defined and item.pieza is not empty %}
-            {% set parts = parts|merge([item.pieza]) %}
-        {% endif %}
+        {%- if item.pieza is defined and item.pieza is not empty -%}
+            {%- set parts = parts|merge([item.pieza]) -%}
+        {%- endif -%}
         
         {# LADO #}
-        {% if item.lado is defined and item.lado is not empty %}
-            {% set decodedLado = item.lado|lp_decode(item.pieza|default('')) %}
-            {% if decodedLado != '' %}
-                {% set parts = parts|merge([decodedLado]) %}
-            {% endif %}
-        {% endif %}
+        {%- if item.lado is defined and item.lado is not empty -%}
+            {%- set decodedLado = item.lado|lp_decode(item.pieza|default('')) -%}
+            {%- if decodedLado != '' -%}
+                {%- set parts = parts|merge([decodedLado]) -%}
+            {%- endif -%}
+        {%- endif -%}
         
         {# POSICION #}
-        {% if item.poss is defined and item.poss is not empty %}
-            {% set decodedPoss = item.poss|lp_decode(item.pieza|default('')) %}
-            {% if decodedPoss != '' %}
-                {% set parts = parts|merge([decodedPoss]) %}
-            {% endif %}
-        {% endif %}
+        {%- if item.poss is defined and item.poss is not empty -%}
+            {%- set decodedPoss = item.poss|lp_decode(item.pieza|default('')) -%}
+            {%- if decodedPoss != '' -%}
+                {%- set parts = parts|merge([decodedPoss]) -%}
+            {%- endif -%}
+        {%- endif -%}
         
         {# MARCA #}
-        {% set brand = extras.marca|default(extras.mk|default('')) %}
-        {% if brand is not empty %}
-            {% set parts = parts|merge([brand]) %}
-        {% endif %}
+        {%- set brand = extras.marca|default(extras.mk|default('')) -%}
+        {%- if brand is not empty -%}
+            {%- set parts = parts|merge([brand]) -%}
+        {%- endif -%}
         
         {# MODELO #}
-        {% set model = extras.modelo|default(extras.md|default('')) %}
-        {% if model is not empty %}
-            {% set parts = parts|merge([model]) %}
-        {% endif %}
+        {%- set model = extras.modelo|default(extras.md|default('')) -%}
+        {%- if model is not empty -%}
+            {%- set parts = parts|merge([model]) -%}
+        {%- endif -%}
         
         {# AÑO #}
-        {% if item.anioInicio is defined and item.anioInicio > 0 %}
-            {% if item.anioFin is defined and item.anioFin > 0 and item.anioFin != 9999 and item.anioFin != item.anioInicio %}
-                {% set parts = parts|merge([item.anioInicio ~ '-' ~ item.anioFin]) %}
-            {% else %}
-                {% set parts = parts|merge([item.anioInicio]) %}
-            {% endif %}
-        {% endif %}
+        {%- if item.anioInicio is defined and item.anioInicio > 0 -%}
+            {%- if item.anioFin is defined and item.anioFin > 0 and item.anioFin != 9999 and item.anioFin != item.anioInicio -%}
+                {%- set parts = parts|merge([item.anioInicio ~ '-' ~ item.anioFin]) -%}
+            {%- else -%}
+                {%- set parts = parts|merge([item.anioInicio]) -%}
+            {%- endif -%}
+        {%- endif -%}
         
-        {{ parts|join(' ') }}
-    {% else %}
-        {% set extras = item.extras|default({}) %}
-        {% if extras.fuente is defined and extras.fuente != '' %}
-            {{ extras.fuente }}
-        {% else %}
-            {{ item.fuente|default('') }}
-        {% endif %}
-    {% endif %}
-{% endmacro %}
+        {{- parts|join(' ') -}}
+    {%- else -%}
+        {%- set extras = item.extras|default({}) -%}
+        {%- if extras.fuente is defined and extras.fuente != '' -%}
+            {{- extras.fuente|trim -}}
+        {%- else -%}
+            {{- item.fuente|default('')|trim -}}
+        {%- endif -%}
+    {%- endif -%}
+{%- endmacro %}
 
 {% macro placeholder() %}
     {{ 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22600%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2F3%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23f5f5f5%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-family%3D%22Arial%22%20font-size%3D%2230%22%20fill%3D%22%23a3a3a3%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%3ESin%20Foto%3C%2Ftext%3E%3C%2Fsvg%3E' }}

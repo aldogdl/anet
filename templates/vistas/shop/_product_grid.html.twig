@@ -46,7 +46,7 @@
 
 <!-- The Grid con espaciado amplio y columnas controladas -->
 {% if items|length > 0 or missingIds|default('') is empty %}
-<div :class="viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8' : 'flex flex-col gap-4'">
+<div :class="viewMode === 'grid' ? 'grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8' : 'flex flex-col gap-4'">
 	{% for item in items %}
         <template x-if="viewMode === 'grid'">
 		    {% include viewBase ~ '/_product_card.html.twig' %}

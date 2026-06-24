@@ -1,0 +1,236 @@
+<!-- Left: Image Gallery -->
+<div class="w-full lg:w-[55%] bg-[#fafafa] flex flex-col border-r border-gray-100 overflow-hidden">
+    <div id="gallery-pro" class="flex-1 flex flex-col h-full overflow-hidden">
+        <!-- Main Image Container with Inner Zoom -->
+        <div class="w-full flex-shrink-0 aspect-square sm:aspect-[4/3] lg:aspect-square min-h-[280px] max-h-[380px] sm:max-h-[450px] lg:max-h-[550px] relative group bg-white overflow-hidden border-b border-gray-100 lg:border-b-0">
+            
+            <!-- Zoom Logic Wrapper -->
+            <div class="absolute inset-0 flex items-center justify-center p-2.5 sm:p-6 cursor-zoom-in"
+                 @mousemove="
+                    isZoomed = true; 
+                    const rect = $el.getBoundingClientRect();
+                    let x = ($event.clientX - rect.left) / rect.width;
+                    let y = ($event.clientY - rect.top) / rect.height;
+                    
+                    // Ajustar coordenadas según la rotación
+                    if (rotation == 90) { let tmp = x; x = y; y = 1 - tmp; }
+                    else if (rotation == 180) { x = 1 - x; y = 1 - y; }
+                    else if (rotation == 270) { let tmp = x; x = 1 - y; y = tmp; }
+                    
+                    zX = x * 100; zY = y * 100;
+                 "
+                 @mouseleave="isZoomed = false">
+                
+                <div class="w-full h-full flex items-center justify-center transition-transform duration-300"
+                     :style="`transform: rotate(${rotation}deg)`">
+                    <img :src="activeImg" 
+                         :style="isZoomed ? `transform: scale(2.5); transform-origin: ${zX}% ${zY}%` : ''"
+                         class="max-w-full max-h-full w-auto h-auto object-contain transition-transform duration-200 ease-out pointer-events-none"
+                         alt="Imagen del producto" />
+                </div>
+            </div>
+
+            <!-- Floating Buttons (Outside the zoom logic wrapper) -->
+            <div class="absolute top-4 right-4 flex flex-col gap-2 z-20">
+                <!-- Botón de Cerrar Modal (Solo en modal y móvil) -->
+                {% if isModal|default(false) %}
+                <button type="button"
+                   @click.stop="showModal = false"
+                   class="lg:hidden p-2.5 bg-white/90 backdrop-blur-md border border-gray-100 rounded-lg text-gray-500 hover:text-red-500 hover:scale-110 transition-all shadow-lg flex items-center justify-center group/close"
+                   title="Cerrar ventana">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                {% endif %}
+
+                <!-- Magnifying Glass for Lightbox -->
+                <button type="button"
+                   class="p-2.5 bg-white/90 backdrop-blur-md border border-gray-100 rounded-lg text-gray-500 hover:text-primary hover:scale-110 transition-all shadow-lg flex items-center justify-center group/lupa"
+                   title="Ver pantalla completa"
+                   @click.stop="openGalleryManual(activeImg, selectedItem.pictures, selectedItem.pathImg)">
+                    <svg class="w-4 h-4 group-hover/lupa:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                    </svg>
+                </button>
+                
+                <!-- Rotate button -->
+                <button @click.stop="rotation = (rotation + 90) % 360" 
+                        class="p-2.5 bg-white/90 backdrop-blur-md border border-gray-100 rounded-lg text-gray-500 hover:text-primary hover:scale-110 transition-all shadow-lg flex items-center justify-center"
+                        title="Rotar imagen">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+            </div>
+            
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] text-white/80 font-bold tracking-wider uppercase flex items-center gap-2 pointer-events-none transition-opacity duration-300"
+                 :class="isZoomed ? 'opacity-0' : 'opacity-100'">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"></path></svg>
+                Pasa el mouse para Zoom
+            </div>
+        </div>
+
+        <!-- Thumbnails -->
+        <div class="flex gap-2 px-4 pb-4 overflow-x-auto no-scrollbar flex-shrink-0">
+            <template x-for="(pic, index) in selectedItem?.pictures" :key="index">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 rounded-lg border-2 transition-all cursor-pointer overflow-hidden bg-white"
+                     :class="activeImg === (pic.startsWith('http') ? pic : (selectedItem.pathImg + '/' + pic)) ? 'border-primary' : 'border-gray-100 opacity-50 hover:opacity-100'"
+                     @click="activeImg = (pic.startsWith('http') ? pic : (selectedItem.pathImg + '/' + pic)); rotation = 0">
+                    <img :src="pic.startsWith('http') ? pic : (selectedItem.pathImg + '/' + pic)" class="w-full h-full object-cover rounded-[5px]" />
+                </div>
+            </template>
+        </div>
+    </div>
+</div>
+
+<!-- Right: Details -->
+<div class="w-full lg:w-[45%] flex flex-col overflow-y-auto max-h-[60vh] lg:max-h-none">
+    <div class="p-5 sm:p-6 lg:p-8 flex-1">
+
+        <!-- Badges -->
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+            <span class="text-[11px] font-medium text-white bg-slate-900 px-2.5 py-1 rounded-md tracking-wider shadow-sm">
+                ID: <span class="font-black" x-text="selectedItem?.id"></span>
+            </span>
+            <span class="text-[11px] font-medium text-white bg-blue-600 px-2.5 py-1 rounded-md tracking-wider shadow-sm">
+                IKU: <span class="font-black" x-text="selectedItem?.sku"></span>
+            </span>
+            <template x-if="selectedItem?.numPart">
+                <span class="text-[11px] font-medium text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-md tracking-wider" x-text="'N/P: ' + selectedItem?.numPart"></span>
+            </template>
+            <span class="ml-auto text-[10px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-tighter">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                Disponible
+            </span>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 leading-tight tracking-tight mb-1" x-text="selectedItem?.title"></h2>
+        
+        <!-- Brand / Model -->
+        <p class="text-sm text-gray-400 font-medium mb-5" x-show="selectedItem?.mk || selectedItem?.md || selectedItem?.brandName || selectedItem?.modelName">
+            <span x-text="selectedItem?.mk || selectedItem?.brandName"></span>
+            <span x-show="selectedItem?.md || selectedItem?.modelName"> · <span x-text="selectedItem?.md || selectedItem?.modelName"></span></span>
+            <span x-show="selectedItem?.anioInicio && selectedItem?.anioInicio > 0">
+                · <span x-text="selectedItem?.anioInicio"></span><span x-show="selectedItem?.anioFin && selectedItem?.anioFin < 9999" x-text="'-' + selectedItem?.anioFin"></span>
+            </span>
+        </p>
+
+        <!-- Price + WA Contact / Cart Actions -->
+        <div class="flex items-center gap-2 mb-6">
+            <span class="text-3xl font-bold text-gray-900 tracking-tight" x-text="'$' + Number(selectedItem?.price).toLocaleString('es-MX', {minimumFractionDigits: 2})"></span>
+            <span class="text-xs text-gray-400 font-medium">MXN</span>
+            
+            <div class="ml-auto flex items-center gap-2">
+                <!-- WhatsApp Contact button -->
+                <a :href="'https://wa.me/' + (contactPhone || '') + '?text=' + encodeURIComponent('Hola, me interesa: ' + selectedItem?.title + ' - $' + Number(selectedItem?.price).toLocaleString('es-MX', {minimumFractionDigits: 2}) + ' (IKU: ' + selectedItem?.sku + ')')"
+                   target="_blank"
+                   class="bg-[#25d366] hover:bg-[#20bd5c] text-black font-bold py-2.5 px-3 sm:px-4 rounded-lg transition-all active:scale-[0.98] text-xs flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.394 0 0 5.394 0 12.031c0 2.115.548 4.17 1.583 5.986L.048 23.518l5.656-1.482a12.002 12.002 0 006.327 1.785h.005c6.634 0 12.029-5.394 12.029-12.031S18.667 0 12.031 0zm0 21.821h-.004a9.986 9.986 0 01-5.088-1.385l-.365-.216-3.782.991.99-3.685-.236-.376a9.986 9.986 0 01-1.526-5.334c0-5.522 4.493-10.017 10.015-10.017 2.675 0 5.188 1.042 7.079 2.934 1.891 1.892 2.932 4.406 2.932 7.081 0 5.524-4.494 10.007-10.014 10.007zm5.493-7.513c-.301-.151-1.785-.882-2.062-.983-.277-.101-.479-.151-.68.151-.202.302-.781.983-.957 1.184-.177.202-.353.227-.654.076-.301-.151-1.275-.47-2.428-1.5-.898-.801-1.503-1.793-1.68-2.095-.177-.302-.019-.465.132-.616.135-.135.301-.353.452-.529.151-.177.202-.302.302-.504.101-.202.05-.378-.025-.529-.076-.151-.68-1.64-.932-2.245-.246-.59-.496-.51-.68-.52-.177-.01-.378-.01-.58-.01-.202 0-.529.076-.806.378-.277.302-1.057 1.033-1.057 2.519s1.083 2.923 1.234 3.125c.151.202 2.13 3.25 5.161 4.557.72.311 1.281.497 1.722.636.723.23 1.381.197 1.902.12.583-.086 1.785-.73 2.036-1.436.252-.705.252-1.309.177-1.436-.076-.126-.277-.202-.578-.353z"></path></svg>
+                    <span class="hidden sm:inline">Contactar</span>
+                </a>
+
+                <!-- Add to Cart (Only visible if the parent has addToCart functions, typical of index catalog) -->
+                <template x-if="typeof addToCart === 'function'">
+                    <div class="flex items-center">
+                        <template x-if="!cartItems[selectedItem?.id]">
+                            <button @click="addToCart(selectedItem.id)" class="bg-dark hover:bg-black text-primary font-bold py-2.5 px-3 sm:px-4 rounded-lg transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] text-xs shadow-lg">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                <span class="hidden sm:inline">Agregar</span>
+                            </button>
+                        </template>
+                        <template x-if="cartItems[selectedItem?.id]">
+                            <button @click="promptRemove(selectedItem.id)" class="bg-primary/10 hover:bg-primary/20 text-primary font-bold py-2.5 px-3 sm:px-4 rounded-lg transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] text-xs border border-primary/20">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="hidden sm:inline">Agregado</span>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Technical Details Grid -->
+        <div class="space-y-4 mb-6">
+            <!-- Description -->
+            <template x-if="selectedItem?.detalles">
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                    <h4 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Descripción</h4>
+                    <p class="text-sm font-medium text-slate-700 leading-relaxed" x-text="selectedItem?.detalles"></p>
+                </div>
+            </template>
+
+            <!-- Specs Grid -->
+            <div class="grid grid-cols-2 gap-2">
+                <template x-if="selectedItem?.pieza">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[11px] font-bold text-slate-500 block mb-0.5">Pieza</span>
+                        <span class="text-sm font-bold text-slate-800" x-text="selectedItem?.pieza"></span>
+                    </div>
+                </template>
+
+                <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <span class="text-[11px] font-bold text-slate-500 block mb-0.5">No. Parte</span>
+                    <span class="text-sm font-bold text-slate-800" x-text="selectedItem?.numPart || selectedItem?.idSrc || 'N/A'"></span>
+                </div>
+
+                <template x-if="selectedItem?.localidad">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[11px] font-bold text-slate-500 block mb-0.5">Ubicación</span>
+                        <span class="text-sm font-bold text-slate-800" x-text="selectedItem?.localidad"></span>
+                    </div>
+                </template>
+
+                <template x-if="selectedItem?.anioInicio && selectedItem?.anioInicio > 0">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[11px] font-bold text-slate-500 block mb-0.5">Año</span>
+                        <span class="text-sm font-bold text-slate-800">
+                            <span x-text="selectedItem?.anioInicio"></span><span x-show="selectedItem?.anioFin && selectedItem?.anioFin < 9999" x-text="' - ' + selectedItem?.anioFin"></span>
+                        </span>
+                    </div>
+                </template>
+
+                <template x-if="selectedItem?.lado && selectedItem?.lado !== 'A'">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[11px] font-bold text-slate-500 block mb-0.5">Lado</span>
+                        <span class="text-sm font-bold text-slate-800" x-text="selectedItem?.lado"></span>
+                    </div>
+                </template>
+
+                <template x-if="selectedItem?.poss && selectedItem?.poss !== 'A'">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                        <span class="text-[11px] font-bold text-slate-500 block mb-0.5">Posición</span>
+                        <span class="text-sm font-bold text-slate-800" x-text="selectedItem?.poss"></span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Mercado Libre Link -->
+            <template x-if="selectedItem?.linkSr && String(selectedItem?.linkSr).includes('mercadolibre')">
+                <div class="mt-4">
+                    <a :href="selectedItem.linkSr" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-bold no-underline flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        Adquirir por Mercado Libre
+                    </a>
+                </div>
+            </template>
+
+            <!-- Trust badges -->
+            <div class="flex gap-2">
+                <div class="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <svg class="w-4 h-4 text-[#0c5e3a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <div>
+                        <span class="text-[11px] text-slate-500 font-bold block">Garantía</span>
+                        <span class="text-sm font-bold text-slate-700">7 días</span>
+                    </div>
+                </div>
+                <div class="flex-1 flex items-center gap-2 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <svg class="w-4 h-4 text-[#0c5e3a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
+                    <div>
+                        <span class="text-[11px] text-slate-500 font-bold block">Envío</span>
+                        <span class="text-sm font-bold text-slate-700">Todo México</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
