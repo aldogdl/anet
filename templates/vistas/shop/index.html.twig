@@ -8,10 +8,10 @@
 {% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-slate-100 flex flex-col font-sans" x-data="shopState()">
+<div class="min-h-screen bg-transparent flex flex-col font-sans" x-data="shopState()">
 
-  <!-- Top Header (Gradiente Verde Premium de WhatsApp/Marca) -->
-  <header class="sticky top-0 z-50 bg-gradient-to-r from-[#0c5e3a] to-[#128c7e] text-white border-b border-[#0c5e3a]/20 shadow-md">
+  <!-- Top Header (Degradado Premium de Verde y Gris con Línea de Brillo Metálico) -->
+  <header class="sticky top-0 z-50 bg-gradient-to-r from-[#051c14] via-[#0b3c27] to-[#071d15] text-white shadow-[0_10px_30px_-10px_rgba(4,30,20,0.3)]">
     <div class="max-w-[1440px] mx-auto px-6 h-16 flex items-center gap-8">
 
       <!-- Logo de la Empresa Integrado y Limpio -->
@@ -32,43 +32,42 @@
       </div>
 
       <!-- Buscador en Píldora Elegante -->
-      <div class="flex-1 max-w-xl relative group hidden md:block" 
-           x-data="{ 
+      <div class="flex-1 max-w-xl relative group hidden md:block"
+           x-data="{
               hasMeli: {{ hasMeli|default(false) ? 'true' : 'false' }},
               meliToken: '{{ encodedMeliToken|default('') }}'
            }">
         <div class="relative flex items-center w-full">
-          <input type="text" x-model="currentFilters.q" 
+          <input type="text" x-model="currentFilters.q"
               @keydown.enter="applyFilter({page: 1})"
-              placeholder="Busca por pieza, marca o código..." 
-              class="w-full h-10 bg-white/10 hover:bg-white/15 focus:bg-white border border-white/10 focus:border-transparent rounded-full pl-10 pr-24 text-xs focus:ring-2 focus:ring-white/20 focus:text-slate-800 placeholder:text-emerald-100/60 focus:placeholder:text-slate-400 transition-all outline-none text-white font-medium">
-          <svg class="w-4 h-4 absolute left-3.5 text-emerald-100/70 group-focus-within:text-[#0c5e3a] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          
-          <div class="absolute right-12 flex items-center gap-1">
+              placeholder="Busca por pieza, marca o código..."
+              class="w-full h-10 bg-white/10 hover:bg-white/15 focus:bg-white border border-white/10 focus:border-transparent rounded-full pl-10 pr-28 text-xs focus:ring-2 focus:ring-white/20 focus:text-slate-800 placeholder:text-slate-400 focus:placeholder:text-slate-400 transition-all outline-none text-white font-medium">
+          <svg class="w-4 h-4 absolute left-3.5 text-slate-400 group-focus-within:text-[#25d366] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+
+          <!-- Contenedor de Botones y Status (para evitar traslapes) -->
+          <div class="absolute right-2 flex items-center gap-1">
             <!-- Botón Limpiar -->
-            <button x-show="currentFilters.q.length > 0" 
-                    @click="resetSearch()" 
-                    class="p-1.5 text-emerald-100/70 hover:text-white hover:bg-white/10 rounded-lg transition-all group-focus-within:text-slate-400 group-focus-within:hover:text-red-500 group-focus-within:hover:bg-slate-100"
+            <button x-show="currentFilters.q.length > 0"
+                    @click="resetSearch()"
+                    class="p-1.5 text-slate-450 hover:text-white hover:bg-white/10 rounded-lg transition-all group-focus-within:text-slate-400 group-focus-within:hover:text-red-500 group-focus-within:hover:bg-slate-100"
                     x-cloak x-transition.opacity>
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
 
             <!-- Botón de Búsqueda -->
-            <button @click="applyFilter({page: 1})" class="p-1.5 text-emerald-100/70 hover:text-white hover:bg-white/10 rounded-lg transition-all group-focus-within:text-slate-400 group-focus-within:hover:text-[#0c5e3a] group-focus-within:hover:bg-slate-100">
+            <button @click="applyFilter({page: 1})" class="p-1.5 text-slate-450 hover:text-white hover:bg-white/10 rounded-lg transition-all group-focus-within:text-slate-400 group-focus-within:hover:text-[#0c5e3a] group-focus-within:hover:bg-slate-100">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
-          </div>
-          
-          <!-- Status Logos -->
-          <div class="absolute right-3.5 pointer-events-none">
+
+            <!-- Status Logos -->
             <template x-if="hasMeli">
-              <div class="h-5 px-1.5 bg-[#ffe600] text-slate-800 rounded flex items-center justify-center shadow-sm font-black text-[9px] tracking-tight">
+              <div class="h-5 px-2 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 rounded flex items-center justify-center font-black text-[9px] tracking-wider uppercase">
                   MeLi
               </div>
             </template>
             <template x-if="!hasMeli">
-              <div class="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center border border-white/20 group-focus-within:bg-[#0c5e3a]/10 group-focus-within:border-[#0c5e3a]/20">
-                  <svg class="w-3 text-white group-focus-within:text-[#0c5e3a]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <div class="w-5 h-5 bg-white/10 rounded-full flex items-center justify-center border border-white/10 group-focus-within:bg-emerald-500/10 group-focus-within:border-emerald-500/20">
+                  <svg class="w-3 text-slate-350 group-focus-within:text-emerald-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
               </div>
             </template>
           </div>
@@ -108,6 +107,8 @@
         </div>
       </div>
     </div>
+    <!-- Detalle Premium: Línea de Brillo Degradada de Verde Esmeralda -->
+    <div class="h-[1px] w-full bg-gradient-to-r from-transparent via-emerald-500/35 to-transparent"></div>
   </header>
 
   <!-- Sidebar Drawer (Hidden by default) -->
@@ -289,7 +290,7 @@
           <!-- Status Logos -->
           <div class="absolute right-3.5 pointer-events-none">
             <template x-if="hasMeli">
-              <div class="h-4.5 px-1.5 bg-[#ffe600] text-slate-800 rounded flex items-center justify-center shadow-sm font-black text-[8px] tracking-tight">
+              <div class="h-4.5 px-2 bg-yellow-100/80 border border-yellow-200/50 text-yellow-700 rounded flex items-center justify-center font-black text-[8px] tracking-wider uppercase">
                   MeLi
               </div>
             </template>
