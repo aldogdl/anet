@@ -568,4 +568,48 @@ class SysComController extends AbstractController
 		return $this->json(['abort' => true], 403);
 	}
 
+	/** 
+	 * Sube un archivo JSON o TXT y lo guarda en la carpeta scm_log dentro de sinc_dev
+	 */
+	#[Route('/upload-log', methods: ['POST'])]
+	public function uploadLog(Request $req, Fsys $fsys): Response
+	{
+		$slug = $req->query->get('slug');
+		if (!$slug) {
+			return $this->json(['abort' => true, 'body' => 'Falta el parámetro slug'], 400);
+		}
+
+		$file = $req->files->get('file');
+		if (!$file) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió ningún archivo'], 400);
+		}
+
+		// Validar extensión (.json o .txt)
+		$originalExtension = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+		if ($originalExtension !== 'json' && $originalExtension !== 'txt') {
+			return $this->json(['abort' => true, 'body' => 'Extensión de archivo no permitida. Solo JSON y TXT.'], 400);
+		}
+
+		try {
+			// Construir la ruta usando Fsys con la notación de subcarpeta 'scm_log+'
+			$filename = 'scm_log+' . $slug . '.' . $originalExtension;
+			$destPath = $fsys->buildPath(AnyPath::$SYNCDEV, $filename);
+
+			// Mover el archivo a su destino
+			$file->move(dirname($destPath), basename($destPath));
+
+			return $this->json([
+				'abort' => false,
+				'body' => 'Archivo guardado correctamente en scm_log/' . $slug . '.' . $originalExtension
+			], 200);
+
+		} catch (\Exception $e) {
+			return $this->json([
+				'abort' => true,
+				'body' => 'Error al guardar el archivo: ' . $e->getMessage()
+			], 500);
+		}
+	}
+
 }
+
