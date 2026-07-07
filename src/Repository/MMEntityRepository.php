@@ -133,9 +133,18 @@ class MMEntityRepository extends ServiceEntityRepository
 	*/
 	public function setMM(array $mm) : array
 	{
-		$obj = new MMEntity();
-		$obj = $obj->fromJson($mm);
-		if($obj->getId() == 0) {
+		$id = isset($mm['id']) ? (int)$mm['id'] : 0;
+		if ($id > 0) {
+			// Es una edición de un elemento existente
+			$obj = $this->find($id);
+			if (!$obj) {
+				return ['abort' => true, 'data' => 'Elemento no encontrado para editar'];
+			}
+			$obj->fromJson($mm);
+		} else {
+			// Es un nuevo elemento
+			$obj = new MMEntity();
+			$obj = $obj->fromJson($mm);
 			// Ya que se pretende agregar, buscamos en ls BD
 			// si el nombre ya existe para evitar duplicados
 			if($this->existByName($obj->getName())) {
@@ -156,11 +165,10 @@ class MMEntityRepository extends ServiceEntityRepository
 			$this->_em->flush();
 			return ['abort' => false, 'data' => $this->getMMSlim('alls')];
 		} catch (\Throwable $th) {
-			return $this->json(['abort' => true, 'data' => $th->getMessage()]);
+			return ['abort' => true, 'data' => $th->getMessage()];
 		}
 
-		return $this->json(['abort' => true, 'data' => 'Error inesperado']);
-
+		return ['abort' => true, 'data' => 'Error inesperado'];
 	}
 
 	/** 
@@ -189,10 +197,10 @@ class MMEntityRepository extends ServiceEntityRepository
 			$this->_em->flush();
 			return ['abort' => false, 'data' => $this->getMMSlim('alls')];
 		} catch (\Throwable $th) {
-			return $this->json(['abort' => true, 'data' => $th->getMessage()]);
+			return ['abort' => true, 'data' => $th->getMessage()];
 		}
 
-		return $this->json(['abort' => true, 'data' => 'Error inesperado']);
+		return ['abort' => true, 'data' => 'Error inesperado'];
 	}
 
 }

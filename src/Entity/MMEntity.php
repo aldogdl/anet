@@ -102,7 +102,9 @@ class MMEntity
 	/** */
 	public function fromJson(array $json): static
 	{
-		$this->id = $json['id'];
+		if ($this->id === null && isset($json['id'])) {
+			$this->id = $json['id'];
+		}
 		$this->name = $json['name'];
 		$this->idMrk = $json['id_mrk'];
 		$this->variants = $json['variants'];
