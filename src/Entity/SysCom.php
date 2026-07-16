@@ -20,8 +20,8 @@ class SysCom
 	#[ORM\Column(length: 25)]
 	private ?string $waId = null;
 
-	#[ORM\Column(nullable: true)]
-	private ?int $taId = null;
+	#[ORM\Column(length: 50, nullable: true)]
+	private ?string $taId = null;
 
 	#[ORM\Column(length: 50)]
 	private ?string $name = null;
@@ -101,12 +101,12 @@ class SysCom
 		return $this;
 	}
 
-	public function getTaId(): ?int
+	public function getTaId(): ?string
 	{
 		return $this->taId;
 	}
 
-	public function setTaId(?int $taId): static
+	public function setTaId(?string $taId): static
 	{
 		$this->taId = $taId;
 
