@@ -47,9 +47,14 @@ class ImageUploadService
 	}
 
 	/** */
-	public function uploadAndCreateThumb(UploadedFile $file, string $slug, string $iku, bool $withThubn): array
+	public function uploadAndCreateThumb(UploadedFile $file, string $slug, string $iku, bool $withThubn, string $folder = 'inv'): array
 	{
-		$imgDir = $this->projectDir . '/inv/images/' . $slug . '/' . $iku;
+		if ($folder === 'sols') {
+			$imgDir = $this->projectDir . '/sols/' . $iku;
+		} else {
+			$imgDir = $this->projectDir . '/inv/images/' . ($slug ?: 'default') . '/' . $iku;
+		}
+
 		if (!is_dir($imgDir)) {
 			mkdir($imgDir, 0775, true);
 		}

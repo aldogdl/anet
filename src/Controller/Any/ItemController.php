@@ -163,15 +163,16 @@ class ItemController extends AbstractController
 	public function images(Request $req, ImageUploadService $imageUploadService, ItemPubRepository $em): Response
 	{
 		$ikuItem = $req->request->get('ikuItem');
-		$slug = $req->request->get('slug');
+		$slug = $req->request->get('slug') ?? '';
 		$idItem = $req->request->get('thubn');
 		$withThubn = $req->request->get('thubn');
+		$folder = $req->request->get('folder') ?? $req->request->get('target') ?? 'inv';
 		$file = $req->files->get('file');
 
-		if (!$ikuItem || !$slug || !$file) {
+		if (!$ikuItem || !$file) {
 			return $this->json([
 				'abort' => true,
-				'body' => 'Parámetros incompletos',
+				'body' => 'Parámetros incompletos (ikuItem y file requeridos)',
 			], 400);
 		}
 
@@ -189,7 +190,8 @@ class ItemController extends AbstractController
 				$file,
 				(string) $slug,
 				(string) $ikuItem,
-				$withThubn
+				$withThubn,
+				(string) $folder
 			);
 
 			$body = 'Imagen subida correctamente';
