@@ -453,4 +453,20 @@ class ItemPubRepository extends ServiceEntityRepository
 		}
 	}
 
+	/** 
+	 * Obtiene el manifiesto ultra-ligero de idSrcs registrados para un slug dado.
+	 * Retorna únicamente idSrc, iku, stt, isActive y src para reconciliación eficiente.
+	*/
+	public function getAllIdSrcsBySlug(string $slug): array
+	{
+		$dql = 'SELECT it.idSrc, it.iku, it.stt, it.isActive, it.src FROM ' . ItemPub::class . ' it '
+			. 'WHERE it.slug = :slug '
+			. 'ORDER BY it.id DESC';
+
+		return $this->_em->createQuery($dql)
+			->setParameter('slug', $slug)
+			->getArrayResult();
+	}
+
 }
+

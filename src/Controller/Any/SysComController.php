@@ -338,6 +338,99 @@ class SysComController extends AbstractController
 		}
 	}
 
+	/** 
+	 * Endpoint ultra-ligero para obtener el manifiesto de idSrcs registrados en SR para una cuenta.
+	 * Retorna únicamente idSrc, iku, stt, isActive y src para reconciliación eficiente.
+	*/
+	#[Route('/get-manifest/{token}', methods: ['post'])]
+	public function getManifest(Request $req, SecurityBasic $security, ItemPubRepository $emPub, String $token): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Método no permitido'], 400);
+		}
+
+		if(mb_strpos($token, 'test::') !== false) {
+			$partes = explode('::', $token);
+			$token = base64_encode($partes[1]);
+		}
+
+		if(!$security->isValid($token)) {
+			return $this->json(['body' => 'Acceso denegado'], 401);
+		}
+
+		$data = json_decode($req->getContent(), true) ?? [];
+		$slug = $data['slug'] ?? $req->request->get('slug') ?? '';
+
+		if (empty($slug)) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Parámetro requerido: slug'
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		try {
+			$items = $emPub->getAllIdSrcsBySlug($slug);
+			return $this->json([
+				'success' => true,
+				'slug' => $slug,
+				'total' => count($items),
+				'items' => $items
+			]);
+		} catch (\Exception $e) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Error al obtener el manifiesto: ' . $e->getMessage()
+			], 500);
+		}
+	}
+
+	/** 
+	 * Endpoint dedicado para consultar notificaciones pendientes en SyncMl por usuario MeLi.
+	 * Desacoplado del centinela para consumo independiente de eventos.
+	*/
+	#[Route('/get-sync-notifications/{token}', methods: ['post'])]
+	public function getSyncNotifications(Request $req, SecurityBasic $security, SyncMlRepository $emMl, String $token): Response
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['body' => 'Método no permitido'], 400);
+		}
+
+		if(mb_strpos($token, 'test::') !== false) {
+			$partes = explode('::', $token);
+			$token = base64_encode($partes[1]);
+		}
+
+		if(!$security->isValid($token)) {
+			return $this->json(['body' => 'Acceso denegado'], 401);
+		}
+
+		$data = json_decode($req->getContent(), true) ?? [];
+		$idUserMl = $data['idUserMl'] ?? 0;
+		$lastNotifId = $data['lastNotifId'] ?? 0;
+
+		if (empty($idUserMl)) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Parámetro requerido: idUserMl'
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		try {
+			$notifications = $emMl->getAllMsgAfterByMsgId((int)$idUserMl, (int)$lastNotifId);
+			return $this->json([
+				'success' => true,
+				'idUserMl' => $idUserMl,
+				'total' => count($notifications),
+				'items' => $notifications
+			]);
+		} catch (\Exception $e) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Error al consultar notificaciones: ' . $e->getMessage()
+			], 500);
+		}
+	}
+
 	/** */
 	#[Route('/dta-ctc-list', methods: ['GET'])]
 	public function listarArchivos(Request $req): Response
