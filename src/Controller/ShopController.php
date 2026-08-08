@@ -359,7 +359,7 @@ class ShopController extends AbstractController
 		// Creamos una página básica por ahora
 		return $this->render('vistas/common/product_detail.html.twig', [
 			'item' => $item,
-			'storeName' => $slug,
+			'storeName' => empty($dtaCtc) ? ucfirst($slug) : $dtaCtc['empresa'],
 			'pieza' => $fuente,
 			'dtaCtc' => $dtaCtc,
 			'contactPhone' => $contactPhone

@@ -1,7 +1,75 @@
 {% extends 'base.html.twig' %}
 {% import 'vistas/common/_product_helpers.html.twig' as product %}
 
-{% block title %}{{ item.fuente }} | {{ storeName|default('YonkEros') }}{% endblock %}
+{% block title %}{{ product.productTitle(item)|trim }} | {{ storeName|default('YonkEros') }}{% endblock %}
+
+{% block meta %}
+{% set pTitle = product.productTitle(item)|trim %}
+{% set extras = item.extras|default({}) %}
+{% set pathImg = extras.pathImg|default('') %}
+{% set firstPic = (extras.pictures|default([]))|first %}
+
+{# --- Determinar imagen OG --- #}
+{# Prioridad: imgBig > primera foto con pathImg > thumb > vacío #}
+{% set rawImg = '' %}
+{% if firstPic is not empty %}
+    {% if firstPic starts with 'http' or firstPic starts with '//' %}
+        {% set rawImg = firstPic %}
+    {% elseif pathImg is not empty %}
+        {% set rawImg = pathImg ~ '/' ~ firstPic %}
+    {% endif %}
+{% endif %}
+{% if rawImg is empty and item.thumb|default('') is not empty %}
+    {% set rawImg = item.thumb %}
+{% endif %}
+
+{# Asegurar URL absoluta #}
+{% if rawImg starts with 'http' or rawImg starts with '//' %}
+    {% set ogImage = rawImg %}
+{% elseif rawImg is not empty %}
+    {% set ogImage = absolute_url(rawImg) %}
+{% else %}
+    {% set ogImage = '' %}
+{% endif %}
+
+{# --- Descripción OG --- #}
+{% if item.price|default(0) > 0 %}
+    {% set ogDescription = pTitle ~ ' - $' ~ item.price|number_format(2, '.', ',') ~ ' MXN. Disponible en ' ~ storeName|default('YonkEros') ~ '. Consulta fotos, precio y disponibilidad.' %}
+{% else %}
+    {% set ogDescription = pTitle ~ '. Disponible en ' ~ storeName|default('YonkEros') ~ '. Consulta fotos, precio y disponibilidad.' %}
+{% endif %}
+
+{# --- URL canónica --- #}
+{% set cleanTitleSlug = product.cleanTitle(pTitle)|trim %}
+{% set ogUrl = url('app_product_detail', { id: item.id, slug: item.slug|default('demo'), fuente: cleanTitleSlug }) %}
+
+{# -- Open Graph -- #}
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="{{ storeName|default('YonkEros') }}">
+<meta property="og:title" content="{{ pTitle|e('html_attr') }}">
+<meta property="og:description" content="{{ ogDescription|e('html_attr') }}">
+{% if ogImage is not empty %}
+<meta property="og:image" content="{{ ogImage }}">
+{% endif %}
+<meta property="og:url" content="{{ ogUrl }}">
+
+{# -- Precio -- #}
+{% if item.price|default(0) > 0 %}
+<meta property="product:price:amount" content="{{ item.price }}">
+<meta property="product:price:currency" content="MXN">
+{% endif %}
+
+{# -- Twitter Card -- #}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ pTitle|e('html_attr') }}">
+<meta name="twitter:description" content="{{ ogDescription|e('html_attr') }}">
+{% if ogImage is not empty %}
+<meta name="twitter:image" content="{{ ogImage }}">
+{% endif %}
+
+{# -- Canonical -- #}
+<link rel="canonical" href="{{ ogUrl }}">
+{% endblock %}
 
 {% block stylesheets %}
 	<link rel="stylesheet" href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
