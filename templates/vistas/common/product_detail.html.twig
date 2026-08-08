@@ -46,8 +46,8 @@
 {# -- Open Graph -- #}
 <meta property="og:type" content="product">
 <meta property="og:site_name" content="{{ storeName|default('YonkEros') }}">
-<meta property="og:title" content="{{ pTitle|e('html_attr') }}">
-<meta property="og:description" content="{{ ogDescription|e('html_attr') }}">
+<meta property="og:title" content="{{ pTitle }}">
+<meta property="og:description" content="{{ ogDescription }}">
 {% if ogImage is not empty %}
 <meta property="og:image" content="{{ ogImage }}">
 {% endif %}
@@ -61,8 +61,8 @@
 
 {# -- Twitter Card -- #}
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ pTitle|e('html_attr') }}">
-<meta name="twitter:description" content="{{ ogDescription|e('html_attr') }}">
+<meta name="twitter:title" content="{{ pTitle }}">
+<meta name="twitter:description" content="{{ ogDescription }}">
 {% if ogImage is not empty %}
 <meta name="twitter:image" content="{{ ogImage }}">
 {% endif %}
