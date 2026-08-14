@@ -38,7 +38,9 @@ class WaController extends AbstractController
 			}
 			
 			$message = json_decode($has, true);
-			file_put_contents('mensaje_ws.json', json_encode($message));
+			if(mb_strpos($has, 'statuses') === false) {
+				file_put_contents('mensaje_ws.json', json_encode($message));
+			}
 			// $consumer->exe($message, ($test == '') ? false : true);
 		}
 		return new Response('', 200);
