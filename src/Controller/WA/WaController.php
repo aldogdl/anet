@@ -46,4 +46,63 @@ class WaController extends AbstractController
 		return new Response('', 200);
 	}
 
+	/**
+	 * Endpoint para recibir JSON de solicitudes y guardarlo en prod_sols
+	 */
+	#[Route('wa/receive-sols', name: 'wa_receive_sols', methods: ['POST'])]
+	public function receiveSols(Request $req): Response
+	{
+		$content = $req->getContent();
+
+		// Si viene como multipart/form-data con un campo 'payload' o 'json'
+		if (empty($content) && $req->request->has('payload')) {
+			$content = $req->request->get('payload');
+		}
+
+		if (empty($content)) {
+			return $this->json([
+				'status' => 'error',
+				'message' => 'No content received'
+			], 400);
+		}
+
+		$data = json_decode($content, true);
+		if (json_last_error() !== JSON_ERROR_NONE && !is_array($data)) {
+			return $this->json([
+				'status' => 'error',
+				'message' => 'Invalid JSON payload'
+			], 400);
+		}
+
+		$projectDir = $this->getParameter('kernel.project_dir');
+		$targetDir = $projectDir . '/public_html/prod_sols';
+
+		if (!is_dir($targetDir)) {
+			mkdir($targetDir, 0777, true);
+		}
+
+		$filename = 'sol_' . date('Ymd_His') . '_' . substr(md5(uniqid()), 0, 6) . '.json';
+		$filePath = $targetDir . '/' . $filename;
+
+		// Guardar JSON formateado
+		file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+		// Manejo de imágenes adjuntas si aplica en multipart
+		if ($req->files->count() > 0) {
+			foreach ($req->files as $key => $uploadedFile) {
+				if ($uploadedFile) {
+					$imgName = 'sol_img_' . date('Ymd_His') . '_' . $key . '.' . ($uploadedFile->guessExtension() ?? 'jpg');
+					$uploadedFile->move($targetDir, $imgName);
+				}
+			}
+		}
+
+		return $this->json([
+			'status' => 'ok',
+			'filename' => $filename,
+			'message' => 'JSON guardado exitosamente en prod_sols'
+		], 200);
+	}
+
 }
+
