@@ -228,126 +228,126 @@ class WaSender
     /** // TODO agregar whatsapp_api en la cabecera */
     public function sendMy(array $event): bool
     {
-        $byMetodo = 'HEAD';
-        $code  = 505;
-        $toUrl = 'http://to-anettrack.info';
-        $this->isTest = false;
+			$byMetodo = 'HEAD';
+			$code  = 505;
+			$toUrl = 'http://to-anettrack.info';
+			$this->isTest = false;
 
-        if(count($event) == 0) {
-            $this->sendReporErrorBySendMy(
-                $byMetodo, [], $toUrl, $code, 'El cuerpo del mensaje resultó bacio, nada para enviar'
-            );
-            return false;
-        }
+			if(count($event) == 0) {
+				$this->sendReporErrorBySendMy(
+					$byMetodo, [], $toUrl, $code, 'El cuerpo del mensaje resultó bacio, nada para enviar'
+				);
+				return false;
+			}
 
-        // Extraemos las cabeceras para el request del evento
-        $headers = [];
-        $isForDownload = 0;
-        if(array_key_exists('header', $event)) {
-            $headers = $event['header'];
-            unset($event['header']);
-            if(array_key_exists('Anet-Down', $headers)) {
-                $isForDownload = $headers['Anet-Down'];
-            }
-        }
-        
-        $rutas = [];
-        $error = 'No hay ruta activa hacia AnetTrack';
-        $cnxFile = $this->getCnxFile();
-        if(array_key_exists('routes', $cnxFile)) {
-            $rutas = $cnxFile['routes'];
-        }
-        $cant = count($rutas);
-        if($cant == 0) {
-            $this->sendReporErrorBySendMy($byMetodo, $headers, $toUrl, 506, $error);
-            return false;
-        }
-        
-        // Dividimos el tiempo(timeout) de espera entre la cantidad de rutas
-        // existente dejando un mínimo de 3 segundos por cada ruta
-        $timeOut = 20;
-        if($cant > 1) {
-            $timeOut = $timeOut / $cant;
-            $timeOut = floor($timeOut);
-            $timeOut = max($timeOut, 3);
-        }
+			// Extraemos las cabeceras para el request del evento
+			$headers = [];
+			$isForDownload = 0;
+			if(array_key_exists('header', $event)) {
+				$headers = $event['header'];
+				unset($event['header']);
+				if(array_key_exists('Anet-Down', $headers)) {
+					$isForDownload = $headers['Anet-Down'];
+				}
+			}
 
-        $rutaSend = [];
-        $erroresSend = [];
-        $error = 'Error inesperado al enviar mensaje a AnetTrack';
+			$rutas = [];
+			$error = 'No hay ruta activa hacia AnetTrack';
+			$cnxFile = $this->getCnxFile();
+			if(array_key_exists('routes', $cnxFile)) {
+				$rutas = $cnxFile['routes'];
+			}
+			$cant = count($rutas);
+			if($cant == 0) {
+				$this->sendReporErrorBySendMy($byMetodo, $headers, $toUrl, 506, $error);
+				return false;
+			}
+			
+			// Dividimos el tiempo(timeout) de espera entre la cantidad de rutas
+			// existente dejando un mínimo de 3 segundos por cada ruta
+			$timeOut = 20;
+			if($cant > 1) {
+				$timeOut = $timeOut / $cant;
+				$timeOut = floor($timeOut);
+				$timeOut = max($timeOut, 3);
+			}
 
-        if($this->isTest) {
-            file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($event));
-        }else{
-            
-            if(array_key_exists('version', $cnxFile)) {
-                $headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
-            }
-            $headers = HeaderDto::anetKey($headers, $this->anetToken);
-            $headers['Content-Type'] = 'application/json; charset=UTF-8';
-            $dataReq = [
-                'timeout' => $timeOut,
-                'headers' => $headers,
-            ];
+			$rutaSend = [];
+			$erroresSend = [];
+			$error = 'Error inesperado al enviar mensaje a AnetTrack';
 
-            // Si isForDownload (para descargar el body) es 0 incluimos los datos en el body
-            // ya que se esta diciendo que no es para descarga por lo tanto el body debe
-            // llevar los datos para evitar tenerlos que descargar.
-            if($isForDownload == 0) {
-                $dataReq['json'] = $event;
-                $byMetodo = 'POST';
-            }
+			if($this->isTest) {
+				file_put_contents('test_sendMy_'.$this->conm->to.'.json', json_encode($event));
+			}else{
 
-            // Guardamos un historial de los envios
-            if(array_key_exists('Anet-Event', $headers)) {
-                if($headers['Anet-Event'] != 'stt') {
+				if(array_key_exists('version', $cnxFile)) {
+					$headers = HeaderDto::cnxVer($headers, $cnxFile['version']);
+				}
+				$headers = HeaderDto::anetKey($headers, $this->anetToken);
+				$headers['Content-Type'] = 'application/json; charset=UTF-8';
+				$dataReq = [
+					'timeout' => $timeOut,
+					'headers' => $headers,
+				];
 
-                    $prefix = '/';
-                    if(array_key_exists('Anet-Iddb', $headers)) {
-                        $prefix = '/'.$headers['Anet-Iddb'].'_';
-                    }
-                    $filename = $prefix.$headers['Anet-Event'].'_'.$headers['Anet-WaId'];
-                    $pathSendmy = $this->fSys->getFolderTo('waSendmy');
-                    $dataReq['headers']['Anet-Backup'] = $filename;
-                    file_put_contents($pathSendmy.$filename.'.json', json_encode([
-                        'method' => $byMetodo,
-                        'rutas'  => $rutas,
-                        'content' => $dataReq
-                    ]));
-                }
-            }
-            
-            for ($i=0; $i < $cant; $i++) {
+				// Si isForDownload (para descargar el body) es 0 incluimos los datos en el body
+				// ya que se esta diciendo que no es para descarga por lo tanto el body debe
+				// llevar los datos para evitar tenerlos que descargar.
+				if($isForDownload == 0) {
+					$dataReq['json'] = $event;
+					$byMetodo = 'POST';
+				}
 
-                try {
-                    $response = $this->client->request($byMetodo, $rutas[$i]['url'], $dataReq);
-                    $code = $response->getStatusCode();
-                    if($code != 200) {
-                        $error = $response->getContent();
-                    }
-                } catch (\Throwable $th) {
-                    $error = $th->getMessage();
-                }
-                
-                $toUrl = $rutas[$i]['url'];
-                if($code == 200) {
-                    $error = '';
-                    $rutaSend = $rutas[$i];
-                    break;
-                } else {
-                    $erroresSend[] = ['ruta' => $rutas[$i], 'error'=> $error];
-                }
-            }
-        }
+				// Guardamos un historial de los envios
+				if(array_key_exists('Anet-Event', $headers)) {
+					if($headers['Anet-Event'] != 'stt') {
 
-        if($code != 200) {
-            $this->sendReporErrorBySendMy($byMetodo, $headers, $toUrl, $code, $error, $erroresSend);
-            return true;
-        }
+						$prefix = '/';
+						if(array_key_exists('Anet-Iddb', $headers)) {
+							$prefix = '/'.$headers['Anet-Iddb'].'_';
+						}
+						$filename = $prefix.$headers['Anet-Event'].'_'.$headers['Anet-WaId'];
+						$pathSendmy = $this->fSys->getFolderTo('waSendmy');
+						$dataReq['headers']['Anet-Backup'] = $filename;
+						file_put_contents($pathSendmy.$filename.'.json', json_encode([
+							'method' => $byMetodo,
+							'rutas'  => $rutas,
+							'content' => $dataReq
+						]));
+					}
+				}
 
-        // la ruta exitosa la colocamos en el balance
-        $this->setCnxFile($rutaSend);
-        return true;
+				for ($i=0; $i < $cant; $i++) {
+
+					try {
+						$response = $this->client->request($byMetodo, $rutas[$i]['url'], $dataReq);
+						$code = $response->getStatusCode();
+						if($code != 200) {
+							$error = $response->getContent();
+						}
+					} catch (\Throwable $th) {
+						$error = $th->getMessage();
+					}
+
+					$toUrl = $rutas[$i]['url'];
+					if($code == 200) {
+						$error = '';
+						$rutaSend = $rutas[$i];
+						break;
+					} else {
+						$erroresSend[] = ['ruta' => $rutas[$i], 'error'=> $error];
+					}
+				}
+			}
+
+			if($code != 200) {
+				$this->sendReporErrorBySendMy($byMetodo, $headers, $toUrl, $code, $error, $erroresSend);
+				return true;
+			}
+
+			// la ruta exitosa la colocamos en el balance
+			$this->setCnxFile($rutaSend);
+			return true;
     }
 
     /** */

@@ -7,6 +7,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use App\Service\WaConsumer;
+use App\Service\Wa\PayloadExtractor;
+use App\Service\Wa\WaSenderApi;
+use App\Service\Wa\ExpedienteSender;
 
 class WaController extends AbstractController
 {
@@ -36,11 +39,27 @@ class WaController extends AbstractController
 			if(strlen($has) < 50) {
 				return $this->json( [], 500 );
 			}
-			
+
 			$message = json_decode($has, true);
-			if(mb_strpos($has, 'statuses') === false) {
-				file_put_contents('mensaje_ws.json', json_encode($message));
+			if(mb_strpos($has, 'statuses') > 0) {
+				return new Response('', 200);
 			}
+
+			// Extraer información estructurada usando PayloadExtractor
+			$extracted = PayloadExtractor::extract($message ?? $has);
+
+			// Si el mensaje recibido contiene la clave [exp], procesar y enviar las solicitudes del expediente
+			if ($extracted['is_valid'] && !empty($extracted['exp_file'])) {
+				$expFile = $extracted['exp_file'];
+				$recipientWaId = $extracted['wa_id'];
+				$prodSolsDir = $this->getParameter('prodSols');
+
+				$expSender = new ExpedienteSender(new WaSenderApi());
+				$sendResult = $expSender->processAndSend($expFile, $recipientWaId, $prodSolsDir);
+
+				file_put_contents('exp_send_log.json', json_encode($sendResult, JSON_PRETTY_PRINT));
+			}
+
 			// $consumer->exe($message, ($test == '') ? false : true);
 		}
 		return new Response('', 200);
@@ -74,9 +93,7 @@ class WaController extends AbstractController
 			], 400);
 		}
 
-		$projectDir = $this->getParameter('kernel.project_dir');
-		$targetDir = $projectDir . '/public_html/prod_sols';
-
+		$targetDir = $this->getParameter('prodSols');
 		if (!is_dir($targetDir)) {
 			mkdir($targetDir, 0777, true);
 		}
