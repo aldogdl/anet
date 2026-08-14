@@ -14,8 +14,9 @@ class WaController extends AbstractController
 	 * Endpoint para la verificacion de conección
 	 */
 	#[Route('wa/wh/{test}', methods: ['GET', 'POST'])]
-	public function verifyWa(Request $req, WaConsumer $consumer, String $test = ''): Response
+	public function verifyWa(Request $req, String $test = ''): Response
 	{
+		// WaConsumer $consumer,
 		if($req->getMethod() == 'GET') {
 
 			$verify = $req->query->get('hub_verify_token');
