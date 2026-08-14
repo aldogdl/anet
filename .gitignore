@@ -17,10 +17,12 @@ config/secrets/prod/prod.decrypt.private.php
 config/saf.json
 config/*.json
 public_html/wa_get_imgs/
+public_html/wtst.txt
 public_html/request.log
 public_html/sinc_dev/*
 public_html/prod_pubs/
 public_html/prod_sols/
+public_html/sols/*
 public_html/prod_track/
 public_html/bgs_shop/
 public_html/mlm_*
