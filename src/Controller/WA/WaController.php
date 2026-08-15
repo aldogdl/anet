@@ -10,6 +10,7 @@ use App\Service\WaConsumer;
 use App\Service\Wa\PayloadExtractor;
 use App\Service\Wa\WaSenderApi;
 use App\Service\Wa\ExpedienteSender;
+use App\Service\Wa\TokenObfuscator;
 
 class WaController extends AbstractController
 {
@@ -53,16 +54,28 @@ class WaController extends AbstractController
 				$expFile = $extracted['exp_file'];
 				$recipientWaId = $extracted['wa_id'];
 				$prodSolsDir = $this->getParameter('prodSols');
+				$waToken = $this->getParameter('waGrandTkn');
 
 				$expSender = new ExpedienteSender(new WaSenderApi());
-				$sendResult = $expSender->processAndSend($expFile, $recipientWaId, $prodSolsDir);
+				$expSender->processAndSend($expFile, $recipientWaId, $prodSolsDir, $waToken);
 
-				file_put_contents('exp_send_log.json', json_encode($sendResult, JSON_PRETTY_PRINT));
 			}
 
 			// $consumer->exe($message, ($test == '') ? false : true);
 		}
 		return new Response('', 200);
+	}
+
+	/**
+	 * Ruta para entregar el token de WhatsApp ofuscado en 3 partes
+	 */
+	#[Route('wa/get-secure-tkn', name: 'wa_get_secure_tkn', methods: ['GET', 'POST'])]
+	public function getSecureToken(): Response
+	{
+		$rawToken = (string) $this->getParameter('waGrandTkn');
+		$obfuscated = TokenObfuscator::obfuscate($rawToken);
+
+		return $this->json($obfuscated, 200);
 	}
 
 	/**
@@ -120,6 +133,7 @@ class WaController extends AbstractController
 			'message' => 'JSON guardado exitosamente en prod_sols'
 		], 200);
 	}
-
+  
+	
 }
 

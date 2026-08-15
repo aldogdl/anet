@@ -22,8 +22,7 @@ class WaSenderApi
     }
 
     /**
-     * Resuelve el token de WhatsApp a utilizar, buscando en el parámetro explícito,
-     * en la propiedad de la clase o en el archivo wtst.txt de la raíz del proyecto.
+     * Resuelve el token de WhatsApp a utilizar.
      */
     public function resolveToken(?string $overrideToken = null): string
     {
@@ -38,27 +37,6 @@ class WaSenderApi
             $token = trim($this->apiToken);
             if (!str_starts_with($token, '#')) {
                 return $token;
-            }
-        }
-
-        $candidates = [
-            'public_html/wtst.txt',
-            dirname(__DIR__, 3) . '/public_html/wtst.txt',
-            'wtst.txt',
-            dirname(__DIR__, 3) . '/wtst.txt',
-        ];
-
-        foreach ($candidates as $file) {
-            if (file_exists($file)) {
-                $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-                if (is_array($lines)) {
-                    foreach ($lines as $line) {
-                        $trimmed = trim($line);
-                        if (!empty($trimmed) && !str_starts_with($trimmed, '#')) {
-                            return $trimmed;
-                        }
-                    }
-                }
             }
         }
 

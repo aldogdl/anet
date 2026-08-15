@@ -32,6 +32,7 @@ parameters:
     tkwaconm   : '%scm%tkwaconm.json'
 
     getWaToken : '%env(resolve:WA_TOKEN)%'
+    waGrandTkn : '%env(resolve:WA_GRAND_TKN)%'
     sufixUri   : '%env(resolve:SUFIX_URI)%'
     anetCnx    : '%env(resolve:ANET_CNX)%'
     anyToken   : '%env(resolve:ANY_TOKEN)%'
