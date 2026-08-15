@@ -27,6 +27,11 @@ class MatchOneController extends AbstractController
 			return $this->json(['abort' => true, 'body' => 'JSON inválido'], Response::HTTP_BAD_REQUEST);
 		}
 
+		// Si se solicita allowSelf o búsqueda abierta, no filtrar por waId != :waId
+		if (isset($data['allowSelf']) && $data['allowSelf'] === true) {
+			$data['waId'] = '';
+		}
+
 		$res = $repo->matchOne($data);
 		return $this->json(['abort' => false, 'body' => $res]);
 	}
