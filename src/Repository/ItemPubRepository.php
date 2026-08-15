@@ -195,7 +195,7 @@ class ItemPubRepository extends ServiceEntityRepository
 		];
 
 		$dql = "
-			SELECT it
+			SELECT partial it.{id, pieza, lado, poss, price, thumb, waId, slug, created, anioInicio, anioFin}
 			FROM " . ItemPub::class . " it
 			WHERE it.mrkId = :mrkId
 				AND it.mdlId = :mdlId
