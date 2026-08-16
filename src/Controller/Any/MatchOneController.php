@@ -51,6 +51,12 @@ class MatchOneController extends AbstractController
 			return $this->json(['abort' => true, 'body' => 'Ítem no encontrado'], Response::HTTP_NOT_FOUND);
 		}
 
-		return $this->json(['abort' => false, 'body' => $itemDetails[0] ?? $itemDetails]);
+		$item = $itemDetails[0] ?? $itemDetails;
+		if (isset($item['extras']) && is_string($item['extras'])) {
+			$item['extras'] = json_decode($item['extras'], true) ?? [];
+		}
+
+		return $this->json(['abort' => false, 'body' => $item]);
 	}
 }
+
