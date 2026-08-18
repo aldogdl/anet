@@ -20,15 +20,16 @@ parameters:
     waDemoCot  : '%phtml%/wa_demo_cot/'
     waRemOk    : '%phtml%/wa_rem_ok/'
     dtaCtc     : '%phtml%/ctcs/'
+    verapps    : '%phtml%/yonkeros/versions.json'
     dtaCtcLog  : '%dtaCtc%/log'
     anyMlm     : '%scm%/any_mlm.json'
     comLoc     : '%scm%/com_loc.json'
     report     : '%scm%/report.txt'
     dictionary : '%scm%/dicc.json'
+    dictionary : '%scm%/dicc.json'
 
     ngile      : '%scm%ng_file.json'
     cnxFile    : '%scm%cnx_file.json'
-    verapps    : '%scm%versions.json'
     tkwaconm   : '%scm%tkwaconm.json'
 
     getWaToken : '%env(resolve:WA_TOKEN)%'

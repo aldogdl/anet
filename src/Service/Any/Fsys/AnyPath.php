@@ -14,5 +14,6 @@ class AnyPath {
     static String $REGAUTH = 'regAuth';
     static String $ANYMLM = 'anyMlm';
     static String $INVEXP = 'invExp';
+    static String $VERS = 'verapps';
     static String $SYNCDEV = 'sincDev';
 }

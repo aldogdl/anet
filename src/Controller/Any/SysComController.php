@@ -97,6 +97,36 @@ class SysComController extends AbstractController
 		return $this->json(['abort' => true, 'body' => 'Acceso no autorizado']);
 	}
 
+	/** Recuperamos los datos de FB de un usuario */
+	#[Route('/get-fbtok', methods: ['post'])]
+	public function getFbTok(Request $req, SysComRepository $em, SecurityBasic $security): Response 
+	{
+		if($req->getMethod() != 'POST') {
+			return $this->json(['abort' => true, 'body' => 'Método no permitido']);
+		}
+
+		$sec = $req->headers->get('any-sec') ?? '';
+		if(!$security->isValid($sec)) {
+			return $this->json(['abort' => true, 'body' => 'Acceso restringido'], 401);
+		}
+
+		$user = $em->updateDataCom([]);
+		if($user) {
+			return $this->json(['abort' => false, 'body' => $user]);
+		}
+		return $this->json(['abort' => true, 'body' => 'Error al guardar Datos']);
+	}
+
+	/** 
+	 * 
+	*/
+	#[Route('/get-versions', methods: ['get'])]
+	public function getVersion(Fsys $fsys): Response
+	{
+		$vers = $fsys->get(AnyPath::$VERS, null);
+		return $this->json($vers);
+	}
+
 	/** 
 	 * 
 	*/
@@ -662,7 +692,8 @@ class SysComController extends AbstractController
 	}
 
 	/** 
-	 * Sube un archivo JSON o TXT y lo guarda en la carpeta scm_log dentro de sinc_dev
+	 * Sube un archivo JSON o TXT y lo guarda en la carpeta scm_log
+	 * dentro de sinc_dev
 	 */
 	#[Route('/upload-log', methods: ['POST'])]
 	public function uploadLog(Request $req, Fsys $fsys): Response
