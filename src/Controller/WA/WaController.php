@@ -43,6 +43,19 @@ class WaController extends AbstractController
 
 			$message = json_decode($has, true);
 			if(mb_strpos($has, 'statuses') > 0) {
+				if (isset($message['entry'][0]['changes'][0]['value']['statuses'])) {
+					$statuses = $message['entry'][0]['changes'][0]['value']['statuses'];
+					foreach ($statuses as $st) {
+						if (($st['status'] ?? '') === 'failed' || !empty($st['errors'])) {
+							$fbFailsDir = $this->getParameter('fbFails');
+							if (!is_dir($fbFailsDir)) {
+								@mkdir($fbFailsDir, 0777, true);
+							}
+							$failFilename = rtrim($fbFailsDir, '/\\') . '/status_fail_' . date('Ymd_His') . '_' . substr(md5(uniqid()), 0, 6) . '.json';
+							@file_put_contents($failFilename, json_encode($st, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+						}
+					}
+				}
 				return new Response('', 200);
 			}
 
@@ -54,11 +67,36 @@ class WaController extends AbstractController
 				$expFile = $extracted['exp_file'];
 				$recipientWaId = $extracted['wa_id'];
 				$prodSolsDir = $this->getParameter('prodSols');
+				$fbFailsDir = $this->getParameter('fbFails');
+				$dtaCtcDir = $this->getParameter('dtaCtc');
 				$waToken = $this->getParameter('waGrandTkn');
+				$phoneId = !empty($extracted['phone_number_id']) ? $extracted['phone_number_id'] : null;
 
-				$expSender = new ExpedienteSender(new WaSenderApi());
-				$expSender->processAndSend($expFile, $recipientWaId, $prodSolsDir, $waToken);
+				$waSenderApi = new WaSenderApi();
+				$expSender = new ExpedienteSender($waSenderApi);
+				$res = $expSender->processAndSend(
+					$expFile,
+					$recipientWaId,
+					$prodSolsDir,
+					$waToken,
+					$phoneId,
+					$fbFailsDir,
+					$dtaCtcDir
+				);
 
+				// Si falló el envío y NO es un error crítico de autenticación/token, notificar al usuario por WhatsApp
+				if (!$res['success'] && !$res['is_auth_error'] && !empty($recipientWaId)) {
+					$cleanExpName = preg_replace('/\.json$/i', '', trim($expFile));
+					$errText = "⚠️ *Aviso de Solicitudes* ⚠️\n\n";
+					$errText .= "❌ No fue posible entregar tu expediente:\n";
+					$errText .= "📄 *{$cleanExpName}*\n\n";
+					if (!empty($res['error'])) {
+						$errText .= "🛑 *Detalle:* " . substr($res['error'], 0, 150) . "\n\n";
+					}
+					$errText .= "🔄 Puedes intentar reenviar este mensaje de expediente nuevamente.";
+
+					$waSenderApi->sendTextMessage($recipientWaId, $errText, $waToken, $phoneId);
+				}
 			}
 
 			// $consumer->exe($message, ($test == '') ? false : true);
