@@ -735,5 +735,82 @@ class SysComController extends AbstractController
 		}
 	}
 
+	/** 
+	 * Endpoint para subir logotipo de empresa o foto de colaborador
+	 * type: 'logo' => guarda en public_html/ctc_logo/<slug>.<ext>
+	 * type: 'foto' => guarda en public_html/ctc_selfi/<slug>_<nombre>_<waId>.<ext>
+	 */
+	#[Route('/upload-profile-media', methods: ['POST'])]
+	public function uploadProfileMedia(Request $req): Response
+	{
+		$slug = trim((string)($req->request->get('slug') ?? $req->query->get('slug') ?? ''));
+		$type = trim(strtolower((string)($req->request->get('type') ?? $req->query->get('type') ?? 'logo')));
+		$waId = trim((string)($req->request->get('waId') ?? $req->query->get('waId') ?? ''));
+		$nombre = trim((string)($req->request->get('nombre') ?? $req->query->get('nombre') ?? ''));
+
+		if (empty($slug)) {
+			return $this->json(['abort' => true, 'body' => 'Parámetro slug requerido'], 400);
+		}
+
+		$file = $req->files->get('file');
+		if (!$file) {
+			return $this->json(['abort' => true, 'body' => 'No se recibió ningún archivo de imagen'], 400);
+		}
+
+		$extension = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+		if (empty($extension)) {
+			$extension = 'jpg';
+		}
+		if ($extension === 'jpeg') {
+			$extension = 'jpg';
+		}
+
+		$allowedExtensions = ['jpg', 'png', 'webp'];
+		if (!in_array($extension, $allowedExtensions, true)) {
+			return $this->json(['abort' => true, 'body' => 'Extensión no permitida. Solo JPG, PNG o WEBP.'], 400);
+		}
+
+		$phtml = $this->getParameter('phtml');
+
+		if ($type === 'foto') {
+			$folder = 'ctc_selfi';
+			$cleanNombre = preg_replace('/[^a-zA-Z0-9_-]/', '', strtolower($nombre));
+			if (empty($cleanNombre)) {
+				$cleanNombre = 'user';
+			}
+			$cleanWaId = preg_replace('/[^0-9]/', '', $waId);
+			if (empty($cleanWaId)) {
+				$cleanWaId = '0';
+			}
+			$filename = $slug . '_' . $cleanNombre . '_' . $cleanWaId . '.' . $extension;
+		} else {
+			$folder = 'ctc_logo';
+			$filename = $slug . '.' . $extension;
+		}
+
+		$destDir = Path::canonicalize($phtml . '/' . $folder);
+		if (!is_dir($destDir)) {
+			mkdir($destDir, 0777, true);
+		}
+
+		try {
+			$file->move($destDir, $filename);
+
+			return $this->json([
+				'abort' => false,
+				'body' => 'Imagen actualizada con éxito',
+				'type' => $type,
+				'filename' => $filename,
+				'url' => '/' . $folder . '/' . $filename,
+			], 200);
+
+		} catch (\Throwable $e) {
+			return $this->json([
+				'abort' => true,
+				'body' => 'Error al guardar la imagen: ' . $e->getMessage()
+			], 500);
+		}
+	}
+
 }
 
