@@ -675,8 +675,7 @@ class SysComController extends AbstractController
 	*/
 	#[Route('/update-data-user', methods: ['POST'])]
 	public function updateDataUser(
-		Request $req, 
-		Fsys $fsys, 
+		Request $req, Fsys $fsys, 
 		NextSellerRepository $nextSellerRepo
 	): Response
 	{
