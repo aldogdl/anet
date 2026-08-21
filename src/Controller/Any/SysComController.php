@@ -3,6 +3,7 @@
 namespace App\Controller\Any;
 
 use App\Repository\SysComRepository;
+use App\Repository\NextSellerRepository;
 
 use App\Repository\ItemPubRepository;
 use App\Repository\SyncMlRepository;
@@ -68,33 +69,44 @@ class SysComController extends AbstractController
 
 	/** Seteamos los datos de FB */
 	#[Route('/set-fbtok', methods: ['post'])]
-	public function setFbTok(Request $req, SysComRepository $em): Response 
+	public function setFbTok(Request $req, SysComRepository $em, NextSellerRepository $nextSellerRepo): Response 
 	{
 		if($req->getMethod() != 'POST') {
 			return $this->json(['abort' => true, 'body' => 'Método no permitido']);
 		}
 
 		$header = $req->headers->get('any-token') ?? '';
-		if($header == $this->getParameter('anyToken')) {
-			$data = $req->getContent();
-			if($data) {
+		if($header != $this->getParameter('anyToken')) {
+			return $this->json(['abort' => true, 'body' => 'Acceso no autorizado']);
+		}
 
-				$data = json_decode($data, true);
-				if(!array_key_exists('slug', $data) || !array_key_exists('fbtok', $data)) {
-					return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperación']);
+		$data = $req->getContent();
+		if($data) {
+
+			$data = json_decode($data, true);
+			if(!array_key_exists('slug', $data) || !array_key_exists('fbtok', $data)) {
+				return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperación']);
+			}
+
+			$data['ip'] = $req->getClientIp();
+			$user = $em->updateDataCom($data);
+			if($user) {
+				// Sincronización condicional con NextSeller
+				$taId = $data['taId'] ?? null;
+				$hasValidTaId = $taId !== null && $taId !== '' && $taId !== '0' && $taId !== 0 && $taId !== '-1' && $taId !== -1;
+				if (array_key_exists('seller', $data) && $data['seller'] !== null && $hasValidTaId) {
+					$sysComEntity = $em->fetchUser($data);
+					if ($sysComEntity) {
+						$sellerStt = (int) $data['seller'];
+						$nextSellerRepo->syncSellerStatus($sysComEntity, $sellerStt);
+					}
 				}
 
-				$data['ip'] = $req->getClientIp();
-				$user = $em->updateDataCom($data);
-				if($user) {
-					return $this->json(['abort' => false, 'body' => $user]);
-				}else{
-					return $this->json(['abort' => true, 'body' => 'Error al guardar Datos']);
-				}
+				return $this->json(['abort' => false, 'body' => $user]);
 			}
 		}
 
-		return $this->json(['abort' => true, 'body' => 'Acceso no autorizado']);
+		return $this->json(['abort' => true, 'body' => 'Error al guardar Datos']);
 	}
 
 	/** Recuperamos los datos de FB de un usuario */
