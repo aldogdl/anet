@@ -811,6 +811,56 @@ class SysComController extends AbstractController
 			], 500);
 		}
 	}
+  
+	/** 
+	 * Endpoint para registrar a un colaborador con role de AVO
+	 * como siguiente vendedor de contacto, pesnsados para MatchOne
+	 * y el contacto directo para shop.
+	 */
+	#[Route('/nextseller', methods: ['POST', 'GET'])]
+	public function setNextSeller(Request $req, Fsys $fsys): Response
+	{
+		$slug = trim((string)($req->request->get('slug') ?? $req->query->get('slug') ?? ''));
+		if (empty($slug)) {
+			return $this->json(['abort' => true, 'body' => 'Parámetro slug requerido'], 400);
+		}
+		if($req->getMethod() == 'POST') {
+
+		} else if($req->getMethod() == 'GET') {
+			
+		}
+		return $this->json(['abort' => true, 'body' => 'Metodo no permitido'], 400);
+	}
+  
+	/** 
+	 * Endpoint para recuperar el registro del usuario dueño (main).
+	 */
+	#[Route('/owner', methods: ['GET'])]
+	public function ownerExp(Request $req, Fsys $fsys): Response
+	{
+		$slug = trim((string)($req->request->get('slug') ?? $req->query->get('slug') ?? ''));
+		if (empty($slug)) {
+			return $this->json(['abort' => true, 'body' => 'Parámetro slug requerido'], 400);
+		}
+		if($req->getMethod() == 'GET') {
+			$res = $fsys->get(AnyPath::$DTACTC, $slug.'.json');
+
+			if (!empty($res) && isset($res['colabs']) && is_array($res['colabs'])) {
+				$filtered = [];
+				foreach ($res['colabs'] as $colab) {
+					if (isset($colab['roles']) && is_array($colab['roles']) && in_array('ROLE_MAIN', $colab['roles'], true)) {
+						unset($colab['pass']);
+						$filtered[] = $colab;
+						break;
+					}
+				}
+				$res['colabs'] = $filtered;
+			}
+
+			return $this->json($res, 200);
+		}
+
+		return $this->json(['abort' => true, 'body' => 'Metodo no permitido'], 400);
+	}
 
 }
-
