@@ -674,7 +674,11 @@ class SysComController extends AbstractController
 	 * Validamos que el slug de la empresa este entre las registradas
 	*/
 	#[Route('/update-data-user', methods: ['POST'])]
-	public function updateDataUser(Request $req, Fsys $fsys): Response
+	public function updateDataUser(
+		Request $req, 
+		Fsys $fsys, 
+		NextSellerRepository $nextSellerRepo
+	): Response
 	{
 		$data = $req->getContent();
 		if($data) {
@@ -690,6 +694,10 @@ class SysComController extends AbstractController
 					if($res && array_key_exists('asesor', $reg)) {
 						$data['asesor'] = $reg['asesor'];
 					}
+				}
+
+				if(isset($data['colabs']) && is_array($data['colabs'])) {
+					$data['colabs'] = $nextSellerRepo->evalAndCleanColabs($data['slug'], $data['colabs']);
 				}
 
 				$res = $fsys->set(AnyPath::$DTACTC, $data, $data['slug'].'.json');
