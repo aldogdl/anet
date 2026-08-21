@@ -200,6 +200,8 @@ class ItemPubRepository extends ServiceEntityRepository
 			WHERE it.mrkId = :mrkId
 				AND it.mdlId = :mdlId
 				AND it.isActive = :isActive
+				AND it.slug IS NOT NULL
+				AND it.slug != ''
 				AND it.anioInicio <= :anioFin
 				AND it.anioFin >= :anioInicio
 			";
