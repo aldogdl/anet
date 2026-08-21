@@ -832,23 +832,31 @@ class SysComController extends AbstractController
 	}
   
 	/** 
-	 * Endpoint para registrar a un colaborador con role de AVO
-	 * como siguiente vendedor de contacto, pesnsados para MatchOne
-	 * y el contacto directo para shop.
+	 * Endpoint para recuperar y rotar al vendedor adecuado (NextSeller)
+	 * pensado para MatchOne y contacto directo de catálogo/shop.
 	 */
 	#[Route('/nextseller', methods: ['POST', 'GET'])]
-	public function setNextSeller(Request $req, Fsys $fsys): Response
+	public function setNextSeller(Request $req, Fsys $fsys, NextSellerRepository $nextSellerRepo): Response
 	{
 		$slug = trim((string)($req->request->get('slug') ?? $req->query->get('slug') ?? ''));
 		if (empty($slug)) {
 			return $this->json(['abort' => true, 'body' => 'Parámetro slug requerido'], 400);
 		}
-		if($req->getMethod() == 'POST') {
 
-		} else if($req->getMethod() == 'GET') {
-			
+		$waId = trim((string)($req->request->get('waId') ?? $req->query->get('waId') ?? ''));
+
+		try {
+			$result = $nextSellerRepo->resolveNextSeller($slug, $waId, $fsys);
+			return $this->json([
+				'abort' => false,
+				'body' => $result,
+			], 200);
+		} catch (\Throwable $e) {
+			return $this->json([
+				'abort' => true,
+				'body' => 'Error al resolver vendedor: ' . $e->getMessage(),
+			], 500);
 		}
-		return $this->json(['abort' => true, 'body' => 'Metodo no permitido'], 400);
 	}
   
 	/** 

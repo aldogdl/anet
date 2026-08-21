@@ -4,6 +4,8 @@ namespace App\Repository;
 
 use App\Entity\NextSeller;
 use App\Entity\SysCom;
+use App\Service\Any\Fsys\Fsys;
+use App\Service\Any\Fsys\AnyPath;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -189,6 +191,114 @@ class NextSellerRepository extends ServiceEntityRepository
         }
 
         return array_values($cleanedColabs);
+    }
+
+    /**
+     * Recupera el vendedor más adecuado (menor cantUse / uso más antiguo) con stt = 1 para un slug.
+     * Si no hay vendedores activos en NextSeller, hace fallback usando el $callbackWaId recibido.
+     * Completa taId o waId desde /ctcs/<slug>.json si no existen o están vacíos en BD.
+     * Actualiza cantUse (+1) y lastUseAt (now) para el vendedor ganador.
+     */
+    public function resolveNextSeller(string $slug, string $callbackWaId, Fsys $fsys): array
+    {
+        // 1. Buscar vendedores activos ordenados por menor cantidad de uso y fecha más antigua
+        $dql = 'SELECT ns, sc FROM ' . NextSeller::class . ' ns 
+                JOIN ns.seller sc 
+                WHERE sc.slug = :slug AND ns.stt = 1 
+                ORDER BY ns.cantUse ASC, ns.lastUseAt ASC';
+        
+        $sellers = $this->_em->createQuery($dql)
+            ->setParameter('slug', $slug)
+            ->setMaxResults(1)
+            ->getResult();
+
+        $selectedNs = !empty($sellers) ? $sellers[0] : null;
+        $isFallback = false;
+        $sysCom = null;
+
+        if ($selectedNs instanceof NextSeller) {
+            $sysCom = $selectedNs->getSeller();
+            // Incrementar uso y actualizar fecha
+            $selectedNs->setCantUse(($selectedNs->getCantUse() ?? 0) + 1);
+            $selectedNs->setLastUseAt(new \DateTimeImmutable('now'));
+            $this->_em->flush();
+        } else {
+            $isFallback = true;
+            // Fallback: Intentar buscar en SysCom por slug y callbackWaId si viene proporcionado
+            if (!empty($callbackWaId)) {
+                $dqlSc = 'SELECT sc FROM ' . SysCom::class . ' sc WHERE sc.slug = :slug AND sc.waId = :waId';
+                $sysCom = $this->_em->createQuery($dqlSc)
+                    ->setParameter('slug', $slug)
+                    ->setParameter('waId', $callbackWaId)
+                    ->setMaxResults(1)
+                    ->getOneOrNullResult();
+            }
+            if (!$sysCom) {
+                // Si aún no hay SysCom, buscar cualquier SysCom del slug
+                $dqlScAny = 'SELECT sc FROM ' . SysCom::class . ' sc WHERE sc.slug = :slug';
+                $sysCom = $this->_em->createQuery($dqlScAny)
+                    ->setParameter('slug', $slug)
+                    ->setMaxResults(1)
+                    ->getOneOrNullResult();
+            }
+        }
+
+        // Extraer datos base
+        $waId = $sysCom ? (string)$sysCom->getWaId() : $callbackWaId;
+        $taId = $sysCom && $sysCom->getTaId() ? (string)$sysCom->getTaId() : '';
+        $name = $sysCom ? (string)$sysCom->getName() : '';
+        $device = $sysCom ? (string)$sysCom->getDevice() : '';
+
+        // Si falta taId o waId, o si no hubo SysCom, consultar expediente físico /ctcs/<slug>.json
+        if (empty($taId) || empty($waId) || empty($name)) {
+            $exp = $fsys->get(AnyPath::$DTACTC, $slug . '.json');
+            if (!empty($exp) && isset($exp['colabs']) && is_array($exp['colabs'])) {
+                $matchedColab = null;
+                // Buscar por waId si existe
+                if (!empty($waId)) {
+                    foreach ($exp['colabs'] as $c) {
+                        if (isset($c['waId']) && (string)$c['waId'] === $waId) {
+                            $matchedColab = $c;
+                            break;
+                        }
+                    }
+                }
+                // Si no coincide, buscar el MAIN o el primero
+                if (!$matchedColab) {
+                    foreach ($exp['colabs'] as $c) {
+                        if (isset($c['roles']) && is_array($c['roles']) && in_array('ROLE_MAIN', $c['roles'], true)) {
+                            $matchedColab = $c;
+                            break;
+                        }
+                    }
+                    if (!$matchedColab && !empty($exp['colabs'])) {
+                        $matchedColab = $exp['colabs'][0];
+                    }
+                }
+
+                if ($matchedColab) {
+                    if (empty($waId) && isset($matchedColab['waId'])) {
+                        $waId = (string)$matchedColab['waId'];
+                    }
+                    if (empty($taId) && isset($matchedColab['taId'])) {
+                        $taId = (string)$matchedColab['taId'];
+                    }
+                    if (empty($name) && isset($matchedColab['name'])) {
+                        $name = (string)$matchedColab['name'];
+                    }
+                }
+            }
+        }
+
+        return [
+            'found' => !empty($waId) || !empty($taId),
+            'slug' => $slug,
+            'waId' => $waId,
+            'taId' => !empty($taId) ? (int)$taId : 0,
+            'name' => $name,
+            'device' => $device,
+            'isFallback' => $isFallback,
+        ];
     }
 }
 
