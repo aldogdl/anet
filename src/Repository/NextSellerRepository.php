@@ -194,110 +194,194 @@ class NextSellerRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recupera el vendedor más adecuado (menor cantUse / uso más antiguo) con stt = 1 para un slug.
-     * Si no hay vendedores activos en NextSeller, hace fallback usando el $callbackWaId recibido.
-     * Completa taId o waId desde /ctcs/<slug>.json si no existen o están vacíos en BD.
-     * Actualiza cantUse (+1) y lastUseAt (now) para el vendedor ganador.
+     * Recupera el vendedor más adecuado para un slug siguiendo el flujo de extracción:
+     * 1. Lee el expediente físico /ctcs/<slug>.json y filtra colabs con stt = 1 y roles ROLE_AVO o ROLE_MAIN.
+     * 2. Consulta registros en SysCom con LEFT JOIN a NextSeller para los waIds filtrados.
+     * 3. Valida y depura candidatos sin taId válido (fuente de verdad SysCom, fallback JSON).
+     * 4. Retorna según prioridades:
+     *    a) Candidato con NextSeller activo ordenado por menor cantUse y lastUseAt más antiguo (incrementa cantUse).
+     *    b) Si no hay en NextSeller, primer candidato de SysCom que no sea MAIN (sin crear NextSeller).
+     *    c) Fallback: El colaborador MAIN del JSON (sin crear NextSeller).
+     * 
+     * @param string $slug
+     * @param Fsys $fsys
+     * @return array
      */
-    public function resolveNextSeller(string $slug, string $callbackWaId, Fsys $fsys): array
+    public function resolveNextSeller(string $slug, Fsys $fsys): array
     {
-        // 1. Buscar vendedores activos ordenados por menor cantidad de uso y fecha más antigua
-        $dql = 'SELECT ns, sc FROM ' . NextSeller::class . ' ns 
-                JOIN ns.seller sc 
-                WHERE sc.slug = :slug AND ns.stt = 1 
-                ORDER BY ns.cantUse ASC, ns.lastUseAt ASC';
-        
-        $sellers = $this->_em->createQuery($dql)
-            ->setParameter('slug', $slug)
-            ->setMaxResults(1)
-            ->getResult();
+        // 1. Leer expediente en disco y filtrar colabs elegibles
+        $exp = $fsys->get(AnyPath::$DTACTC, $slug . '.json');
+        $colabs = (!empty($exp) && isset($exp['colabs']) && is_array($exp['colabs'])) ? $exp['colabs'] : [];
 
-        $selectedNs = !empty($sellers) ? $sellers[0] : null;
-        $isFallback = false;
-        $sysCom = null;
+        $eligibleColabs = [];
+        $mainColab = null;
 
-        if ($selectedNs instanceof NextSeller) {
-            $sysCom = $selectedNs->getSeller();
-            // Incrementar uso y actualizar fecha
-            $selectedNs->setCantUse(($selectedNs->getCantUse() ?? 0) + 1);
-            $selectedNs->setLastUseAt(new \DateTimeImmutable('now'));
-            $this->_em->flush();
-        } else {
-            $isFallback = true;
-            // Fallback: Intentar buscar en SysCom por slug y callbackWaId si viene proporcionado
-            if (!empty($callbackWaId)) {
-                $dqlSc = 'SELECT sc FROM ' . SysCom::class . ' sc WHERE sc.slug = :slug AND sc.waId = :waId';
-                $sysCom = $this->_em->createQuery($dqlSc)
-                    ->setParameter('slug', $slug)
-                    ->setParameter('waId', $callbackWaId)
-                    ->setMaxResults(1)
-                    ->getOneOrNullResult();
+        foreach ($colabs as $colab) {
+            $roles = isset($colab['roles']) && is_array($colab['roles']) ? $colab['roles'] : [];
+            $isMain = in_array('ROLE_MAIN', $roles, true);
+            $isAvo = in_array('ROLE_AVO', $roles, true);
+            $stt = isset($colab['stt']) ? (int)$colab['stt'] : 0;
+
+            if ($isMain && $mainColab === null) {
+                $mainColab = $colab;
             }
-            if (!$sysCom) {
-                // Si aún no hay SysCom, buscar cualquier SysCom del slug
-                $dqlScAny = 'SELECT sc FROM ' . SysCom::class . ' sc WHERE sc.slug = :slug';
-                $sysCom = $this->_em->createQuery($dqlScAny)
-                    ->setParameter('slug', $slug)
-                    ->setMaxResults(1)
-                    ->getOneOrNullResult();
+
+            if ($stt === 1 && ($isAvo || $isMain)) {
+                $waId = isset($colab['waId']) ? trim((string)$colab['waId']) : '';
+                if (!empty($waId)) {
+                    $eligibleColabs[$waId] = $colab;
+                }
             }
         }
 
-        // Extraer datos base
-        $waId = $sysCom ? (string)$sysCom->getWaId() : $callbackWaId;
-        $taId = $sysCom && $sysCom->getTaId() ? (string)$sysCom->getTaId() : '';
-        $name = $sysCom ? (string)$sysCom->getName() : '';
-        $device = $sysCom ? (string)$sysCom->getDevice() : '';
-
-        // Si falta taId o waId, o si no hubo SysCom, consultar expediente físico /ctcs/<slug>.json
-        if (empty($taId) || empty($waId) || empty($name)) {
-            $exp = $fsys->get(AnyPath::$DTACTC, $slug . '.json');
-            if (!empty($exp) && isset($exp['colabs']) && is_array($exp['colabs'])) {
-                $matchedColab = null;
-                // Buscar por waId si existe
-                if (!empty($waId)) {
-                    foreach ($exp['colabs'] as $c) {
-                        if (isset($c['waId']) && (string)$c['waId'] === $waId) {
-                            $matchedColab = $c;
-                            break;
-                        }
-                    }
+        // Si no se encontró un main activo, buscar cualquier main en el JSON para el fallback final
+        if ($mainColab === null) {
+            foreach ($colabs as $colab) {
+                $roles = isset($colab['roles']) && is_array($colab['roles']) ? $colab['roles'] : [];
+                if (in_array('ROLE_MAIN', $roles, true)) {
+                    $mainColab = $colab;
+                    break;
                 }
-                // Si no coincide, buscar el MAIN o el primero
-                if (!$matchedColab) {
-                    foreach ($exp['colabs'] as $c) {
-                        if (isset($c['roles']) && is_array($c['roles']) && in_array('ROLE_MAIN', $c['roles'], true)) {
-                            $matchedColab = $c;
-                            break;
-                        }
-                    }
-                    if (!$matchedColab && !empty($exp['colabs'])) {
-                        $matchedColab = $exp['colabs'][0];
-                    }
-                }
+            }
+            if ($mainColab === null && !empty($colabs)) {
+                $mainColab = $colabs[0];
+            }
+        }
 
-                if ($matchedColab) {
-                    if (empty($waId) && isset($matchedColab['waId'])) {
-                        $waId = (string)$matchedColab['waId'];
-                    }
-                    if (empty($taId) && isset($matchedColab['taId'])) {
-                        $taId = (string)$matchedColab['taId'];
-                    }
-                    if (empty($name) && isset($matchedColab['name'])) {
-                        $name = (string)$matchedColab['name'];
+        $mainWaId = ($mainColab && isset($mainColab['waId'])) ? trim((string)$mainColab['waId']) : '';
+
+        // 2. Consultar SysCom y NextSeller desde la BD para los waIds elegibles
+        $sysComEntities = [];
+        $eligibleWaIds = array_keys($eligibleColabs);
+
+        if (!empty($eligibleWaIds)) {
+            $dql = 'SELECT sc, ns FROM ' . SysCom::class . ' sc 
+                    LEFT JOIN sc.nextSeller ns 
+                    WHERE sc.slug = :slug AND sc.waId IN (:waIds)';
+            $sysComEntities = $this->_em->createQuery($dql)
+                ->setParameter('slug', $slug)
+                ->setParameter('waIds', $eligibleWaIds)
+                ->getResult();
+        }
+
+        // 3. Recorrer y depurar candidatos validando taId (BD primero, fallback JSON)
+        $validCandidates = [];
+        foreach ($sysComEntities as $sc) {
+            $waId = trim((string)$sc->getWaId());
+            $colabJson = $eligibleColabs[$waId] ?? [];
+
+            // taId: fuente de verdad SysCom, fallback archivo JSON
+            $taId = $sc->getTaId();
+            if (empty($taId) && isset($colabJson['taId'])) {
+                $taId = (string)$colabJson['taId'];
+            }
+
+            // Desechar si no cuenta con un taId válido
+            if (empty($taId) || (int)$taId <= 0) {
+                continue;
+            }
+
+            $colabRoles = isset($colabJson['roles']) && is_array($colabJson['roles']) ? $colabJson['roles'] : [];
+            $isColabMain = in_array('ROLE_MAIN', $colabRoles, true) || ($waId === $mainWaId);
+
+            $validCandidates[] = [
+                'sysCom' => $sc,
+                'nextSeller' => $sc->getNextSeller(),
+                'waId' => $waId,
+                'taId' => (int)$taId,
+                'name' => $sc->getName() ?: ($colabJson['name'] ?? ''),
+                'device' => $sc->getDevice() ?: 'any',
+                'isMain' => $isColabMain,
+            ];
+        }
+
+        $selectedCandidate = null;
+
+        // 4. Evaluar condiciones en orden de prioridad
+
+        // Prioridad A: El siguiente vendedor de NextSeller (con stt = 1) con menor cantUse y lastUseAt más antiguo
+        $nextSellerCandidates = array_filter($validCandidates, function ($item) {
+            return ($item['nextSeller'] instanceof NextSeller) && $item['nextSeller']->getStt() === 1;
+        });
+
+        if (!empty($nextSellerCandidates)) {
+            usort($nextSellerCandidates, function ($a, $b) {
+                $cantA = $a['nextSeller']->getCantUse() ?? 0;
+                $cantB = $b['nextSeller']->getCantUse() ?? 0;
+                if ($cantA === $cantB) {
+                    $timeA = $a['nextSeller']->getLastUseAt() ? $a['nextSeller']->getLastUseAt()->getTimestamp() : 0;
+                    $timeB = $b['nextSeller']->getLastUseAt() ? $b['nextSeller']->getLastUseAt()->getTimestamp() : 0;
+                    return $timeA <=> $timeB;
+                }
+                return $cantA <=> $cantB;
+            });
+
+            $selectedCandidate = $nextSellerCandidates[0];
+
+            // Incrementar cantUse (+1) y actualizar fecha de uso en NextSeller
+            $winnerNs = $selectedCandidate['nextSeller'];
+            $winnerNs->setCantUse(($winnerNs->getCantUse() ?? 0) + 1);
+            $winnerNs->setLastUseAt(new \DateTimeImmutable('now'));
+            $this->_em->flush();
+        }
+
+        // Prioridad B: No hay registros en NextSeller, el primero que resulte de SysCom y que no sea main
+        if ($selectedCandidate === null) {
+            foreach ($validCandidates as $candidate) {
+                if (!$candidate['isMain']) {
+                    $selectedCandidate = $candidate;
+                    break;
+                }
+            }
+        }
+
+        // Prioridad C: El main de la lista de JSON
+        if ($selectedCandidate !== null) {
+            $finalWaId = $selectedCandidate['waId'];
+            $finalTaId = $selectedCandidate['taId'];
+            $finalName = $selectedCandidate['name'];
+            $finalDevice = $selectedCandidate['device'];
+            $finalIsMain = $selectedCandidate['isMain'];
+        } else {
+            // Resolver datos del MAIN desde SysCom si existe registro o directo del JSON
+            $finalWaId = $mainWaId;
+            $finalTaId = 0;
+            $finalName = '';
+            $finalDevice = 'any';
+            $finalIsMain = true;
+
+            if ($mainColab) {
+                $finalName = isset($mainColab['name']) ? (string)$mainColab['name'] : '';
+                $finalTaId = isset($mainColab['taId']) ? (int)$mainColab['taId'] : 0;
+            }
+
+            // Buscar si hay algún SysCom para el main que proporcione taId o device
+            if (!empty($mainWaId)) {
+                foreach ($sysComEntities as $sc) {
+                    if ($sc->getWaId() === $mainWaId) {
+                        if ($sc->getTaId()) {
+                            $finalTaId = (int)$sc->getTaId();
+                        }
+                        if ($sc->getName()) {
+                            $finalName = (string)$sc->getName();
+                        }
+                        if ($sc->getDevice()) {
+                            $finalDevice = (string)$sc->getDevice();
+                        }
+                        break;
                     }
                 }
             }
         }
 
         return [
-            'found' => !empty($waId) || !empty($taId),
+            'found' => !empty($finalWaId) && !empty($finalTaId),
             'slug' => $slug,
-            'waId' => $waId,
-            'taId' => !empty($taId) ? (int)$taId : 0,
-            'name' => $name,
-            'device' => $device,
-            'isFallback' => $isFallback,
+            'waId' => $finalWaId,
+            'taId' => (int)$finalTaId,
+            'name' => $finalName,
+            'device' => $finalDevice,
+            'isMain' => $finalIsMain,
         ];
     }
 }

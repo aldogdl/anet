@@ -843,10 +843,8 @@ class SysComController extends AbstractController
 			return $this->json(['abort' => true, 'body' => 'Parámetro slug requerido'], 400);
 		}
 
-		$waId = trim((string)($req->request->get('waId') ?? $req->query->get('waId') ?? ''));
-
 		try {
-			$result = $nextSellerRepo->resolveNextSeller($slug, $waId, $fsys);
+			$result = $nextSellerRepo->resolveNextSeller($slug, $fsys);
 			return $this->json([
 				'abort' => false,
 				'body' => $result,
