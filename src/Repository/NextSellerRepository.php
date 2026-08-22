@@ -221,54 +221,62 @@ class NextSellerRepository extends ServiceEntityRepository
             $isMain = in_array('ROLE_MAIN', $roles, true);
             $isAvo = in_array('ROLE_AVO', $roles, true);
             $stt = isset($colab['stt']) ? (int)$colab['stt'] : 0;
+            $waId = isset($colab['waId']) ? trim((string)$colab['waId']) : '';
 
+            // Detectar siempre al colaborador con rol MAIN desde el primer recorrido
             if ($isMain && $mainColab === null) {
                 $mainColab = $colab;
             }
 
-            if ($stt === 1 && ($isAvo || $isMain)) {
-                $waId = isset($colab['waId']) ? trim((string)$colab['waId']) : '';
-                if (!empty($waId)) {
-                    $eligibleColabs[$waId] = $colab;
-                }
+            // Colaboradores activos elegibles para rotación
+            if ($stt === 1 && ($isAvo || $isMain) && !empty($waId)) {
+                $eligibleColabs[$waId] = $colab;
             }
         }
 
-        // Si no se encontró un main activo, buscar cualquier main en el JSON para el fallback final
-        if ($mainColab === null) {
-            foreach ($colabs as $colab) {
-                $roles = isset($colab['roles']) && is_array($colab['roles']) ? $colab['roles'] : [];
-                if (in_array('ROLE_MAIN', $roles, true)) {
-                    $mainColab = $colab;
-                    break;
-                }
-            }
-            if ($mainColab === null && !empty($colabs)) {
-                $mainColab = $colabs[0];
-            }
+        // Si no se encontró un main explícito, buscar el primero disponible en colabs
+        if ($mainColab === null && !empty($colabs)) {
+            $mainColab = $colabs[0];
         }
 
         $mainWaId = ($mainColab && isset($mainColab['waId'])) ? trim((string)$mainColab['waId']) : '';
 
-        // 2. Consultar SysCom y NextSeller desde la BD para los waIds elegibles
-        $sysComEntities = [];
-        $eligibleWaIds = array_keys($eligibleColabs);
+        // Lista de waIds para la consulta DQL única: activos + el main (sin duplicados)
+        $waIdsToQuery = array_keys($eligibleColabs);
+        if (!empty($mainWaId) && !in_array($mainWaId, $waIdsToQuery, true)) {
+            $waIdsToQuery[] = $mainWaId;
+        }
 
-        if (!empty($eligibleWaIds)) {
+        // 2. Consultar SysCom y NextSeller desde la BD para todos los waIds identificados
+        $sysComEntities = [];
+        if (!empty($waIdsToQuery)) {
             $dql = 'SELECT sc, ns FROM ' . SysCom::class . ' sc 
                     LEFT JOIN sc.nextSeller ns 
                     WHERE sc.slug = :slug AND sc.waId IN (:waIds)';
             $sysComEntities = $this->_em->createQuery($dql)
                 ->setParameter('slug', $slug)
-                ->setParameter('waIds', $eligibleWaIds)
+                ->setParameter('waIds', $waIdsToQuery)
                 ->getResult();
         }
 
-        // 3. Recorrer y depurar candidatos validando taId (BD primero, fallback JSON)
+        // Agrupar entidades SysCom por waId en memoria para acceso rápido
+        $sysComByWaId = [];
+        foreach ($sysComEntities as $sc) {
+            $wId = trim((string)$sc->getWaId());
+            $sysComByWaId[$wId][] = $sc;
+        }
+
+        // 3. Recorrer y depurar candidatos activos validando taId (BD primero, fallback JSON)
         $validCandidates = [];
         foreach ($sysComEntities as $sc) {
             $waId = trim((string)$sc->getWaId());
-            $colabJson = $eligibleColabs[$waId] ?? [];
+
+            // Solo participan en rotación los colaboradores que estén activos (stt = 1) en el JSON
+            if (!isset($eligibleColabs[$waId])) {
+                continue;
+            }
+
+            $colabJson = $eligibleColabs[$waId];
 
             // taId: fuente de verdad SysCom, fallback archivo JSON
             $taId = $sc->getTaId();
@@ -283,13 +291,14 @@ class NextSellerRepository extends ServiceEntityRepository
 
             $colabRoles = isset($colabJson['roles']) && is_array($colabJson['roles']) ? $colabJson['roles'] : [];
             $isColabMain = in_array('ROLE_MAIN', $colabRoles, true) || ($waId === $mainWaId);
+            $name = $sc->getName() ?: ($colabJson['fullName'] ?? $colabJson['nombre'] ?? $colabJson['name'] ?? '');
 
             $validCandidates[] = [
                 'sysCom' => $sc,
                 'nextSeller' => $sc->getNextSeller(),
                 'waId' => $waId,
                 'taId' => (int)$taId,
-                'name' => $sc->getName() ?: ($colabJson['name'] ?? ''),
+                'name' => $name,
                 'device' => $sc->getDevice() ?: 'any',
                 'isMain' => $isColabMain,
             ];
@@ -335,7 +344,7 @@ class NextSellerRepository extends ServiceEntityRepository
             }
         }
 
-        // Prioridad C: El main de la lista de JSON
+        // Prioridad C: El main desde la memoria de SysCom (o del JSON)
         if ($selectedCandidate !== null) {
             $finalWaId = $selectedCandidate['waId'];
             $finalTaId = $selectedCandidate['taId'];
@@ -343,7 +352,7 @@ class NextSellerRepository extends ServiceEntityRepository
             $finalDevice = $selectedCandidate['device'];
             $finalIsMain = $selectedCandidate['isMain'];
         } else {
-            // Resolver datos del MAIN desde SysCom si existe registro o directo del JSON
+            // Resolver datos del MAIN desde los registros en memoria de SysCom con fallback al JSON
             $finalWaId = $mainWaId;
             $finalTaId = 0;
             $finalName = '';
@@ -351,23 +360,23 @@ class NextSellerRepository extends ServiceEntityRepository
             $finalIsMain = true;
 
             if ($mainColab) {
-                $finalName = isset($mainColab['name']) ? (string)$mainColab['name'] : '';
+                $finalName = $mainColab['fullName'] ?? $mainColab['nombre'] ?? $mainColab['name'] ?? '';
                 $finalTaId = isset($mainColab['taId']) ? (int)$mainColab['taId'] : 0;
             }
 
-            // Buscar si hay algún SysCom para el main que proporcione taId o device
-            if (!empty($mainWaId)) {
-                foreach ($sysComEntities as $sc) {
-                    if ($sc->getWaId() === $mainWaId) {
-                        if ($sc->getTaId()) {
-                            $finalTaId = (int)$sc->getTaId();
-                        }
-                        if ($sc->getName()) {
-                            $finalName = (string)$sc->getName();
-                        }
-                        if ($sc->getDevice()) {
-                            $finalDevice = (string)$sc->getDevice();
-                        }
+            // Priorizar datos desde SysCom en memoria para el waId del MAIN
+            if (!empty($mainWaId) && isset($sysComByWaId[$mainWaId])) {
+                foreach ($sysComByWaId[$mainWaId] as $scMain) {
+                    if ($scMain->getTaId() && (int)$scMain->getTaId() > 0) {
+                        $finalTaId = (int)$scMain->getTaId();
+                    }
+                    if ($scMain->getName()) {
+                        $finalName = (string)$scMain->getName();
+                    }
+                    if ($scMain->getDevice()) {
+                        $finalDevice = (string)$scMain->getDevice();
+                    }
+                    if ($finalTaId > 0) {
                         break;
                     }
                 }
