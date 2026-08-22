@@ -19,6 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Path;
+use App\Service\Any\ExpedienteManager;
 
 #[Route('/sys-com')]
 class SysComController extends AbstractController
@@ -671,43 +672,30 @@ class SysComController extends AbstractController
 	}
 
 	/** 
-	 * Validamos que el slug de la empresa este entre las registradas
+	 * Actualización de datos de usuario/empresa con merge inteligente por rol y bloqueo atómico
 	*/
 	#[Route('/update-data-user', methods: ['POST'])]
 	public function updateDataUser(
-		Request $req, Fsys $fsys, 
-		NextSellerRepository $nextSellerRepo
+		Request $req, ExpedienteManager $expManager
 	): Response
 	{
 		$data = $req->getContent();
 		if($data) {
-
 			$data = json_decode($data, true);
-			if(array_key_exists('slug', $data)) {
-
-				if(array_key_exists('registro', $data)) {
-
-					$reg = $fsys->get(AnyPath::$REGAUTH, $data['slug'].'.json');
-					$res = $fsys->del(AnyPath::$REGAUTH, $data['slug'].'.json');
-					unset($data['registro']);
-					if($res && array_key_exists('asesor', $reg)) {
-						$data['asesor'] = $reg['asesor'];
-					}
-				}
-
-				if(isset($data['colabs']) && is_array($data['colabs'])) {
-					$data['colabs'] = $nextSellerRepo->evalAndCleanColabs($data['slug'], $data['colabs']);
-				}
-
-				$res = $fsys->set(AnyPath::$DTACTC, $data, $data['slug'].'.json');
-				if($res == '') {
-					return $this->json(['abort' => false]);
-				}else{
-					return $this->json(['abort' => true, 'erro' => $res], 400);
+			if(is_array($data) && array_key_exists('slug', $data)) {
+				try {
+					$senderWaId = $data['senderWaId'] ?? $data['waId'] ?? null;
+					$updatedExp = $expManager->updateExpediente($data['slug'], $data, $senderWaId);
+					return $this->json([
+						'abort' => false,
+						'exp' => $updatedExp
+					], 200);
+				} catch (\Throwable $th) {
+					return $this->json(['abort' => true, 'erro' => $th->getMessage()], 400);
 				}
 			}
 		}
-		return $this->json(['abort' => true], 403);
+		return $this->json(['abort' => true, 'erro' => 'Datos inválidos o falta slug'], 403);
 	}
 
 	/** 
