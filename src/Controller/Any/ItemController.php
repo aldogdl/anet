@@ -414,4 +414,59 @@ class ItemController extends AbstractController
 		return new Response((string) $idSr);
 	}
 
+	/**
+	 * Endpoint general para recibir y almacenar reportes del sistema (ej: marcas/modelos faltantes, incidencias)
+	 */
+	#[Route('/reports', methods: ['POST'])]
+	public function saveReport(Request $request, Fsys $fsys, LoggerInterface $logger): Response
+	{
+		$content = $request->getContent();
+		if (empty($content)) {
+			return $this->json([
+				'success' => false,
+				'message' => 'El cuerpo de la solicitud no puede estar vacío'
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		$data = json_decode($content, true);
+		if (!is_array($data)) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Formato JSON inválido'
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		$tipo = !empty($data['tipo']) ? preg_replace('/[^a-zA-Z0-9_-]/', '', $data['tipo']) : 'gen';
+		$slug = !empty($data['slug']) ? preg_replace('/[^a-zA-Z0-9_-]/', '', $data['slug']) : 'anon';
+		$timestamp = date('Ymd_His') . '_' . substr((string)microtime(), 2, 4);
+		$filename = sprintf('rep_%s_%s_%s.json', $slug, $tipo, $timestamp);
+
+		// Adjuntamos metadatos de auditoría del servidor
+		$data['_server_received_at'] = (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
+		$data['_server_ip'] = $request->getClientIp();
+
+		try {
+			$error = $fsys->set(AnyPath::$REPORTS, $data, $filename);
+			if (!empty($error)) {
+				$logger->error('Error guardando reporte en disco: ' . $error, ['filename' => $filename]);
+				return $this->json([
+					'success' => false,
+					'message' => 'Error guardando el reporte en el servidor'
+				], Response::HTTP_INTERNAL_SERVER_ERROR);
+			}
+
+			return $this->json([
+				'success' => true,
+				'message' => 'Reporte recibido y guardado correctamente',
+				'file' => $filename
+			]);
+		} catch (\Throwable $e) {
+			$logger->error('Excepción al guardar reporte: ' . $e->getMessage());
+			return $this->json([
+				'success' => false,
+				'message' => 'Error interno procesando el reporte'
+			], Response::HTTP_INTERNAL_SERVER_ERROR);
+		}
+	}
+
 }

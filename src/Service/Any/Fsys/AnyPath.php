@@ -16,4 +16,5 @@ class AnyPath {
     static String $INVEXP = 'invExp';
     static String $VERS = 'verapps';
     static String $SYNCDEV = 'sincDev';
+    static String $REPORTS = 'reports';
 }

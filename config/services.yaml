@@ -19,6 +19,7 @@ parameters:
     waSendmy   : '%phtml%/wa_sendmy/'
     waDemoCot  : '%phtml%/wa_demo_cot/'
     waRemOk    : '%phtml%/wa_rem_ok/'
+    reports    : '%phtml%/reports/'
     dtaCtc     : '%phtml%/ctcs/'
     verapps    : '%phtml%/yonkeros/versions.json'
     dtaCtcLog  : '%dtaCtc%/log'
