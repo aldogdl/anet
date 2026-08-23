@@ -169,9 +169,10 @@ class ExpedienteManager
             return false;
         }
 
+        $normalizedSender = $this->normalizeWaId($senderWaId);
         foreach ($currentExp['colabs'] as $colab) {
             $waId = isset($colab['waId']) ? (string)$colab['waId'] : '';
-            if ($waId === $senderWaId) {
+            if ($waId === $senderWaId || $this->normalizeWaId($waId) === $normalizedSender) {
                 $roles = isset($colab['roles']) && is_array($colab['roles']) ? $colab['roles'] : [];
                 return in_array('ROLE_MAIN', $roles, true);
             }
@@ -209,6 +210,23 @@ class ExpedienteManager
             $currentExp['colabs'] = [];
         }
 
+        // Si el MAIN envía datos personales SIN array colabs (ej. taId, pass, foto),
+        // aplicar merge de su propio perfil como lo haría un colab ordinario
+        $personalFields = ['taId', 'pass', 'foto', 'nombre', 'fullName'];
+        $hasPersonalData = false;
+        foreach ($personalFields as $pf) {
+            if (array_key_exists($pf, $incomingData)) {
+                $hasPersonalData = true;
+                break;
+            }
+        }
+        if ($hasPersonalData && !isset($incomingData['colabs'])) {
+            $senderWaId = $incomingData['senderWaId'] ?? $incomingData['waId'] ?? null;
+            if ($senderWaId !== null) {
+                $currentExp = $this->applyMergeForColab($currentExp, $incomingData, (string)$senderWaId);
+            }
+        }
+
         return $currentExp;
     }
 
@@ -226,19 +244,27 @@ class ExpedienteManager
         // Determinar los datos a actualizar del colaborador
         $colabPayload = null;
 
+        $normalizedSender = $this->normalizeWaId($senderWaId);
+
         // Si viene un array 'colabs' en incoming, buscar al senderWaId allí
         if (isset($incomingData['colabs']) && is_array($incomingData['colabs'])) {
             foreach ($incomingData['colabs'] as $c) {
-                if (isset($c['waId']) && (string)$c['waId'] === $senderWaId) {
-                    $colabPayload = $c;
-                    break;
+                if (isset($c['waId'])) {
+                    $cWaId = (string)$c['waId'];
+                    if ($cWaId === $senderWaId || $this->normalizeWaId($cWaId) === $normalizedSender) {
+                        $colabPayload = $c;
+                        break;
+                    }
                 }
             }
         }
 
         // Si no viene dentro de 'colabs', verificar si el incomingData mismo es el payload del perfil
-        if ($colabPayload === null && isset($incomingData['waId']) && (string)$incomingData['waId'] === $senderWaId) {
-            $colabPayload = $incomingData;
+        if ($colabPayload === null && isset($incomingData['waId'])) {
+            $incomingWaId = (string)$incomingData['waId'];
+            if ($incomingWaId === $senderWaId || $this->normalizeWaId($incomingWaId) === $normalizedSender) {
+                $colabPayload = $incomingData;
+            }
         }
 
         if ($colabPayload === null) {
@@ -250,7 +276,7 @@ class ExpedienteManager
 
         foreach ($currentExp['colabs'] as $idx => $existingColab) {
             $waId = isset($existingColab['waId']) ? (string)$existingColab['waId'] : '';
-            if ($waId === $senderWaId) {
+            if ($waId === $senderWaId || $this->normalizeWaId($waId) === $normalizedSender) {
                 foreach ($allowedColabFields as $field) {
                     if (array_key_exists($field, $colabPayload)) {
                         $currentExp['colabs'][$idx][$field] = $colabPayload[$field];
@@ -263,4 +289,36 @@ class ExpedienteManager
         return $currentExp;
     }
 
+    /**
+     * Normaliza un waId mexicano para comparación robusta.
+     * Replica la lógica de PhoneHelper.normalizeWaId() del cliente Dart.
+     */
+    private function normalizeWaId(string $raw): string
+    {
+        $clean = preg_replace('/\D/', '', $raw);
+        $len = strlen($clean);
+
+        // 13 dígitos con prefijo 521 (formato estándar México WhatsApp)
+        if ($len === 13 && str_starts_with($clean, '521')) {
+            return $clean;
+        }
+        // 10 dígitos nacionales → asumir México
+        if ($len === 10) {
+            return '521' . $clean;
+        }
+        // 12 dígitos formato E.164 México (52 + 10 dígitos)
+        if ($len === 12 && str_starts_with($clean, '52')) {
+            return '521' . substr($clean, 2);
+        }
+        // 11 dígitos con prefijo 1 (1 + 10 dígitos)
+        if ($len === 11 && str_starts_with($clean, '1')) {
+            return '521' . substr($clean, 1);
+        }
+        // Prefijo repetido 521521...
+        if (str_starts_with($clean, '521521')) {
+            return $this->normalizeWaId(substr($clean, 3));
+        }
+
+        return $clean;
+    }
 }
