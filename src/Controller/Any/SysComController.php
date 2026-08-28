@@ -404,8 +404,10 @@ class SysComController extends AbstractController
 
 		$data = json_decode($req->getContent(), true) ?? [];
 		$slug = $data['slug'] ?? $req->request->get('slug') ?? '';
-		$cursor = isset($data['cursor']) && is_numeric($data['cursor']) ? (int) $data['cursor'] : null;
-		$limit = isset($data['limit']) && is_numeric($data['limit']) ? (int) $data['limit'] : 1000;
+		$rawCursor = $data['cursor'] ?? $req->request->get('cursor');
+		$cursor = ($rawCursor !== null && is_numeric($rawCursor)) ? (int) $rawCursor : null;
+		$rawLimit = $data['limit'] ?? $req->request->get('limit') ?? 1000;
+		$limit = is_numeric($rawLimit) ? (int) $rawLimit : 1000;
 		if ($limit <= 0 || $limit > 2000) {
 			$limit = 1000;
 		}
