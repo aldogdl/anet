@@ -456,17 +456,39 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/** 
-	 * Obtiene el manifiesto ultra-ligero de idSrcs registrados para un slug dado.
-	 * Retorna únicamente idSrc, iku, stt, isActive y src para reconciliación eficiente.
-	*/
-	public function getAllIdSrcsBySlug(string $slug): array
+	 * Cuenta la cantidad total de registros en ItemPub para un slug específico.
+	 * Consulta ultra-ligera O(1) sobre índice.
+	 */
+	public function countIdSrcsBySlug(string $slug): int
 	{
-		$dql = 'SELECT it.idSrc, it.iku, it.stt, it.isActive, it.src FROM ' . ItemPub::class . ' it '
-			. 'WHERE it.slug = :slug '
-			. 'ORDER BY it.id DESC';
+		$dql = 'SELECT COUNT(it.id) FROM ' . ItemPub::class . ' it WHERE it.slug = :slug';
+		return (int) $this->_em->createQuery($dql)
+			->setParameter('slug', $slug)
+			->getSingleScalarResult();
+	}
+
+	/** 
+	 * Obtiene el manifiesto ultra-ligero de idSrcs por lotes usando paginación por cursor (Keyset Pagination O(1)).
+	 * Retorna id, idSrc, iku, stt, isActive y src.
+	 * Si $lastId es proporcionado, filtra por it.id < $lastId ordenado DESC.
+	 */
+	public function getManifestBySlugPaged(string $slug, ?int $lastId = null, int $limit = 1000): array
+	{
+		$dql = 'SELECT it.id, it.idSrc, it.iku, it.stt, it.isActive, it.src FROM ' . ItemPub::class . ' it '
+			. 'WHERE it.slug = :slug ';
+
+		$params = ['slug' => $slug];
+
+		if ($lastId !== null && $lastId > 0) {
+			$dql .= 'AND it.id < :lastId ';
+			$params['lastId'] = $lastId;
+		}
+
+		$dql .= 'ORDER BY it.id DESC';
 
 		return $this->_em->createQuery($dql)
-			->setParameter('slug', $slug)
+			->setParameters($params)
+			->setMaxResults($limit)
 			->getArrayResult();
 	}
 

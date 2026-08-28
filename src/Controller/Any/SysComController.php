@@ -382,8 +382,9 @@ class SysComController extends AbstractController
 	}
 
 	/** 
-	 * Endpoint ultra-ligero para obtener el manifiesto de idSrcs registrados en SR para una cuenta.
-	 * Retorna únicamente idSrc, iku, stt, isActive y src para reconciliación eficiente.
+	 * Endpoint ultra-ligero para obtener el manifiesto de idSrcs
+	 * registrados en SR para una cuenta mediante paginación por cursor O(1).
+	 * Retorna id, idSrc, iku, stt, isActive y src para reconciliación eficiente.
 	*/
 	#[Route('/get-manifest/{token}', methods: ['post'])]
 	public function getManifest(Request $req, SecurityBasic $security, ItemPubRepository $emPub, String $token): Response
@@ -403,6 +404,11 @@ class SysComController extends AbstractController
 
 		$data = json_decode($req->getContent(), true) ?? [];
 		$slug = $data['slug'] ?? $req->request->get('slug') ?? '';
+		$cursor = isset($data['cursor']) && is_numeric($data['cursor']) ? (int) $data['cursor'] : null;
+		$limit = isset($data['limit']) && is_numeric($data['limit']) ? (int) $data['limit'] : 1000;
+		if ($limit <= 0 || $limit > 2000) {
+			$limit = 1000;
+		}
 
 		if (empty($slug)) {
 			return $this->json([
@@ -412,13 +418,37 @@ class SysComController extends AbstractController
 		}
 
 		try {
-			$items = $emPub->getAllIdSrcsBySlug($slug);
-			return $this->json([
+			// En la primera solicitud (cursor === null), calculamos el total general de registros
+			$total = null;
+			if ($cursor === null) {
+				$total = $emPub->countIdSrcsBySlug($slug);
+			}
+
+			$items = $emPub->getManifestBySlugPaged($slug, $cursor, $limit);
+			$count = count($items);
+			$hasMore = ($count === $limit);
+			$nextCursor = null;
+
+			if ($count > 0 && $hasMore) {
+				$lastItem = end($items);
+				$nextCursor = $lastItem['id'] ?? null;
+			}
+
+			$response = [
 				'success' => true,
 				'slug' => $slug,
-				'total' => count($items),
+				'limit' => $limit,
+				'count' => $count,
+				'hasMore' => $hasMore,
+				'nextCursor' => $nextCursor,
 				'items' => $items
-			]);
+			];
+
+			if ($total !== null) {
+				$response['total'] = $total;
+			}
+
+			return $this->json($response);
 		} catch (\Exception $e) {
 			return $this->json([
 				'success' => false,
