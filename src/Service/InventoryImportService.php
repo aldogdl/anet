@@ -106,36 +106,37 @@ class InventoryImportService
 			if (count($row) < 20) continue; // Validación mínima de columnas
 
 			$batch[] = [
-				'type'       => (int) $row[1],
-				'stt'        => (int) $row[2],
-				'id_src'     => $row[3],
-				'iku'        => $row[4],
-				'src'        => $row[5],
+				'type'        => (int) $row[1],
+				'stt'         => (int) $row[2],
+				'id_src'      => $row[3],
+				'iku'         => $row[4],
+				'src'         => $row[5],
 				'fuente'      => $row[6],
-				'thumb'      => $row[7],
-				'img_big'    => $row[8],
-				'price'      => (float) $row[9],
-				'costo'      => (float) $row[10],
-				'link'       => $row[11],
-				'is_active'  => (int) ($row[12] === 'true' || $row[12] === '1'),
-				'pieza'      => $row[13],
-				'mrk_id'     => (int) $row[14],
-				'mdl_id'     => (int) $row[15],
-				'anio_inicio'=> (int) $row[16],
-				'anio_fin'   => (int) $row[17],
-				'lado'       => $row[18],
-				'poss'       => $row[19],
-				'detalles'   => $row[20],
-				'extras'     => $row[21], // Asumimos JSON string o vacío
-				'wa_id'      => $row[22],
-				'ta_id'      => (int) $row[23],
-				'slug'       => $slug,
-				'created'    => $row[24] ?? $now,
-				'updated_at' => $now
+				'thumb'       => $row[7],
+				'img_big'     => $row[8],
+				'price'       => (float) $row[9],
+				'costo'       => (float) $row[10],
+				'link'        => $row[11],
+				'is_active'   => (int) ($row[12] === 'true' || $row[12] === '1'),
+				'pieza'       => $row[13],
+				'mrk_id'      => (int) $row[14],
+				'mdl_id'      => (int) $row[15],
+				'anio_inicio' => (int) $row[16],
+				'anio_fin'    => (int) $row[17],
+				'lado'        => $row[18],
+				'poss'        => $row[19],
+				'detalles'    => $row[20],
+				'extras'      => $row[21], // JSON string serializado
+				'wa_id'       => $row[22],
+				'ta_id'       => (int) $row[23],
+				'slug'        => $slug,
+				'from_dev'    => 'desktop',
+				'created'     => $row[24] ?? $now,
+				'updated_at'  => $now
 			];
 
 			if (count($batch) >= $this->batchSize) {
-				$results = $this->processBatch($batch);
+				$results = $this->processBatch($batch, $slug);
 				$inserted += $results['ins'];
 				$updated  += $results['upd'];
 				$ignored  += $results['ign'];
@@ -146,7 +147,7 @@ class InventoryImportService
 
 		// Procesar remanente
 		if (!empty($batch)) {
-			$results = $this->processBatch($batch);
+			$results = $this->processBatch($batch, $slug);
 			$inserted += $results['ins'];
 			$updated  += $results['upd'];
 			$ignored  += $results['ign'];
@@ -164,16 +165,17 @@ class InventoryImportService
 
 	/**
 	 * Procesa un bloque de registros usando lógica de comparación eficiente.
+	 * Soporta INSERT de nuevos registros, UPDATE de activos y REACTIVACIÓN si stt < 501.
 	 */
-	private function processBatch(array $batch): array
+	private function processBatch(array $batch, string $slug): array
 	{
 		$idSrcs = array_map(fn($item) => $item['id_src'], $batch);
 			
-		// 1. Obtener estados actuales de los registros existentes
+		// 1. Obtener estados actuales de los registros existentes para este slug
 		$existing = $this->conn->fetchAllAssociative(
-			"SELECT id_src, stt FROM item_pub WHERE id_src IN (?)",
-			[$idSrcs],
-			[Connection::PARAM_STR_ARRAY]
+			"SELECT id_src, stt FROM item_pub WHERE slug = ? AND id_src IN (?)",
+			[$slug, $idSrcs],
+			[\Doctrine\DBAL\ParameterType::STRING, Connection::PARAM_STR_ARRAY]
 		);
 
 		$statusMap = [];
@@ -191,17 +193,19 @@ class InventoryImportService
 
 				$idSrc = $data['id_src'];
 				if (!isset($statusMap[$idSrc])) {
-					// INSERT
+					// INSERT: Registro nuevo
 					$this->conn->insert('item_pub', $data);
 					$ins++;
 				} else {
-					// Existe: Verificar status
-					if ($statusMap[$idSrc] < 501) {
-						// UPDATE
-						$this->conn->update('item_pub', $data, ['id_src' => $idSrc]);
+					// UPDATE: Si el registro existente estaba activo (< 501) O si viene con status activo (< 501) para reactivarse
+					if ($statusMap[$idSrc] < 501 || $data['stt'] < 501) {
+						$this->conn->update('item_pub', $data, [
+							'id_src' => $idSrc,
+							'slug'   => $slug
+						]);
 						$upd++;
 					} else {
-						// IGNORAR (Marcado como borrado)
+						// IGNORAR: Ambos son inactivos/borrados (stt >= 501)
 						$ign++;
 					}
 				}
@@ -216,3 +220,4 @@ class InventoryImportService
 	}
 
 }
+
