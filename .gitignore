@@ -9,7 +9,7 @@ _.env.local.php
 .gitignore
 .viminfo
 .well-known
-.well-known/
+.well-known/*
 error_log
 
 
