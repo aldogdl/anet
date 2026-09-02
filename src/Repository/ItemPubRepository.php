@@ -51,6 +51,31 @@ class ItemPubRepository extends ServiceEntityRepository
 			->setParameter('id', $id)->getArrayResult();
 	}
 
+	/**
+	 * Obtiene el ItemPub completo por su idSrc en formato array asociativo
+	 */
+	public function getPubByIdSrcToArray(string $idSrc): ?array
+	{
+		$dql = 'SELECT it FROM ' . ItemPub::class . ' it ' .
+			'WHERE it.idSrc = :idSrc';
+
+		$results = $this->_em->createQuery($dql)
+			->setParameter('idSrc', $idSrc)
+			->setMaxResults(1)
+			->getArrayResult();
+
+		if (empty($results)) {
+			return null;
+		}
+
+		$item = $results[0];
+		if (isset($item['extras']) && is_string($item['extras'])) {
+			$item['extras'] = json_decode($item['extras'], true) ?? [];
+		}
+
+		return $item;
+	}
+
 	/** */
 	public function getPubsBySlug(string $slug, string $waId): \Doctrine\ORM\Query
 	{

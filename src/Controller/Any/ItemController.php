@@ -130,12 +130,19 @@ class ItemController extends AbstractController
 		} elseif( $req->getMethod() == 'GET' ) {
 
 			$id = $req->query->get('id') ?? 0;
+			$idSrc = $req->query->get('idSrc');
 			$page = $req->query->get('page') ?? 1;
 			$waId = $req->query->get('waId') ?? 0;
 			$slug = $req->query->get('slug') ?? 0;
 			$items = [];
 
-			if($id) {
+			if($idSrc) {
+				$item = $repo->getPubByIdSrcToArray(trim($idSrc));
+				if (!$item) {
+					return $this->json(['abort' => true, 'body' => 'Publicación no encontrada'], Response::HTTP_NOT_FOUND);
+				}
+				return $this->json(['abort' => false, 'body' => $item]);
+			} elseif($id) {
 				if(mb_strpos($id, ',') !== false) {
 					$ids = array_map('trim', explode(',', $id));
 					$items = $repo->getAllItemsByIds((string)$slug, $ids);
@@ -412,6 +419,25 @@ class ItemController extends AbstractController
 		$idSr = $item ? $item->getId() : 0;
 
 		return new Response((string) $idSr);
+	}
+
+	/**
+	 * Endpoint directo para obtener el objeto ItemPub completo en una sola petición por idSrc
+	 */
+	#[Route('/item-pub/by-idsrc/{idSrc}', methods: ['GET'])]
+	public function getPubByIdSrc(string $idSrc, ItemPubRepository $repo): Response
+	{
+		$idSrc = trim($idSrc);
+		if (empty($idSrc)) {
+			return $this->json(['abort' => true, 'body' => 'idSrc requerido'], Response::HTTP_BAD_REQUEST);
+		}
+
+		$item = $repo->getPubByIdSrcToArray($idSrc);
+		if (!$item) {
+			return $this->json(['abort' => true, 'body' => 'Publicación no encontrada'], Response::HTTP_NOT_FOUND);
+		}
+
+		return $this->json(['abort' => false, 'body' => $item]);
 	}
 
 	/**
