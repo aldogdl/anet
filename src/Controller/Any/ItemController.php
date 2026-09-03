@@ -537,4 +537,47 @@ class ItemController extends AbstractController
 		], Response::HTTP_OK);
 	}
 
+	/**
+	 * CALL VPS
+	 * Actualiza únicamente los campos simples modificados de un ItemPub por su idSrc y slug.
+	 * Campos permitidos en changes: price, isActive, link, partNumber.
+	 */
+	#[Route('/item-pub/update-simple-by-idsrc', methods: ['POST'])]
+	public function updateSimpleByIdSrc(Request $req, ItemPubRepository $repo): Response
+	{
+		$data = json_decode($req->getContent(), true) ?? [];
+		$idSrc = trim((string)($data['idSrc'] ?? ''));
+		$slug = trim((string)($data['slug'] ?? ''));
+		$changes = $data['changes'] ?? [];
+
+		if (empty($idSrc)) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Parámetro idSrc requerido',
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		if (!is_array($changes) || empty($changes)) {
+			return $this->json([
+				'success' => false,
+				'message' => 'No se proporcionaron cambios para actualizar',
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		$updatedItem = $repo->updateSimpleByIdSrc($idSrc, $slug, $changes);
+		if ($updatedItem === null) {
+			return $this->json([
+				'success' => false,
+				'exists' => false,
+				'message' => 'ItemPub no encontrado para idSrc: ' . $idSrc,
+			], Response::HTTP_NOT_FOUND);
+		}
+
+		return $this->json([
+			'success' => true,
+			'exists' => true,
+			'body' => $updatedItem,
+		], Response::HTTP_OK);
+	}
+
 }

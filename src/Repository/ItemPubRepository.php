@@ -555,5 +555,63 @@ class ItemPubRepository extends ServiceEntityRepository
 		];
 	}
 
+	/**
+	 * CALL VPS
+	 * Actualiza únicamente los campos simples de un ItemPub por su idSrc y slug.
+	 * Campos permitidos: price, isActive, link, partNumber.
+	 * Retorna el array completo del ItemPub actualizado, o null si no existe.
+	 */
+	public function updateSimpleByIdSrc(string $idSrc, string $slug, array $changes): ?array
+	{
+		$criteria = ['idSrc' => $idSrc];
+		if (!empty($slug)) {
+			$criteria['slug'] = $slug;
+		}
+
+		$item = $this->findOneBy($criteria);
+		if (!$item) {
+			return null;
+		}
+
+		// 1. price
+		if (array_key_exists('price', $changes) && is_numeric($changes['price'])) {
+			$item->setPrice((float)$changes['price']);
+		}
+
+		// 2. isActive (reactivación)
+		if (array_key_exists('isActive', $changes)) {
+			$newActive = filter_var($changes['isActive'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+			if ($newActive !== null) {
+				$item->setIsActive($newActive);
+				if ($newActive && $item->getStt() === 501) {
+					// Si estaba en papelera y se reactiva desde MeLi, restaurar a stt activo
+					$item->setStt(1);
+				}
+			}
+		}
+
+		// 3. link
+		if (array_key_exists('link', $changes) && is_string($changes['link'])) {
+			$item->setLink(trim($changes['link']));
+		}
+
+		// 4. partNumber (en extras['numPart'])
+		if (array_key_exists('partNumber', $changes)) {
+			$extras = $item->getExtras() ?? [];
+			if (is_string($extras)) {
+				$extras = json_decode($extras, true) ?? [];
+			}
+			$extras['numPart'] = trim((string)$changes['partNumber']);
+			$item->setExtras($extras);
+		}
+
+		$item->setUpdatedAt(new \DateTimeImmutable('now'));
+
+		$this->_em->persist($item);
+		$this->_em->flush();
+
+		return $this->getPubByIdSrcToArray($idSrc, $slug);
+	}
+
 }
 
