@@ -633,5 +633,101 @@ class ItemPubRepository extends ServiceEntityRepository
 		return $this->getPubByIdSrcToArray($idSrc, $slug);
 	}
 
+	/**
+	 * CALL VPS
+	 * Actualiza atómicamente un ItemPub por su idSrc y slug con cambios estructurales
+	 * y simples combinados en un solo UPDATE.
+	 *
+	 * - Aplica campos estructurales: fuente, pieza, mrkId, mdlId, anioInicio, anioFin, lado, poss, detalles, stt.
+	 * - Aplica campos simples (si están presentes): price, isActive, link.
+	 * - Realiza merge sobre extras: actualiza mk, md, calif, numPart; elimina cbi;
+	 *   preserva idSr, pictures, pathImg y cualquier otra clave existente.
+	 * - Retorna el array completo del ItemPub actualizado o null si no existe.
+	 */
+	public function updateStructuralByIdSrc(string $idSrc, string $slug, array $changes): ?array
+	{
+		$criteria = ['idSrc' => $idSrc];
+		if (!empty($slug)) {
+			$criteria['slug'] = $slug;
+		}
+
+		$item = $this->findOneBy($criteria);
+		if (!$item) {
+			return null;
+		}
+
+		// 1. Campos estructurales
+		if (array_key_exists('fuente', $changes)) {
+			$item->setFuente(trim((string)$changes['fuente']));
+		}
+		if (array_key_exists('pieza', $changes)) {
+			$item->setPieza(trim((string)$changes['pieza']));
+		}
+		if (array_key_exists('mrkId', $changes)) {
+			$item->setMrkId((int)$changes['mrkId']);
+		}
+		if (array_key_exists('mdlId', $changes)) {
+			$item->setMdlId((int)$changes['mdlId']);
+		}
+		if (array_key_exists('anioInicio', $changes)) {
+			$item->setAnioInicio((int)$changes['anioInicio']);
+		}
+		if (array_key_exists('anioFin', $changes)) {
+			$item->setAnioFin(isset($changes['anioFin']) ? (int)$changes['anioFin'] : null);
+		}
+		if (array_key_exists('lado', $changes)) {
+			$item->setLado($changes['lado'] !== null ? trim((string)$changes['lado']) : null);
+		}
+		if (array_key_exists('poss', $changes)) {
+			$item->setPoss($changes['poss'] !== null ? trim((string)$changes['poss']) : null);
+		}
+		if (array_key_exists('detalles', $changes)) {
+			$item->setDetalles($changes['detalles'] !== null ? trim((string)$changes['detalles']) : null);
+		}
+		if (array_key_exists('stt', $changes) && is_numeric($changes['stt'])) {
+			$item->setStt((int)$changes['stt']);
+		}
+
+		// 2. Campos simples adicionales
+		if (array_key_exists('price', $changes) && is_numeric($changes['price'])) {
+			$item->setPrice((float)$changes['price']);
+		}
+		if (array_key_exists('isActive', $changes)) {
+			$newActive = filter_var($changes['isActive'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+			if ($newActive !== null) {
+				$item->setIsActive($newActive);
+			}
+		}
+		if (array_key_exists('link', $changes) && is_string($changes['link'])) {
+			$item->setLink(trim($changes['link']));
+		}
+
+		// 3. Merge selectivo sobre extras
+		$extras = $item->getExtras() ?? [];
+		if (is_string($extras)) {
+			$extras = json_decode($extras, true) ?? [];
+		}
+
+		if (array_key_exists('extras', $changes) && is_array($changes['extras'])) {
+			foreach ($changes['extras'] as $k => $v) {
+				if ($k === 'cbi') {
+					continue; // cbi no debe incorporarse
+				}
+				$extras[$k] = $v;
+			}
+		}
+
+		// Eliminar explícitamente cbi ante cambio estructural
+		unset($extras['cbi']);
+
+		$item->setExtras($extras);
+		$item->setUpdatedAt(new \DateTimeImmutable('now'));
+
+		$this->_em->persist($item);
+		$this->_em->flush();
+
+		return $this->getPubByIdSrcToArray($idSrc, $slug);
+	}
+
 }
 
