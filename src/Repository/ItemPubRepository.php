@@ -52,15 +52,22 @@ class ItemPubRepository extends ServiceEntityRepository
 	}
 
 	/**
-	 * Obtiene el ItemPub completo por su idSrc en formato array asociativo
+	 * Obtiene el ItemPub completo por su idSrc en formato array asociativo,
+	 * con opción de validar pertenencia por slug.
 	 */
-	public function getPubByIdSrcToArray(string $idSrc): ?array
+	public function getPubByIdSrcToArray(string $idSrc, string $slug = ''): ?array
 	{
 		$dql = 'SELECT it FROM ' . ItemPub::class . ' it ' .
 			'WHERE it.idSrc = :idSrc';
+		$params = ['idSrc' => $idSrc];
+
+		if (!empty($slug)) {
+			$dql .= ' AND it.slug = :slug';
+			$params['slug'] = $slug;
+		}
 
 		$results = $this->_em->createQuery($dql)
-			->setParameter('idSrc', $idSrc)
+			->setParameters($params)
 			->setMaxResults(1)
 			->getArrayResult();
 

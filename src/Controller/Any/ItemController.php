@@ -422,17 +422,20 @@ class ItemController extends AbstractController
 	}
 
 	/**
-	 * Endpoint directo para obtener el objeto ItemPub completo en una sola petición por idSrc
+	 * CALL VPS
+	 * Endpoint directo para obtener el objeto ItemPub completo en una sola petición por idSrc,
+	 * con opción de validar pertenencia por slug.
 	 */
 	#[Route('/item-pub/by-idsrc/{idSrc}', methods: ['GET'])]
-	public function getPubByIdSrc(string $idSrc, ItemPubRepository $repo): Response
+	public function getPubByIdSrc(string $idSrc, Request $req, ItemPubRepository $repo): Response
 	{
 		$idSrc = trim($idSrc);
 		if (empty($idSrc)) {
 			return $this->json(['abort' => true, 'body' => 'idSrc requerido'], Response::HTTP_BAD_REQUEST);
 		}
 
-		$item = $repo->getPubByIdSrcToArray($idSrc);
+		$slug = trim((string)$req->query->get('slug', ''));
+		$item = $repo->getPubByIdSrcToArray($idSrc, $slug);
 		if (!$item) {
 			return $this->json(['abort' => true, 'body' => 'Publicación no encontrada'], Response::HTTP_NOT_FOUND);
 		}
