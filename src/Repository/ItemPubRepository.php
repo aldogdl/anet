@@ -517,5 +517,36 @@ class ItemPubRepository extends ServiceEntityRepository
 			->getArrayResult();
 	}
 
+	/**
+	 * CALL VPS
+	 * Desactiva un ItemPub por su idSrc y slug estableciendo isActive = false y stt = 501.
+	 * Retorna null si no existe, o un array con id, iku e idSrc si fue desactivado.
+	 */
+	public function deactivateByIdSrc(string $idSrc, string $slug = ''): ?array
+	{
+		$criteria = ['idSrc' => $idSrc];
+		if (!empty($slug)) {
+			$criteria['slug'] = $slug;
+		}
+
+		$item = $this->findOneBy($criteria);
+		if (!$item) {
+			return null;
+		}
+
+		$item->setIsActive(false);
+		$item->setStt(501);
+		$item->setUpdatedAt(new \DateTimeImmutable('now'));
+
+		$this->_em->persist($item);
+		$this->_em->flush();
+
+		return [
+			'id' => $item->getId(),
+			'iku' => $item->getIku(),
+			'idSrc' => $item->getIdSrc(),
+		];
+	}
+
 }
 

@@ -495,4 +495,43 @@ class ItemController extends AbstractController
 		}
 	}
 
+	/**
+	 * CALL VPS
+	 * Desactiva un ItemPub por su idSrc de Mercado Libre y slug de negocio
+	 * estableciendo isActive = false y stt = 501.
+	 *
+	 * - Si no existe: responde normalmente con exists = false.
+	 * - Si existe: actualiza y responde con exists = true, id, iku e idSrc.
+	 */
+	#[Route('/item-pub/deactivate-by-idsrc', methods: ['POST'])]
+	public function deactivateByIdSrc(Request $req, ItemPubRepository $repo): Response
+	{
+		$data = json_decode($req->getContent(), true) ?? [];
+		$idSrc = trim((string)($data['idSrc'] ?? $req->request->get('idSrc') ?? ''));
+		$slug = trim((string)($data['slug'] ?? $req->request->get('slug') ?? ''));
+
+		if (empty($idSrc)) {
+			return $this->json([
+				'success' => false,
+				'message' => 'Parámetro idSrc requerido',
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		$res = $repo->deactivateByIdSrc($idSrc, $slug);
+
+		if ($res === null) {
+			return $this->json([
+				'success' => true,
+				'exists' => false,
+				'message' => 'ItemPub no encontrado para idSrc: ' . $idSrc,
+			], Response::HTTP_OK);
+		}
+
+		return $this->json([
+			'success' => true,
+			'exists' => true,
+			'item' => $res,
+		], Response::HTTP_OK);
+	}
+
 }
