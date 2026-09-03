@@ -541,6 +541,18 @@ class ItemPubRepository extends ServiceEntityRepository
 			return null;
 		}
 
+		$currentStt = $item->getStt();
+		$extras = $item->getExtras() ?? [];
+		if (is_string($extras)) {
+			$extras = json_decode($extras, true) ?? [];
+		}
+
+		// Si stt != 501, guardar previousStt; si ya estaba en 501, no sobrescribir
+		if ($currentStt !== 501) {
+			$extras['previousStt'] = $currentStt;
+			$item->setExtras($extras);
+		}
+
 		$item->setIsActive(false);
 		$item->setStt(501);
 		$item->setUpdatedAt(new \DateTimeImmutable('now'));
@@ -583,9 +595,17 @@ class ItemPubRepository extends ServiceEntityRepository
 			$newActive = filter_var($changes['isActive'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 			if ($newActive !== null) {
 				$item->setIsActive($newActive);
-				if ($newActive && $item->getStt() === 501) {
-					// Si estaba en papelera y se reactiva desde MeLi, restaurar a stt activo
-					$item->setStt(1);
+				if ($newActive) {
+					$extras = $item->getExtras() ?? [];
+					if (is_string($extras)) {
+						$extras = json_decode($extras, true) ?? [];
+					}
+					// Si extras['previousStt'] existe y es válido, restaurar ese valor en stt y eliminar la clave
+					if (isset($extras['previousStt']) && is_numeric($extras['previousStt'])) {
+						$item->setStt((int)$extras['previousStt']);
+						unset($extras['previousStt']);
+						$item->setExtras($extras);
+					}
 				}
 			}
 		}
