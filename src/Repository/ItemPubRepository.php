@@ -625,6 +625,31 @@ class ItemPubRepository extends ServiceEntityRepository
 			$item->setExtras($extras);
 		}
 
+		// 5. thumb
+		if (array_key_exists('thumb', $changes) && $changes['thumb'] !== null) {
+			$item->setThumb(trim((string)$changes['thumb']));
+		}
+
+		// 6. imgBig
+		if (array_key_exists('imgBig', $changes) && $changes['imgBig'] !== null) {
+			$item->setImgBig(trim((string)$changes['imgBig']));
+		}
+
+		// 7. Merge de extras (conservando las demás claves existentes y reemplazando únicamente pictures y pathImg)
+		if (array_key_exists('extras', $changes) && is_array($changes['extras'])) {
+			$extras = $item->getExtras() ?? [];
+			if (is_string($extras)) {
+				$extras = json_decode($extras, true) ?? [];
+			}
+			if (array_key_exists('pictures', $changes['extras'])) {
+				$extras['pictures'] = $changes['extras']['pictures'];
+			}
+			if (array_key_exists('pathImg', $changes['extras'])) {
+				$extras['pathImg'] = (string)$changes['extras']['pathImg'];
+			}
+			$item->setExtras($extras);
+		}
+
 		$item->setUpdatedAt(new \DateTimeImmutable('now'));
 
 		$this->_em->persist($item);
@@ -686,6 +711,14 @@ class ItemPubRepository extends ServiceEntityRepository
 		}
 		if (array_key_exists('stt', $changes) && is_numeric($changes['stt'])) {
 			$item->setStt((int)$changes['stt']);
+		}
+
+		// Imágenes
+		if (array_key_exists('thumb', $changes) && $changes['thumb'] !== null) {
+			$item->setThumb(trim((string)$changes['thumb']));
+		}
+		if (array_key_exists('imgBig', $changes) && $changes['imgBig'] !== null) {
+			$item->setImgBig(trim((string)$changes['imgBig']));
 		}
 
 		// 2. Campos simples adicionales
