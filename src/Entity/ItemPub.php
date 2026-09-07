@@ -218,6 +218,41 @@ class ItemPub
 			
 			return $this;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id'         => $this->id,
+            'stt'        => $this->stt,
+            'type'       => $this->type,
+            'idSrc'      => $this->idSrc,
+            'iku'        => $this->iku,
+            'slug'       => $this->slug,
+            'src'        => $this->src,
+            'fuente'     => $this->fuente,
+            'thumb'      => $this->thumb,
+            'imgBig'     => $this->imgBig,
+            'price'      => $this->price,
+            'costo'      => $this->costo,
+            'link'       => $this->link,
+            'isActive'   => $this->isActive,
+            'pieza'      => $this->pieza,
+            'mrkId'      => $this->mrkId,
+            'mdlId'      => $this->mdlId,
+            'anioInicio' => $this->anioInicio,
+            'anioFin'    => $this->anioFin,
+            'lado'       => $this->lado,
+            'poss'       => $this->poss,
+            'detalles'   => $this->detalles,
+            'variantes'  => $this->variantes,
+            'waId'       => $this->waId,
+            'taId'       => $this->taId,
+            'fromDev'    => $this->fromDev,
+            'extras'     => $this->extras ?? [],
+            'created'    => $this->created?->format('Y-m-d\TH:i:s'),
+            'updatedAt'  => $this->updatedAt?->format('Y-m-d\TH:i:s'),
+        ];
+    }
     
 		/** */
 		public function setIdItem(int $id): static

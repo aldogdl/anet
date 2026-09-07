@@ -10,6 +10,7 @@ use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use App\Service\ImageUploadService;
 use App\Service\Pushes;
+use App\Service\EventsWhVPSService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -39,7 +40,8 @@ class ItemController extends AbstractController
 	#[Route('/pub', methods: ['get', 'post', 'delete'])]
 	public function itemPub(
 		Request $req, ItemPubRepository $repo, Fsys $fsys, 
-		SysComRepository $sysCom, Pushes $push
+		SysComRepository $sysCom, Pushes $push,
+		EventsWhVPSService $eventsWhVPSService
 	): Response
 	{
 
@@ -57,9 +59,21 @@ class ItemController extends AbstractController
 					}
 				}else{
 					$res = $repo->setPub($data, $diccPath);
+					$itemForWebhook = $res['item'] ?? null;
+					unset($res['item']);
+
 					if(array_key_exists('abort', $res) && $res['abort']) {
 						return $this->json($res, 500);
 					}
+
+					if ($itemForWebhook !== null) {
+						$eventsWhVPSService->send(
+							'inventory.item.saved',
+							$res['action'] ?? '',
+							$itemForWebhook
+						);
+					}
+
 					if($res != 0) {
 						return $this->json($res);
 					}

@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\ItemPub;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 /**
  * @extends ServiceEntityRepository<ItemPub>
@@ -279,7 +280,9 @@ class ItemPubRepository extends ServiceEntityRepository
 		$action = 'add';
 		$lado = '';
 		$poss = '';
-    $replace = '__ID__';
+		$replace = '__ID__';
+		$originalLado = $data['lado'] ?? null;
+		$originalPoss = $data['poss'] ?? null;
 
 		$obj = null;
     if($data['id'] ?? 0 != 0) {
@@ -287,63 +290,192 @@ class ItemPubRepository extends ServiceEntityRepository
 		}
 
 		if($obj == null) {
+			// ==========================================
+			// ADD: link SIEMPRE termina siendo interno
+			// ==========================================
+			$receivedLink = trim((string)($data['link'] ?? ''));
+			$isAutoparnet = (mb_strpos($receivedLink, 'autoparnet.com') !== false);
+
+			if ($isAutoparnet) {
+				$data['link'] = $receivedLink;
+			} else {
+				if (preg_match('#^https?://#i', $receivedLink)) {
+					$extras = $data['extras'] ?? [];
+					if (is_string($extras)) {
+						$extras = json_decode($extras, true) ?? [];
+					}
+					$extras['linkSr'] = $receivedLink;
+					$data['extras'] = $extras;
+				}
+
+				if (empty(trim((string)($data['fuente'] ?? '')))) {
+					$data['fuente'] = $this->buildFuenteSlug($data);
+				}
+				$slug = $data['slug'] ?? '';
+				$fuente = $data['fuente'] ?? '';
+				$data['link'] = "https://autoparnet.com/ft-{$replace}/{$slug}/{$fuente}";
+			}
+
 			$obj = new ItemPub();
 			$obj = $obj->fromJson($data);
 		}else{
+			// ==========================================
+			// EDIT
+			// ==========================================
 			$action = 'edt';
-			if(mb_strpos($data['link'], $replace) !== false) {
-				$data['link'] = str_replace($replace, (string) $obj->getId(), $data['link']);
+			$receivedLink = trim((string)($data['link'] ?? ''));
+			$isAutoparnet = (mb_strpos($receivedLink, 'autoparnet.com') !== false);
+
+			if ($isAutoparnet) {
+				if (mb_strpos($receivedLink, $replace) !== false) {
+					$data['link'] = str_replace($replace, (string) $obj->getId(), $receivedLink);
+				} else {
+					$data['link'] = $receivedLink;
+				}
+			} else {
+				if (preg_match('#^https?://#i', $receivedLink)) {
+					$extras = $data['extras'] ?? $obj->getExtras() ?? [];
+					if (is_string($extras)) {
+						$extras = json_decode($extras, true) ?? [];
+					}
+					$extras['linkSr'] = $receivedLink;
+					$data['extras'] = $extras;
+					$obj->setExtras($extras);
+				}
+
+				$fuenteActual = trim((string)($data['fuente'] ?? $obj->getFuente() ?? ''));
+				if ($fuenteActual === '') {
+					$fuenteActual = $this->buildFuenteSlug($data, $obj);
+					$data['fuente'] = $fuenteActual;
+				}
+				$slug = $data['slug'] ?? $obj->getSlug() ?? '';
+				$data['link'] = "https://autoparnet.com/ft-{$obj->getId()}/{$slug}/{$fuenteActual}";
 			}
+
 			$obj = $obj->updateFromJson($data);
 		}
 
-    $dicc = json_decode(file_get_contents($pathDicc), true);
+		if(isset($data['lado']) || isset($data['poss'])) {
 
-		if(isset($data['lado'])) {
+			$dicc = json_decode(file_get_contents($pathDicc), true);
 
-			$lado = mb_strtolower($data['lado']);
-			if(array_key_exists($lado, $dicc['lp_encode'])) {
-				$lado = $dicc['lp_encode'][$lado];
-			} else {
-				$lado = mb_strtoupper($data['lado']);
-				if(!array_key_exists($lado, $dicc['lp_decode'])) {
-					$lado = 'A';
+			if(isset($data['lado'])) {
+
+				$lado = mb_strtolower($data['lado']);
+				if(array_key_exists($lado, $dicc['lp_encode'])) {
+					$lado = $dicc['lp_encode'][$lado];
+				} else {
+					$lado = mb_strtoupper($data['lado']);
+					if(!array_key_exists($lado, $dicc['lp_decode'])) {
+						$lado = 'A';
+					}
+				}
+				if($lado != '') {
+					$obj->setLado($lado);
 				}
 			}
-			if($lado != '') {
-				$obj->setLado($lado);
-			}
-		}
 
-		if(isset($data['poss'])) {
-			$poss = mb_strtolower($data['poss']);
-			if(array_key_exists($poss, $dicc['lp_encode'])) {
-				$poss = $dicc['lp_encode'][$poss];
-			} else {
-				$poss = mb_strtoupper($data['poss']);
-				if(!array_key_exists($poss, $dicc['lp_decode'])) {
-					$poss = 'A';
+			if(isset($data['poss'])) {
+				$poss = mb_strtolower($data['poss']);
+				if(array_key_exists($poss, $dicc['lp_encode'])) {
+					$poss = $dicc['lp_encode'][$poss];
+				} else {
+					$poss = mb_strtoupper($data['poss']);
+					if(!array_key_exists($poss, $dicc['lp_decode'])) {
+						$poss = 'A';
+					}
 				}
-			}
-			if($poss != '') {
-				$obj->setPoss($poss);
+				if($poss != '') {
+					$obj->setPoss($poss);
+				}
 			}
 		}
 
 		try {
-			$this->_em->persist($obj);
-			$this->_em->flush();
-			$id = $obj->getId();
-			if(mb_strpos($obj->getLink(), $replace) !== false) {
-				$obj->setLink(str_replace($replace, (string) $id, $obj->getLink()));
+			if ($action === 'edt') {
+				$this->_em->flush();
+				$id = $obj->getId();
+			} else {
 				$this->_em->persist($obj);
 				$this->_em->flush();
+				$id = $obj->getId();
+				$link = $obj->getLink();
+				if($link !== null && mb_strpos($link, $replace) !== false) {
+					$obj->setLink(str_replace($replace, (string) $id, $link));
+					$this->_em->flush();
+				}
 			}
-			return ['abort' => false, 'action' => $action, 'body' => ['id' => $id]];
+
+			$itemFinal = $obj->toArray();
+			if ($originalLado !== null && trim((string)$originalLado) !== '') {
+				$itemFinal['lado'] = $originalLado;
+			}else {
+				$itemFinal['lado'] = $obj->getLado();
+			}
+			if ($originalPoss !== null && trim((string)$originalPoss) !== '') {
+				$itemFinal['poss'] = $originalPoss;
+			}else {
+				$itemFinal['poss'] = $obj->getPoss();
+			}
+
+			return ['abort' => false, 'action' => $action, 'body' => ['id' => $id], 'item' => $itemFinal];
 		} catch (\Throwable $th) {
 			return ['abort' => true, 'action' => 'error', 'body' => $th->getMessage()];
 		}
 
+	}
+
+	/**
+	 * Construye el slug para el campo fuente si viene vacío.
+	 * Regla: pieza + lado (si existe y != A) + poss (si existe y != A) + mk + md + anio(ini-fin)
+	 */
+	private function buildFuenteSlug(array $data, ?ItemPub $obj = null): string
+	{
+		$extras = $data['extras'] ?? ($obj ? $obj->getExtras() : []) ?? [];
+		if (is_string($extras)) {
+			$extras = json_decode($extras, true) ?? [];
+		}
+
+		$pieza = trim((string)($data['pieza'] ?? ($obj ? $obj->getPieza() : '') ?? ''));
+		$lado = trim((string)($data['lado'] ?? ($obj ? $obj->getLado() : '') ?? ''));
+		$poss = trim((string)($data['poss'] ?? ($obj ? $obj->getPoss() : '') ?? ''));
+		$mk = trim((string)($extras['mk'] ?? $extras['marca'] ?? ''));
+		$md = trim((string)($extras['md'] ?? $extras['modelo'] ?? ''));
+
+		$anioInicio = (int)($data['anioInicio'] ?? ($obj ? $obj->getAnioInicio() : 0));
+		$anioFin = isset($data['anioFin']) ? (int)$data['anioFin'] : ($obj ? (int)$obj->getAnioFin() : 0);
+
+		$parts = [];
+		if ($pieza !== '') {
+			$parts[] = $pieza;
+		}
+		if ($lado !== '' && mb_strtoupper($lado) !== 'A') {
+			$parts[] = $lado;
+		}
+		if ($poss !== '' && mb_strtoupper($poss) !== 'A') {
+			$parts[] = $poss;
+		}
+		if ($mk !== '') {
+			$parts[] = $mk;
+		}
+		if ($md !== '') {
+			$parts[] = $md;
+		}
+		if ($anioInicio > 0) {
+			if ($anioFin > 0 && $anioFin !== 9999 && $anioFin !== $anioInicio) {
+				$parts[] = "{$anioInicio}-{$anioFin}";
+			} else {
+				$parts[] = (string) $anioInicio;
+			}
+		}
+
+		$raw = implode(' ', $parts);
+		if ($raw === '') {
+			return 'item';
+		}
+
+		$slugger = new AsciiSlugger();
+		return $slugger->slug($raw)->lower()->toString();
 	}
 
 	/** 
