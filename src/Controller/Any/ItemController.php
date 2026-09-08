@@ -58,6 +58,7 @@ class ItemController extends AbstractController
 						return $this->json(['abort' => false, "body" => $res]);
 					}
 				}else{
+
 					$res = $repo->setPub($data, $diccPath);
 					$itemForWebhook = $res['item'] ?? null;
 					unset($res['item']);
@@ -89,7 +90,9 @@ class ItemController extends AbstractController
 
 			if($id && $waId) {
 
-			  if(mb_strpos($id, ',') !== false) {
+				$itemPayload = null;
+
+				if(mb_strpos($id, ',') !== false) {
 					$ids = array_map('trim', explode(',', $id));
 					if(count($ids) == 0) {
 						return $this->json(['abort' => true, "body" => 'Sin Ids para eliminar'], 400);
@@ -98,8 +101,38 @@ class ItemController extends AbstractController
 						unset($ids[0]);
 						sort($ids);
 					}
+
+					// Recuperar ItemPub previo por idSrc antes de pausar
+					$firstIdSrc = $ids[0] ?? null;
+					if(!empty($firstIdSrc)) {
+						$prevItem = $repo->getPubByIdSrcToArray($firstIdSrc, $slug);
+						if($prevItem !== null && !empty($prevItem['id']) && !empty($prevItem['iku']) && !empty($prevItem['slug'])) {
+							$itemPayload = [
+								'id' => (int)$prevItem['id'],
+								'iku' => (string)$prevItem['iku'],
+								'slug' => (string)$prevItem['slug'],
+							];
+							if(!empty($prevItem['idSrc'])) {
+								$itemPayload['idSrc'] = (string)$prevItem['idSrc'];
+							}
+						}
+					}
+
 					$res = $repo->pausarPubByIdSrc($ids, $waId, $dev);
 				} else {
+					// Recuperar ItemPub previo por idSr antes de pausar
+					$prevItem = $repo->getIfExistPubById((int)$id);
+					if($prevItem !== null && !empty($prevItem->getId()) && !empty($prevItem->getIku()) && !empty($prevItem->getSlug())) {
+						$itemPayload = [
+							'id' => $prevItem->getId(),
+							'iku' => $prevItem->getIku(),
+							'slug' => $prevItem->getSlug(),
+						];
+						if(!empty($prevItem->getIdSrc())) {
+							$itemPayload['idSrc'] = $prevItem->getIdSrc();
+						}
+					}
+
 					$res = $repo->pausarPub((int)$id, $waId, $dev);
 				}
 
@@ -107,8 +140,14 @@ class ItemController extends AbstractController
 					return $this->json(['abort' => true, "body" => $res['error'] ?? 'Error desconocido'], 400);
 				}
 
+				$rowsAffected = $res['rowsAffected'] ?? 0;
+
 				// Aprovechamos y limpiamos la BD y folders de Imagenes
-				if($res['rowsAffected'] > 0) {
+				if($rowsAffected > 0) {
+					if($itemPayload !== null) {
+						$eventsWhVPSService->send('inventory.item.saved', 'delete', $itemPayload);
+					}
+
 					$res = 'Publicación pausada correctamente';
 					$del = $repo->deleteOldPausedItems();
 					if($del['success']) {
@@ -638,3 +677,4 @@ class ItemController extends AbstractController
 	}
 
 }
+

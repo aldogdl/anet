@@ -8,6 +8,7 @@ parameters:
     fbSended   : '%phtml%/fb_sended/'
     fbFails    : '%phtml%/fb_fails/'
     sincDev    : '%phtml%/sinc_dev/'
+    presence   : '%phtml%/presence/'
     prodPubs   : '%phtml%/prod_pubs/'
     prodSols   : '%phtml%/prod_sols/'
     prodTrack  : '%phtml%/prod_track/'

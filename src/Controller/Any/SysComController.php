@@ -20,6 +20,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Path;
 use App\Service\Any\ExpedienteManager;
+use App\Service\AppPresenceService;
 
 #[Route('/sys-com')]
 class SysComController extends AbstractController
@@ -908,4 +909,43 @@ class SysComController extends AbstractController
 		return $this->json(['abort' => true, 'body' => 'Metodo no permitido'], 400);
 	}
 
+	/**
+	 * Registrar presencia / apertura de la aplicación.
+	 * Payload: { "slug": "...", "waId": "...", "dev": "movil|desktop|web" }
+	 */
+	#[Route('/presence/open', methods: ['POST'])]
+	public function presenceOpen(Request $req, AppPresenceService $presenceService): Response
+	{
+		$raw = $req->getContent();
+		if (empty($raw)) {
+			return $this->json(['abort' => true, 'body' => 'Contenido vacío'], Response::HTTP_BAD_REQUEST);
+		}
+
+		$data = json_decode($raw, true);
+		if (!is_array($data)) {
+			return $this->json(['abort' => true, 'body' => 'JSON inválido'], Response::HTTP_BAD_REQUEST);
+		}
+
+		$slug = trim((string)($data['slug'] ?? ''));
+		$waId = trim((string)($data['waId'] ?? ''));
+		$dev = trim((string)($data['dev'] ?? ''));
+
+		if ($slug === '' || $waId === '' || $dev === '') {
+			return $this->json(['abort' => true, 'body' => 'Campos obligatorios: slug, waId, dev'], Response::HTTP_BAD_REQUEST);
+		}
+
+		$allowedDevs = ['movil', 'desktop', 'web'];
+		if (!in_array($dev, $allowedDevs, true)) {
+			return $this->json(['abort' => true, 'body' => 'Dispositivo no permitido. Permitidos: movil, desktop, web'], Response::HTTP_BAD_REQUEST);
+		}
+
+		$result = $presenceService->recordOpen($slug, $waId, $dev);
+		if ($result['abort']) {
+			return $this->json($result, Response::HTTP_INTERNAL_SERVER_ERROR);
+		}
+
+		return new Response(null, Response::HTTP_NO_CONTENT);
+	}
+
 }
+
