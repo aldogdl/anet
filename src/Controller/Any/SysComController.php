@@ -947,5 +947,124 @@ class SysComController extends AbstractController
 		return new Response(null, Response::HTTP_NO_CONTENT);
 	}
 
+	/**
+	 * Endpoint controlado para validar credenciales de un colaborador desde ynksmx_auth.
+	 * Valida internamente contra %dtaCtc%/{slug}.json y NUNCA devuelve la contraseña.
+	 */
+	#[Route('/auth-credentials', methods: ['POST'])]
+	public function authCredentials(Request $req, Fsys $fsys): Response
+	{
+		$raw = $req->getContent();
+		$slug = '';
+		$waId = '';
+		$password = '';
+
+		if (!empty($raw)) {
+			$json = json_decode($raw, true);
+			if (is_array($json)) {
+				$slug = trim((string)($json['slug'] ?? ''));
+				$waId = trim((string)($json['waId'] ?? ''));
+				$password = (string)($json['password'] ?? '');
+			}
+		}
+
+		if (empty($slug)) {
+			$slug = trim((string)($req->request->get('slug') ?? ''));
+		}
+		if (empty($waId)) {
+			$waId = trim((string)($req->request->get('waId') ?? ''));
+		}
+		if (empty($password)) {
+			$password = (string)($req->request->get('password') ?? '');
+		}
+
+		if (empty($slug) || empty($waId) || empty($password)) {
+			return $this->json([
+				'valid' => false,
+				'error' => 'invalid_credentials',
+			], Response::HTTP_UNAUTHORIZED);
+		}
+
+		// Sanitizar slug para evitar traversal
+		$safeSlug = preg_replace('/[^a-zA-Z0-9_-]/', '', $slug);
+		if (empty($safeSlug)) {
+			return $this->json([
+				'valid' => false,
+				'error' => 'invalid_credentials',
+			], Response::HTTP_UNAUTHORIZED);
+		}
+
+		$userExp = $fsys->get(AnyPath::$DTACTC, $safeSlug . '.json');
+		if (empty($userExp) || !isset($userExp['colabs']) || !is_array($userExp['colabs'])) {
+			return $this->json([
+				'valid' => false,
+				'error' => 'invalid_credentials',
+			], Response::HTTP_UNAUTHORIZED);
+		}
+
+		$cleanWaId = preg_replace('/[^0-9]/', '', $waId);
+
+		foreach ($userExp['colabs'] as $colab) {
+			if (!is_array($colab)) {
+				continue;
+			}
+			$cWaId = trim((string)($colab['waId'] ?? ''));
+			$cleanCWaId = preg_replace('/[^0-9]/', '', $cWaId);
+
+			if ($cWaId === $waId || ($cleanWaId !== '' && $cleanCWaId === $cleanWaId)) {
+				$expectedPass = (string)($colab['pass'] ?? '');
+
+				// Comparación interna segura en tiempo constante
+				if (hash_equals($expectedPass, $password)) {
+					return $this->json([
+						'valid' => true,
+						'roles' => $colab['roles'] ?? [],
+					], Response::HTTP_OK);
+				}
+
+				return $this->json([
+					'valid' => false,
+					'error' => 'invalid_credentials',
+				], Response::HTTP_UNAUTHORIZED);
+			}
+		}
+
+		return $this->json([
+			'valid' => false,
+			'error' => 'invalid_credentials',
+		], Response::HTTP_UNAUTHORIZED);
+	}
+
+	/**
+	 * Entrega el expediente de la empresa (contacto) sin contraseñas ni secretos de colaboradores.
+	 * Sustituye el acceso estático a /ctcs/{slug}.json protegido por .htaccess.
+	 */
+	#[Route('/ctcs/{slug}', methods: ['GET'])]
+	#[Route('/expediente/{slug}', methods: ['GET'])]
+	public function getExpediente(string $slug, Fsys $fsys): Response
+	{
+		$safeSlug = preg_replace('/[^a-zA-Z0-9_\-]/', '', $slug);
+		if (empty($safeSlug)) {
+			return $this->json(['error' => 'slug_invalid', 'message' => 'Slug no válido'], Response::HTTP_BAD_REQUEST);
+		}
+
+		$data = $fsys->get(AnyPath::$DTACTC, $safeSlug . '.json');
+		if (empty($data) || !is_array($data)) {
+			return $this->json(['error' => 'not_found', 'message' => 'Expediente no encontrado'], Response::HTTP_NOT_FOUND);
+		}
+
+		// Sanitizar colaboradores: remover contraseñas y secretos
+		if (isset($data['colabs']) && is_array($data['colabs'])) {
+			foreach ($data['colabs'] as &$colab) {
+				if (is_array($colab)) {
+					unset($colab['pass']);
+				}
+			}
+			unset($colab);
+		}
+
+		return $this->json($data, Response::HTTP_OK);
+	}
+
 }
 
