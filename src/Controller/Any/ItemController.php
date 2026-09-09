@@ -676,5 +676,69 @@ class ItemController extends AbstractController
 		}
 	}
 
+	/**
+	 * Endpoint de prueba/reenvío para enviar un item existente al VPS vía webhook SSE
+	 * POST /any-item/{id}/resend-sse
+	 */
+	#[Route('/{id}/resend-sse', methods: ['POST'], requirements: ['id' => '\d+'])]
+	public function resendSse(
+		int $id,
+		Request $req,
+		ItemPubRepository $repo,
+		EventsWhVPSService $eventsWhVPSService
+	): Response {
+		$data = json_decode($req->getContent(), true) ?? [];
+		$iku = trim((string)($data['iku'] ?? $req->request->get('iku') ?? $req->query->get('iku') ?? ''));
+		$slug = trim((string)($data['slug'] ?? $req->request->get('slug') ?? $req->query->get('slug') ?? ''));
+
+		$item = null;
+		if ($id > 0) {
+			$item = $repo->getIfExistPubById($id);
+		}
+
+		// Si se especificó slug o iku, validar coincidencia con el item encontrado
+		if ($item !== null) {
+			if (!empty($slug) && $item->getSlug() !== $slug) {
+				$item = null;
+			}
+			if ($item !== null && !empty($iku) && $item->getIku() !== $iku) {
+				$item = null;
+			}
+		}
+
+		// Fallback: si no se encontró por ID pero se tienen iku y slug
+		if ($item === null && !empty($iku) && !empty($slug)) {
+			$item = $repo->findOneBy(['iku' => $iku, 'slug' => $slug]);
+		}
+
+		if ($item === null) {
+			return $this->json([
+				'abort' => true,
+				'success' => false,
+				'message' => 'Item no encontrado',
+			], Response::HTTP_NOT_FOUND);
+		}
+
+		// Reutilizar toArray() de ItemPub, idéntico al payload del alta normal
+		$payload = $item->toArray();
+
+		$eventsWhVPSService->send(
+			'inventory.item.saved',
+			'add',
+			$payload
+		);
+
+		return $this->json([
+			'abort' => false,
+			'success' => true,
+			'id' => $item->getId(),
+			'message' => 'Reenvío solicitado',
+			'body' => [
+				'id' => $item->getId(),
+				'message' => 'Reenvío solicitado',
+			],
+		], Response::HTTP_OK);
+	}
+
 }
 

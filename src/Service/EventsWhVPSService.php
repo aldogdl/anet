@@ -43,8 +43,8 @@ class EventsWhVPSService
         try {
             $response = $this->httpClient->request('POST', $this->urlVPS, [
                 'json' => $data,
-                'timeout' => 1.5,
-                'max_duration' => 2.0,
+                'timeout' => 10,
+                'max_duration' => 15,
             ]);
 
             $status = $response->getStatusCode();
