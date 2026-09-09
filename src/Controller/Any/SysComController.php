@@ -550,30 +550,96 @@ class SysComController extends AbstractController
 		]);
 	}
 
-	/** Datos para vinc con ml */
-	#[Route('/get-data-ownml', methods: ['post'])]
-	public function getDataOwnMl(Request $req, Fsys $fsys): Response
+	/**
+	 * Bootstrap seguro de credenciales MeLi para comunicación S2S con ynksmx_auth.
+	 * Consolida /ctcs/log/{slug}.json y /scm/any_mlm.json en un único JSON sanitizado.
+	 */
+	#[Route('/meli-bootstrap', methods: ['POST'])]
+	public function meliBootstrap(Request $req, Fsys $fsys): Response
 	{
-		if($req->getMethod() != 'POST') {
-			return $this->json(['body' => 'Ok, gracias'], 400);
+
+		$expectedSecret = (string) $this->getParameter('meliBootstrapSecret');
+		// 1. Validar autenticación S2S
+		$receivedSecret = (string) ($req->headers->get('X-Internal-Secret') ?? '');
+
+		if ($receivedSecret === '' || !hash_equals($expectedSecret, $receivedSecret)) {
+			return $this->json([
+				'error' => 'unauthorized',
+				'message' => 'Acceso restringido S2S',
+			], Response::HTTP_UNAUTHORIZED);
 		}
 
-		$data = $req->getContent();
-		if(!$data) {
-			return $this->json(['abort' => true, 'body' => 'No se recibió contenido'], 402);
+		// 2. Extraer y sanitizar slug
+		$raw = $req->getContent();
+		$slug = '';
+		if (!empty($raw)) {
+			$json = json_decode($raw, true);
+			if (is_array($json)) {
+				$slug = trim((string)($json['slug'] ?? ''));
+			}
+		}
+		if (empty($slug)) {
+			$slug = trim((string)($req->request->get('slug') ?? ''));
 		}
 
-		$data = json_decode($data, true);
-		if(!array_key_exists('slug', $data)) {
-			return $this->json(['abort' => true, 'body' => 'Faltan datos de recuperacion'], 403);
+		$safeSlug = preg_replace('/[^a-zA-Z0-9_\-]/', '', $slug);
+		if (empty($safeSlug)) {
+			return $this->json([
+				'error' => 'slug_required',
+				'message' => 'Slug no válido o no proporcionado'
+			], Response::HTTP_BAD_REQUEST);
 		}
 
-		$ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $data['slug'].'.json');
+		// 3. Obtener tokens MeLi del usuario (reutilizando DTACTCLOG)
+		$ctcLog = $fsys->get(AnyPath::$DTACTCLOG, $safeSlug . '.json');
+		if (empty($ctcLog) || !is_array($ctcLog) || empty($ctcLog['userId']) || empty($ctcLog['token'])) {
+			return $this->json([
+				'error' => 'meli_account_not_found',
+				'message' => 'No active Mercado Libre connection found for this account'
+			], Response::HTTP_NOT_FOUND);
+		}
+
+		// 4. Obtener credenciales globales de la app MeLi (reutilizando ANYMLM)
 		$apiml = $fsys->get(AnyPath::$ANYMLM, '');
+		if (empty($apiml) || !is_array($apiml) || empty($apiml['edi']) || empty($apiml['yek'])) {
+			return $this->json([
+				'error' => 'meli_app_credentials_not_found',
+				'message' => 'App credentials not configured'
+			], Response::HTTP_INTERNAL_SERVER_ERROR);
+		}
+
+		if (
+			empty($ctcLog) ||
+			empty($ctcLog['userId']) ||
+			empty($ctcLog['token'])
+		) {
+			return $this->json([
+				'error' => 'meli_account_not_found',
+				'message' => 'No active Mercado Libre connection found for this account',
+			], Response::HTTP_NOT_FOUND);
+		}
+
+		if (
+			empty($apiml) ||
+			empty($apiml['edi']) ||
+			empty($apiml['yek'])
+		) {
+			return $this->json([
+				'error' => 'meli_app_credentials_not_found',
+				'message' => 'App credentials not configured',
+			], Response::HTTP_INTERNAL_SERVER_ERROR);
+		}
+
+		// 5. Retornar payload fusionado y sanitizado que espera MeliTokenBootstrapService
 		return $this->json([
-			'ctcLog' => $ctcLog,
-			'apiml' => $apiml,
-		]);
+			'userId'    => $ctcLog['userId'],
+			'token'     => $ctcLog['token'],
+			'refreshTk' => $ctcLog['refreshTk'] ?? '',
+			'expire'    => $ctcLog['expire'] ?? 21600,
+			'updatedAt' => $ctcLog['updatedAt'] ?? null,
+			'edi'       => $apiml['edi'],
+			'yek'       => $apiml['yek'],
+		], Response::HTTP_OK);
 	}
 
 	/** */

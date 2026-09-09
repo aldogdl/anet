@@ -49,10 +49,10 @@ parameters:
     sseFails   : '%phtml%/sse_fails/'
     comments   : '%phtml%/comments/'
     
+    meliBootstrapSecret: '%env(resolve:MELI_BOOTSTRAP_SECRET)%'
     app.image_driver: '%env(string:IMAGE_DRIVER)%'
     app.timezone: 'America/Mexico_City'
     urlWhVPS: 'https://yonkerosmx.com/anet/wh'
-
 services:
     # default configuration for services in *this* file
     _defaults:
