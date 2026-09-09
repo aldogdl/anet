@@ -18,7 +18,18 @@ class EventsWhVPSService
 
     public function send(string $event, string $action, array $payload): void
     {
+        file_put_contents(
+            'anet_wh_debug.log',
+            date('c') . " START event=$event action=$action url={$this->urlVPS}\n",
+            FILE_APPEND
+        );
+
         if (empty($this->urlVPS)) {
+            file_put_contents(
+                'anet_wh_debug.log',
+                date('c') . " ABORT urlVPS VACIA\n",
+                FILE_APPEND
+            );
             return;
         }
 
@@ -37,11 +48,20 @@ class EventsWhVPSService
             ]);
 
             $status = $response->getStatusCode();
+            file_put_contents(
+                'anet_wh_debug.log',
+                date('c') . " RESPONSE status=$status\n",
+                FILE_APPEND
+            );
             if ($status < 200 || $status >= 300) {
                 return;
             }
         } catch (\Throwable $th) {
-            // Silencioso: fallos de red, timeouts o errores HTTP nunca afectan el flujo principal
+            file_put_contents(
+                'anet_wh_debug.log',
+                date('c') . ' ERROR ' . $th->getMessage() . "\n",
+                FILE_APPEND
+            );
         }
     }
 }
