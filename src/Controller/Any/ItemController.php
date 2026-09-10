@@ -68,11 +68,11 @@ class ItemController extends AbstractController
 					}
 
 					if ($itemForWebhook !== null) {
-						$eventsWhVPSService->send(
-							'inventory.item.saved',
-							$res['action'] ?? '',
-							$itemForWebhook
-						);
+						// $eventsWhVPSService->send(
+						// 	'inventory.item.saved',
+						// 	$res['action'] ?? '',
+						// 	$itemForWebhook
+						// );
 					}
 
 					if($res != 0) {
@@ -145,7 +145,7 @@ class ItemController extends AbstractController
 				// Aprovechamos y limpiamos la BD y folders de Imagenes
 				if($rowsAffected > 0) {
 					if($itemPayload !== null) {
-						$eventsWhVPSService->send('inventory.item.saved', 'delete', $itemPayload);
+						// $eventsWhVPSService->send('inventory.item.saved', 'delete', $itemPayload);
 					}
 
 					$res = 'Publicación pausada correctamente';
