@@ -722,11 +722,11 @@ class ItemController extends AbstractController
 		// Reutilizar toArray() de ItemPub, idéntico al payload del alta normal
 		$payload = $item->toArray();
 
-		$eventsWhVPSService->send(
-			'inventory.item.saved',
-			'add',
-			$payload
-		);
+		// $eventsWhVPSService->send(
+		// 	'inventory.item.saved',
+		// 	'add',
+		// 	$payload
+		// );
 
 		return $this->json([
 			'abort' => false,
