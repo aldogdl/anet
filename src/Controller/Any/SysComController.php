@@ -226,6 +226,8 @@ class SysComController extends AbstractController
 				}
 			}
 		}
+
+		$ctcLog['plan'] = 'block';
 		$files['ctc'] = $ctcLog;
 
 		// Recuperacion del inv si el cliente lo pide
