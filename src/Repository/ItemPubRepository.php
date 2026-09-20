@@ -434,7 +434,7 @@ class ItemPubRepository extends ServiceEntityRepository
 				$itemFinal['poss'] = $obj->getPoss();
 			}
 
-			return ['abort' => false, 'action' => $action, 'body' => ['id' => $id], 'item' => $itemFinal];
+			return ['abort' => false, 'action' => $action, 'body' => ['id' => $id, 'iku' => $obj->getIku()], 'item' => $itemFinal];
 		} catch (\Throwable $th) {
 			if ($this->_em->getConnection()->isTransactionActive()) {
 				$this->_em->rollback();
