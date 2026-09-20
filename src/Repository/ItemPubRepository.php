@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ItemPub;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 
@@ -276,122 +277,136 @@ class ItemPubRepository extends ServiceEntityRepository
 	/** */
 	public function setPub(array $data, String $pathDicc): array
 	{
-
-		$action = 'add';
-		$lado = '';
-		$poss = '';
-		$replace = '__ID__';
-		$originalLado = $data['lado'] ?? null;
-		$originalPoss = $data['poss'] ?? null;
-
-		$obj = null;
-    if($data['id'] ?? 0 != 0) {
-			$obj = $this->getIfExistPubById($data['id']);
-		}
-
-		if($obj == null) {
-			// ==========================================
-			// ADD: link SIEMPRE termina siendo interno
-			// ==========================================
-			$receivedLink = trim((string)($data['link'] ?? ''));
-			$isAutoparnet = (mb_strpos($receivedLink, 'autoparnet.com') !== false);
-
-			if ($isAutoparnet) {
-				$data['link'] = $receivedLink;
-			} else {
-				if (preg_match('#^https?://#i', $receivedLink)) {
-					$extras = $data['extras'] ?? [];
-					if (is_string($extras)) {
-						$extras = json_decode($extras, true) ?? [];
-					}
-					$extras['linkSr'] = $receivedLink;
-					$data['extras'] = $extras;
-				}
-
-				if (empty(trim((string)($data['fuente'] ?? '')))) {
-					$data['fuente'] = $this->buildFuenteSlug($data);
-				}
-				$slug = $data['slug'] ?? '';
-				$fuente = $data['fuente'] ?? '';
-				$data['link'] = "https://autoparnet.com/ft-{$replace}/{$slug}/{$fuente}";
-			}
-
-			$obj = new ItemPub();
-			$obj = $obj->fromJson($data);
-		}else{
-			// ==========================================
-			// EDIT
-			// ==========================================
-			$action = 'edt';
-			$receivedLink = trim((string)($data['link'] ?? ''));
-			$isAutoparnet = (mb_strpos($receivedLink, 'autoparnet.com') !== false);
-
-			if ($isAutoparnet) {
-				if (mb_strpos($receivedLink, $replace) !== false) {
-					$data['link'] = str_replace($replace, (string) $obj->getId(), $receivedLink);
-				} else {
-					$data['link'] = $receivedLink;
-				}
-			} else {
-				if (preg_match('#^https?://#i', $receivedLink)) {
-					$extras = $data['extras'] ?? $obj->getExtras() ?? [];
-					if (is_string($extras)) {
-						$extras = json_decode($extras, true) ?? [];
-					}
-					$extras['linkSr'] = $receivedLink;
-					$data['extras'] = $extras;
-					$obj->setExtras($extras);
-				}
-
-				$fuenteActual = trim((string)($data['fuente'] ?? $obj->getFuente() ?? ''));
-				if ($fuenteActual === '') {
-					$fuenteActual = $this->buildFuenteSlug($data, $obj);
-					$data['fuente'] = $fuenteActual;
-				}
-				$slug = $data['slug'] ?? $obj->getSlug() ?? '';
-				$data['link'] = "https://autoparnet.com/ft-{$obj->getId()}/{$slug}/{$fuenteActual}";
-			}
-
-			$obj = $obj->updateFromJson($data);
-		}
-
-		if(isset($data['lado']) || isset($data['poss'])) {
-
-			$dicc = json_decode(file_get_contents($pathDicc), true);
-
-			if(isset($data['lado'])) {
-
-				$lado = mb_strtolower($data['lado']);
-				if(array_key_exists($lado, $dicc['lp_encode'])) {
-					$lado = $dicc['lp_encode'][$lado];
-				} else {
-					$lado = mb_strtoupper($data['lado']);
-					if(!array_key_exists($lado, $dicc['lp_decode'])) {
-						$lado = 'A';
-					}
-				}
-				if($lado != '') {
-					$obj->setLado($lado);
-				}
-			}
-
-			if(isset($data['poss'])) {
-				$poss = mb_strtolower($data['poss']);
-				if(array_key_exists($poss, $dicc['lp_encode'])) {
-					$poss = $dicc['lp_encode'][$poss];
-				} else {
-					$poss = mb_strtoupper($data['poss']);
-					if(!array_key_exists($poss, $dicc['lp_decode'])) {
-						$poss = 'A';
-					}
-				}
-				if($poss != '') {
-					$obj->setPoss($poss);
-				}
-			}
-		}
-
+		$this->_em->beginTransaction();
 		try {
+			$action = 'add';
+			$lado = '';
+			$poss = '';
+			$replace = '__ID__';
+			$originalLado = $data['lado'] ?? null;
+			$originalPoss = $data['poss'] ?? null;
+
+			$obj = null;
+			if (($data['id'] ?? 0) != 0) {
+				$obj = $this->find((int)$data['id'], LockMode::PESSIMISTIC_WRITE);
+			}
+			// Si no se encontró por ID pero viene idSrc, buscar por idSrc bajo bloqueo pesimista
+			if ($obj === null && !empty($data['idSrc'])) {
+				$dql = 'SELECT it FROM ' . ItemPub::class . ' it WHERE it.idSrc = :idSrc';
+				$params = ['idSrc' => trim((string)$data['idSrc'])];
+				if (!empty($data['slug'])) {
+					$dql .= ' AND it.slug = :slug';
+					$params['slug'] = trim((string)$data['slug']);
+				}
+				$obj = $this->_em->createQuery($dql)
+					->setParameters($params)
+					->setMaxResults(1)
+					->setLockMode(LockMode::PESSIMISTIC_WRITE)
+					->getOneOrNullResult();
+			}
+
+			if ($obj === null) {
+				// ==========================================
+				// ADD: link SIEMPRE termina siendo interno
+				// ==========================================
+				$receivedLink = trim((string)($data['link'] ?? ''));
+				$isAutoparnet = (mb_strpos($receivedLink, 'autoparnet.com') !== false);
+
+				if ($isAutoparnet) {
+					$data['link'] = $receivedLink;
+				} else {
+					if (preg_match('#^https?://#i', $receivedLink)) {
+						$extras = $data['extras'] ?? [];
+						if (is_string($extras)) {
+							$extras = json_decode($extras, true) ?? [];
+						}
+						$extras['linkSr'] = $receivedLink;
+						$data['extras'] = $extras;
+					}
+
+					if (empty(trim((string)($data['fuente'] ?? '')))) {
+						$data['fuente'] = $this->buildFuenteSlug($data);
+					}
+					$slug = $data['slug'] ?? '';
+					$fuente = $data['fuente'] ?? '';
+					$data['link'] = "https://autoparnet.com/ft-{$replace}/{$slug}/{$fuente}";
+				}
+
+				$obj = new ItemPub();
+				$obj = $obj->fromJson($data);
+			} else {
+				// ==========================================
+				// EDIT
+				// ==========================================
+				$action = 'edt';
+				$receivedLink = trim((string)($data['link'] ?? ''));
+				$isAutoparnet = (mb_strpos($receivedLink, 'autoparnet.com') !== false);
+
+				if ($isAutoparnet) {
+					if (mb_strpos($receivedLink, $replace) !== false) {
+						$data['link'] = str_replace($replace, (string) $obj->getId(), $receivedLink);
+					} else {
+						$data['link'] = $receivedLink;
+					}
+				} else {
+					if (preg_match('#^https?://#i', $receivedLink)) {
+						$extras = $data['extras'] ?? $obj->getExtras() ?? [];
+						if (is_string($extras)) {
+							$extras = json_decode($extras, true) ?? [];
+						}
+						$extras['linkSr'] = $receivedLink;
+						$data['extras'] = $extras;
+						$obj->setExtras($extras);
+					}
+
+					$fuenteActual = trim((string)($data['fuente'] ?? $obj->getFuente() ?? ''));
+					if ($fuenteActual === '') {
+						$fuenteActual = $this->buildFuenteSlug($data, $obj);
+						$data['fuente'] = $fuenteActual;
+					}
+					$slug = $data['slug'] ?? $obj->getSlug() ?? '';
+					$data['link'] = "https://autoparnet.com/ft-{$obj->getId()}/{$slug}/{$fuenteActual}";
+				}
+
+				$obj = $obj->updateFromJson($data);
+			}
+
+			if (isset($data['lado']) || isset($data['poss'])) {
+
+				$dicc = json_decode(file_get_contents($pathDicc), true);
+
+				if (isset($data['lado'])) {
+
+					$lado = mb_strtolower($data['lado']);
+					if (array_key_exists($lado, $dicc['lp_encode'])) {
+						$lado = $dicc['lp_encode'][$lado];
+					} else {
+						$lado = mb_strtoupper($data['lado']);
+						if (!array_key_exists($lado, $dicc['lp_decode'])) {
+							$lado = 'A';
+						}
+					}
+					if ($lado != '') {
+						$obj->setLado($lado);
+					}
+				}
+
+				if (isset($data['poss'])) {
+					$poss = mb_strtolower($data['poss']);
+					if (array_key_exists($poss, $dicc['lp_encode'])) {
+						$poss = $dicc['lp_encode'][$poss];
+					} else {
+						$poss = mb_strtoupper($data['poss']);
+						if (!array_key_exists($poss, $dicc['lp_decode'])) {
+							$poss = 'A';
+						}
+					}
+					if ($poss != '') {
+						$obj->setPoss($poss);
+					}
+				}
+			}
+
 			if ($action === 'edt') {
 				$this->_em->flush();
 				$id = $obj->getId();
@@ -400,29 +415,32 @@ class ItemPubRepository extends ServiceEntityRepository
 				$this->_em->flush();
 				$id = $obj->getId();
 				$link = $obj->getLink();
-				if($link !== null && mb_strpos($link, $replace) !== false) {
+				if ($link !== null && mb_strpos($link, $replace) !== false) {
 					$obj->setLink(str_replace($replace, (string) $id, $link));
 					$this->_em->flush();
 				}
 			}
+			$this->_em->commit();
 
 			$itemFinal = $obj->toArray();
 			if ($originalLado !== null && trim((string)$originalLado) !== '') {
 				$itemFinal['lado'] = $originalLado;
-			}else {
+			} else {
 				$itemFinal['lado'] = $obj->getLado();
 			}
 			if ($originalPoss !== null && trim((string)$originalPoss) !== '') {
 				$itemFinal['poss'] = $originalPoss;
-			}else {
+			} else {
 				$itemFinal['poss'] = $obj->getPoss();
 			}
 
 			return ['abort' => false, 'action' => $action, 'body' => ['id' => $id], 'item' => $itemFinal];
 		} catch (\Throwable $th) {
+			if ($this->_em->getConnection()->isTransactionActive()) {
+				$this->_em->rollback();
+			}
 			return ['abort' => true, 'action' => 'error', 'body' => $th->getMessage()];
 		}
-
 	}
 
 	/**

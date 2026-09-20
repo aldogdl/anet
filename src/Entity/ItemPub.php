@@ -172,13 +172,47 @@ class ItemPub
 			return $item;
     }
 
+    /**
+     * Valida si un IKU cumple con el formato canónico (12 caracteres Base62, distinto a idSrc).
+     */
+    public static function isValidIku(?string $iku, ?string $idSrc = null): bool
+    {
+        if ($iku === null) return false;
+        $clean = trim($iku);
+        if (strlen($clean) !== 12) return false;
+        if (!preg_match('/^[0-9a-zA-Z]{12}$/', $clean)) return false;
+        if ($idSrc !== null && $clean === trim($idSrc)) return false;
+        if (str_starts_with($clean, 'cot-') || str_starts_with($clean, 'sol-')) return false;
+        return true;
+    }
+
     /** */
     public function updateFromJson(array $data): self
     {
 			$this->setStt(3);
 			$this->setType((int) $data['type']);
 			$this->setIdSrc($data['idSrc'] ?? null);
-			$this->setIku($data['iku'] ?? null);
+
+			// Precedencia de IKU en SR:
+			// - IKU SR válido -> conservar siempre (inmutable)
+			// - IKU SR inválido + incoming válido -> aceptar incoming (saneamiento)
+			// - ambos inválidos -> conservar actual
+			// - incoming distinto con SR válido -> devolver IKU SR
+			$idSrc = isset($data['idSrc']) ? trim((string)$data['idSrc']) : ($this->idSrc !== null ? trim((string)$this->idSrc) : null);
+			$incomingIku = isset($data['iku']) ? trim((string)$data['iku']) : null;
+			$oldIku = $this->iku !== null ? trim((string)$this->iku) : null;
+
+			$oldValido = self::isValidIku($oldIku, $idSrc);
+			$incomingValido = self::isValidIku($incomingIku, $idSrc);
+
+			if ($oldValido) {
+				$this->setIku($oldIku);
+			} elseif (!$oldValido && $incomingValido) {
+				$this->setIku($incomingIku);
+			} else {
+				$this->setIku($oldIku);
+			}
+
 			$this->setSrc($data['src'] ?? null);
 			$this->setFuente($data['fuente'] ?? null);
 			$this->setThumb($data['thumb'] ?? null);
