@@ -297,4 +297,33 @@ class RemateService
             'limit' => $limit,
         ];
     }
+
+    /**
+     * Consulta rápida de disponibilidad por remateId
+     * Si no existe o remateId está vacío, devuelve status = 501 (eliminado / no disponible)
+     * NO retorna 404 para remates inexistentes.
+     */
+    public function checkStatus(string $remateId): array
+    {
+        $cleanId = trim($remateId);
+        if (empty($cleanId)) {
+            return [
+                'remateId' => '',
+                'status' => 501,
+            ];
+        }
+
+        $remate = $this->repo->findByRemateIdOrId($cleanId);
+        if (!$remate) {
+            return [
+                'remateId' => $cleanId,
+                'status' => 501,
+            ];
+        }
+
+        return [
+            'remateId' => $remate->getRemateId() ?: (string)$remate->getId(),
+            'status' => $remate->getStatus(),
+        ];
+    }
 }

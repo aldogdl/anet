@@ -53,6 +53,19 @@ class RemateController extends AbstractController
     }
 
     /**
+     * Consultar status de disponibilidad de un remate por remateId
+     * Respuesta mínima: { "remateId": "...", "status": <int> }
+     */
+    #[Route('/status', methods: ['GET'])]
+    public function getStatus(Request $req, RemateService $service): Response
+    {
+        $remateId = trim((string)$req->query->get('remateId', ''));
+        $res = $service->checkStatus($remateId);
+
+        return $this->json($res, Response::HTTP_OK);
+    }
+
+    /**
      * Actualizar únicamente el status comercial del remate
      */
     #[Route('/status', methods: ['POST', 'PATCH'])]

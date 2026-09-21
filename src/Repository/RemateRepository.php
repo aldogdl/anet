@@ -85,7 +85,7 @@ class RemateRepository extends ServiceEntityRepository
         $offset = max(0, ($page - 1) * $limit);
         $params = ['ownerSlug' => $ownerSlug];
 
-        $dql = 'SELECT r FROM ' . Remate::class . ' r WHERE r.ownerSlug = :ownerSlug';
+        $dql = 'SELECT r FROM ' . Remate::class . ' r WHERE r.ownerSlug = :ownerSlug AND r.status != 501';
 
         if ($ownerWaId !== null && $ownerWaId !== '' && $ownerWaId !== '0') {
             $dql .= ' AND r.ownerWaId = :ownerWaId';
@@ -107,7 +107,7 @@ class RemateRepository extends ServiceEntityRepository
     public function countByOwner(string $ownerSlug, ?string $ownerWaId = null): int
     {
         $params = ['ownerSlug' => $ownerSlug];
-        $dql = 'SELECT COUNT(r.id) FROM ' . Remate::class . ' r WHERE r.ownerSlug = :ownerSlug';
+        $dql = 'SELECT COUNT(r.id) FROM ' . Remate::class . ' r WHERE r.ownerSlug = :ownerSlug AND r.status != 501';
 
         if ($ownerWaId !== null && $ownerWaId !== '' && $ownerWaId !== '0') {
             $dql .= ' AND r.ownerWaId = :ownerWaId';
