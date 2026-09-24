@@ -90,8 +90,6 @@ class ItemController extends AbstractController
 
 			if($id && $waId) {
 
-				$itemPayload = null;
-
 				if(mb_strpos($id, ',') !== false) {
 					$ids = array_map('trim', explode(',', $id));
 					if(count($ids) == 0) {
@@ -102,37 +100,8 @@ class ItemController extends AbstractController
 						sort($ids);
 					}
 
-					// Recuperar ItemPub previo por idSrc antes de pausar
-					$firstIdSrc = $ids[0] ?? null;
-					if(!empty($firstIdSrc)) {
-						$prevItem = $repo->getPubByIdSrcToArray($firstIdSrc, $slug);
-						if($prevItem !== null && !empty($prevItem['id']) && !empty($prevItem['iku']) && !empty($prevItem['slug'])) {
-							$itemPayload = [
-								'id' => (int)$prevItem['id'],
-								'iku' => (string)$prevItem['iku'],
-								'slug' => (string)$prevItem['slug'],
-							];
-							if(!empty($prevItem['idSrc'])) {
-								$itemPayload['idSrc'] = (string)$prevItem['idSrc'];
-							}
-						}
-					}
-
 					$res = $repo->pausarPubByIdSrc($ids, $waId, $dev);
 				} else {
-					// Recuperar ItemPub previo por idSr antes de pausar
-					$prevItem = $repo->getIfExistPubById((int)$id);
-					if($prevItem !== null && !empty($prevItem->getId()) && !empty($prevItem->getIku()) && !empty($prevItem->getSlug())) {
-						$itemPayload = [
-							'id' => $prevItem->getId(),
-							'iku' => $prevItem->getIku(),
-							'slug' => $prevItem->getSlug(),
-						];
-						if(!empty($prevItem->getIdSrc())) {
-							$itemPayload['idSrc'] = $prevItem->getIdSrc();
-						}
-					}
-
 					$res = $repo->pausarPub((int)$id, $waId, $dev);
 				}
 
@@ -141,43 +110,16 @@ class ItemController extends AbstractController
 				}
 
 				$rowsAffected = $res['rowsAffected'] ?? 0;
-
-				// Aprovechamos y limpiamos la BD y folders de Imagenes
 				if($rowsAffected > 0) {
-					if($itemPayload !== null) {
-						$eventsWhVPSService->send('inventory.item.saved', 'delete', $itemPayload);
-					}
-
 					$res = 'Publicación pausada correctamente';
-					$del = $repo->deleteOldPausedItems();
-					if($del['success']) {
-						if($del['rowsDeleted'] > 0) {
-							$fsys->deleteImages($del['imageData']);
-						}
-					}
 				} else {
 					$res = 'No se encontró la publicación o ya estaba pausada';
 				}
 
-				// Envio de noti desde desktop a movil
-				$waIdExcepto = '0';
-				if($dev == 'desktop' || $dev == 'web') {
-					$waIdExcepto = (string)$waId;
-				}
-
-				$users = $sysCom->getTokensBySlug($slug, $waIdExcepto);
-				$pay = [
-					'event' => 'sync_centinela',
-					'waId' => $waId.'',
-					'slug' => $slug.'',
-					'device' => $dev,
-					'title' => 'Sincronizacion Centinela',
-					'body' => 'Ejecutando Sincronizacioón desde el Centinela',
-				];
-				$push->sendMultiple($users, $pay);
-
 				return $this->json(['abort' => false, "body" => $res]);
 
+			} else {
+				return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
 			}
 
 		} elseif( $req->getMethod() == 'GET' ) {
@@ -738,6 +680,33 @@ class ItemController extends AbstractController
 				'message' => 'Reenvío solicitado',
 			],
 		], Response::HTTP_OK);
+	}
+
+	/**
+	 * Endpoint de mantenimiento para purga de publicaciones pausadas e imágenes obsoletas.
+	 * POST /any-item/cleanup-paused
+	 */
+	#[Route('/cleanup-paused', methods: ['POST'])]
+	public function cleanupPaused(ItemPubRepository $repo, Fsys $fsys): Response
+	{
+		$del = $repo->deleteOldPausedItems();
+		if ($del['success'] ?? false) {
+			if (($del['rowsDeleted'] ?? 0) > 0) {
+				$fsys->deleteImages($del['imageData'] ?? []);
+			}
+			return $this->json([
+				'abort' => false,
+				'success' => true,
+				'rowsDeleted' => $del['rowsDeleted'] ?? 0,
+				'message' => 'Limpieza de items pausados completada exitosamente',
+			]);
+		}
+
+		return $this->json([
+			'abort' => true,
+			'success' => false,
+			'message' => $del['error'] ?? 'Error ejecutando limpieza',
+		], Response::HTTP_INTERNAL_SERVER_ERROR);
 	}
 
 }
