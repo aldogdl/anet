@@ -111,12 +111,18 @@ class ItemController extends AbstractController
 
 				$rowsAffected = $res['rowsAffected'] ?? 0;
 				if($rowsAffected > 0) {
-					$res = 'Publicación pausada correctamente';
+					$msg = 'Publicación pausada correctamente';
 				} else {
-					$res = 'No se encontró la publicación o ya estaba pausada';
+					$msg = 'No se encontró la publicación o ya estaba pausada';
 				}
 
-				return $this->json(['abort' => false, "body" => $res]);
+				return $this->json([
+					'abort' => false,
+					'success' => true,
+					'id' => $res['id'] ?? (int)$id,
+					'previousStt' => $res['previousStt'] ?? null,
+					'body' => $msg
+				]);
 
 			} else {
 				return $this->json(['abort' => true, "body" => 'Parámetros incompletos'], 400);
@@ -707,6 +713,36 @@ class ItemController extends AbstractController
 			'success' => false,
 			'message' => $del['error'] ?? 'Error ejecutando limpieza',
 		], Response::HTTP_INTERNAL_SERVER_ERROR);
+	}
+
+	/**
+	 * Endpoint para actualizar ÚNICAMENTE el status (stt) de un ItemPub por su ID
+	 * POST /any-item/status
+	 */
+	#[Route('/status', methods: ['POST', 'PATCH'])]
+	public function updateStatus(Request $req, ItemPubRepository $repo): Response
+	{
+		$data = json_decode($req->getContent(), true) ?? $req->request->all();
+		$id = $data['id'] ?? $req->query->get('id');
+		$stt = $data['stt'] ?? $req->query->get('stt');
+
+		if (!$id || $stt === null) {
+			return $this->json(['abort' => true, 'body' => 'Faltan parámetros id y stt'], 400);
+		}
+
+		$res = $repo->updateStatusOnly((int)$id, (int)$stt);
+		if ($res['success'] === false) {
+			return $this->json(['abort' => true, 'body' => $res['error'] ?? 'Error al actualizar status'], 400);
+		}
+
+		return $this->json([
+			'abort' => false,
+			'success' => true,
+			'id' => (int)$id,
+			'stt' => (int)$stt,
+			'rowsAffected' => $res['rowsAffected'] ?? 0,
+			'body' => 'Status actualizado correctamente'
+		]);
 	}
 
 }

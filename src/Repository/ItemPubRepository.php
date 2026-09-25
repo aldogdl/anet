@@ -498,12 +498,18 @@ class ItemPubRepository extends ServiceEntityRepository
 
 	/** 
 	 * Pausa publicaciones para que deje de aparecer en el catálogo.
-	 * Actualiza el item con stt = 501, isActive = false y updatedAt = ahora
+	 * Obtiene el stt actual antes del UPDATE, actualiza con stt = 501 y retorna id y previousStt.
 	*/
 	public function pausarPubByIdSrc(array $ids, string $waId, string $dev): array
 	{
-
 		try {
+			$item = $this->_em->createQuery(
+				'SELECT it.id, it.stt FROM ' . ItemPub::class . ' it WHERE it.idSrc IN (:ids)'
+			)->setParameter('ids', $ids)->setMaxResults(1)->getOneOrNullResult();
+
+			$previousStt = $item ? $item['stt'] : null;
+			$realId = $item ? $item['id'] : 0;
+
 			$dql = 'UPDATE ' . ItemPub::class . ' it '.
 			'SET it.stt = 501, it.isActive = false, it.updatedAt = :updatedAt, '.
 			'it.waId = :waId, it.fromDev = :dev '.
@@ -518,7 +524,12 @@ class ItemPubRepository extends ServiceEntityRepository
 				])
 				->execute();
 
-			return ['success' => true, 'rowsAffected' => $result];
+			return [
+				'success' => true,
+				'id' => $realId,
+				'previousStt' => $previousStt,
+				'rowsAffected' => $result
+			];
 		} catch (\Throwable $th) {
 			return ['success' => false, 'error' => $th->getMessage()];
 		}
@@ -526,11 +537,18 @@ class ItemPubRepository extends ServiceEntityRepository
 
 	/** 
 	 * Pausa la publicación para que deje de aparecer en el catálogo.
-	 * Actualiza el item con stt = 501, isActive = false y updatedAt = ahora
+	 * Obtiene el stt actual antes del UPDATE, actualiza con stt = 501 y retorna id y previousStt.
 	*/
 	public function pausarPub(int $id, string $waId, string $dev): array
 	{
 		try {
+			$item = $this->_em->createQuery(
+				'SELECT it.id, it.stt FROM ' . ItemPub::class . ' it WHERE it.id = :id'
+			)->setParameter('id', $id)->getOneOrNullResult();
+
+			$previousStt = $item ? $item['stt'] : null;
+			$realId = $item ? $item['id'] : $id;
+
 			$dql = 'UPDATE ' . ItemPub::class . ' it '.
 			'SET it.stt = 501, it.isActive = false, it.updatedAt = :updatedAt, '.
 			'it.waId = :waId, it.fromDev = :dev '.
@@ -542,6 +560,34 @@ class ItemPubRepository extends ServiceEntityRepository
 					'waId' => $waId,
 					'dev' => $dev,
 					'updatedAt' => new \DateTimeImmutable()
+				])
+				->execute();
+
+			return [
+				'success' => true,
+				'id' => $realId,
+				'previousStt' => $previousStt,
+				'rowsAffected' => $result
+			];
+		} catch (\Throwable $th) {
+			return ['success' => false, 'error' => $th->getMessage()];
+		}
+	}
+
+	/**
+	 * Actualiza ÚNICAMENTE el stt de un ItemPub por su ID (sin tocar isActive, imágenes, FCM ni webhooks)
+	*/
+	public function updateStatusOnly(int $id, int $stt): array
+	{
+		try {
+			$dql = 'UPDATE ' . ItemPub::class . ' it '.
+			'SET it.stt = :stt '.
+			'WHERE it.id = :id';
+
+			$result = $this->_em->createQuery($dql)
+				->setParameters([
+					'id' => $id,
+					'stt' => $stt,
 				])
 				->execute();
 
