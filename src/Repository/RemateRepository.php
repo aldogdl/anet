@@ -56,6 +56,30 @@ class RemateRepository extends ServiceEntityRepository
     }
 
     /**
+     * Busca únicamente los campos mínimos (remateId, status, id) sin hidratar la entidad completa
+     * usando DQL escalar y limit 1.
+     */
+    public function findStatusByRemateIdOrId(string $remateId): ?array
+    {
+        $params = ['remateId' => $remateId];
+        $where = 'r.remateId = :remateId';
+
+        if (is_numeric($remateId)) {
+            $where .= ' OR r.id = :numId';
+            $params['numId'] = (int) $remateId;
+        }
+
+        $dql = 'SELECT r.remateId, r.status, r.id FROM ' . Remate::class . ' r WHERE ' . $where;
+
+        $results = $this->_em->createQuery($dql)
+            ->setParameters($params)
+            ->setMaxResults(1)
+            ->getArrayResult();
+
+        return !empty($results) ? $results[0] : null;
+    }
+
+    /**
      * Busca un remate por su remateId público o ID numérico usando DQL
      */
     public function findByRemateIdOrId(string $remateId): ?Remate
@@ -72,6 +96,7 @@ class RemateRepository extends ServiceEntityRepository
 
         return $this->_em->createQuery($dql)
             ->setParameters($params)
+            ->setMaxResults(1)
             ->getOneOrNullResult();
     }
 

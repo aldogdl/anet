@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(name: 'idx_remate_owner', columns: ['owner_slug', 'owner_wa_id', 'status'])]
 #[ORM\Index(name: 'idx_remate_mrk_mdl', columns: ['mrk_id', 'mdl_id', 'status'])]
 #[ORM\Index(name: 'idx_remate_status_dates', columns: ['status', 'created_at', 'expires_at'])]
+#[ORM\Index(name: 'idx_remate_remate_id', columns: ['remate_id'])]
 class Remate
 {
     #[ORM\Id]

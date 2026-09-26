@@ -301,7 +301,7 @@ class RemateService
     /**
      * Consulta rápida de disponibilidad por remateId
      * Si no existe o remateId está vacío, devuelve status = 501 (eliminado / no disponible)
-     * NO retorna 404 para remates inexistentes.
+     * NO retorna 404 para remates inexistentes. Utiliza consulta escalar ultra rápida.
      */
     public function checkStatus(string $remateId): array
     {
@@ -313,8 +313,8 @@ class RemateService
             ];
         }
 
-        $remate = $this->repo->findByRemateIdOrId($cleanId);
-        if (!$remate) {
+        $statusData = $this->repo->findStatusByRemateIdOrId($cleanId);
+        if (!$statusData) {
             return [
                 'remateId' => $cleanId,
                 'status' => 501,
@@ -322,8 +322,8 @@ class RemateService
         }
 
         return [
-            'remateId' => $remate->getRemateId() ?: (string)$remate->getId(),
-            'status' => $remate->getStatus(),
+            'remateId' => !empty($statusData['remateId']) ? (string)$statusData['remateId'] : (string)$statusData['id'],
+            'status' => (int)$statusData['status'],
         ];
     }
 }
