@@ -202,9 +202,57 @@ class ExpedienteManager
         // Asegurar que el slug esté presente
         $currentExp['slug'] = $slug;
 
-        // Gestión y depuración de la lista de colaboradores
+        // Gestión y depuración de la lista de colaboradores con preservación de contraseñas
         if (isset($incomingData['colabs']) && is_array($incomingData['colabs'])) {
-            $cleanedColabs = $this->nextSellerRepo->evalAndCleanColabs($slug, $incomingData['colabs']);
+            // 1. Indexar colaboradores existentes en disco por waId normalizado
+            $existingColabsByWa = [];
+            if (!empty($currentExp['colabs']) && is_array($currentExp['colabs'])) {
+                foreach ($currentExp['colabs'] as $ec) {
+                    if (is_array($ec) && isset($ec['waId'])) {
+                        $normWa = $this->normalizeWaId((string)$ec['waId']);
+                        if ($normWa !== '') {
+                            $existingColabsByWa[$normWa] = $ec;
+                        }
+                    }
+                }
+            }
+
+            // 2. Reconciliar lista entrante: si pass es vacío/null/ausente, conservar el pass existente del servidor
+            $reconciledIncomingColabs = [];
+            foreach ($incomingData['colabs'] as $incColab) {
+                if (!is_array($incColab)) {
+                    continue;
+                }
+                $incWa = isset($incColab['waId']) ? (string)$incColab['waId'] : '';
+                $normIncWa = $this->normalizeWaId($incWa);
+
+                $incomingPass = isset($incColab['pass']) ? trim((string)$incColab['pass']) : '';
+
+                if ($normIncWa !== '' && isset($existingColabsByWa[$normIncWa])) {
+                    $existingColab = $existingColabsByWa[$normIncWa];
+                    $existingPass = isset($existingColab['pass']) ? trim((string)$existingColab['pass']) : '';
+
+                    // Conservar pass si el entrante no trae un valor no vacío explícito
+                    if ($incomingPass === '' && $existingPass !== '') {
+                        $incColab['pass'] = $existingColab['pass'];
+                    } elseif ($incomingPass !== '') {
+                        $incColab['pass'] = $incomingPass;
+                    } else {
+                        unset($incColab['pass']);
+                    }
+                } else {
+                    // Nuevo colaborador: registrar solo si trae pass no vacío
+                    if ($incomingPass !== '') {
+                        $incColab['pass'] = $incomingPass;
+                    } else {
+                        unset($incColab['pass']);
+                    }
+                }
+
+                $reconciledIncomingColabs[] = $incColab;
+            }
+
+            $cleanedColabs = $this->nextSellerRepo->evalAndCleanColabs($slug, $reconciledIncomingColabs);
             $currentExp['colabs'] = $cleanedColabs;
         } elseif (!isset($currentExp['colabs'])) {
             $currentExp['colabs'] = [];
@@ -279,7 +327,15 @@ class ExpedienteManager
             if ($waId === $senderWaId || $this->normalizeWaId($waId) === $normalizedSender) {
                 foreach ($allowedColabFields as $field) {
                     if (array_key_exists($field, $colabPayload)) {
-                        $currentExp['colabs'][$idx][$field] = $colabPayload[$field];
+                        if ($field === 'pass') {
+                            $newPass = trim((string)($colabPayload['pass'] ?? ''));
+                            if ($newPass !== '') {
+                                $currentExp['colabs'][$idx]['pass'] = $newPass;
+                            }
+                            // Si viene vacío, null o ausente, NO se sobreescribe el pass existente
+                        } else {
+                            $currentExp['colabs'][$idx][$field] = $colabPayload[$field];
+                        }
                     }
                 }
                 break;
