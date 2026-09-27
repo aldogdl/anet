@@ -131,19 +131,19 @@ class RemateController extends AbstractController
     #[Route('/hydrate', methods: ['GET'])]
     public function hydrate(Request $req, RemateService $service): Response
     {
-        $remateId = trim((string)($req->query->get('remateId') ?? $req->query->get('id') ?? $req->query->get('iku', '')));
-        $slug = trim((string)($req->query->get('slug') ?? $req->query->get('ownerSlug', '')));
+			$remateId = trim((string)($req->query->get('remateId') ?? $req->query->get('id') ?? $req->query->get('iku', '')));
+			$slug = trim((string)($req->query->get('slug') ?? $req->query->get('ownerSlug', '')));
 
-        if (empty($remateId)) {
-            return $this->json(['ok' => false, 'error' => 'remateId_required', 'message' => 'Parámetro remateId requerido'], Response::HTTP_BAD_REQUEST);
-        }
+			if (empty($remateId)) {
+					return $this->json(['ok' => false, 'error' => 'remateId_required', 'message' => 'Parámetro remateId requerido'], Response::HTTP_BAD_REQUEST);
+			}
 
-        $payload = $service->getHydrationPayload($remateId, !empty($slug) ? $slug : null);
-        if ($payload === null) {
-            return $this->json(['ok' => false, 'error' => 'not_found', 'message' => 'Remate no encontrado'], Response::HTTP_NOT_FOUND);
-        }
+			$payload = $service->getHydrationPayload($remateId, !empty($slug) ? $slug : null);
+			if ($payload === null) {
+					return $this->json(['ok' => false, 'error' => 'not_found', 'message' => 'Remate no encontrado'], Response::HTTP_NOT_FOUND);
+			}
 
-        return $this->json($payload, Response::HTTP_OK);
+			return $this->json($payload, Response::HTTP_OK);
     }
 
     /**
