@@ -125,6 +125,28 @@ class RemateController extends AbstractController
     }
 
     /**
+     * Obtener el paquete completo de hidratación para un remate comunitario
+     * Retorna { ok: true, remate: {...}, company: {...}, colabs: [...] }
+     */
+    #[Route('/hydrate', methods: ['GET'])]
+    public function hydrate(Request $req, RemateService $service): Response
+    {
+        $remateId = trim((string)($req->query->get('remateId') ?? $req->query->get('id') ?? $req->query->get('iku', '')));
+        $slug = trim((string)($req->query->get('slug') ?? $req->query->get('ownerSlug', '')));
+
+        if (empty($remateId)) {
+            return $this->json(['ok' => false, 'error' => 'remateId_required', 'message' => 'Parámetro remateId requerido'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $payload = $service->getHydrationPayload($remateId, !empty($slug) ? $slug : null);
+        if ($payload === null) {
+            return $this->json(['ok' => false, 'error' => 'not_found', 'message' => 'Remate no encontrado'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($payload, Response::HTTP_OK);
+    }
+
+    /**
      * Helper para parsear JSON de forma segura
      */
     private function parseJsonBody(Request $req): ?array

@@ -4,6 +4,8 @@ namespace App\Service\Any;
 
 use App\Entity\Remate;
 use App\Repository\RemateRepository;
+use App\Service\Any\Fsys\AnyPath;
+use App\Service\Any\Fsys\Fsys;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -12,7 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 class RemateService
 {
     public function __construct(
-        private readonly RemateRepository $repo
+        private readonly RemateRepository $repo,
+        private readonly Fsys $fsys
     ) {}
 
     /**
@@ -324,6 +327,105 @@ class RemateService
         return [
             'remateId' => !empty($statusData['remateId']) ? (string)$statusData['remateId'] : (string)$statusData['id'],
             'status' => (int)$statusData['status'],
+        ];
+    }
+
+    /**
+     * Obtiene el payload completo y sanitizado para la hidratación integral de un Remate comunitario.
+     * Retorna los datos técnicos del remate, los datos de la empresa y la lista de colaboradores SIN contraseñas ni secretos.
+     */
+    public function getHydrationPayload(string $remateIdOrIku, ?string $slug = null): ?array
+    {
+        $cleanId = trim($remateIdOrIku);
+        $cleanSlug = $slug !== null ? trim($slug) : null;
+
+        if (empty($cleanId)) {
+            return null;
+        }
+
+        // 1. Buscar entidad Remate por remateId / id o por iku + slug
+        $remate = $this->repo->findByRemateIdOrId($cleanId);
+        if (!$remate && !empty($cleanSlug)) {
+            $remate = $this->repo->findOneByIkuAndOwner($cleanId, $cleanSlug);
+        }
+
+        if (!$remate) {
+            return null;
+        }
+
+        $ownerSlug = trim((string)$remate->getOwnerSlug());
+        $safeSlug = preg_replace('/[^a-zA-Z0-9_\-]/', '', $ownerSlug);
+
+        // 2. Mapear DTO de Remate completo
+        $remateData = [
+            'id' => $remate->getId(),
+            'remateId' => $remate->getRemateId() ?? '',
+            'iku' => $remate->getIku() ?? '',
+            'ownerSlug' => $ownerSlug,
+            'ownerWaId' => $remate->getOwnerWaId() ?? '',
+            'ownerTaId' => $remate->getOwnerTaId() ?? 0,
+            'precioRemate' => $remate->getPrecioRemate() ?? 0.0,
+            'precioOriginal' => $remate->getPrecioOriginal() ?? 0.0,
+            'status' => $remate->getStatus() ?? 0,
+            'pieza' => $remate->getPieza() ?? '',
+            'lado' => $remate->getLado() ?? 'A',
+            'poss' => $remate->getPoss() ?? 'A',
+            'detalles' => $remate->getDetalles(),
+            'mrkId' => $remate->getMrkId() ?? 0,
+            'marca' => $remate->getMarca() ?? '',
+            'mdlId' => $remate->getMdlId() ?? 0,
+            'modelo' => $remate->getModelo() ?? '',
+            'anioInicio' => $remate->getAnioInicio() ?? 0,
+            'anioFin' => $remate->getAnioFin() ?? 9999,
+            'fotoThumb' => $remate->getFotoThumb() ?? '',
+            'fotoBig' => $remate->getFotoBig() ?? '',
+            'pathImg' => $remate->getPathImg() ?? '',
+            'pictures' => $remate->getPictures() ?? [],
+            'createdAt' => $remate->getCreatedAt()?->format(\DateTimeInterface::ATOM),
+            'updatedAt' => $remate->getUpdatedAt()?->format(\DateTimeInterface::ATOM),
+            'expiresAt' => $remate->getExpiresAt()?->format(\DateTimeInterface::ATOM),
+        ];
+
+        // 3. Cargar y sanitizar expediente de la empresa
+        $company = [
+            'empresa' => $ownerSlug,
+            'slug' => $safeSlug,
+            'localidad' => '',
+            'logo' => '',
+            'plan' => '',
+            'ynksmx' => '',
+            'categoria' => '',
+        ];
+        $colabs = [];
+
+        if (!empty($safeSlug)) {
+            $exp = $this->fsys->get(AnyPath::$DTACTC, $safeSlug . '.json');
+            if (is_array($exp)) {
+                $company['empresa'] = (string)($exp['empresa'] ?? $exp['name'] ?? $ownerSlug);
+                $company['localidad'] = (string)($exp['localidad'] ?? '');
+                $company['logo'] = (string)($exp['logo'] ?? '');
+                $company['plan'] = (string)($exp['plan'] ?? '');
+                $company['ynksmx'] = (string)($exp['ynksmx'] ?? '');
+                $company['categoria'] = (string)($exp['categoria'] ?? '');
+
+                if (isset($exp['colabs']) && is_array($exp['colabs'])) {
+                    foreach ($exp['colabs'] as $colab) {
+                        if (!is_array($colab)) {
+                            continue;
+                        }
+                        // REGLA CRÍTICA DE SEGURIDAD: Remover contraseñas y secretos
+                        unset($colab['pass']);
+                        $colabs[] = $colab;
+                    }
+                }
+            }
+        }
+
+        return [
+            'ok' => true,
+            'remate' => $remateData,
+            'company' => $company,
+            'colabs' => $colabs,
         ];
     }
 }
