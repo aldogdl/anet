@@ -309,6 +309,9 @@ class RemateService
     public function checkStatus(string $remateId): array
     {
         $cleanId = trim($remateId);
+        $cleanId = preg_replace('/^RMT:/i', '', $cleanId);
+        $cleanId = trim($cleanId);
+
         if (empty($cleanId)) {
             return [
                 'remateId' => '',
@@ -325,7 +328,7 @@ class RemateService
         }
 
         return [
-            'remateId' => !empty($statusData['remateId']) ? (string)$statusData['remateId'] : (string)$statusData['id'],
+            'remateId' => !empty($statusData['remateId']) ? (string)$statusData['remateId'] : (!empty($statusData['iku']) ? (string)$statusData['iku'] : (string)$statusData['id']),
             'status' => (int)$statusData['status'],
         ];
     }

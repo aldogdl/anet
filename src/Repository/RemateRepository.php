@@ -61,15 +61,23 @@ class RemateRepository extends ServiceEntityRepository
      */
     public function findStatusByRemateIdOrId(string $remateId): ?array
     {
-        $params = ['remateId' => $remateId];
-        $where = 'r.remateId = :remateId';
+        $cleanId = trim($remateId);
+        $cleanId = preg_replace('/^RMT:/i', '', $cleanId);
+        $cleanId = trim($cleanId);
 
-        if (is_numeric($remateId)) {
-            $where .= ' OR r.id = :numId';
-            $params['numId'] = (int) $remateId;
+        if (empty($cleanId)) {
+            return null;
         }
 
-        $dql = 'SELECT r.remateId, r.status, r.id FROM ' . Remate::class . ' r WHERE ' . $where;
+        $params = ['remateId' => $cleanId];
+        $where = 'r.remateId = :remateId OR r.iku = :remateId';
+
+        if (is_numeric($cleanId)) {
+            $where .= ' OR r.id = :numId';
+            $params['numId'] = (int) $cleanId;
+        }
+
+        $dql = 'SELECT r.remateId, r.status, r.id, r.iku FROM ' . Remate::class . ' r WHERE ' . $where;
 
         $results = $this->_em->createQuery($dql)
             ->setParameters($params)
