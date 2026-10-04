@@ -20,6 +20,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Path;
 use App\Service\Any\ExpedienteManager;
+use App\Service\Any\PartnerService;
 use App\Service\AppPresenceService;
 
 #[Route('/sys-com')]
@@ -1020,7 +1021,7 @@ class SysComController extends AbstractController
 	 * Valida internamente contra %dtaCtc%/{slug}.json y NUNCA devuelve la contraseña.
 	 */
 	#[Route('/auth-credentials', methods: ['POST'])]
-	public function authCredentials(Request $req, Fsys $fsys): Response
+	public function authCredentials(Request $req, Fsys $fsys, PartnerService $partnerService): Response
 	{
 		$raw = $req->getContent();
 		$slug = '';
@@ -1088,11 +1089,13 @@ class SysComController extends AbstractController
 						? strtolower(trim($userExp['accountType']))
 						: 'unknown';
 					$accountType = in_array($rawAccountType, ['seller', 'requester'], true) ? $rawAccountType : 'unknown';
+					$isPartner = $partnerService->isPartner($safeSlug);
 
 					return $this->json([
 						'valid' => true,
 						'roles' => $colab['roles'] ?? [],
 						'accountType' => $accountType,
+						'isPartner' => $isPartner,
 					], Response::HTTP_OK);
 				}
 
