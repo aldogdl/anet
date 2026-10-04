@@ -188,7 +188,7 @@ class ExpedienteManager
     {
         // Campos globales de la empresa permitidos para MAIN
         $allowedCompanyFields = [
-            'slug', 'empresa', 'logo', 'categoria', 'ynksmx', 'mlmId',
+            'slug', 'empresa', 'logo', 'categoria', 'accountType', 'ynksmx', 'mlmId',
             'address', 'colonia', 'localidad', 'links', 'prestige',
             'anyChatId', 'anyInviteLink', 'asesor', 'desde'
         ];
