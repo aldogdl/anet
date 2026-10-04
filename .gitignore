@@ -11,7 +11,7 @@ _.env.local.php
 .well-known
 .well-known/*
 error_log
-
+tests/
 
 config/secrets/prod/prod.decrypt.private.php
 config/saf.json
