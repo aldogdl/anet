@@ -1084,9 +1084,15 @@ class SysComController extends AbstractController
 
 				// Comparación interna segura en tiempo constante
 				if (hash_equals($expectedPass, $password)) {
+					$rawAccountType = isset($userExp['accountType']) && is_string($userExp['accountType'])
+						? strtolower(trim($userExp['accountType']))
+						: 'unknown';
+					$accountType = in_array($rawAccountType, ['seller', 'requester'], true) ? $rawAccountType : 'unknown';
+
 					return $this->json([
 						'valid' => true,
 						'roles' => $colab['roles'] ?? [],
+						'accountType' => $accountType,
 					], Response::HTTP_OK);
 				}
 
