@@ -1143,5 +1143,99 @@ class SysComController extends AbstractController
 		return $this->json($data, Response::HTTP_OK);
 	}
 
+	/**
+	 * Endpoint seguro S2S para resolver la identidad y condición comercial de un colaborador
+	 * desde ynksmx_auth (usado en refresh de sesión sin requerir contraseñas del usuario).
+	 */
+	#[Route('/user-identity', methods: ['POST'])]
+	public function userIdentity(Request $req, Fsys $fsys, PartnerService $partnerService): Response
+	{
+		$expectedSecret = (string) $this->getParameter('meliBootstrapSecret');
+		$receivedSecret = (string) ($req->headers->get('X-Internal-Secret') ?? '');
+
+		if ($receivedSecret === '' || !hash_equals($expectedSecret, $receivedSecret)) {
+			return $this->json([
+				'valid' => false,
+				'error' => 'unauthorized',
+				'message' => 'Acceso restringido S2S',
+			], Response::HTTP_UNAUTHORIZED);
+		}
+
+		$raw = $req->getContent();
+		$slug = '';
+		$waId = '';
+
+		if (!empty($raw)) {
+			$json = json_decode($raw, true);
+			if (is_array($json)) {
+				$slug = trim((string)($json['slug'] ?? ''));
+				$waId = trim((string)($json['waId'] ?? ''));
+			}
+		}
+
+		if (empty($slug)) {
+			$slug = trim((string)($req->request->get('slug') ?? ''));
+		}
+		if (empty($waId)) {
+			$waId = trim((string)($req->request->get('waId') ?? ''));
+		}
+
+		if (empty($slug) || empty($waId)) {
+			return $this->json([
+				'valid' => false,
+				'error' => 'invalid_parameters',
+				'message' => 'slug y waId son requeridos',
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		$safeSlug = preg_replace('/[^a-zA-Z0-9_-]/', '', $slug);
+		if (empty($safeSlug)) {
+			return $this->json([
+				'valid' => false,
+				'error' => 'invalid_slug',
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		$userExp = $fsys->get(AnyPath::$DTACTC, $safeSlug . '.json');
+		if (empty($userExp) || !isset($userExp['colabs']) || !is_array($userExp['colabs'])) {
+			return $this->json([
+				'valid' => false,
+				'error' => 'not_found',
+				'message' => 'Expediente no encontrado',
+			], Response::HTTP_NOT_FOUND);
+		}
+
+		$cleanWaId = preg_replace('/[^0-9]/', '', $waId);
+
+		foreach ($userExp['colabs'] as $colab) {
+			if (!is_array($colab)) {
+				continue;
+			}
+			$cWaId = trim((string)($colab['waId'] ?? ''));
+			$cleanCWaId = preg_replace('/[^0-9]/', '', $cWaId);
+
+			if ($cWaId === $waId || ($cleanWaId !== '' && $cleanCWaId === $cleanWaId)) {
+				$rawAccountType = isset($userExp['accountType']) && is_string($userExp['accountType'])
+					? strtolower(trim($userExp['accountType']))
+					: 'unknown';
+				$accountType = in_array($rawAccountType, ['seller', 'requester'], true) ? $rawAccountType : 'unknown';
+				$isPartner = $partnerService->isPartner($safeSlug);
+
+				return $this->json([
+					'valid' => true,
+					'roles' => $colab['roles'] ?? [],
+					'accountType' => $accountType,
+					'isPartner' => $isPartner,
+				], Response::HTTP_OK);
+			}
+		}
+
+		return $this->json([
+			'valid' => false,
+			'error' => 'user_not_found',
+			'message' => 'Colaborador no encontrado en el expediente',
+		], Response::HTTP_NOT_FOUND);
+	}
+
 }
 
