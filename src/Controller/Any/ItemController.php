@@ -39,9 +39,7 @@ class ItemController extends AbstractController
 	/** */
 	#[Route('/pub', methods: ['get', 'post', 'delete'])]
 	public function itemPub(
-		Request $req, ItemPubRepository $repo, Fsys $fsys, 
-		SysComRepository $sysCom, Pushes $push,
-		EventsWhVPSService $eventsWhVPSService
+		Request $req, ItemPubRepository $repo, EventsWhVPSService $eventsWhVPSService
 	): Response
 	{
 
