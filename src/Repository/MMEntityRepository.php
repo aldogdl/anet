@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\MMEntity;
+use App\Entity\ItemPub;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -201,6 +202,292 @@ class MMEntityRepository extends ServiceEntityRepository
 		}
 
 		return ['abort' => true, 'data' => 'Error inesperado'];
+	}
+
+	/**
+	 * Guarda de manera atómica un lote completo de borradores de Marcas y Modelos.
+	 *
+	 * Garantías:
+	 * 1. Validación previa completa: sin mutaciones parciales si hay colisiones,
+	 *    nombres vacíos o dependencias de inventario activas.
+	 * 2. Transacción Doctrine única: rollback ante cualquier fallo o excepción.
+	 * 3. Mapeo de IDs temporales (< 0) hacia IDs definitivos generados en MySQL.
+	 * 4. Preservación íntegra de variantes manuales y extras (imágenes).
+	 *
+	 * @param array $payload Estructura con 'brands' y 'models' (created, updated, deleted)
+	 * @return array Resultado con 'abort', 'data' => ['brandIdMap', 'modelIdMap']
+	 */
+	public function saveDraftAtomic(array $payload): array
+	{
+		$brandsPayload = $payload['brands'] ?? [];
+		$modelsPayload = $payload['models'] ?? [];
+
+		$createdBrands = $brandsPayload['created'] ?? [];
+		$updatedBrands = $brandsPayload['updated'] ?? [];
+		$deletedBrandIds = array_values(array_unique(array_filter(array_map('intval', $brandsPayload['deleted'] ?? []))));
+
+		$createdModels = $modelsPayload['created'] ?? [];
+		$updatedModels = $modelsPayload['updated'] ?? [];
+		$deletedModelIds = array_values(array_unique(array_filter(array_map('intval', $modelsPayload['deleted'] ?? []))));
+
+		// 1. Validaciones previas de nombres de marcas
+		$seenBrandNames = [];
+		foreach (array_merge($createdBrands, $updatedBrands) as $b) {
+			$name = mb_strtolower(trim($b['name'] ?? ''));
+			if ($name === '') {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_NAME',
+					'data' => 'El nombre de una marca no puede estar vacío.',
+				];
+			}
+			if (isset($seenBrandNames[$name])) {
+				return [
+					'abort' => true,
+					'code' => 'DUPLICATE_NAME',
+					'data' => 'Nombre de marca duplicado en el lote: "' . ($b['name'] ?? '') . '".',
+				];
+			}
+			$seenBrandNames[$name] = true;
+		}
+
+		// 2. Validaciones previas de nombres de modelos (únicos por marca)
+		$seenModelInBrand = [];
+		foreach (array_merge($createdModels, $updatedModels) as $m) {
+			$name = mb_strtolower(trim($m['name'] ?? ''));
+			$mBrandId = isset($m['idMrk']) ? (int)$m['idMrk'] : (isset($m['id_mrk']) ? (int)$m['id_mrk'] : 0);
+			if ($name === '') {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_NAME',
+					'data' => 'El nombre de un modelo no puede estar vacío.',
+				];
+			}
+			$key = $mBrandId . ':' . $name;
+			if (isset($seenModelInBrand[$key])) {
+				return [
+					'abort' => true,
+					'code' => 'DUPLICATE_NAME',
+					'data' => 'Nombre de modelo duplicado en la misma marca dentro del lote: "' . ($m['name'] ?? '') . '".',
+				];
+			}
+			$seenModelInBrand[$key] = true;
+		}
+
+		// 3. Verificación de dependencias de inventario antes de eliminar
+		if (!empty($deletedModelIds)) {
+			$dql = 'SELECT COUNT(i.id) FROM ' . ItemPub::class . ' i WHERE i.mdlId IN (:deletedModelIds)';
+			$itemCount = (int) $this->_em->createQuery($dql)
+				->setParameter('deletedModelIds', $deletedModelIds)
+				->getSingleScalarResult();
+			if ($itemCount > 0) {
+				return [
+					'abort' => true,
+					'code' => 'DEPENDENCY_CONFLICT',
+					'data' => "No se pueden eliminar los modelos seleccionados: existen $itemCount publicación(es) de inventario asociadas.",
+				];
+			}
+		}
+
+		if (!empty($deletedBrandIds)) {
+			// Directo en marcas
+			$dql = 'SELECT COUNT(i.id) FROM ' . ItemPub::class . ' i WHERE i.mrkId IN (:deletedBrandIds)';
+			$brandItemCount = (int) $this->_em->createQuery($dql)
+				->setParameter('deletedBrandIds', $deletedBrandIds)
+				->getSingleScalarResult();
+			if ($brandItemCount > 0) {
+				return [
+					'abort' => true,
+					'code' => 'DEPENDENCY_CONFLICT',
+					'data' => "No se pueden eliminar las marcas seleccionadas: existen $brandItemCount publicación(es) de inventario asociadas.",
+				];
+			}
+
+			// Modelos hijos de las marcas a eliminar
+			$dql = 'SELECT m.id FROM ' . MMEntity::class . ' m WHERE m.idMrk IN (:deletedBrandIds)';
+			$modelsOfBrands = $this->_em->createQuery($dql)
+				->setParameter('deletedBrandIds', $deletedBrandIds)
+				->getSingleColumnResult();
+			if (!empty($modelsOfBrands)) {
+				$dql = 'SELECT COUNT(i.id) FROM ' . ItemPub::class . ' i WHERE i.mdlId IN (:modelsOfBrands)';
+				$subModelItemCount = (int) $this->_em->createQuery($dql)
+					->setParameter('modelsOfBrands', $modelsOfBrands)
+					->getSingleScalarResult();
+				if ($subModelItemCount > 0) {
+					return [
+						'abort' => true,
+						'code' => 'DEPENDENCY_CONFLICT',
+						'data' => "No se pueden eliminar las marcas: modelos pertenecientes a ellas tienen $subModelItemCount publicación(es) de inventario asociadas.",
+					];
+				}
+			}
+		}
+
+		// 4. Verificación de existencia para ediciones
+		foreach ($updatedBrands as $ub) {
+			$id = (int)($ub['id'] ?? 0);
+			$entity = $this->find($id);
+			if (!$entity || $entity->getIdMrk() !== 0) {
+				return [
+					'abort' => true,
+					'code' => 'NOT_FOUND',
+					'data' => "Marca a actualizar no encontrada o inválida (ID: $id).",
+				];
+			}
+		}
+
+		foreach ($updatedModels as $um) {
+			$id = (int)($um['id'] ?? 0);
+			$entity = $this->find($id);
+			if (!$entity || $entity->getIdMrk() === 0) {
+				return [
+					'abort' => true,
+					'code' => 'NOT_FOUND',
+					'data' => "Modelo a actualizar no encontrado o inválido (ID: $id).",
+				];
+			}
+		}
+
+		// 5. Ejecución del lote transaccional
+		try {
+			$brandIdMap = [];
+			$modelIdMap = [];
+
+			$txResult = $this->_em->wrapInTransaction(function() use (
+				$deletedModelIds,
+				$deletedBrandIds,
+				$updatedBrands,
+				$createdBrands,
+				$updatedModels,
+				$createdModels,
+				&$brandIdMap,
+				&$modelIdMap
+			) {
+				// A. Eliminar modelos
+				foreach ($deletedModelIds as $mid) {
+					$entity = $this->find($mid);
+					if ($entity) {
+						$this->_em->remove($entity);
+					}
+				}
+
+				// B. Eliminar marcas y sus modelos en cascada
+				foreach ($deletedBrandIds as $bid) {
+					$brand = $this->find($bid);
+					if ($brand) {
+						$childModels = $this->findBy(['idMrk' => $bid]);
+						foreach ($childModels as $child) {
+							$this->_em->remove($child);
+						}
+						$this->_em->remove($brand);
+					}
+				}
+
+				// C. Actualizar marcas existentes
+				foreach ($updatedBrands as $ub) {
+					$entity = $this->find((int)$ub['id']);
+					if ($entity) {
+						$entity->setName(trim($ub['name']));
+						$entity->setVariants($this->_sanitizeVariants($ub['variants'] ?? []));
+						if (array_key_exists('extras', $ub)) {
+							$entity->setExtras($ub['extras']);
+						}
+					}
+				}
+
+				// D. Crear marcas nuevas y registrar mapeo de tempId
+				foreach ($createdBrands as $cb) {
+					$tempId = (int)$cb['id'];
+					$brand = new MMEntity();
+					$brand->setName(trim($cb['name']));
+					$brand->setIdMrk(0);
+					$brand->setVariants($this->_sanitizeVariants($cb['variants'] ?? []));
+					if (array_key_exists('extras', $cb)) {
+						$brand->setExtras($cb['extras']);
+					}
+					$this->_em->persist($brand);
+					// Flush para que MySQL asigne el ID autoincremental
+					$this->_em->flush();
+					$brandIdMap[(string)$tempId] = $brand->getId();
+				}
+
+				// E. Actualizar modelos existentes
+				foreach ($updatedModels as $um) {
+					$entity = $this->find((int)$um['id']);
+					if ($entity) {
+						$entity->setName(trim($um['name']));
+						$entity->setVariants($this->_sanitizeVariants($um['variants'] ?? []));
+						$rawMrkId = isset($um['idMrk']) ? (int)$um['idMrk'] : (isset($um['id_mrk']) ? (int)$um['id_mrk'] : $entity->getIdMrk());
+						if ($rawMrkId < 0 && isset($brandIdMap[(string)$rawMrkId])) {
+							$rawMrkId = $brandIdMap[(string)$rawMrkId];
+						}
+						$entity->setIdMrk($rawMrkId);
+						if (array_key_exists('extras', $um)) {
+							$entity->setExtras($um['extras']);
+						}
+					}
+				}
+
+				// F. Crear modelos nuevos y registrar mapeo de tempId
+				foreach ($createdModels as $cm) {
+					$tempId = (int)$cm['id'];
+					$rawMrkId = isset($cm['idMrk']) ? (int)$cm['idMrk'] : (isset($cm['id_mrk']) ? (int)$cm['id_mrk'] : 0);
+					if ($rawMrkId < 0 && isset($brandIdMap[(string)$rawMrkId])) {
+						$rawMrkId = $brandIdMap[(string)$rawMrkId];
+					}
+					if ($rawMrkId <= 0) {
+						throw new \InvalidArgumentException("El modelo '{$cm['name']}' no tiene una marca padre válida (idMrk: $rawMrkId).");
+					}
+
+					$model = new MMEntity();
+					$model->setName(trim($cm['name']));
+					$model->setIdMrk($rawMrkId);
+					$model->setVariants($this->_sanitizeVariants($cm['variants'] ?? []));
+					if (array_key_exists('extras', $cm)) {
+						$model->setExtras($cm['extras']);
+					}
+					$this->_em->persist($model);
+					$this->_em->flush();
+					$modelIdMap[(string)$tempId] = $model->getId();
+				}
+
+				return [
+					'abort' => false,
+					'data' => [
+						'brandIdMap' => $brandIdMap,
+						'modelIdMap' => $modelIdMap,
+					],
+				];
+			});
+
+			return $txResult;
+		} catch (\Throwable $th) {
+			return [
+				'abort' => true,
+				'code' => 'TX_ERROR',
+				'data' => 'Error en la transacción de base de datos: ' . $th->getMessage(),
+			];
+		}
+	}
+
+	/**
+	 * Limpia y normaliza el arreglo de variantes manuales.
+	 */
+	private function _sanitizeVariants(mixed $raw): array
+	{
+		if (!is_array($raw)) {
+			return [];
+		}
+		$clean = [];
+		foreach ($raw as $v) {
+			if (is_string($v)) {
+				$t = trim($v);
+				if ($t !== '') {
+					$clean[] = $t;
+				}
+			}
+		}
+		return array_values(array_unique($clean));
 	}
 
 }
