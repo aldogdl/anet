@@ -6,6 +6,7 @@ use App\Entity\MMEntity;
 use App\Entity\ItemPub;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use InvalidArgumentException;
 
 /**
  * @extends ServiceEntityRepository<MMEntity>
@@ -524,15 +525,34 @@ class MMEntityRepository extends ServiceEntityRepository
 				&$brandIdMap,
 				&$modelIdMap
 			) {
+				// 0. Capturar publicaciones inconsistentes preexistentes antes de aplicar mutaciones
+				$dqlInconsistent = 'SELECT i.id FROM ' . ItemPub::class . ' i ' .
+					'JOIN ' . MMEntity::class . ' m WITH i.mdlId = m.id ' .
+					'WHERE i.mdlId > 0 AND i.mrkId != m.idMrk';
+				$preExistingInconsistentIds = array_map('intval', $this->_em->createQuery($dqlInconsistent)->getSingleColumnResult());
+				$preExistingInconsistentCount = count($preExistingInconsistentIds);
+				$preExistingInconsistentMap = array_flip($preExistingInconsistentIds);
+
+				$consolidatedModelInjectedVariants = [];
+				$consolidatedBrandInjectedVariants = [];
+
 				// A. Consolidar modelos: fusión de variantes, migración de item_pub y eliminación de fuente
 				foreach ($modelConsolidationMap as $sId => $tId) {
 					$source = $this->find($sId);
 					$target = $this->find($tId);
 					if ($source && $target) {
-						$mergedVariants = $this->_sanitizeVariants(array_merge(
-							$target->getVariants() ?? [],
+						$injected = array_merge(
 							$source->getVariants() ?? [],
 							[$source->getName()]
+						);
+						$consolidatedModelInjectedVariants[$tId] = array_merge(
+							$consolidatedModelInjectedVariants[$tId] ?? [],
+							$injected
+						);
+
+						$mergedVariants = $this->_sanitizeVariants(array_merge(
+							$target->getVariants() ?? [],
+							$injected
 						));
 						$target->setVariants($mergedVariants);
 
@@ -549,10 +569,18 @@ class MMEntityRepository extends ServiceEntityRepository
 					$source = $this->find($sId);
 					$target = $this->find($tId);
 					if ($source && $target) {
-						$mergedVariants = $this->_sanitizeVariants(array_merge(
-							$target->getVariants() ?? [],
+						$injected = array_merge(
 							$source->getVariants() ?? [],
 							[$source->getName()]
+						);
+						$consolidatedBrandInjectedVariants[$tId] = array_merge(
+							$consolidatedBrandInjectedVariants[$tId] ?? [],
+							$injected
+						);
+
+						$mergedVariants = $this->_sanitizeVariants(array_merge(
+							$target->getVariants() ?? [],
+							$injected
 						));
 						$target->setVariants($mergedVariants);
 
@@ -593,7 +621,12 @@ class MMEntityRepository extends ServiceEntityRepository
 					$entity = $this->find((int)$ub['id']);
 					if ($entity) {
 						$entity->setName(trim($ub['name']));
-						$entity->setVariants($this->_sanitizeVariants($ub['variants'] ?? []));
+						$variants = $ub['variants'] ?? [];
+						$bId = (int)$ub['id'];
+						if (!empty($consolidatedBrandInjectedVariants[$bId])) {
+							$variants = array_merge($variants, $consolidatedBrandInjectedVariants[$bId]);
+						}
+						$entity->setVariants($this->_sanitizeVariants($variants));
 						if (array_key_exists('extras', $ub)) {
 							$entity->setExtras($ub['extras']);
 						}
@@ -620,7 +653,12 @@ class MMEntityRepository extends ServiceEntityRepository
 					$entity = $this->find((int)$um['id']);
 					if ($entity) {
 						$entity->setName(trim($um['name']));
-						$entity->setVariants($this->_sanitizeVariants($um['variants'] ?? []));
+						$variants = $um['variants'] ?? [];
+						$mId = (int)$um['id'];
+						if (!empty($consolidatedModelInjectedVariants[$mId])) {
+							$variants = array_merge($variants, $consolidatedModelInjectedVariants[$mId]);
+						}
+						$entity->setVariants($this->_sanitizeVariants($variants));
 						$rawMrkId = isset($um['idMrk']) ? (int)$um['idMrk'] : (isset($um['id_mrk']) ? (int)$um['id_mrk'] : $entity->getIdMrk());
 						if ($rawMrkId < 0 && isset($brandIdMap[(string)$rawMrkId])) {
 							$rawMrkId = $brandIdMap[(string)$rawMrkId];
@@ -640,7 +678,7 @@ class MMEntityRepository extends ServiceEntityRepository
 						$rawMrkId = $brandIdMap[(string)$rawMrkId];
 					}
 					if ($rawMrkId <= 0) {
-						throw new InvalidArgumentException("El modelo '{$cm['name']}' no tiene una marca padre válida (idMrk: $rawMrkId).");
+						throw new \InvalidArgumentException("El modelo '{$cm['name']}' no tiene una marca padre válida (idMrk: $rawMrkId).");
 					}
 
 					$model = new MMEntity();
@@ -658,15 +696,24 @@ class MMEntityRepository extends ServiceEntityRepository
 				// Sincronizar todos los cambios en base de datos antes de la comprobación relacional
 				$this->_em->flush();
 
-				// I. Verificación de coherencia relacional final: item_pub.mrk_id == mmentity[item_pub.mdl_id].id_mrk
-				$inconsistentCount = (int) $this->_em->createQuery(
-					'SELECT COUNT(i.id) FROM ' . ItemPub::class . ' i ' .
-					'JOIN ' . MMEntity::class . ' m WITH i.mdlId = m.id ' .
-					'WHERE i.mdlId > 0 AND i.mrkId != m.idMrk'
-				)->getSingleScalarResult();
+				// I. Verificación de coherencia relacional: rechazar nuevas inconsistencias o agravamiento
+				$finalInconsistentIds = array_map('intval', $this->_em->createQuery($dqlInconsistent)->getSingleColumnResult());
+				$finalInconsistentCount = count($finalInconsistentIds);
 
-				if ($inconsistentCount > 0) {
-					throw new \RuntimeException("Inconsistencia relacional final en $inconsistentCount publicación(es) de inventario: mrk_id no coincide con id_mrk del modelo asociado.");
+				$newInconsistentIds = [];
+				foreach ($finalInconsistentIds as $pubId) {
+					if (!isset($preExistingInconsistentMap[$pubId])) {
+						$newInconsistentIds[] = $pubId;
+					}
+				}
+
+				if (!empty($newInconsistentIds) || $finalInconsistentCount > $preExistingInconsistentCount) {
+					$newCount = count($newInconsistentIds);
+					throw new \RuntimeException(
+						"Inconsistencia relacional en inventario: la transacción introdujo $newCount nueva(s) inconsistencia(s) " .
+						"(IDs: " . implode(', ', array_slice($newInconsistentIds, 0, 5)) . ($newCount > 5 ? '...' : '') . ") " .
+						"o agravó el balance relacional final (previas: $preExistingInconsistentCount, finales: $finalInconsistentCount)."
+					);
 				}
 
 				return [
