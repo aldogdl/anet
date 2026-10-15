@@ -184,7 +184,7 @@ class MMController extends AbstractController
 			$res = $em->saveDraftAtomic($data);
 			if ($res['abort']) {
 				$code = $res['code'] ?? 'ERROR';
-				$status = ($code === 'DEPENDENCY_CONFLICT' || $code === 'DUPLICATE_NAME')
+				$status = ($code === 'DEPENDENCY_CONFLICT' || $code === 'DUPLICATE_NAME' || $code === 'COLLISION_CONFLICT' || $code === 'INVALID_CONSOLIDATION')
 					? Response::HTTP_CONFLICT
 					: Response::HTTP_BAD_REQUEST;
 				return $this->json($res, $status);
@@ -392,5 +392,59 @@ class MMController extends AbstractController
 		}
 	}
 
-}
 
+	/**
+	 * Prevalida de solo lectura la eliminación o consolidación de una marca o modelo.
+	 * Retorna conteo real de piezas en item_pub, viabilidad de consolidación,
+	 * modelos trasladados y colisiones detectadas contrastando con el borrador.
+	 */
+	#[Route('/prevalidate-deletion', methods: ['POST'])]
+	public function prevalidateDeletion(
+		Request $req,
+		MMEntityRepository $em,
+		HttpClientInterface $httpClient,
+		ParameterBagInterface $params
+	): Response {
+		// 1. Extracción y validación de token administrativo
+		$authHeader = (string)$req->headers->get('Authorization', '');
+		$token = '';
+		if (preg_match('/Bearer\s+(\S+)/i', $authHeader, $matches)) {
+			$token = $matches[1];
+		}
+		if (empty($token)) {
+			$token = (string)$req->query->get('token', '');
+		}
+
+		$data = json_decode($req->getContent(), true);
+		if (!is_array($data)) {
+			return $this->json([
+				'abort' => true,
+				'code' => 'INVALID_JSON',
+				'data' => 'El cuerpo de la solicitud debe ser un JSON válido.',
+			], Response::HTTP_BAD_REQUEST);
+		}
+
+		if (empty($token) && !empty($data['token'])) {
+			$token = (string)$data['token'];
+		}
+
+		$authCheck = $this->_validateAdminAuthorization($token, $httpClient, $params);
+		if (!$authCheck['authorized']) {
+			$status = match ($authCheck['code']) {
+				'FORBIDDEN' => Response::HTTP_FORBIDDEN,
+				'AUTH_SERVICE_UNAVAILABLE' => Response::HTTP_SERVICE_UNAVAILABLE,
+				default => Response::HTTP_UNAUTHORIZED,
+			};
+
+			return $this->json([
+				'abort' => true,
+				'code' => $authCheck['code'],
+				'data' => $authCheck['message'],
+			], $status);
+		}
+
+		$res = $em->previewDeletionOrConsolidation($data);
+		return $this->json($res);
+	}
+
+}

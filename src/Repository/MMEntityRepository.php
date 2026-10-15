@@ -221,6 +221,7 @@ class MMEntityRepository extends ServiceEntityRepository
 	{
 		$brandsPayload = $payload['brands'] ?? [];
 		$modelsPayload = $payload['models'] ?? [];
+		$consolidationsPayload = $payload['consolidations'] ?? [];
 
 		$createdBrands = $brandsPayload['created'] ?? [];
 		$updatedBrands = $brandsPayload['updated'] ?? [];
@@ -230,7 +231,159 @@ class MMEntityRepository extends ServiceEntityRepository
 		$updatedModels = $modelsPayload['updated'] ?? [];
 		$deletedModelIds = array_values(array_unique(array_filter(array_map('intval', $modelsPayload['deleted'] ?? []))));
 
-		// 1. Validaciones previas de nombres de marcas
+		$rawBrandConsolidations = $consolidationsPayload['brands'] ?? [];
+		$rawModelConsolidations = $consolidationsPayload['models'] ?? [];
+
+		// 1. Parsing y validación estructural de consolidaciones
+		$brandConsolidationMap = [];
+		foreach ($rawBrandConsolidations as $bc) {
+			$sId = (int)($bc['sourceId'] ?? 0);
+			$tId = (int)($bc['targetId'] ?? 0);
+			if ($sId <= 0 || $tId <= 0 || $sId === $tId) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Consolidación de marca inválida: sourceId y targetId deben ser mayores a 0 y distintos (origen: $sId, destino: $tId).",
+				];
+			}
+			if (isset($brandConsolidationMap[$sId])) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Mapeo contradictorio: la marca origen #$sId se intenta consolidar más de una vez.",
+				];
+			}
+			$brandConsolidationMap[$sId] = $tId;
+		}
+
+		$modelConsolidationMap = [];
+		foreach ($rawModelConsolidations as $mc) {
+			$sId = (int)($mc['sourceId'] ?? 0);
+			$tId = (int)($mc['targetId'] ?? 0);
+			if ($sId <= 0 || $tId <= 0 || $sId === $tId) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Consolidación de modelo inválida: sourceId y targetId deben ser mayores a 0 y distintos (origen: $sId, destino: $tId).",
+				];
+			}
+			if (isset($modelConsolidationMap[$sId])) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Mapeo contradictorio: el modelo origen #$sId se intenta consolidar más de una vez.",
+				];
+			}
+			$modelConsolidationMap[$sId] = $tId;
+		}
+
+		// 2. Validación de ciclos, destinos eliminados y equivalencia real en marcas
+		foreach ($brandConsolidationMap as $sId => $tId) {
+			if (in_array($tId, $deletedBrandIds, true)) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "El destino de consolidación de marca #$tId está marcado para eliminación.",
+				];
+			}
+			if (isset($brandConsolidationMap[$tId])) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Ciclo o cadena no permitida en consolidación de marcas (#$sId -> #$tId).",
+				];
+			}
+			$sourceBrand = $this->find($sId);
+			$targetBrand = $this->find($tId);
+			if (!$sourceBrand || $sourceBrand->getIdMrk() !== 0 || !$targetBrand || $targetBrand->getIdMrk() !== 0) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Marca origen (#$sId) o destino (#$tId) inexistente o no es una marca válida.",
+				];
+			}
+			if (!$this->_checkEquivalence($sourceBrand, $targetBrand)) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Las marcas '{$sourceBrand->getName()}' (#$sId) y '{$targetBrand->getName()}' (#$tId) no presentan equivalencia real de nombres ni variantes.",
+				];
+			}
+		}
+
+		// 3. Validación de ciclos, destinos eliminados y equivalencia real en modelos
+		foreach ($modelConsolidationMap as $sId => $tId) {
+			if (in_array($tId, $deletedModelIds, true)) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "El destino de consolidación de modelo #$tId está marcado para eliminación.",
+				];
+			}
+			if (isset($modelConsolidationMap[$tId])) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Ciclo o cadena no permitida en consolidación de modelos (#$sId -> #$tId).",
+				];
+			}
+			$sourceModel = $this->find($sId);
+			$targetModel = $this->find($tId);
+			if (!$sourceModel || $sourceModel->getIdMrk() === 0 || !$targetModel || $targetModel->getIdMrk() === 0) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Modelo origen (#$sId) o destino (#$tId) inexistente o es una marca.",
+				];
+			}
+			$sBrandId = $sourceModel->getIdMrk();
+			$tBrandId = $targetModel->getIdMrk();
+			$isSameBrand = ($sBrandId === $tBrandId);
+			$isBrandConsolidated = (isset($brandConsolidationMap[$sBrandId]) && $brandConsolidationMap[$sBrandId] === $tBrandId);
+			if (!$isSameBrand && !$isBrandConsolidated) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "El modelo '{$sourceModel->getName()}' (#$sId) no puede consolidarse en '{$targetModel->getName()}' (#$tId): pertenecen a marcas distintas sin consolidación activa.",
+				];
+			}
+			if (!$this->_checkEquivalence($sourceModel, $targetModel)) {
+				return [
+					'abort' => true,
+					'code' => 'INVALID_CONSOLIDATION',
+					'data' => "Los modelos '{$sourceModel->getName()}' (#$sId) y '{$targetModel->getName()}' (#$tId) no presentan equivalencia real de nombres ni variantes.",
+				];
+			}
+		}
+
+		// 4. Verificación de colisiones entre modelos al consolidar marcas
+		foreach ($brandConsolidationMap as $sBrandId => $tBrandId) {
+			$sourceBrand = $this->find($sBrandId);
+			$targetBrand = $this->find($tBrandId);
+			$childModels = $this->findBy(['idMrk' => $sBrandId]);
+			$targetModels = $this->findBy(['idMrk' => $tBrandId]);
+
+			$targetModelNames = [];
+			foreach ($targetModels as $tm) {
+				$targetModelNames[mb_strtolower(trim($tm->getName()))] = $tm->getId();
+			}
+
+			foreach ($childModels as $cm) {
+				if (isset($modelConsolidationMap[$cm->getId()])) {
+					continue; // Este modelo hijo tiene consolidación explícita
+				}
+				$normName = mb_strtolower(trim($cm->getName()));
+				if (isset($targetModelNames[$normName])) {
+					return [
+						'abort' => true,
+						'code' => 'COLLISION_CONFLICT',
+						'data' => "Colisión de modelo al consolidar marca: '{$cm->getName()}' (#{$cm->getId()}) ya existe en la marca destino '{$targetBrand->getName()}' (#$tBrandId) y requiere consolidación explícita.",
+					];
+				}
+			}
+		}
+
+		// 5. Validaciones previas de nombres de marcas
 		$seenBrandNames = [];
 		foreach (array_merge($createdBrands, $updatedBrands) as $b) {
 			$name = mb_strtolower(trim($b['name'] ?? ''));
@@ -251,7 +404,7 @@ class MMEntityRepository extends ServiceEntityRepository
 			$seenBrandNames[$name] = true;
 		}
 
-		// 2. Validaciones previas de nombres de modelos (únicos por marca)
+		// 6. Validaciones previas de nombres de modelos (únicos por marca)
 		$seenModelInBrand = [];
 		foreach (array_merge($createdModels, $updatedModels) as $m) {
 			$name = mb_strtolower(trim($m['name'] ?? ''));
@@ -274,11 +427,14 @@ class MMEntityRepository extends ServiceEntityRepository
 			$seenModelInBrand[$key] = true;
 		}
 
-		// 3. Verificación de dependencias de inventario antes de eliminar
-		if (!empty($deletedModelIds)) {
+		// 7. Verificación de dependencias de inventario antes de eliminar (excluyendo fuentes consolidadas)
+		$effectiveDeletedModelIds = array_values(array_diff($deletedModelIds, array_keys($modelConsolidationMap)));
+		$effectiveDeletedBrandIds = array_values(array_diff($deletedBrandIds, array_keys($brandConsolidationMap)));
+
+		if (!empty($effectiveDeletedModelIds)) {
 			$dql = 'SELECT COUNT(i.id) FROM ' . ItemPub::class . ' i WHERE i.mdlId IN (:deletedModelIds)';
 			$itemCount = (int) $this->_em->createQuery($dql)
-				->setParameter('deletedModelIds', $deletedModelIds)
+				->setParameter('deletedModelIds', $effectiveDeletedModelIds)
 				->getSingleScalarResult();
 			if ($itemCount > 0) {
 				return [
@@ -289,11 +445,11 @@ class MMEntityRepository extends ServiceEntityRepository
 			}
 		}
 
-		if (!empty($deletedBrandIds)) {
+		if (!empty($effectiveDeletedBrandIds)) {
 			// Directo en marcas
 			$dql = 'SELECT COUNT(i.id) FROM ' . ItemPub::class . ' i WHERE i.mrkId IN (:deletedBrandIds)';
 			$brandItemCount = (int) $this->_em->createQuery($dql)
-				->setParameter('deletedBrandIds', $deletedBrandIds)
+				->setParameter('deletedBrandIds', $effectiveDeletedBrandIds)
 				->getSingleScalarResult();
 			if ($brandItemCount > 0) {
 				return [
@@ -303,11 +459,12 @@ class MMEntityRepository extends ServiceEntityRepository
 				];
 			}
 
-			// Modelos hijos de las marcas a eliminar
+			// Modelos hijos de las marcas a eliminar (excluyendo los que ya se consolidan)
 			$dql = 'SELECT m.id FROM ' . MMEntity::class . ' m WHERE m.idMrk IN (:deletedBrandIds)';
 			$modelsOfBrands = $this->_em->createQuery($dql)
-				->setParameter('deletedBrandIds', $deletedBrandIds)
+				->setParameter('deletedBrandIds', $effectiveDeletedBrandIds)
 				->getSingleColumnResult();
+			$modelsOfBrands = array_values(array_diff($modelsOfBrands, array_keys($modelConsolidationMap)));
 			if (!empty($modelsOfBrands)) {
 				$dql = 'SELECT COUNT(i.id) FROM ' . ItemPub::class . ' i WHERE i.mdlId IN (:modelsOfBrands)';
 				$subModelItemCount = (int) $this->_em->createQuery($dql)
@@ -323,7 +480,7 @@ class MMEntityRepository extends ServiceEntityRepository
 			}
 		}
 
-		// 4. Verificación de existencia para ediciones
+		// 8. Verificación de existencia para ediciones
 		foreach ($updatedBrands as $ub) {
 			$id = (int)($ub['id'] ?? 0);
 			$entity = $this->find($id);
@@ -348,7 +505,7 @@ class MMEntityRepository extends ServiceEntityRepository
 			}
 		}
 
-		// 5. Ejecución del lote transaccional
+		// 9. Ejecución del lote transaccional
 		try {
 			$brandIdMap = [];
 			$modelIdMap = [];
@@ -360,19 +517,67 @@ class MMEntityRepository extends ServiceEntityRepository
 				$createdBrands,
 				$updatedModels,
 				$createdModels,
+				$brandConsolidationMap,
+				$modelConsolidationMap,
+				$effectiveDeletedModelIds,
+				$effectiveDeletedBrandIds,
 				&$brandIdMap,
 				&$modelIdMap
 			) {
-				// A. Eliminar modelos
-				foreach ($deletedModelIds as $mid) {
+				// A. Consolidar modelos: fusión de variantes, migración de item_pub y eliminación de fuente
+				foreach ($modelConsolidationMap as $sId => $tId) {
+					$source = $this->find($sId);
+					$target = $this->find($tId);
+					if ($source && $target) {
+						$mergedVariants = $this->_sanitizeVariants(array_merge(
+							$target->getVariants() ?? [],
+							$source->getVariants() ?? [],
+							[$source->getName()]
+						));
+						$target->setVariants($mergedVariants);
+
+						// Reasignar publicaciones de inventario hacia el modelo destino
+						$this->_em->createQuery('UPDATE ' . ItemPub::class . ' i SET i.mdlId = :targetId WHERE i.mdlId = :sourceId')
+							->execute(['targetId' => $tId, 'sourceId' => $sId]);
+
+						$this->_em->remove($source);
+					}
+				}
+
+				// B. Consolidar marcas: fusión de variantes, traslado de modelos únicos, migración de item_pub y eliminación
+				foreach ($brandConsolidationMap as $sId => $tId) {
+					$source = $this->find($sId);
+					$target = $this->find($tId);
+					if ($source && $target) {
+						$mergedVariants = $this->_sanitizeVariants(array_merge(
+							$target->getVariants() ?? [],
+							$source->getVariants() ?? [],
+							[$source->getName()]
+						));
+						$target->setVariants($mergedVariants);
+
+						// Trasladar modelos restantes de la marca origen hacia la marca destino
+						$this->_em->createQuery('UPDATE ' . MMEntity::class . ' m SET m.idMrk = :targetId WHERE m.idMrk = :sourceId')
+							->execute(['targetId' => $tId, 'sourceId' => $sId]);
+
+						// Reasignar publicaciones de inventario hacia la marca destino
+						$this->_em->createQuery('UPDATE ' . ItemPub::class . ' i SET i.mrkId = :targetId WHERE i.mrkId = :sourceId')
+							->execute(['targetId' => $tId, 'sourceId' => $sId]);
+
+						$this->_em->remove($source);
+					}
+				}
+
+				// C. Eliminar modelos regulares
+				foreach ($effectiveDeletedModelIds as $mid) {
 					$entity = $this->find($mid);
 					if ($entity) {
 						$this->_em->remove($entity);
 					}
 				}
 
-				// B. Eliminar marcas y sus modelos en cascada
-				foreach ($deletedBrandIds as $bid) {
+				// D. Eliminar marcas regulares y sus modelos en cascada
+				foreach ($effectiveDeletedBrandIds as $bid) {
 					$brand = $this->find($bid);
 					if ($brand) {
 						$childModels = $this->findBy(['idMrk' => $bid]);
@@ -383,7 +588,7 @@ class MMEntityRepository extends ServiceEntityRepository
 					}
 				}
 
-				// C. Actualizar marcas existentes
+				// E. Actualizar marcas existentes
 				foreach ($updatedBrands as $ub) {
 					$entity = $this->find((int)$ub['id']);
 					if ($entity) {
@@ -395,7 +600,7 @@ class MMEntityRepository extends ServiceEntityRepository
 					}
 				}
 
-				// D. Crear marcas nuevas y registrar mapeo de tempId
+				// F. Crear marcas nuevas y registrar mapeo de tempId
 				foreach ($createdBrands as $cb) {
 					$tempId = (int)$cb['id'];
 					$brand = new MMEntity();
@@ -406,12 +611,11 @@ class MMEntityRepository extends ServiceEntityRepository
 						$brand->setExtras($cb['extras']);
 					}
 					$this->_em->persist($brand);
-					// Flush para que MySQL asigne el ID autoincremental
 					$this->_em->flush();
 					$brandIdMap[(string)$tempId] = $brand->getId();
 				}
 
-				// E. Actualizar modelos existentes
+				// G. Actualizar modelos existentes
 				foreach ($updatedModels as $um) {
 					$entity = $this->find((int)$um['id']);
 					if ($entity) {
@@ -428,7 +632,7 @@ class MMEntityRepository extends ServiceEntityRepository
 					}
 				}
 
-				// F. Crear modelos nuevos y registrar mapeo de tempId
+				// H. Crear modelos nuevos y registrar mapeo de tempId
 				foreach ($createdModels as $cm) {
 					$tempId = (int)$cm['id'];
 					$rawMrkId = isset($cm['idMrk']) ? (int)$cm['idMrk'] : (isset($cm['id_mrk']) ? (int)$cm['id_mrk'] : 0);
@@ -436,7 +640,7 @@ class MMEntityRepository extends ServiceEntityRepository
 						$rawMrkId = $brandIdMap[(string)$rawMrkId];
 					}
 					if ($rawMrkId <= 0) {
-						throw new \InvalidArgumentException("El modelo '{$cm['name']}' no tiene una marca padre válida (idMrk: $rawMrkId).");
+						throw new InvalidArgumentException("El modelo '{$cm['name']}' no tiene una marca padre válida (idMrk: $rawMrkId).");
 					}
 
 					$model = new MMEntity();
@@ -449,6 +653,20 @@ class MMEntityRepository extends ServiceEntityRepository
 					$this->_em->persist($model);
 					$this->_em->flush();
 					$modelIdMap[(string)$tempId] = $model->getId();
+				}
+
+				// Sincronizar todos los cambios en base de datos antes de la comprobación relacional
+				$this->_em->flush();
+
+				// I. Verificación de coherencia relacional final: item_pub.mrk_id == mmentity[item_pub.mdl_id].id_mrk
+				$inconsistentCount = (int) $this->_em->createQuery(
+					'SELECT COUNT(i.id) FROM ' . ItemPub::class . ' i ' .
+					'JOIN ' . MMEntity::class . ' m WITH i.mdlId = m.id ' .
+					'WHERE i.mdlId > 0 AND i.mrkId != m.idMrk'
+				)->getSingleScalarResult();
+
+				if ($inconsistentCount > 0) {
+					throw new \RuntimeException("Inconsistencia relacional final en $inconsistentCount publicación(es) de inventario: mrk_id no coincide con id_mrk del modelo asociado.");
 				}
 
 				return [
@@ -471,6 +689,49 @@ class MMEntityRepository extends ServiceEntityRepository
 	}
 
 	/**
+	 * Verifica si dos entidades de catálogo presentan equivalencia real.
+	 * Comprueba igualdad de nombre canónico normalizado, o que el nombre
+	 * de una figure en las variantes de la otra, o coincidencia de variantes.
+	 */
+	private function _checkEquivalence(MMEntity $source, MMEntity $target): bool
+	{
+		$sName = mb_strtolower(trim($source->getName() ?? ''));
+		$tName = mb_strtolower(trim($target->getName() ?? ''));
+		if ($sName !== '' && $sName === $tName) {
+			return true;
+		}
+
+		$sVars = array_map(fn($v) => mb_strtolower(trim((string)$v)), $source->getVariants() ?? []);
+		$tVars = array_map(fn($v) => mb_strtolower(trim((string)$v)), $target->getVariants() ?? []);
+
+		if ($sName !== '' && in_array($sName, $tVars, true)) {
+			return true;
+		}
+		if ($tName !== '' && in_array($tName, $sVars, true)) {
+			return true;
+		}
+		if (!empty(array_intersect($sVars, $tVars))) {
+			return true;
+		}
+
+		// Coincidencia por normalización alfanumérica o tokens raíz comunes (>= 3 chars)
+		$sClean = preg_replace('/[^a-z0-9]/', '', $sName);
+		$tClean = preg_replace('/[^a-z0-9]/', '', $tName);
+		if ($sClean !== '' && $tClean !== '') {
+			if ($sClean === $tClean) {
+				return true;
+			}
+			$sTokens = array_filter(preg_split('/\s+/', $sName), fn($w) => mb_strlen($w) >= 3);
+			$tTokens = array_filter(preg_split('/\s+/', $tName), fn($w) => mb_strlen($w) >= 3);
+			if (!empty(array_intersect($sTokens, $tTokens))) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Limpia y normaliza el arreglo de variantes manuales.
 	 */
 	private function _sanitizeVariants(mixed $raw): array
@@ -488,6 +749,248 @@ class MMEntityRepository extends ServiceEntityRepository
 			}
 		}
 		return array_values(array_unique($clean));
+	}
+
+
+	/**
+	 * Prevalida de solo lectura la eliminación o consolidación de una marca o modelo.
+	 *
+	 * @param array $payload Estructura con sourceId, isBrand, targetId (opcional), draft (opcional)
+	 * @return array
+	 */
+	public function previewDeletionOrConsolidation(array $payload): array
+	{
+		$sourceId = (int)($payload['sourceId'] ?? 0);
+		$isBrand = (bool)($payload['isBrand'] ?? true);
+		$targetId = isset($payload['targetId']) && $payload['targetId'] !== null ? (int)$payload['targetId'] : null;
+		$draft = is_array($payload['draft'] ?? null) ? $payload['draft'] : [];
+
+		if ($sourceId <= 0) {
+			return [
+				'abort' => true,
+				'code' => 'INVALID_PAYLOAD',
+				'data' => 'sourceId debe ser un identificador numérico positivo.',
+			];
+		}
+
+		$source = $this->find($sourceId);
+		if (!$source) {
+			return [
+				'abort' => true,
+				'code' => 'NOT_FOUND',
+				'data' => "El registro origen #$sourceId no existe en el catálogo.",
+			];
+		}
+
+		if ($isBrand && $source->getIdMrk() !== 0) {
+			return [
+				'abort' => true,
+				'code' => 'INVALID_PAYLOAD',
+				'data' => "El registro #$sourceId no es una marca raíz.",
+			];
+		}
+		if (!$isBrand && $source->getIdMrk() === 0) {
+			return [
+				'abort' => true,
+				'code' => 'INVALID_PAYLOAD',
+				'data' => "El registro #$sourceId es una marca, no un modelo.",
+			];
+		}
+
+		// 1. Conteo de piezas únicas con COUNT(DISTINCT item_pub.id) y condición OR en marcas
+		$childIds = [];
+		if ($isBrand) {
+			$dqlModels = 'SELECT m.id FROM ' . MMEntity::class . ' m WHERE m.idMrk = :sourceId';
+			$childIds = array_map('intval', $this->_em->createQuery($dqlModels)
+				->setParameter('sourceId', $sourceId)
+				->getSingleColumnResult());
+
+			if (!empty($childIds)) {
+				$dqlCount = 'SELECT COUNT(DISTINCT i.id) FROM ' . ItemPub::class . ' i WHERE (i.mrkId = :sourceId OR i.mdlId IN (:childIds))';
+				$itemCount = (int) $this->_em->createQuery($dqlCount)
+					->setParameter('sourceId', $sourceId)
+					->setParameter('childIds', $childIds)
+					->getSingleScalarResult();
+			} else {
+				$dqlCount = 'SELECT COUNT(DISTINCT i.id) FROM ' . ItemPub::class . ' i WHERE i.mrkId = :sourceId';
+				$itemCount = (int) $this->_em->createQuery($dqlCount)
+					->setParameter('sourceId', $sourceId)
+					->getSingleScalarResult();
+			}
+		} else {
+			$dqlCount = 'SELECT COUNT(DISTINCT i.id) FROM ' . ItemPub::class . ' i WHERE i.mdlId = :sourceId';
+			$itemCount = (int) $this->_em->createQuery($dqlCount)
+				->setParameter('sourceId', $sourceId)
+				->getSingleScalarResult();
+		}
+
+		// 2. Extraer información del borrador
+		$draftBrands = $draft['brands'] ?? [];
+		$draftModels = $draft['models'] ?? [];
+		$draftConsolidations = $draft['consolidations'] ?? [];
+
+		$draftDeletedBrandIds = array_map('intval', $draftBrands['deleted'] ?? []);
+		$draftDeletedModelIds = array_map('intval', $draftModels['deleted'] ?? []);
+
+		$draftBrandConsolidationMap = [];
+		foreach ($draftConsolidations['brands'] ?? [] as $bc) {
+			if (isset($bc['sourceId'], $bc['targetId'])) {
+				$draftBrandConsolidationMap[(int)$bc['sourceId']] = (int)$bc['targetId'];
+			}
+		}
+
+		$draftModelConsolidationMap = [];
+		foreach ($draftConsolidations['models'] ?? [] as $mc) {
+			if (isset($mc['sourceId'], $mc['targetId'])) {
+				$draftModelConsolidationMap[(int)$mc['sourceId']] = (int)$mc['targetId'];
+			}
+		}
+
+		$canDeleteDirectly = ($itemCount === 0);
+		$canConsolidate = false;
+		$transferredModels = [];
+		$collisions = [];
+		$code = null;
+		$reason = null;
+
+		// 3. Evaluar viabilidad de consolidación si targetId fue provisto
+		if ($targetId !== null) {
+			if ($targetId <= 0 || $targetId === $sourceId) {
+				$canConsolidate = false;
+				$code = 'INVALID_CONSOLIDATION';
+				$reason = "El destino de consolidación debe ser mayor a 0 y distinto al origen (#$targetId).";
+			} else {
+				$isTargetDeletedInDraft = $isBrand
+					? (in_array($targetId, $draftDeletedBrandIds, true) || isset($draftBrandConsolidationMap[$targetId]))
+					: (in_array($targetId, $draftDeletedModelIds, true) || isset($draftModelConsolidationMap[$targetId]));
+
+				if ($isTargetDeletedInDraft) {
+					$canConsolidate = false;
+					$code = 'INVALID_CONSOLIDATION';
+					$reason = "El registro destino #$targetId está marcado para eliminación o consolidación en el borrador.";
+				} else {
+					$target = $this->find($targetId);
+					if (!$target) {
+						$canConsolidate = false;
+						$code = 'NOT_FOUND';
+						$reason = "El registro destino #$targetId no existe en el catálogo.";
+					} elseif ($isBrand && $target->getIdMrk() !== 0) {
+						$canConsolidate = false;
+						$code = 'INVALID_CONSOLIDATION';
+						$reason = "El registro destino #$targetId no es una marca válida.";
+					} elseif (!$isBrand && $target->getIdMrk() === 0) {
+						$canConsolidate = false;
+						$code = 'INVALID_CONSOLIDATION';
+						$reason = "El registro destino #$targetId no es un modelo válido.";
+					} elseif (!$isBrand) {
+						// Modelo: verificar pertenencia a misma marca o marca consolidada
+						$sBrand = $source->getIdMrk();
+						$tBrand = $target->getIdMrk();
+						$isSameBrand = ($sBrand === $tBrand);
+						$isConsolidatedBrand = (isset($draftBrandConsolidationMap[$sBrand]) && $draftBrandConsolidationMap[$sBrand] === $tBrand);
+						if (!$isSameBrand && !$isConsolidatedBrand) {
+							$canConsolidate = false;
+							$code = 'INVALID_CONSOLIDATION';
+							$reason = "El modelo #$sourceId no pertenece a la misma marca que #$targetId ni existe consolidación de marca activa en el borrador.";
+						} elseif (!$this->_checkEquivalence($source, $target)) {
+							$canConsolidate = false;
+							$code = 'INVALID_CONSOLIDATION';
+							$reason = "Los modelos '{$source->getName()}' (#$sourceId) y '{$target->getName()}' (#$targetId) no presentan equivalencia real de nombres ni variantes.";
+						} else {
+							$canConsolidate = true;
+						}
+					} else {
+						// Marca: verificar equivalencia real
+						if (!$this->_checkEquivalence($source, $target)) {
+							$canConsolidate = false;
+							$code = 'INVALID_CONSOLIDATION';
+							$reason = "Las marcas '{$source->getName()}' (#$sourceId) y '{$target->getName()}' (#$targetId) no presentan equivalencia real de nombres ni variantes.";
+						} else {
+							// Evaluar modelos hijos y colisiones
+							$sourceChildModels = $this->findBy(['idMrk' => $sourceId]);
+							$targetChildModels = $this->findBy(['idMrk' => $targetId]);
+
+							// Mapa de modelos existentes en la marca destino
+							$targetModelMap = [];
+							foreach ($targetChildModels as $tcm) {
+								if (!in_array($tcm->getId(), $draftDeletedModelIds, true)) {
+									$targetModelMap[mb_strtolower(trim($tcm->getName()))] = $tcm->getId();
+								}
+							}
+
+							// Agregar modelos creados y actualizados en el borrador para la marca destino
+							foreach ($draftModels['created'] ?? [] as $cm) {
+								$cmBrand = (int)($cm['idMrk'] ?? $cm['id_mrk'] ?? 0);
+								if ($cmBrand === $targetId && !empty($cm['name'])) {
+									$targetModelMap[mb_strtolower(trim($cm['name']))] = (int)($cm['id'] ?? 0);
+								}
+							}
+							foreach ($draftModels['updated'] ?? [] as $um) {
+								$umBrand = (int)($um['idMrk'] ?? $um['id_mrk'] ?? 0);
+								if ($umBrand === $targetId && !empty($um['name'])) {
+									$targetModelMap[mb_strtolower(trim($um['name']))] = (int)($um['id'] ?? 0);
+								}
+							}
+
+							$hasPendingCollision = false;
+							foreach ($sourceChildModels as $scm) {
+								$scmId = $scm->getId();
+								if (in_array($scmId, $draftDeletedModelIds, true)) {
+									continue;
+								}
+								if (isset($draftModelConsolidationMap[$scmId])) {
+									continue; // Colisión resuelta en borrador
+								}
+
+								$scmNorm = mb_strtolower(trim($scm->getName()));
+								if (isset($targetModelMap[$scmNorm])) {
+									$collisions[] = [
+										'sourceModelId' => $scmId,
+										'name' => $scm->getName(),
+										'targetModelId' => $targetModelMap[$scmNorm],
+									];
+									$hasPendingCollision = true;
+								} else {
+									$transferredModels[] = [
+										'id' => $scmId,
+										'name' => $scm->getName(),
+									];
+								}
+							}
+
+							if ($hasPendingCollision) {
+								$canConsolidate = false;
+								$code = 'COLLISION_CONFLICT';
+								$reason = "Existen " . count($collisions) . " modelo(s) colisionado(s) que requieren consolidación explícita en la marca destino.";
+							} else {
+								$canConsolidate = true;
+							}
+						}
+					}
+				}
+			}
+		} else {
+			if (!$canDeleteDirectly) {
+				$code = 'DEPENDENCY_CONFLICT';
+				$reason = "Existen $itemCount publicación(es) de inventario vinculadas al registro. Se requiere consolidar hacia un registro canónico para preservar las piezas.";
+			}
+		}
+
+		return [
+			'abort' => false,
+			'data' => [
+				'sourceId' => $sourceId,
+				'isBrand' => $isBrand,
+				'targetId' => $targetId,
+				'itemCount' => $itemCount,
+				'canDeleteDirectly' => $canDeleteDirectly,
+				'canConsolidate' => $canConsolidate,
+				'transferredModels' => $transferredModels,
+				'collisions' => $collisions,
+				'code' => $canConsolidate ? null : $code,
+				'reason' => $canConsolidate ? null : $reason,
+			],
+		];
 	}
 
 }
