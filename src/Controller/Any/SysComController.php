@@ -1096,6 +1096,7 @@ class SysComController extends AbstractController
 						'roles' => $colab['roles'] ?? [],
 						'accountType' => $accountType,
 						'isPartner' => $isPartner,
+						'desde' => $userExp['desde'] ?? null,
 					], Response::HTTP_OK);
 				}
 
@@ -1226,6 +1227,7 @@ class SysComController extends AbstractController
 					'roles' => $colab['roles'] ?? [],
 					'accountType' => $accountType,
 					'isPartner' => $isPartner,
+					'desde' => $userExp['desde'] ?? null,
 				], Response::HTTP_OK);
 			}
 		}
