@@ -174,11 +174,13 @@ class AdminCompanyController extends AbstractController
             unset($colab);
         }
 
-        $data['isPartner'] = $partnerService->isPartner($safeSlug);
+        $isPartner = $partnerService->isPartner($safeSlug);
+        $data['isPartner'] = $isPartner;
 
         return $this->json([
             'status' => 'ok',
             'slug' => $safeSlug,
+            'isPartner' => $isPartner,
             'expediente' => $data,
         ], Response::HTTP_OK);
     }
