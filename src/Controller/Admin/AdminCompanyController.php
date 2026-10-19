@@ -7,6 +7,7 @@ use App\Service\Any\Fsys\Fsys;
 use App\Service\Any\PartnerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -180,5 +181,152 @@ class AdminCompanyController extends AbstractController
             'slug' => $safeSlug,
             'expediente' => $data,
         ], Response::HTTP_OK);
+    }
+
+    /**
+     * Valida si la solicitud contiene una credencial administrativa confiable.
+     * Soporta 'any-token', 'x-admin-token' o 'Authorization: Bearer <token>'.
+     */
+    private function isAuthorizedAdmin(Request $request): bool
+    {
+        $token = $request->headers->get('any-token')
+            ?? $request->headers->get('x-admin-token')
+            ?? $request->headers->get('admin-token');
+
+        if ($token === null) {
+            $authHeader = $request->headers->get('Authorization') ?? '';
+            if (preg_match('/Bearer\s+(\S+)/i', $authHeader, $matches)) {
+                $token = $matches[1];
+            }
+        }
+
+        if ($token === null || trim($token) === '') {
+            return false;
+        }
+
+        $expected = $this->getParameter('anyToken');
+        if (!empty($expected) && hash_equals((string)$expected, trim($token))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Lista los socios registrados en partners.json.
+     * Requiere autorización administrativa.
+     */
+    #[Route('/partners', methods: ['GET'])]
+    public function listPartners(Request $request, PartnerService $partnerService): JsonResponse
+    {
+        if (!$this->isAuthorizedAdmin($request)) {
+            return $this->json([
+                'error' => 'unauthorized',
+                'message' => 'Acceso administrativo no autorizado',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        try {
+            $partners = $partnerService->getPartners();
+            return $this->json([
+                'status' => 'ok',
+                'partners' => $partners,
+                'total' => count($partners),
+            ], Response::HTTP_OK);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'server_error',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Agrega un slug a partners.json de forma atómica e idempotente.
+     * Valida existencia de expediente de empresa previo a la asignación.
+     * Requiere autorización administrativa.
+     */
+    #[Route('/partners/{slug}', methods: ['POST', 'PUT'])]
+    public function addPartner(string $slug, Request $request, PartnerService $partnerService): JsonResponse
+    {
+        if (!$this->isAuthorizedAdmin($request)) {
+            return $this->json([
+                'error' => 'unauthorized',
+                'message' => 'Acceso administrativo no autorizado',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $safeSlug = preg_replace('/[^a-zA-Z0-9_\-]/', '', strtolower(trim($slug)));
+        if (empty($safeSlug)) {
+            return $this->json([
+                'error' => 'slug_invalid',
+                'message' => 'Slug de socio no válido',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Validar que la empresa exista y sea un expediente empresarial legítimo
+        $folder = (string) $this->getParameter('dtaCtc');
+        $filePath = $folder . DIRECTORY_SEPARATOR . $safeSlug . '.json';
+        if (!self::isValidCompanyDossier($filePath, $safeSlug . '.json')) {
+            return $this->json([
+                'error' => 'company_not_found',
+                'message' => 'No se puede registrar como socio: la empresa no existe o no posee un expediente válido',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $partnerService->addPartner($safeSlug);
+
+            return $this->json([
+                'status' => 'ok',
+                'slug' => $safeSlug,
+                'isPartner' => true,
+                'message' => 'Socio registrado correctamente',
+            ], Response::HTTP_OK);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'partner_update_failed',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Remueve un slug de partners.json de forma atómica e idempotente.
+     * Requiere autorización administrativa.
+     */
+    #[Route('/partners/{slug}', methods: ['DELETE'])]
+    public function removePartner(string $slug, Request $request, PartnerService $partnerService): JsonResponse
+    {
+        if (!$this->isAuthorizedAdmin($request)) {
+            return $this->json([
+                'error' => 'unauthorized',
+                'message' => 'Acceso administrativo no autorizado',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $safeSlug = preg_replace('/[^a-zA-Z0-9_\-]/', '', strtolower(trim($slug)));
+        if (empty($safeSlug)) {
+            return $this->json([
+                'error' => 'slug_invalid',
+                'message' => 'Slug de socio no válido',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $partnerService->removePartner($safeSlug);
+
+            return $this->json([
+                'status' => 'ok',
+                'slug' => $safeSlug,
+                'isPartner' => false,
+                'message' => 'Socio removido correctamente',
+            ], Response::HTTP_OK);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'partner_update_failed',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
