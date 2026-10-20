@@ -203,6 +203,9 @@ class ExpedienteManager
         $oneMonthLater = (clone $now)->modify('+1 month');
         $defaultNif = $oneMonthLater->getTimestamp() * 1000;
 
+        $canonicalPlans = ['test', 'vip', 'plus', 'pro', 'max', 'imax'];
+        $hasCanonicalPlan = isset($currentExp['plan']) && in_array(strtolower((string)$currentExp['plan']), $canonicalPlans, true);
+
         // Si no existen en el expediente actual ni en el incoming
         if (!isset($currentExp['plan']) || empty($currentExp['plan'])) {
             $currentExp['plan'] = 'pro';
@@ -210,8 +213,8 @@ class ExpedienteManager
             if (!isset($currentExp['desde'])) {
                 $currentExp['desde'] = $now->getTimestamp() * 1000;
             }
-        } elseif ($currentExp['plan'] === 'renova' || (isset($incomingData['plan']) && $incomingData['plan'] === 'renova')) {
-            // Si está marcado para renovar
+        } elseif (!$hasCanonicalPlan && ($currentExp['plan'] === 'renova' || (isset($incomingData['plan']) && $incomingData['plan'] === 'renova'))) {
+            // Si NO tiene plan canónico de Auth y está marcado para renovar
             $currentExp['plan'] = 'pro';
             $currentExp['nif'] = $defaultNif;
         }
@@ -576,4 +579,161 @@ class ExpedienteManager
             }
         }
     }
+
+    /**
+     * Sincroniza unilateralmente la suscripción comercial (plan, nif) con control de revisión monotónica.
+     *
+     * @param string $slug Slug de la empresa
+     * @param string $plan Plan canónico validado ('test', 'vip', 'plus', 'pro', 'max', 'imax')
+     * @param int $nif Timestamp epoch en milisegundos de fin de vigencia
+     * @param int $commercialRevision Revisión monotónica emitida por Auth
+     * @return array [status: 'updated'|'already_applied'|'ignored_stale', currentRevision: int, expediente: array]
+     */
+    public function updateSubscriptionByAdmin(string $slug, string $plan, int $nif, int $commercialRevision): array
+    {
+        $slug = trim($slug);
+        if (empty($slug)) {
+            throw new \InvalidArgumentException('Slug no proporcionado.');
+        }
+
+        $plan = strtolower(trim($plan));
+        $canonicalPlans = ['test', 'vip', 'plus', 'pro', 'max', 'imax'];
+        if (!in_array($plan, $canonicalPlans, true)) {
+            throw new \InvalidArgumentException("Plan inválido: '$plan'. Debe ser uno de: " . implode(', ', $canonicalPlans));
+        }
+
+        if ($nif <= 0) {
+            throw new \InvalidArgumentException("NIF inválido: '$nif'. Debe ser un timestamp en milisegundos positivo.");
+        }
+
+        if ($commercialRevision <= 0) {
+            throw new \InvalidArgumentException("commercialRevision inválida: '$commercialRevision'. Debe ser mayor a 0.");
+        }
+
+        $dirPath = Path::canonicalize($this->params->get(AnyPath::$DTACTC));
+        if (!$this->filesystem->exists($dirPath)) {
+            $this->filesystem->mkdir($dirPath, 0755);
+        }
+
+        $filePath = Path::canonicalize($dirPath . '/' . $slug . '.json');
+        $lockPath = Path::canonicalize($dirPath . '/' . $slug . '.lock');
+
+        $lockFp = @fopen($lockPath, 'c+');
+        if ($lockFp === false) {
+            throw new \RuntimeException("No se pudo abrir el archivo de bloqueo: $lockPath");
+        }
+
+        if (!@flock($lockFp, LOCK_EX)) {
+            @fclose($lockFp);
+            throw new \RuntimeException("No se pudo obtener el bloqueo de archivo para: $slug.lock");
+        }
+
+        $tmpFile = null;
+
+        try {
+            if (!file_exists($filePath)) {
+                throw new \RuntimeException("El expediente de la empresa '$slug' no existe.");
+            }
+
+            $rawContent = @file_get_contents($filePath);
+            if ($rawContent === false || trim($rawContent) === '') {
+                throw new \RuntimeException("El expediente de la empresa '$slug' está vacío o no se puede leer.");
+            }
+
+            $currentExp = json_decode($rawContent, true);
+            if (!is_array($currentExp)) {
+                throw new \RuntimeException("El contenido del expediente '$slug' contiene JSON inválido.");
+            }
+
+            $currentRevision = isset($currentExp['commercialRevision']) && is_numeric($currentExp['commercialRevision'])
+                ? (int)$currentExp['commercialRevision']
+                : 0;
+
+            // 1. Descarte de revisión obsoleta (mensajes desordenados o retrasados)
+            if ($commercialRevision < $currentRevision) {
+                return [
+                    'status' => 'ignored_stale',
+                    'slug' => $slug,
+                    'currentRevision' => $currentRevision,
+                    'incomingRevision' => $commercialRevision,
+                    'plan' => $currentExp['plan'] ?? '',
+                    'nif' => $currentExp['nif'] ?? 0,
+                    'expediente' => $currentExp,
+                ];
+            }
+
+            // 2. Reintento idéntico (idempotencia)
+            $currentPlan = isset($currentExp['plan']) ? strtolower(trim((string)$currentExp['plan'])) : '';
+            $currentNif = isset($currentExp['nif']) && is_numeric($currentExp['nif']) ? (int)$currentExp['nif'] : 0;
+
+            if ($commercialRevision === $currentRevision && $currentPlan === $plan && $currentNif === $nif) {
+                return [
+                    'status' => 'already_applied',
+                    'slug' => $slug,
+                    'currentRevision' => $currentRevision,
+                    'incomingRevision' => $commercialRevision,
+                    'plan' => $currentPlan,
+                    'nif' => $currentNif,
+                    'expediente' => $currentExp,
+                ];
+            }
+
+            // 3. Aplicar mutación comercial de mayor o igual revisión
+            $currentExp['plan'] = $plan;
+            $currentExp['nif'] = $nif;
+            $currentExp['commercialRevision'] = $commercialRevision;
+
+            $currentVersion = isset($currentExp['version']) && is_numeric($currentExp['version'])
+                ? (int)$currentExp['version']
+                : 0;
+            $currentExp['version'] = $currentVersion + 1;
+            $currentExp['updatedAt'] = (int) round(microtime(true) * 1000);
+
+            // 4. Escritura atómica
+            $encoded = json_encode($currentExp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if ($encoded === false) {
+                throw new \RuntimeException("Error al serializar el expediente JSON para: $slug");
+            }
+
+            $tmpFile = tempnam($dirPath, 'exp_tmp_');
+            if ($tmpFile === false) {
+                throw new \RuntimeException("No se pudo crear archivo temporal para reemplazo atómico en: $dirPath");
+            }
+
+            $bytesWritten = @file_put_contents($tmpFile, $encoded);
+            if ($bytesWritten === false || $bytesWritten !== strlen($encoded)) {
+                throw new \RuntimeException("Escritura incompleta o fallida en archivo temporal: $tmpFile");
+            }
+
+            if (!@rename($tmpFile, $filePath)) {
+                @unlink($filePath);
+                if (!@rename($tmpFile, $filePath)) {
+                    throw new \RuntimeException("Fallo al renombrar atómicamente el archivo temporal hacia $filePath");
+                }
+            }
+            $tmpFile = null;
+
+            return [
+                'status' => 'updated',
+                'slug' => $slug,
+                'currentRevision' => $commercialRevision,
+                'incomingRevision' => $commercialRevision,
+                'plan' => $plan,
+                'nif' => $nif,
+                'version' => $currentExp['version'],
+                'updatedAt' => $currentExp['updatedAt'],
+                'expediente' => $currentExp,
+            ];
+
+        } finally {
+            if ($tmpFile !== null && file_exists($tmpFile)) {
+                @unlink($tmpFile);
+            }
+            if (is_resource($lockFp)) {
+                @flock($lockFp, LOCK_UN);
+                @fclose($lockFp);
+            }
+        }
+    }
 }
+

@@ -274,6 +274,83 @@ class AdminCompanyController extends AbstractController
     }
 
     /**
+     * Sincroniza unilateralmente la suscripción comercial (plan, nif) con control de revisión monotónica.
+     * Requiere autorización administrativa con ANY_TOKEN.
+     */
+    #[Route('/companies/{slug}/subscription-sync', methods: ['PATCH', 'PUT'])]
+    public function updateSubscriptionSync(
+        string $slug,
+        Request $request,
+        ExpedienteManager $expManager,
+        PartnerService $partnerService
+    ): JsonResponse {
+        if (!$this->isAuthorizedAdmin($request)) {
+            return $this->json([
+                'error' => 'unauthorized',
+                'message' => 'Acceso administrativo no autorizado.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $safeSlug = preg_replace('/[^a-zA-Z0-9_\-]/', '', strtolower(trim($slug)));
+        if (empty($safeSlug)) {
+            return $this->json([
+                'error' => 'slug_invalid',
+                'message' => 'Slug no válido',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $rawBody = $request->getContent();
+        $payload = json_decode($rawBody, true);
+        if (!is_array($payload)) {
+            return $this->json([
+                'error' => 'invalid_json',
+                'message' => 'Cuerpo de solicitud JSON no válido',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $plan = isset($payload['plan']) ? strtolower(trim((string)$payload['plan'])) : '';
+        $nif = isset($payload['nif']) && is_numeric($payload['nif']) ? (int)$payload['nif'] : 0;
+        $commercialRevision = isset($payload['commercialRevision']) && is_numeric($payload['commercialRevision'])
+            ? (int)$payload['commercialRevision']
+            : 0;
+
+        if (empty($plan) || $nif <= 0 || $commercialRevision <= 0) {
+            return $this->json([
+                'error' => 'invalid_parameters',
+                'message' => 'Los campos plan (canónico), nif (>0) y commercialRevision (>0) son requeridos.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = $expManager->updateSubscriptionByAdmin($safeSlug, $plan, $nif, $commercialRevision);
+
+            $exp = $result['expediente'] ?? [];
+            if (isset($exp['colabs']) && is_array($exp['colabs'])) {
+                foreach ($exp['colabs'] as &$colab) {
+                    if (is_array($colab)) {
+                        unset($colab['pass']);
+                    }
+                }
+                unset($colab);
+            }
+            $result['expediente'] = $exp;
+            $result['isPartner'] = $partnerService->isPartner($safeSlug);
+
+            return $this->json($result, Response::HTTP_OK);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json([
+                'error' => 'bad_request',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'sync_failed',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Valida si la solicitud contiene una credencial administrativa confiable.
      * Soporta 'any-token', 'x-admin-token' o 'Authorization: Bearer <token>'.
      */
