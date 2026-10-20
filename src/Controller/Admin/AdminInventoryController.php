@@ -38,10 +38,12 @@ class AdminInventoryController extends AbstractController
     public function listPublications(Request $request): JsonResponse
     {
         try {
-            $this->jwtService->authenticateRequest($request, 'inventory.read');
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.read');
         } catch (\Throwable $e) {
             return $this->jwtService->handleAuthError($e);
         }
+
+        $canViewCosto = $this->jwtService->hasPermission($context->getRoleAdmin(), 'inventory.read');
 
         $page = (int)$request->query->get('page', 1);
         $limit = (int)$request->query->get('limit', 50);
@@ -68,7 +70,8 @@ class AdminInventoryController extends AbstractController
                 $page,
                 $limit,
                 $sortBy,
-                $sortDir
+                $sortDir,
+                $canViewCosto
             );
 
             return new JsonResponse([

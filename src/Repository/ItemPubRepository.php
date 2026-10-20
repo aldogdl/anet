@@ -967,7 +967,8 @@ class ItemPubRepository extends ServiceEntityRepository
 		int $page = 1,
 		int $limit = 50,
 		string $sortBy = 'updatedAt',
-		string $sortDir = 'DESC'
+		string $sortDir = 'DESC',
+		bool $includeCosto = false
 	): array {
 		$page = max(1, $page);
 		$limit = min(100, max(1, $limit));
@@ -1029,8 +1030,10 @@ class ItemPubRepository extends ServiceEntityRepository
 			'it.anioInicio',
 			'it.anioFin',
 			'it.price',
+			'it.costo',
 			'it.thumb',
 			'it.imgBig',
+			'it.extras',
 			'it.slug',
 			'it.isActive',
 			'it.stt',
@@ -1045,8 +1048,8 @@ class ItemPubRepository extends ServiceEntityRepository
 
 		$rawResults = $qb->getQuery()->getArrayResult();
 
-		// Formateo estricto excluyendo waId, costo y datos privados
-		$items = array_map(function(array $row) {
+		// Formateo estricto excluyendo waId y protegiendo costo segun permisos
+		$items = array_map(function(array $row) use ($includeCosto) {
 			$createdStr = null;
 			if (isset($row['created'])) {
 				$createdStr = $row['created'] instanceof \DateTimeInterface
@@ -1061,6 +1064,27 @@ class ItemPubRepository extends ServiceEntityRepository
 					: (string)$row['updatedAt'];
 			}
 
+			// Decodificacion segura de extras (array, string JSON o null)
+			$extras = [];
+			if (isset($row['extras'])) {
+				if (is_array($row['extras'])) {
+					$extras = $row['extras'];
+				} elseif (is_string($row['extras']) && trim($row['extras']) !== '') {
+					$decoded = json_decode($row['extras'], true);
+					if (is_array($decoded)) {
+						$extras = $decoded;
+					}
+				}
+			}
+
+			$pathImg = null;
+			if (isset($extras['pathImg']) && is_string($extras['pathImg']) && trim($extras['pathImg']) !== '') {
+				$pathImg = trim($extras['pathImg']);
+			}
+
+			$price = isset($row['price']) && $row['price'] !== null ? (float)$row['price'] : null;
+			$costo = ($includeCosto && isset($row['costo']) && $row['costo'] !== null) ? (float)$row['costo'] : null;
+
 			return [
 				'id' => (int)$row['id'],
 				'idSrc' => (string)($row['idSrc'] ?? ''),
@@ -1070,9 +1094,13 @@ class ItemPubRepository extends ServiceEntityRepository
 				'mdlId' => (int)($row['mdlId'] ?? 0),
 				'anioInicio' => $row['anioInicio'] !== null ? (int)$row['anioInicio'] : null,
 				'anioFin' => $row['anioFin'] !== null ? (int)$row['anioFin'] : null,
-				'precio' => (float)($row['price'] ?? 0.0),
+				'precio' => $price ?? 0.0,
+				'price' => $price,
+				'costo' => $costo,
 				'thumb' => (string)($row['thumb'] ?? ''),
 				'imgBig' => (string)($row['imgBig'] ?? ''),
+				'pathImg' => $pathImg,
+				'extras' => $extras,
 				'empresaSlug' => (string)($row['slug'] ?? ''),
 				'isActive' => (bool)($row['isActive'] ?? false),
 				'stt' => (int)($row['stt'] ?? 0),
