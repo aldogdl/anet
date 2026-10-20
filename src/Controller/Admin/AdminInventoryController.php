@@ -136,4 +136,48 @@ class AdminInventoryController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Retorna las 8 métricas reales de inventario (globales o por empresa).
+     * Aplica reglas confirmadas de stt y diferenciación de tupla mrk_id/mdl_id.
+     */
+    #[Route('/metrics', methods: ['GET'])]
+    public function getMetrics(Request $request): JsonResponse
+    {
+        try {
+            $this->jwtService->authenticateRequest($request, 'inventory.read');
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $slug = $request->query->get('slug');
+        if ($slug !== null) {
+            $slug = trim($slug);
+            if ($slug === '' || $slug === 'Todas las empresas') {
+                $slug = null;
+            }
+        }
+
+        try {
+            $metrics = $this->itemPubRepository->getAdminInventoryMetrics($slug);
+
+            return new JsonResponse([
+                'abort' => false,
+                'msg' => 'Métricas de inventario calculadas exitosamente',
+                'body' => [
+                    'metrics' => $metrics,
+                    'scope' => $slug ?? 'all',
+                ],
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'internal_error',
+                'message' => 'Error al calcular métricas de inventario: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }
+

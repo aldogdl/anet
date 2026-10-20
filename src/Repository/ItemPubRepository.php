@@ -1141,5 +1141,48 @@ class ItemPubRepository extends ServiceEntityRepository
 		}, $results);
 	}
 
+	/**
+	 * Consulta agregada de métricas globales o filtradas por empresa.
+	 * Aplica las reglas de negocio verificadas de stt:
+	 * - Editadas: stt = 3
+	 * - Pausadas: stt = 501
+	 * - Sin revisión: stt > 299 AND stt < 501
+	 * - Con errores: stt > 399 AND stt < 501 (subconjunto no excluyente)
+	 * Identificador de modelo unívoco por tupla (mrk_id, mdl_id).
+	 */
+	public function getAdminInventoryMetrics(?string $slug = null): array
+	{
+		$conn = $this->_em->getConnection();
+		$qb = $conn->createQueryBuilder();
+
+		$qb->select(
+			'COUNT(*) AS total_inventario',
+			'COUNT(DISTINCT CASE WHEN slug IS NOT NULL AND slug != \'\' THEN slug END) AS empresas',
+			'COUNT(DISTINCT CASE WHEN mrk_id > 0 THEN mrk_id END) AS marcas',
+			'COUNT(DISTINCT CASE WHEN mrk_id > 0 AND mdl_id > 0 THEN CONCAT(mrk_id, \':\', mdl_id) END) AS modelos',
+			'COALESCE(SUM(CASE WHEN stt = 3 THEN 1 ELSE 0 END), 0) AS editadas',
+			'COALESCE(SUM(CASE WHEN stt = 501 THEN 1 ELSE 0 END), 0) AS pausadas',
+			'COALESCE(SUM(CASE WHEN stt > 299 AND stt < 501 THEN 1 ELSE 0 END), 0) AS sin_revision',
+			'COALESCE(SUM(CASE WHEN stt > 399 AND stt < 501 THEN 1 ELSE 0 END), 0) AS con_errores'
+		)->from('item_pub');
+
+		if ($slug !== null && trim($slug) !== '' && trim($slug) !== 'Todas las empresas') {
+			$qb->where('slug = :slug')->setParameter('slug', trim($slug));
+		}
+
+		$res = $qb->executeQuery()->fetchAssociative() ?: [];
+
+		return [
+			'totalInventario' => (int) ($res['total_inventario'] ?? 0),
+			'empresas' => (int) ($res['empresas'] ?? 0),
+			'marcas' => (int) ($res['marcas'] ?? 0),
+			'modelos' => (int) ($res['modelos'] ?? 0),
+			'editadas' => (int) ($res['editadas'] ?? 0),
+			'pausadas' => (int) ($res['pausadas'] ?? 0),
+			'sinRevision' => (int) ($res['sin_revision'] ?? 0),
+			'conErrores' => (int) ($res['con_errores'] ?? 0),
+		];
+	}
+
 }
 
