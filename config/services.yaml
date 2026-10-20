@@ -54,6 +54,7 @@ parameters:
     app.timezone: 'America/Mexico_City'
     urlWhVPS: 'https://yonkerosmx.com/anet/wh'
     anetWebhookSecret: '%env(default::ANET_WEBHOOK_SECRET)%'
+    authJwtPublicKeyPath: '%env(AUTH_PUBLIC_KEY_PATH)%'
 
 services:
     # default configuration for services in *this* file
@@ -77,4 +78,9 @@ services:
         arguments:
             $projectDir: '%phtml%'
             $imageDriver: '%app.image_driver%'
+
+    App\Service\Security\AdminJwtService:
+        arguments:
+            $publicKeyPath: '%authJwtPublicKeyPath%'
+            $anyToken: '%anyToken%'
 

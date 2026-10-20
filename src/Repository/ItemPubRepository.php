@@ -958,5 +958,188 @@ class ItemPubRepository extends ServiceEntityRepository
 		return $this->getPubByIdSrcToArray($idSrc, $slug);
 	}
 
+	/**
+	 * Consulta paginada y filtrada para la API administrativa con proyeccion estricta de datos publicos.
+	 * Excluye rigurosamente waId, costo y cualquier dato privado sensible.
+	 */
+	public function findAdminPublications(
+		array $filters = [],
+		int $page = 1,
+		int $limit = 50,
+		string $sortBy = 'updatedAt',
+		string $sortDir = 'DESC'
+	): array {
+		$page = max(1, $page);
+		$limit = min(100, max(1, $limit));
+
+		$allowedSortFields = [
+			'id' => 'it.id',
+			'updatedAt' => 'it.updatedAt',
+			'created' => 'it.created',
+			'precio' => 'it.price',
+			'price' => 'it.price',
+			'pieza' => 'it.pieza',
+		];
+		$orderField = $allowedSortFields[strtolower(trim($sortBy))] ?? 'it.updatedAt';
+		$orderDir = strtoupper(trim($sortDir)) === 'ASC' ? 'ASC' : 'DESC';
+
+		$qb = $this->createQueryBuilder('it');
+		$qbCount = $this->createQueryBuilder('it')->select('COUNT(it.id)');
+
+		// Filtro por empresa (slug)
+		if (!empty($filters['slug'])) {
+			$slug = trim($filters['slug']);
+			$qb->andWhere('it.slug = :slug')->setParameter('slug', $slug);
+			$qbCount->andWhere('it.slug = :slug')->setParameter('slug', $slug);
+		}
+
+		// Filtro por estado
+		if (!empty($filters['status'])) {
+			$status = strtolower(trim($filters['status']));
+			if ($status === 'active') {
+				$qb->andWhere('it.isActive = 1 AND it.stt = 1');
+				$qbCount->andWhere('it.isActive = 1 AND it.stt = 1');
+			} elseif ($status === 'paused' || $status === 'inactive' || $status === 'canceladas') {
+				$qb->andWhere('(it.isActive = 0 OR it.stt = 2)');
+				$qbCount->andWhere('(it.isActive = 0 OR it.stt = 2)');
+			}
+		}
+
+		// Busqueda de texto libre (pieza, iku, idSrc)
+		if (!empty($filters['search'])) {
+			$search = '%' . trim($filters['search']) . '%';
+			$qb->andWhere('(it.pieza LIKE :search OR it.iku LIKE :search OR it.idSrc LIKE :search)')
+			   ->setParameter('search', $search);
+			$qbCount->andWhere('(it.pieza LIKE :search OR it.iku LIKE :search OR it.idSrc LIKE :search)')
+			        ->setParameter('search', $search);
+		}
+
+		// Total de registros
+		$totalItems = (int)$qbCount->getQuery()->getSingleScalarResult();
+
+		// Paginacion
+		$offset = ($page - 1) * $limit;
+		$qb->select(
+			'it.id',
+			'it.idSrc',
+			'it.iku',
+			'it.pieza',
+			'it.mrkId',
+			'it.mdlId',
+			'it.anioInicio',
+			'it.anioFin',
+			'it.price',
+			'it.thumb',
+			'it.imgBig',
+			'it.slug',
+			'it.isActive',
+			'it.stt',
+			'it.fromDev',
+			'it.src',
+			'it.created',
+			'it.updatedAt'
+		)
+		->orderBy($orderField, $orderDir)
+		->setFirstResult($offset)
+		->setMaxResults($limit);
+
+		$rawResults = $qb->getQuery()->getArrayResult();
+
+		// Formateo estricto excluyendo waId, costo y datos privados
+		$items = array_map(function(array $row) {
+			$createdStr = null;
+			if (isset($row['created'])) {
+				$createdStr = $row['created'] instanceof \DateTimeInterface
+					? $row['created']->format(\DateTimeInterface::ATOM)
+					: (string)$row['created'];
+			}
+
+			$updatedStr = null;
+			if (isset($row['updatedAt'])) {
+				$updatedStr = $row['updatedAt'] instanceof \DateTimeInterface
+					? $row['updatedAt']->format(\DateTimeInterface::ATOM)
+					: (string)$row['updatedAt'];
+			}
+
+			return [
+				'id' => (int)$row['id'],
+				'idSrc' => (string)($row['idSrc'] ?? ''),
+				'iku' => (string)($row['iku'] ?? ''),
+				'pieza' => (string)($row['pieza'] ?? ''),
+				'mrkId' => (int)($row['mrkId'] ?? 0),
+				'mdlId' => (int)($row['mdlId'] ?? 0),
+				'anioInicio' => $row['anioInicio'] !== null ? (int)$row['anioInicio'] : null,
+				'anioFin' => $row['anioFin'] !== null ? (int)$row['anioFin'] : null,
+				'precio' => (float)($row['price'] ?? 0.0),
+				'thumb' => (string)($row['thumb'] ?? ''),
+				'imgBig' => (string)($row['imgBig'] ?? ''),
+				'empresaSlug' => (string)($row['slug'] ?? ''),
+				'isActive' => (bool)($row['isActive'] ?? false),
+				'stt' => (int)($row['stt'] ?? 0),
+				'fromDev' => (string)($row['fromDev'] ?? ''),
+				'src' => (string)($row['src'] ?? ''),
+				'created' => $createdStr,
+				'updatedAt' => $updatedStr,
+			];
+		}, $rawResults);
+
+		$totalPages = $limit > 0 ? (int)ceil($totalItems / $limit) : 1;
+
+		return [
+			'items' => $items,
+			'pagination' => [
+				'page' => $page,
+				'limit' => $limit,
+				'totalItems' => $totalItems,
+				'totalPages' => $totalPages,
+				'hasNextPage' => $page < $totalPages,
+				'hasPrevPage' => $page > 1,
+			],
+			'filters' => [
+				'slug' => $filters['slug'] ?? null,
+				'search' => $filters['search'] ?? null,
+				'status' => $filters['status'] ?? null,
+				'sortBy' => $sortBy,
+				'sortDir' => $orderDir,
+			],
+		];
+	}
+
+	/**
+	 * Consulta agregada de empresas con inventario real y desglose de publicaciones activas/inactivas.
+	 * Ejecuta un solo GROUP BY en MySQL sin problemas de N+1.
+	 */
+	public function getAdminCompaniesWithInventory(): array
+	{
+		$dql = 'SELECT it.slug, '
+		     . 'COUNT(it.id) as totalItems, '
+		     . 'SUM(CASE WHEN it.isActive = 1 AND it.stt = 1 THEN 1 ELSE 0 END) as activeItems, '
+		     . 'SUM(CASE WHEN it.isActive = 0 OR it.stt = 2 THEN 1 ELSE 0 END) as inactiveItems, '
+		     . 'MAX(it.updatedAt) as lastUpdated '
+		     . 'FROM ' . ItemPub::class . ' it '
+		     . 'WHERE it.slug IS NOT NULL AND it.slug != \'\' '
+		     . 'GROUP BY it.slug '
+		     . 'ORDER BY totalItems DESC';
+
+		$results = $this->_em->createQuery($dql)->getArrayResult();
+
+		return array_map(function(array $row) {
+			$lastUpdatedStr = null;
+			if (isset($row['lastUpdated'])) {
+				$lastUpdatedStr = $row['lastUpdated'] instanceof \DateTimeInterface
+					? $row['lastUpdated']->format(\DateTimeInterface::ATOM)
+					: (string)$row['lastUpdated'];
+			}
+
+			return [
+				'slug' => (string)$row['slug'],
+				'totalItems' => (int)($row['totalItems'] ?? 0),
+				'activeItems' => (int)($row['activeItems'] ?? 0),
+				'inactiveItems' => (int)($row['inactiveItems'] ?? 0),
+				'lastUpdated' => $lastUpdatedStr,
+			];
+		}, $results);
+	}
+
 }
 
