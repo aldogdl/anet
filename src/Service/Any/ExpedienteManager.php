@@ -49,38 +49,77 @@ class ExpedienteManager
         }
 
         $filePath = Path::canonicalize($dirPath . '/' . $slug . '.json');
+        $lockPath = Path::canonicalize($dirPath . '/' . $slug . '.lock');
 
-        // Abrir archivo con bloqueo exclusivo atómico (flock)
-        $fp = fopen($filePath, 'c+');
-        if (!$fp) {
-            throw new \RuntimeException("No se pudo abrir el archivo de expediente: $filePath");
+        // Abrir archivo de bloqueo dedicado y estable
+        $lockFp = @fopen($lockPath, 'c+');
+        if ($lockFp === false) {
+            throw new \RuntimeException("No se pudo abrir el archivo de bloqueo: $lockPath");
         }
 
-        if (!flock($fp, LOCK_EX)) {
-            fclose($fp);
-            throw new \RuntimeException("No se pudo obtener el bloqueo de archivo para: $slug.json");
+        if (!@flock($lockFp, LOCK_EX)) {
+            @fclose($lockFp);
+            throw new \RuntimeException("No se pudo obtener el bloqueo de archivo para: $slug.lock");
         }
+
+        $tmpFile = null;
 
         try {
-            // 1. Leer contenido actual en disco
-            rewind($fp);
-            $fileContent = stream_get_contents($fp);
+            // 1. Leer contenido actual en disco bajo bloqueo exclusivo
             $currentExp = [];
-            if (!empty($fileContent)) {
-                $decoded = json_decode($fileContent, true);
-                if (is_array($decoded)) {
-                    $currentExp = $decoded;
+            if (file_exists($filePath)) {
+                $fileContent = @file_get_contents($filePath);
+                if ($fileContent !== false && trim($fileContent) !== '') {
+                    $decoded = json_decode($fileContent, true);
+                    if (is_array($decoded)) {
+                        $currentExp = $decoded;
+                    }
                 }
             }
 
-            // 2. Gestionar caso especial de registro inicial
-            if (isset($incomingData['registro'])) {
+            $pendingRegAuthDelete = false;
+
+            // 2. Gestionar caso de registro inicial y reintentos idempotentes
+            if (!empty($incomingData['registro'])) {
+                $incomingWaId = $senderWaId ?? $incomingData['waId'] ?? ($incomingData['colabs'][0]['waId'] ?? null);
+
+                // Caso 2.A: El expediente ya existe y está consolidado en disco
+                if (!empty($currentExp['colabs']) && is_array($currentExp['colabs'])) {
+                    // Validar si es un reintento idempotente del fundador principal
+                    $isOriginalFounder = false;
+                    $normalizedIncoming = $incomingWaId ? $this->normalizeWaId((string)$incomingWaId) : '';
+                    foreach ($currentExp['colabs'] as $existingColab) {
+                        $cRoles = $existingColab['roles'] ?? [];
+                        if (in_array('ROLE_MAIN', $cRoles, true)) {
+                            $existingWa = $existingColab['waId'] ?? '';
+                            if ($existingWa === $incomingWaId || ($normalizedIncoming !== '' && $this->normalizeWaId((string)$existingWa) === $normalizedIncoming)) {
+                                $isOriginalFounder = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if ($isOriginalFounder) {
+                        // Reintento legítimo tras respuesta HTTP perdida: limpiar cualquier residuo de reg_auth y retornar expediente intacto
+                        $this->fsys->del(AnyPath::$REGAUTH, $slug . '.json');
+                        return $currentExp;
+                    }
+
+                    // Si no es el fundador original, no se permite usurpar una empresa ya registrada
+                    throw new \RuntimeException('La empresa ya se encuentra registrada por otro usuario.');
+                }
+
+                // Caso 2.B: Registro inicial legítimo (expediente aún no existe)
                 $reg = $this->fsys->get(AnyPath::$REGAUTH, $slug . '.json');
-                $this->fsys->del(AnyPath::$REGAUTH, $slug . '.json');
-                unset($incomingData['registro']);
-                if ($reg && isset($reg['asesor'])) {
+                if (!$reg || !isset($reg['msg']) || $reg['msg'] !== 'ok') {
+                    throw new \RuntimeException('Registro no autorizado por un asesor.');
+                }
+
+                if (isset($reg['asesor'])) {
                     $incomingData['asesor'] = $reg['asesor'];
                 }
+                unset($incomingData['registro']);
+                $pendingRegAuthDelete = true;
             }
 
             // 3. Evaluar y normalizar Plan y NIF (facturación protegida)
@@ -111,17 +150,46 @@ class ExpedienteManager
             $currentExp['version'] = $currentVersion + 1;
             $currentExp['updatedAt'] = (int) round(microtime(true) * 1000);
 
-            // 8. Escribir atómicamente a disco
-            ftruncate($fp, 0);
-            rewind($fp);
-            fwrite($fp, json_encode($currentExp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-            fflush($fp);
+            // 8. Serializar y escribir atómicamente mediante archivo temporal
+            $encoded = json_encode($currentExp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if ($encoded === false) {
+                throw new \RuntimeException("Error al serializar el expediente JSON para: $slug");
+            }
+
+            $tmpFile = tempnam($dirPath, 'exp_tmp_');
+            if ($tmpFile === false) {
+                throw new \RuntimeException("No se pudo crear archivo temporal para reemplazo atómico en: $dirPath");
+            }
+
+            $bytesWritten = @file_put_contents($tmpFile, $encoded);
+            if ($bytesWritten === false || $bytesWritten !== strlen($encoded)) {
+                throw new \RuntimeException("Escritura incompleta o fallida en archivo temporal: $tmpFile");
+            }
+
+            // Reemplazo atómico del archivo destino
+            if (!@rename($tmpFile, $filePath)) {
+                @unlink($filePath);
+                if (!@rename($tmpFile, $filePath)) {
+                    throw new \RuntimeException("Fallo al renombrar atómicamente el archivo temporal hacia $filePath");
+                }
+            }
+            $tmpFile = null; // Reemplazo exitoso
+
+            // 9. Consumo definitivo y seguro de la autorización SOLO tras confirmar persistencia atómica
+            if ($pendingRegAuthDelete) {
+                $this->fsys->del(AnyPath::$REGAUTH, $slug . '.json');
+            }
 
             return $currentExp;
 
         } finally {
-            flock($fp, LOCK_UN);
-            fclose($fp);
+            if ($tmpFile !== null && file_exists($tmpFile)) {
+                @unlink($tmpFile);
+            }
+            if (is_resource($lockFp)) {
+                @flock($lockFp, LOCK_UN);
+                @fclose($lockFp);
+            }
         }
     }
 
@@ -376,5 +444,136 @@ class ExpedienteManager
         }
 
         return $clean;
+    }
+
+    /**
+     * Actualiza administrativamente los datos comerciales de una empresa bajo lista blanca estricta.
+     *
+     * Campos permitidos: empresa, localidad, address, colonia, categoria, prestige.
+     * Preserva íntegramente: slug, colabs, accountType, plan, nif, desde, asesor, links, logo.
+     *
+     * @param string $slug Slug de la empresa
+     * @param array $data Datos comerciales validados
+     * @return array Expediente actualizado
+     * @throws \InvalidArgumentException|\RuntimeException
+     */
+    public function updateCommercialInfoByAdmin(string $slug, array $data): array
+    {
+        $slug = trim($slug);
+        if (empty($slug)) {
+            throw new \InvalidArgumentException('Slug no proporcionado.');
+        }
+
+        $dirPath = Path::canonicalize($this->params->get(AnyPath::$DTACTC));
+        if (!$this->filesystem->exists($dirPath)) {
+            $this->filesystem->mkdir($dirPath, 0755);
+        }
+
+        $filePath = Path::canonicalize($dirPath . '/' . $slug . '.json');
+        $lockPath = Path::canonicalize($dirPath . '/' . $slug . '.lock');
+
+        $lockFp = @fopen($lockPath, 'c+');
+        if ($lockFp === false) {
+            throw new \RuntimeException("No se pudo abrir el archivo de bloqueo: $lockPath");
+        }
+
+        if (!@flock($lockFp, LOCK_EX)) {
+            @fclose($lockFp);
+            throw new \RuntimeException("No se pudo obtener el bloqueo de archivo para: $slug.lock");
+        }
+
+        $tmpFile = null;
+
+        try {
+            if (!file_exists($filePath)) {
+                throw new \RuntimeException("El expediente de la empresa '$slug' no existe.");
+            }
+
+            $rawContent = @file_get_contents($filePath);
+            if ($rawContent === false || trim($rawContent) === '') {
+                throw new \RuntimeException("El expediente de la empresa '$slug' está vacío o no se puede leer.");
+            }
+
+            $currentExp = json_decode($rawContent, true);
+            if (!is_array($currentExp)) {
+                throw new \RuntimeException("El contenido del expediente '$slug' contiene JSON inválido.");
+            }
+
+            // Lista blanca estricta de campos comerciales modificables por administración
+            if (array_key_exists('empresa', $data)) {
+                $empresa = trim((string)$data['empresa']);
+                if ($empresa === '') {
+                    throw new \InvalidArgumentException("El nombre de la empresa no puede estar vacío.");
+                }
+                $currentExp['empresa'] = $empresa;
+            }
+
+            if (array_key_exists('localidad', $data)) {
+                $currentExp['localidad'] = trim((string)$data['localidad']);
+            }
+
+            if (array_key_exists('address', $data)) {
+                $currentExp['address'] = trim((string)$data['address']);
+            }
+
+            if (array_key_exists('colonia', $data)) {
+                $currentExp['colonia'] = trim((string)$data['colonia']);
+            }
+
+            if (array_key_exists('categoria', $data)) {
+                $currentExp['categoria'] = trim((string)$data['categoria']);
+            }
+
+            if (array_key_exists('prestige', $data)) {
+                $rawPrestige = $data['prestige'];
+                if (is_numeric($rawPrestige)) {
+                    $currentExp['prestige'] = (int)$rawPrestige;
+                } else {
+                    $currentExp['prestige'] = $rawPrestige;
+                }
+            }
+
+            // Incrementar versión y actualizar timestamp de mutación
+            $currentVersion = isset($currentExp['version']) && is_numeric($currentExp['version'])
+                ? (int)$currentExp['version']
+                : 0;
+            $currentExp['version'] = $currentVersion + 1;
+            $currentExp['updatedAt'] = (int) round(microtime(true) * 1000);
+
+            // Serialización y reemplazo atómico seguro mediante archivo temporal
+            $encoded = json_encode($currentExp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if ($encoded === false) {
+                throw new \RuntimeException("Error al serializar el expediente JSON para: $slug");
+            }
+
+            $tmpFile = tempnam($dirPath, 'exp_tmp_');
+            if ($tmpFile === false) {
+                throw new \RuntimeException("No se pudo crear archivo temporal para reemplazo atómico en: $dirPath");
+            }
+
+            $bytesWritten = @file_put_contents($tmpFile, $encoded);
+            if ($bytesWritten === false || $bytesWritten !== strlen($encoded)) {
+                throw new \RuntimeException("Escritura incompleta o fallida en archivo temporal: $tmpFile");
+            }
+
+            if (!@rename($tmpFile, $filePath)) {
+                @unlink($filePath);
+                if (!@rename($tmpFile, $filePath)) {
+                    throw new \RuntimeException("Fallo al renombrar atómicamente el archivo temporal hacia $filePath");
+                }
+            }
+            $tmpFile = null;
+
+            return $currentExp;
+
+        } finally {
+            if ($tmpFile !== null && file_exists($tmpFile)) {
+                @unlink($tmpFile);
+            }
+            if (is_resource($lockFp)) {
+                @flock($lockFp, LOCK_UN);
+                @fclose($lockFp);
+            }
+        }
     }
 }

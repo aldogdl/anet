@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
 use App\Service\Any\PartnerService;
+use App\Service\Any\ExpedienteManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -183,6 +184,93 @@ class AdminCompanyController extends AbstractController
             'isPartner' => $isPartner,
             'expediente' => $data,
         ], Response::HTTP_OK);
+    }
+
+    /**
+     * Actualiza los datos comerciales de una empresa bajo lista blanca estricta.
+     * Requiere autorización administrativa.
+     */
+    #[Route('/companies/{slug}/commercial-info', methods: ['PATCH', 'PUT'])]
+    public function updateCommercialInfo(
+        string $slug,
+        Request $request,
+        ExpedienteManager $expManager,
+        PartnerService $partnerService
+    ): JsonResponse {
+        if (!$this->isAuthorizedAdmin($request)) {
+            return $this->json([
+                'error' => 'unauthorized',
+                'message' => 'Acceso administrativo no autorizado.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $safeSlug = preg_replace('/[^a-zA-Z0-9_\-]/', '', strtolower(trim($slug)));
+        if (empty($safeSlug)) {
+            return $this->json([
+                'error' => 'slug_invalid',
+                'message' => 'Slug no válido',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $rawBody = $request->getContent();
+        $payload = json_decode($rawBody, true);
+        if (!is_array($payload)) {
+            return $this->json([
+                'error' => 'invalid_json',
+                'message' => 'Cuerpo de solicitud JSON no válido',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Filtro estricto de lista blanca: solo campos comerciales
+        $allowedKeys = ['empresa', 'localidad', 'address', 'colonia', 'categoria', 'prestige'];
+        $filtered = [];
+        foreach ($allowedKeys as $key) {
+            if (array_key_exists($key, $payload)) {
+                $filtered[$key] = $payload[$key];
+            }
+        }
+
+        if (empty($filtered)) {
+            return $this->json([
+                'error' => 'empty_payload',
+                'message' => 'No se proporcionó ningún campo comercial modificable.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $updatedExp = $expManager->updateCommercialInfoByAdmin($safeSlug, $filtered);
+
+            // Sanitizar colaboradores al retornar
+            if (isset($updatedExp['colabs']) && is_array($updatedExp['colabs'])) {
+                foreach ($updatedExp['colabs'] as &$colab) {
+                    if (is_array($colab)) {
+                        unset($colab['pass']);
+                    }
+                }
+                unset($colab);
+            }
+
+            $isPartner = $partnerService->isPartner($safeSlug);
+            $updatedExp['isPartner'] = $isPartner;
+
+            return $this->json([
+                'status' => 'ok',
+                'slug' => $safeSlug,
+                'isPartner' => $isPartner,
+                'expediente' => $updatedExp,
+            ], Response::HTTP_OK);
+
+        } catch (\InvalidArgumentException $e) {
+            return $this->json([
+                'error' => 'validation_error',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'update_failed',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
