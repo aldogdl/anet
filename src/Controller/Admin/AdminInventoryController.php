@@ -182,5 +182,92 @@ class AdminInventoryController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Exporta temporalmente el inventario completo de una empresa a CSV en el servidor.
+     * 
+     * Requisitos:
+     * - Restringido exclusivamente a superadministradores (inventory.write y role superadmin).
+     * - Slug obligatorio y estrictamente validado (no admite exportación global ni vacío).
+     * - Genera el archivo en /public_html/inv/admin_export/ protegido por .htaccess.
+     * - Retorna identificador, total y tamaño sin proveer URL de descarga directa.
+     */
+    #[Route('/export-temporal', methods: ['POST'])]
+    public function exportTemporal(Request $request, \App\Service\InventoryImportService $importService): JsonResponse
+    {
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador para exportar inventario.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $content = $request->getContent();
+        $payload = [];
+        if (!empty($content)) {
+            $decoded = json_decode($content, true);
+            if (is_array($decoded)) {
+                $payload = $decoded;
+            }
+        }
+
+        $rawSlug = $payload['slug'] ?? $request->request->get('slug') ?? $request->query->get('slug');
+
+        if ($rawSlug === null || !is_string($rawSlug)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_slug',
+                'message' => 'El parámetro slug es obligatorio.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $slug = trim($rawSlug);
+        if ($slug === '' || $slug === 'Todas las empresas') {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_slug',
+                'message' => 'Debe especificarse una empresa concreta para la exportación temporal.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $slug)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_slug_format',
+                'message' => 'El formato del identificador de empresa es inválido.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = $importService->exportAdminTemporalCsv($slug);
+
+            return new JsonResponse([
+                'abort' => false,
+                'msg' => 'Exportación temporal generada exitosamente en el servidor.',
+                'body' => $result,
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_parameter',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'export_error',
+                'message' => 'Error al generar la exportación temporal de inventario: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }
+
 
