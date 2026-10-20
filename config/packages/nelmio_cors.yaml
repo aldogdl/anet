@@ -12,6 +12,11 @@ nelmio_cors:
             allow_headers: ['Content-Type', 'Authorization']
             allow_methods: ['POST', 'PUT', 'GET', 'DELETE']
             max_age: 3600
+        '^/admin-api/':
+            allow_origin: ['*']
+            allow_headers: ['Content-Type', 'Authorization']
+            allow_methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS']
+            max_age: 3600
 
 
 # nelmio_cors:

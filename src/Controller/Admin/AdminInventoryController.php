@@ -192,9 +192,13 @@ class AdminInventoryController extends AbstractController
      * - Genera el archivo en /public_html/inv/admin_export/ protegido por .htaccess.
      * - Retorna identificador, total y tamaño sin proveer URL de descarga directa.
      */
-    #[Route('/export-temporal', methods: ['POST'])]
+    #[Route('/export-temporal', methods: ['POST', 'OPTIONS'])]
     public function exportTemporal(Request $request, \App\Service\InventoryImportService $importService): JsonResponse
     {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse([], Response::HTTP_NO_CONTENT);
+        }
+
         try {
             $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
             if ($context->getRoleAdmin() !== 'superadmin') {
