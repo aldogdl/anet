@@ -250,6 +250,8 @@ class InventoryTemporalImportService
         $resolvedCount = 0;
         $pendingCount = 0;
         $invalidCount = 0;
+        $excludedCount = 0;
+        $invalidatedResolutionsCount = 0;
         $hasImageConflicts = 0;
 
         foreach ($rawRows as $r) {
@@ -282,9 +284,8 @@ class InventoryTemporalImportService
             if (!$isSyntacticallyValid) {
                 $status = 'invalid';
                 $cause = $r['validationError'];
-                $availableActions = [];
+                $availableActions = ['exclude'];
                 $invalidCount++;
-                $pendingCount++;
             } else {
                 // Verificar si el IKU aparece más de una vez en este mismo CSV
                 $isDuplicateInCsv = ($csvIkuCounts[$iku] ?? 0) > 1;
@@ -297,7 +298,7 @@ class InventoryTemporalImportService
                     // Conflicto interno: el mismo IKU se repite en el archivo
                     $status = 'internal_conflict';
                     $cause = 'IKU repetido dentro del archivo CSV (' . $csvIkuCounts[$iku] . ' ocurrencias)' . ($mysqlCount > 0 ? ' y además existe en MySQL.' : '.');
-                    $availableActions = ['generate_new_iku'];
+                    $availableActions = ['generate_new_iku', 'exclude'];
                     $conflictCount++;
                 } else {
                     // Existe en MySQL global
@@ -308,7 +309,7 @@ class InventoryTemporalImportService
                         $otherSlugs = array_unique(array_map(fn($m) => $m['slug'], $differentSlugRecords));
                         $status = 'cross_company_conflict';
                         $cause = 'IKU colisiona con otra empresa en MySQL: ' . implode(', ', $otherSlugs) . '.';
-                        $availableActions = ['generate_new_iku'];
+                        $availableActions = ['generate_new_iku', 'exclude'];
                         $conflictCount++;
                     } else {
                         // Todos pertenecen al mismo slug
@@ -319,14 +320,14 @@ class InventoryTemporalImportService
                                 // Mismo slug, mismo id_src: duplicados históricos en BD
                                 $status = 'duplicate_same_idsrc';
                                 $cause = 'Existen ' . $mysqlCount . ' publicaciones con este mismo IKU e idSrc en la empresa en BD.';
-                                $availableActions = ['keep_existing', 'generate_new_iku'];
+                                $availableActions = ['keep_existing', 'generate_new_iku', 'exclude'];
                                 $duplicateCount++;
                                 $conflictCount++;
                             } else {
                                 // Mismo slug pero diferente id_src: colisión de IKU
                                 $status = 'conflict_diff_idsrc';
                                 $cause = 'IKU colisiona con otra publicación distinta de la misma empresa (idSrc no coincide).';
-                                $availableActions = ['generate_new_iku'];
+                                $availableActions = ['generate_new_iku', 'exclude'];
                                 $conflictCount++;
                             }
                         } else {
@@ -338,7 +339,7 @@ class InventoryTemporalImportService
                             } else {
                                 $status = 'conflict_diff_idsrc';
                                 $cause = 'IKU coincide con ID central ' . $singleMatch['id'] . ' pero difiere en idSrc (' . $singleMatch['id_src'] . ' vs ' . $idSrc . ').';
-                                $availableActions = ['generate_new_iku'];
+                                $availableActions = ['generate_new_iku', 'exclude'];
                                 $conflictCount++;
                             }
                         }
@@ -346,32 +347,59 @@ class InventoryTemporalImportService
                 }
             }
 
-            // 3. Evaluar resoluciones enviadas por el usuario (si aplica y no es invalid)
+            // 3. Evaluar resoluciones enviadas por el usuario (incluye exclusión y validación estricta al revalidar)
             $resolution = $resolutions[$rowHash] ?? null;
             $isResolved = false;
             $hasImageConflict = false;
             $imageConflictMessage = null;
             $appliedResolution = null;
 
-            if ($status !== 'insert' && $status !== 'update' && $status !== 'invalid' && $resolution !== null && is_array($resolution)) {
+            if ($status !== 'insert' && $status !== 'update' && $resolution !== null && is_array($resolution)) {
                 $action = $resolution['action'] ?? '';
-                if ($action === 'generate_new_iku') {
+                if ($action === 'exclude') {
+                    $isResolved = true;
+                    $appliedResolution = [
+                        'action' => 'exclude',
+                    ];
+                    $resolvedCount++;
+                    $excludedCount++;
+                } elseif ($action === 'generate_new_iku' && $status !== 'invalid') {
                     $newIku = trim((string)($resolution['newIku'] ?? ''));
                     if (ItemPub::isValidIku($newIku, $idSrc)) {
-                        // Verificar si el cambio de IKU produce conflicto con carpetas de imágenes
-                        $imageAmbiguity = $this->detectImageConflict($r, $iku, $newIku);
-                        if ($imageAmbiguity !== null) {
-                            $hasImageConflict = true;
-                            $imageConflictMessage = $imageAmbiguity;
-                            $hasImageConflicts++;
+                        // Comprobar si el nuevo IKU propuesto existe actualmente en MySQL (revalidación)
+                        $isAlreadyInDb = false;
+                        if (!empty($existingByIku[$newIku])) {
+                            $isAlreadyInDb = true;
                         } else {
-                            $isResolved = true;
-                            $appliedResolution = [
-                                'action' => 'generate_new_iku',
-                                'newIku' => $newIku,
-                            ];
-                            $resolvedCount++;
+                            $dbCheck = (int)$this->conn->fetchOne("SELECT COUNT(*) FROM item_pub WHERE iku = ?", [$newIku]);
+                            if ($dbCheck > 0) {
+                                $isAlreadyInDb = true;
+                            }
                         }
+
+                        if ($isAlreadyInDb) {
+                            $invalidatedResolutionsCount++;
+                            $hasImageConflict = false;
+                            $imageConflictMessage = 'La propuesta de IKU (' . $newIku . ') ya no es válida porque fue registrada en MySQL.';
+                        } else {
+                            // Verificar si el cambio de IKU produce conflicto con carpetas de imágenes
+                            $imageAmbiguity = $this->detectImageConflict($r, $iku, $newIku);
+                            if ($imageAmbiguity !== null) {
+                                $hasImageConflict = true;
+                                $imageConflictMessage = $imageAmbiguity;
+                                $hasImageConflicts++;
+                                $invalidatedResolutionsCount++;
+                            } else {
+                                $isResolved = true;
+                                $appliedResolution = [
+                                    'action' => 'generate_new_iku',
+                                    'newIku' => $newIku,
+                                ];
+                                $resolvedCount++;
+                            }
+                        }
+                    } else {
+                        $invalidatedResolutionsCount++;
                     }
                 } elseif ($action === 'keep_existing') {
                     $targetId = (int)($resolution['targetId'] ?? 0);
@@ -383,12 +411,20 @@ class InventoryTemporalImportService
                             'targetId' => $targetId,
                         ];
                         $resolvedCount++;
+                    } else {
+                        $invalidatedResolutionsCount++;
                     }
                 }
             }
 
-            if (($status !== 'insert' && $status !== 'update') && $status !== 'invalid' && !$isResolved) {
-                $pendingCount++;
+            if ($status === 'invalid') {
+                if (!$isResolved) {
+                    $pendingCount++;
+                }
+            } elseif ($status !== 'insert' && $status !== 'update') {
+                if (!$isResolved) {
+                    $pendingCount++;
+                }
             }
 
             $r['status'] = $status;
@@ -429,14 +465,15 @@ class InventoryTemporalImportService
                 'resolvedCount' => $resolvedCount,
                 'pendingCount' => $pendingCount,
                 'invalidCount' => $invalidCount,
+                'excludedCount' => $excludedCount,
+                'invalidatedResolutionsCount' => $invalidatedResolutionsCount,
                 'hasImageConflicts' => $hasImageConflicts,
-                'isReadyForImport' => ($totalRows > 0 && $pendingCount === 0 && $invalidCount === 0 && $hasImageConflicts === 0),
+                'isReadyForImport' => ($totalRows > 0 && $pendingCount === 0 && ($totalRows - $excludedCount) > 0 && $hasImageConflicts === 0),
             ],
             'conflicts' => $conflictRows,
             'rows' => $classifiedRows,
         ];
     }
-
 
     /**
      * Genera un IKU único garantizado a nivel global utilizando GeneratorIku.
