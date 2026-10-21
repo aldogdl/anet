@@ -175,6 +175,12 @@ class InventoryTemporalImportService
             throw new \RuntimeException('El archivo CSV no contiene una cabecera válida con los campos mínimos requeridos.');
         }
 
+        // Limpiar BOM UTF-8 si está presente en la primera columna
+        if (isset($header[0])) {
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+        }
+        $header = array_map('trim', $header);
+
         // Mapeo posicional flexible de columnas
         $colMap = array_flip($header);
 
@@ -208,6 +214,10 @@ class InventoryTemporalImportService
         $uniqueIkus = array_keys($collectedIkus);
 
         if (!empty($uniqueIkus)) {
+            $paramType = class_exists(ArrayParameterType::class)
+                ? ArrayParameterType::STRING
+                : Connection::PARAM_STR_ARRAY;
+
             $chunks = array_chunk($uniqueIkus, 500);
             foreach ($chunks as $chunk) {
                 $sql = "SELECT id, slug, id_src, iku, stt, is_active, updated_at, thumb, img_big, extras, pieza, mrk_id, mdl_id 
@@ -216,7 +226,7 @@ class InventoryTemporalImportService
                 $found = $this->conn->fetchAllAssociative(
                     $sql,
                     [$chunk],
-                    [ArrayParameterType::STRING]
+                    [$paramType]
                 );
 
                 foreach ($found as $f) {
@@ -248,103 +258,102 @@ class InventoryTemporalImportService
             $idSrc = $r['id_src'];
             $isSyntacticallyValid = $r['isValid'];
 
-            if (!$isSyntacticallyValid) {
-                $r['status'] = 'invalid';
-                $r['cause'] = $r['validationError'];
-                $r['availableActions'] = [];
-                $classifiedRows[] = $r;
-                $invalidCount++;
-                continue;
-            }
-
-            // Verificar si el IKU aparece más de una vez en este mismo CSV
-            $isDuplicateInCsv = ($csvIkuCounts[$iku] ?? 0) > 1;
-
             // Registros existentes en MySQL para este IKU
             $mysqlRecords = $existingByIku[$iku] ?? [];
             $mysqlCount = count($mysqlRecords);
 
+            $existingMatches = array_map(function($m) {
+                return [
+                    'id' => (int)$m['id'],
+                    'slug' => $m['slug'],
+                    'id_src' => $m['id_src'],
+                    'iku' => $m['iku'],
+                    'pieza' => $m['pieza'] ?? '',
+                    'stt' => (int)$m['stt'],
+                    'isActive' => (bool)$m['is_active'],
+                    'updatedAt' => $m['updated_at'],
+                ];
+            }, $mysqlRecords);
+
             $status = 'insert';
             $cause = null;
-            $existingMatches = [];
             $availableActions = [];
 
-            if ($mysqlCount === 0 && !$isDuplicateInCsv) {
-                // No existe en BD y no se repite en CSV -> INSERT limpio
-                $status = 'insert';
-                $insertCount++;
-            } elseif ($isDuplicateInCsv) {
-                // Conflicto interno: el mismo IKU se repite en el archivo
-                $status = 'internal_conflict';
-                $cause = 'IKU repetido dentro del archivo CSV (' . $csvIkuCounts[$iku] . ' ocurrencias).';
-                $availableActions = ['generate_new_iku'];
-                $conflictCount++;
+            if (!$isSyntacticallyValid) {
+                $status = 'invalid';
+                $cause = $r['validationError'];
+                $availableActions = [];
+                $invalidCount++;
+                $pendingCount++;
             } else {
-                // Existe en MySQL global
-                $differentSlugRecords = array_filter($mysqlRecords, fn($m) => $m['slug'] !== $slug);
+                // Verificar si el IKU aparece más de una vez en este mismo CSV
+                $isDuplicateInCsv = ($csvIkuCounts[$iku] ?? 0) > 1;
 
-                if (!empty($differentSlugRecords)) {
-                    // Conflicto entre empresas (Cross-company)
-                    $otherSlugs = array_unique(array_map(fn($m) => $m['slug'], $differentSlugRecords));
-                    $status = 'cross_company_conflict';
-                    $cause = 'IKU colisiona con otra empresa en MySQL: ' . implode(', ', $otherSlugs) . '.';
+                if ($mysqlCount === 0 && !$isDuplicateInCsv) {
+                    // No existe en BD y no se repite en CSV -> INSERT limpio
+                    $status = 'insert';
+                    $insertCount++;
+                } elseif ($isDuplicateInCsv) {
+                    // Conflicto interno: el mismo IKU se repite en el archivo
+                    $status = 'internal_conflict';
+                    $cause = 'IKU repetido dentro del archivo CSV (' . $csvIkuCounts[$iku] . ' ocurrencias)' . ($mysqlCount > 0 ? ' y además existe en MySQL.' : '.');
                     $availableActions = ['generate_new_iku'];
                     $conflictCount++;
                 } else {
-                    // Todos pertenecen al mismo slug
-                    if ($mysqlCount > 1) {
-                        // Posible duplicado en BD para el mismo slug
-                        $differentIdSrc = array_filter($mysqlRecords, fn($m) => $m['id_src'] !== $idSrc);
-                        if (empty($differentIdSrc)) {
-                            // Mismo slug, mismo id_src: duplicados históricos en BD
-                            $status = 'duplicate_same_idsrc';
-                            $cause = 'Existen ' . $mysqlCount . ' publicaciones con este mismo IKU e idSrc en la empresa.';
-                            $availableActions = ['keep_existing', 'generate_new_iku'];
-                            $duplicateCount++;
-                        } else {
-                            // Mismo slug pero diferente id_src: colisión de IKU
-                            $status = 'conflict_diff_idsrc';
-                            $cause = 'IKU colisiona con otra publicación distinta de la misma empresa (idSrc no coincide).';
-                            $availableActions = ['generate_new_iku'];
-                            $conflictCount++;
-                        }
+                    // Existe en MySQL global
+                    $differentSlugRecords = array_filter($mysqlRecords, fn($m) => $m['slug'] !== $slug);
+
+                    if (!empty($differentSlugRecords)) {
+                        // Conflicto entre empresas (Cross-company)
+                        $otherSlugs = array_unique(array_map(fn($m) => $m['slug'], $differentSlugRecords));
+                        $status = 'cross_company_conflict';
+                        $cause = 'IKU colisiona con otra empresa en MySQL: ' . implode(', ', $otherSlugs) . '.';
+                        $availableActions = ['generate_new_iku'];
+                        $conflictCount++;
                     } else {
-                        // Exactamente 1 registro en BD del mismo slug
-                        $singleMatch = $mysqlRecords[0];
-                        if ($singleMatch['id_src'] === $idSrc) {
-                            $status = 'update';
-                            $updateCount++;
+                        // Todos pertenecen al mismo slug
+                        if ($mysqlCount > 1) {
+                            // Múltiples registros en MySQL para el mismo slug: NUNCA clasificar como update inequívoco
+                            $differentIdSrc = array_filter($mysqlRecords, fn($m) => $m['id_src'] !== $idSrc);
+                            if (empty($differentIdSrc)) {
+                                // Mismo slug, mismo id_src: duplicados históricos en BD
+                                $status = 'duplicate_same_idsrc';
+                                $cause = 'Existen ' . $mysqlCount . ' publicaciones con este mismo IKU e idSrc en la empresa en BD.';
+                                $availableActions = ['keep_existing', 'generate_new_iku'];
+                                $duplicateCount++;
+                                $conflictCount++;
+                            } else {
+                                // Mismo slug pero diferente id_src: colisión de IKU
+                                $status = 'conflict_diff_idsrc';
+                                $cause = 'IKU colisiona con otra publicación distinta de la misma empresa (idSrc no coincide).';
+                                $availableActions = ['generate_new_iku'];
+                                $conflictCount++;
+                            }
                         } else {
-                            $status = 'conflict_diff_idsrc';
-                            $cause = 'IKU coincide con ID central ' . $singleMatch['id'] . ' pero difiere en idSrc (' . $singleMatch['id_src'] . ' vs ' . $idSrc . ').';
-                            $availableActions = ['generate_new_iku'];
-                            $conflictCount++;
+                            // Exactamente 1 registro en BD del mismo slug
+                            $singleMatch = $mysqlRecords[0];
+                            if ($singleMatch['id_src'] === $idSrc) {
+                                $status = 'update';
+                                $updateCount++;
+                            } else {
+                                $status = 'conflict_diff_idsrc';
+                                $cause = 'IKU coincide con ID central ' . $singleMatch['id'] . ' pero difiere en idSrc (' . $singleMatch['id_src'] . ' vs ' . $idSrc . ').';
+                                $availableActions = ['generate_new_iku'];
+                                $conflictCount++;
+                            }
                         }
                     }
                 }
-
-                $existingMatches = array_map(function($m) {
-                    return [
-                        'id' => (int)$m['id'],
-                        'slug' => $m['slug'],
-                        'id_src' => $m['id_src'],
-                        'iku' => $m['iku'],
-                        'pieza' => $m['pieza'] ?? '',
-                        'stt' => (int)$m['stt'],
-                        'isActive' => (bool)$m['is_active'],
-                        'updatedAt' => $m['updated_at'],
-                    ];
-                }, $mysqlRecords);
             }
 
-            // 3. Evaluar resoluciones enviadas por el usuario (si aplica)
+            // 3. Evaluar resoluciones enviadas por el usuario (si aplica y no es invalid)
             $resolution = $resolutions[$rowHash] ?? null;
             $isResolved = false;
             $hasImageConflict = false;
             $imageConflictMessage = null;
             $appliedResolution = null;
 
-            if ($resolution !== null && is_array($resolution)) {
+            if ($status !== 'insert' && $status !== 'update' && $status !== 'invalid' && $resolution !== null && is_array($resolution)) {
                 $action = $resolution['action'] ?? '';
                 if ($action === 'generate_new_iku') {
                     $newIku = trim((string)($resolution['newIku'] ?? ''));
@@ -378,7 +387,7 @@ class InventoryTemporalImportService
                 }
             }
 
-            if (($status !== 'insert' && $status !== 'update') && !$isResolved) {
+            if (($status !== 'insert' && $status !== 'update') && $status !== 'invalid' && !$isResolved) {
                 $pendingCount++;
             }
 
@@ -398,11 +407,21 @@ class InventoryTemporalImportService
             }
         }
 
+        $totalRows = count($rawRows);
+        $classifiedTotal = $insertCount + $updateCount + $conflictCount + $invalidCount;
+        if ($classifiedTotal !== $totalRows) {
+            throw new \LogicException(sprintf(
+                'Inconsistencia en la clasificación de filas: procesadas (%d) != clasificadas (%d).',
+                $totalRows,
+                $classifiedTotal
+            ));
+        }
+
         return [
             'filename' => $filename,
             'slug' => $slug,
             'summary' => [
-                'totalRows' => count($rawRows),
+                'totalRows' => $totalRows,
                 'insertCount' => $insertCount,
                 'updateCount' => $updateCount,
                 'duplicateCount' => $duplicateCount,
@@ -411,12 +430,13 @@ class InventoryTemporalImportService
                 'pendingCount' => $pendingCount,
                 'invalidCount' => $invalidCount,
                 'hasImageConflicts' => $hasImageConflicts,
-                'isReadyForImport' => ($pendingCount === 0 && $invalidCount === 0 && $hasImageConflicts === 0),
+                'isReadyForImport' => ($totalRows > 0 && $pendingCount === 0 && $invalidCount === 0 && $hasImageConflicts === 0),
             ],
             'conflicts' => $conflictRows,
             'rows' => $classifiedRows,
         ];
     }
+
 
     /**
      * Genera un IKU único garantizado a nivel global utilizando GeneratorIku.
@@ -605,9 +625,9 @@ class InventoryTemporalImportService
         } elseif ($idSrc === '') {
             $isValid = false;
             $validationError = 'El campo id_src es obligatorio para identificar la pieza en origen.';
-        } elseif ($type <= 0) {
+        } elseif ($type < 0) {
             $isValid = false;
-            $validationError = 'El tipo de publicación (type) debe ser un entero positivo.';
+            $validationError = 'El tipo de publicación (type) no puede ser un entero negativo.';
         }
 
         return [
