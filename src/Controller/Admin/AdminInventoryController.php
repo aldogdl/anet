@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Repository\ItemPubRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
+use App\Service\InventoryTemporalImportService;
 use App\Service\Security\AdminJwtService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -269,6 +270,246 @@ class AdminInventoryController extends AbstractController
                 'abort' => true,
                 'error' => 'export_error',
                 'message' => 'Error al generar la exportación temporal de inventario: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Lista los archivos CSV temporales de la empresa seleccionada en /public_html/inv/admin_export/.
+     */
+    #[Route('/temporal-files', methods: ['GET', 'OPTIONS'])]
+    public function listTemporalFiles(Request $request, InventoryTemporalImportService $importService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.read');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $rawSlug = $request->query->get('slug');
+        if ($rawSlug === null || !is_string($rawSlug) || trim($rawSlug) === '') {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_slug',
+                'message' => 'El parámetro slug es obligatorio.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $files = $importService->listTemporalFiles($rawSlug);
+            return new JsonResponse([
+                'abort' => false,
+                'body' => [
+                    'slug' => trim($rawSlug),
+                    'files' => $files,
+                ],
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_parameter',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'list_error',
+                'message' => 'Error al listar archivos temporales: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Prevalida en seco un archivo CSV temporal sin escribir en MySQL.
+     */
+    #[Route('/prevalidate-temporal', methods: ['POST', 'OPTIONS'])]
+    public function prevalidateTemporal(Request $request, InventoryTemporalImportService $importService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'POST, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $rawSlug = $payload['slug'] ?? null;
+        $rawFilename = $payload['filename'] ?? null;
+        $resolutions = $payload['resolutions'] ?? [];
+
+        if (empty($rawSlug) || !is_string($rawSlug) || empty($rawFilename) || !is_string($rawFilename)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_parameters',
+                'message' => 'Los parámetros slug y filename son obligatorios.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = $importService->prevalidateTemporalCsv(trim($rawSlug), trim($rawFilename), is_array($resolutions) ? $resolutions : []);
+            return new JsonResponse([
+                'abort' => false,
+                'msg' => 'Prevalidación ejecutada con éxito (modo solo lectura).',
+                'body' => $result,
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_parameter',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'prevalidation_error',
+                'message' => 'Error durante la prevalidación: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Genera un IKU único garantizado a nivel global utilizando GeneratorIku.
+     */
+    #[Route('/generate-iku', methods: ['POST', 'OPTIONS'])]
+    public function generateGuaranteedIku(Request $request, InventoryTemporalImportService $importService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'POST, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $excludeIkus = $payload['excludeIkus'] ?? [];
+
+        try {
+            $newIku = $importService->generateGuaranteedUniqueIku(is_array($excludeIkus) ? $excludeIkus : []);
+            return new JsonResponse([
+                'abort' => false,
+                'body' => [
+                    'iku' => $newIku,
+                ],
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'generate_iku_error',
+                'message' => 'Error al generar IKU: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Resuelve en masa todas las colisiones que admitan 'generate_new_iku'.
+     */
+    #[Route('/resolve-all-conflicts', methods: ['POST', 'OPTIONS'])]
+    public function resolveAllConflicts(Request $request, InventoryTemporalImportService $importService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'POST, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $rawSlug = $payload['slug'] ?? null;
+        $rawFilename = $payload['filename'] ?? null;
+        $currentResolutions = $payload['resolutions'] ?? [];
+
+        if (empty($rawSlug) || !is_string($rawSlug) || empty($rawFilename) || !is_string($rawFilename)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_parameters',
+                'message' => 'Los parámetros slug y filename son obligatorios.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $resolutions = $importService->resolveAllConflicts(
+                trim($rawSlug),
+                trim($rawFilename),
+                is_array($currentResolutions) ? $currentResolutions : []
+            );
+
+            return new JsonResponse([
+                'abort' => false,
+                'body' => [
+                    'resolutions' => $resolutions,
+                    'count' => count($resolutions),
+                ],
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'resolve_all_error',
+                'message' => 'Error al resolver colisiones: ' . $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }

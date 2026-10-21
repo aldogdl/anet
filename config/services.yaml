@@ -74,6 +74,11 @@ services:
         arguments:
             $invExp: '%invExp%'
 
+    App\Service\InventoryTemporalImportService:
+        public: true
+        arguments:
+            $invExp: '%invExp%'
+
     App\Service\ImageUploadService:
         arguments:
             $projectDir: '%phtml%'
