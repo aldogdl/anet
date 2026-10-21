@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\ItemPub;
 use App\Service\Any\IkuGenerator\GeneratorIku;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 
 /**
@@ -215,7 +216,7 @@ class InventoryTemporalImportService
                 $found = $this->conn->fetchAllAssociative(
                     $sql,
                     [$chunk],
-                    [\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
+                    [ArrayParameterType::STRING]
                 );
 
                 foreach ($found as $f) {
