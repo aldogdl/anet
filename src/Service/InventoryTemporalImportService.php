@@ -215,7 +215,7 @@ class InventoryTemporalImportService
                 $found = $this->conn->fetchAllAssociative(
                     $sql,
                     [$chunk],
-                    [\Doctrine\DBAL\ArrayParameterType::STRING]
+                    [\Doctrine\DBAL\Connection::PARAM_STR_ARRAY]
                 );
 
                 foreach ($found as $f) {
