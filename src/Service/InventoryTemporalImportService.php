@@ -3,7 +3,7 @@
 namespace App\Service;
 
 use App\Entity\ItemPub;
-use App\Service\Any\IkuGenerator\GeneratorIku;
+use App\Service\Any\IkuGenerator\GeneratorIKU;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 
@@ -18,10 +18,10 @@ use Doctrine\DBAL\Connection;
 class InventoryTemporalImportService
 {
     private Connection $conn;
-    private GeneratorIku $generatorIku;
+    private GeneratorIKU $generatorIku;
     private string $invExp;
 
-    public function __construct(Connection $conn, GeneratorIku $generatorIku, string $invExp)
+    public function __construct(Connection $conn, GeneratorIKU $generatorIku, string $invExp)
     {
         $this->conn = $conn;
         $this->generatorIku = $generatorIku;
