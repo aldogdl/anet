@@ -155,13 +155,13 @@ class InventoryCompanyDeletionService
                 return true;
             }
 
-            // C. Comprobar en extra (JSON de pictures y pathImg) de otras empresas
+            // C. Comprobar en extras (JSON de pictures y pathImg) de otras empresas
             // Soporta barras normales y barras escapadas por json_encode (\/)
             $extraRef = (int)$this->conn->fetchOne(
                 "SELECT COUNT(*) FROM item_pub 
                  WHERE slug != ? 
-                   AND (extra LIKE ? OR extra LIKE ?)
-                   AND (extra LIKE ? OR extra LIKE ?)",
+                   AND (extras LIKE ? OR extras LIKE ?)
+                   AND (extras LIKE ? OR extras LIKE ?)",
                 [
                     $cleanSlug,
                     "%{$cleanSlug}%", "%{$subDir}%",
@@ -179,7 +179,7 @@ class InventoryCompanyDeletionService
             $refRoot = (int)$this->conn->fetchOne(
                 "SELECT COUNT(*) FROM item_pub 
                  WHERE slug != ? 
-                   AND (thumb LIKE ? OR thumb LIKE ? OR img_big LIKE ? OR img_big LIKE ? OR (extra LIKE ? AND (extra LIKE ? OR extra LIKE ?)))",
+                   AND (thumb LIKE ? OR thumb LIKE ? OR img_big LIKE ? OR img_big LIKE ? OR (extras LIKE ? AND (extras LIKE ? OR extras LIKE ?)))",
                 [
                     $cleanSlug,
                     $rootSlug1, $rootSlug2,
@@ -299,7 +299,7 @@ class InventoryCompanyDeletionService
 
         // 3. Archivos declarados en BD pero faltantes en disco
         $dbPhotosDeclared = (int)$this->conn->fetchOne(
-            "SELECT COUNT(*) FROM item_pub WHERE slug = ? AND (thumb != '' OR img_big != '' OR extra LIKE '%pictures%')",
+            "SELECT COUNT(*) FROM item_pub WHERE slug = ? AND (thumb != '' OR img_big != '' OR extras LIKE '%pictures%')",
             [$cleanSlug]
         );
         $missingFilesCount = max(0, $dbPhotosDeclared - count($scannedFiles));
