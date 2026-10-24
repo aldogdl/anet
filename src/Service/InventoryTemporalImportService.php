@@ -250,7 +250,32 @@ class InventoryTemporalImportService
             }
         }
 
-        // 2. Clasificar cada fila, detectar conflictos y evaluar resoluciones
+        // 2. Conteo de ocurrencias de cada IKU en publicaciones activas (descontando aquellas con resolución 'exclude')
+        $activeCsvIkuCounts = [];
+        foreach ($rawRows as $r) {
+            $rowHash = $r['rowHash'];
+            $res = $resolutions[$rowHash] ?? null;
+            $action = is_array($res) ? ($res['action'] ?? null) : null;
+
+            if ($action === 'exclude') {
+                continue; // Filas excluidas no compiten en la importación activa
+            }
+
+            if ($action === 'generate_new_iku') {
+                $proposedIku = trim((string)($res['newIku'] ?? ''));
+                if ($proposedIku !== '' && ItemPub::isValidIku($proposedIku, $r['id_src'])) {
+                    $activeCsvIkuCounts[$proposedIku] = ($activeCsvIkuCounts[$proposedIku] ?? 0) + 1;
+                    continue;
+                }
+            }
+
+            $cleanIku = $r['iku'];
+            if ($cleanIku !== '') {
+                $activeCsvIkuCounts[$cleanIku] = ($activeCsvIkuCounts[$cleanIku] ?? 0) + 1;
+            }
+        }
+
+        // 3. Clasificar cada fila, detectar conflictos y evaluar resoluciones
         $classifiedRows = [];
         $conflictRows = [];
 
@@ -270,6 +295,9 @@ class InventoryTemporalImportService
             $iku = $r['iku'];
             $idSrc = $r['id_src'];
             $isSyntacticallyValid = $r['isValid'];
+            $resolution = $resolutions[$rowHash] ?? null;
+            $userAction = is_array($resolution) ? ($resolution['action'] ?? null) : null;
+            $isRowExcluded = ($userAction === 'exclude');
 
             // Registros existentes en MySQL para este IKU
             $mysqlRecords = $existingByIku[$iku] ?? [];
@@ -297,18 +325,25 @@ class InventoryTemporalImportService
                 $cause = $r['validationError'];
                 $availableActions = ['exclude'];
                 $invalidCount++;
+            } elseif ($isRowExcluded) {
+                // Publicación excluida explícitamente por el usuario
+                $status = 'internal_conflict';
+                $cause = 'Publicación excluida de importación por decisión del operador.';
+                $availableActions = ['exclude'];
+                $conflictCount++;
             } else {
-                // Verificar si el IKU aparece más de una vez en este mismo CSV
-                $isDuplicateInCsv = ($csvIkuCounts[$iku] ?? 0) > 1;
+                // Verificar si el IKU aparece más de una vez entre las publicaciones activas del CSV
+                $activeCount = $activeCsvIkuCounts[$iku] ?? 0;
+                $isDuplicateInCsv = $activeCount > 1;
 
                 if ($mysqlCount === 0 && !$isDuplicateInCsv) {
-                    // No existe en BD y no se repite en CSV -> INSERT limpio
+                    // No existe en BD y no se repite entre activas en CSV -> INSERT limpio
                     $status = 'insert';
                     $insertCount++;
                 } elseif ($isDuplicateInCsv) {
-                    // Conflicto interno: el mismo IKU se repite en el archivo
+                    // Conflicto interno: el mismo IKU se repite entre publicaciones activas a importar
                     $status = 'internal_conflict';
-                    $cause = 'IKU repetido dentro del archivo CSV (' . $csvIkuCounts[$iku] . ' ocurrencias)' . ($mysqlCount > 0 ? ' y además existe en MySQL.' : '.');
+                    $cause = 'IKU repetido dentro del archivo CSV (' . $activeCount . ' publicaciones activas)' . ($mysqlCount > 0 ? ' y además existe en MySQL.' : '.');
                     $availableActions = ['generate_new_iku', 'exclude'];
                     $conflictCount++;
                 } else {
