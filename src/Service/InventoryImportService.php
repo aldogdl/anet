@@ -176,18 +176,6 @@ class InventoryImportService
 	private function processBatch(array $batch, string $slug): array
 	{
 		$idSrcs = array_map(fn($item) => $item['id_src'], $batch);
-			
-		// 1. Obtener estados actuales de los registros existentes para este slug
-		$existing = $this->conn->fetchAllAssociative(
-			"SELECT id_src, stt FROM item_pub WHERE slug = ? AND id_src IN (?)",
-			[$slug, $idSrcs],
-			[\Doctrine\DBAL\ParameterType::STRING, Connection::PARAM_STR_ARRAY]
-		);
-
-		$statusMap = [];
-		foreach ($existing as $ex) {
-			$statusMap[$ex['id_src']] = (int) $ex['stt'];
-		}
 
 		$ins = 0;
 		$upd = 0;
@@ -195,25 +183,47 @@ class InventoryImportService
 
 		$this->conn->beginTransaction();
 		try {
-			foreach ($batch as $data) {
+			// 1. Obtener registros existentes bajo bloqueo pesimista FOR UPDATE dentro de la transacción
+			$existing = $this->conn->fetchAllAssociative(
+				"SELECT id, slug, id_src, iku, stt, is_active, price, costo, thumb, img_big, pieza, mrk_id, mdl_id, anio_inicio, anio_fin, lado, poss, detalles, variantes, extras FROM item_pub WHERE slug = ? AND id_src IN (?) FOR UPDATE",
+				[$slug, $idSrcs],
+				[\Doctrine\DBAL\ParameterType::STRING, Connection::PARAM_STR_ARRAY]
+			);
 
+			$existingMap = [];
+			foreach ($existing as $ex) {
+				$existingMap[$ex['id_src']] = $ex;
+			}
+
+			foreach ($batch as $data) {
 				$idSrc = $data['id_src'];
-				if (!isset($statusMap[$idSrc])) {
+				if (!isset($existingMap[$idSrc])) {
 					// INSERT: Registro nuevo
+					// Regla: En importación automática, ningún registro nuevo entra directamente como stt = 3 (privilegio exclusivo de FormInv)
+					if ((int) ($data['stt'] ?? 0) === 3) {
+						$data['stt'] = 302;
+					}
 					$this->conn->insert('item_pub', $data);
 					$ins++;
 				} else {
-					// UPDATE: Si el registro existente estaba activo (< 501) O si viene con status activo (< 501) para reactivarse
-					if ($statusMap[$idSrc] < 501 || $data['stt'] < 501) {
-						$this->conn->update('item_pub', $data, [
-							'id_src' => $idSrc,
-							'slug'   => $slug
-						]);
-						$upd++;
-					} else {
-						// IGNORAR: Ambos son inactivos/borrados (stt >= 501)
+					$current = $existingMap[$idSrc];
+					$currentStt = (int) $current['stt'];
+					$incomingStt = (int) ($data['stt'] ?? 0);
+
+					// IGNORAR: Ambos son inactivos/borrados (stt >= 501)
+					if ($currentStt >= 501 && $incomingStt >= 501) {
 						$ign++;
+						continue;
 					}
+
+					// UPDATE protegido con Super Blindaje de stt = 3
+					$shieldedData = InventoryShieldHelper::applyShield($current, $data);
+
+					$this->conn->update('item_pub', $shieldedData, [
+						'id'   => $current['id'],
+						'slug' => $slug
+					]);
+					$upd++;
 				}
 			}
 			$this->conn->commit();

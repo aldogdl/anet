@@ -828,7 +828,7 @@ class InventoryTemporalImportService
 
                 // D. Consultar MySQL con bloqueo FOR UPDATE para evaluar colisión o existencia
                 $dbMatches = $this->conn->fetchAllAssociative(
-                    "SELECT id, slug, id_src, iku, extras FROM item_pub WHERE iku = ? FOR UPDATE",
+                    "SELECT id, slug, id_src, iku, stt, is_active, price, costo, thumb, img_big, pieza, mrk_id, mdl_id, anio_inicio, anio_fin, lado, poss, detalles, variantes, extras FROM item_pub WHERE iku = ? FOR UPDATE",
                     [$finalIku]
                 );
                 $dbCount = count($dbMatches);
@@ -838,10 +838,13 @@ class InventoryTemporalImportService
 
                 if ($dbCount === 0) {
                     // --- INSERT: nuevo AUTO_INCREMENT ignorando ID antiguo ---
+                    // Regla: En importación automática, un registro nuevo nunca entra directamente como stt = 3
+                    $insertStt = ((int) $item['stt'] === 3) ? 302 : (int) $item['stt'];
+
                     $insertData = [
                         'slug' => $slug,
                         'type' => $item['type'],
-                        'stt' => $item['stt'],
+                        'stt' => $insertStt,
                         'id_src' => $item['id_src'],
                         'iku' => $finalIku,
                         'src' => $item['src'],
@@ -882,6 +885,7 @@ class InventoryTemporalImportService
                 } else {
                     // --- UPDATE: únicamente si pertenece al mismo slug sin ambigüedad ---
                     $targetId = null;
+                    $targetRecord = null;
                     if ($action === 'keep_existing') {
                         $requestedTargetId = (int)($res['targetId'] ?? 0);
                         $matchedTarget = array_filter($dbMatches, fn($m) => (int)$m['id'] === $requestedTargetId);
@@ -901,6 +905,7 @@ class InventoryTemporalImportService
                         if ($single['id_src'] !== $item['id_src']) {
                             throw new \RuntimeException("Conflicto no resuelto de idSrc en IKU '{$finalIku}' (BD: '{$single['id_src']}' vs CSV: '{$item['id_src']}').");
                         }
+                        $targetRecord = $single;
                         $targetId = (int)$single['id'];
                     } else {
                         throw new \RuntimeException("Existen múltiples registros en BD para el IKU '{$finalIku}' sin resolución unívoca keep_existing.");
@@ -909,7 +914,7 @@ class InventoryTemporalImportService
                     $finalId = $targetId;
                     $extras['idSr'] = $finalId;
 
-                    $updateData = [
+                    $rawUpdateData = [
                         'type' => $item['type'],
                         'stt' => $item['stt'],
                         'id_src' => $item['id_src'],
@@ -937,6 +942,9 @@ class InventoryTemporalImportService
                         'updated_at' => $now,
                         'extras' => json_encode($extras, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                     ];
+
+                    // Aplicar Super Blindaje de stt = 3 sobre la fila existente
+                    $updateData = InventoryShieldHelper::applyShield($targetRecord, $rawUpdateData);
 
                     $this->conn->update('item_pub', $updateData, ['id' => $finalId, 'slug' => $slug]);
                     $updatedCount++;
