@@ -709,6 +709,183 @@ class AdminInventoryController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Lista todas las sesiones reales de cuarentena física registradas.
+     * Restringido a superadmin (inventory.write).
+     */
+    #[Route('/quarantine/sessions', methods: ['GET', 'OPTIONS'])]
+    public function quarantineSessions(Request $request, InventoryCompanyDeletionService $deletionService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $filterSlug = $request->query->get('slug');
+        if (is_string($filterSlug)) {
+            $filterSlug = trim($filterSlug);
+        } else {
+            $filterSlug = null;
+        }
+
+        try {
+            $sessions = $deletionService->listQuarantineSessions($filterSlug);
+            return new JsonResponse([
+                'abort' => false,
+                'body' => $sessions,
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'quarantine_list_error',
+                'message' => 'Error al consultar sesiones de cuarentena: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Previsualiza la purga de una única sesión de cuarentena.
+     * Restringido a superadmin (inventory.write).
+     */
+    #[Route('/quarantine/preview', methods: ['GET', 'OPTIONS'])]
+    public function quarantinePurgePreview(Request $request, InventoryCompanyDeletionService $deletionService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $sessionToken = $request->query->get('session');
+        if (empty($sessionToken) || !is_string($sessionToken)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_parameters',
+                'message' => 'El parámetro session es obligatorio.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $preview = $deletionService->previewQuarantinePurge(trim($sessionToken));
+            return new JsonResponse([
+                'abort' => false,
+                'body' => $preview,
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_parameter',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'quarantine_preview_error',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Ejecuta la purga manual definitiva de una única sesión de cuarentena confirmada.
+     * Restringido a superadmin (inventory.write) y confirmación explícita.
+     */
+    #[Route('/quarantine/purge', methods: ['POST', 'OPTIONS'])]
+    public function quarantinePurgeExecute(Request $request, InventoryCompanyDeletionService $deletionService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'POST, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $rawSession = $payload['session'] ?? null;
+        $confirmSession = $payload['confirmSession'] ?? null;
+
+        if (empty($rawSession) || !is_string($rawSession) || empty($confirmSession) || !is_string($confirmSession)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_parameters',
+                'message' => 'Los parámetros session y confirmSession son obligatorios.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $operator = method_exists($context, 'getUsername') ? ($context->getUsername() ?? 'superadmin') : 'superadmin';
+            $result = $deletionService->executeQuarantinePurge(trim($rawSession), trim($confirmSession), (string)$operator);
+            return new JsonResponse([
+                'abort' => false,
+                'msg' => 'Sesión de cuarentena purgada con éxito.',
+                'body' => $result,
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_parameter',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'quarantine_purge_error',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 
 

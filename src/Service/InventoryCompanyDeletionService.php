@@ -46,6 +46,13 @@ class InventoryCompanyDeletionService
         if (!is_dir($dir)) {
             @mkdir($dir, 0755, true);
         }
+        $htaccess = $dir . '/.htaccess';
+        if (!file_exists($htaccess)) {
+            @file_put_contents(
+                $htaccess,
+                "# Acceso HTTP denegado estrictamente por seguridad a la cuarentena\n<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n    Deny from all\n</IfModule>\n"
+            );
+        }
         return $dir;
     }
 
@@ -540,6 +547,250 @@ class InventoryCompanyDeletionService
             ];
         } finally {
             $this->releaseWriteBarrier($cleanSlug);
+            if ($lockFp) {
+                flock($lockFp, LOCK_UN);
+                fclose($lockFp);
+                @unlink($lockFile);
+            }
+        }
+    }
+
+    /**
+     * Valida sintácticamente el identificador de sesión de cuarentena.
+     */
+    public function validateSessionToken(string $sessionToken): string
+    {
+        $clean = trim($sessionToken);
+        if ($clean === '' || !preg_match('/^[a-zA-Z0-9_-]+$/', $clean)) {
+            throw new \InvalidArgumentException('El token de sesión es inválido o contiene caracteres prohibidos.');
+        }
+        return $clean;
+    }
+
+    /**
+     * Lista todas las sesiones reales de cuarentena registradas en disco.
+     */
+    public function listQuarantineSessions(?string $filterSlug = null): array
+    {
+        $baseDir = $this->getQuarantineBaseDir();
+        $dirs = glob($baseDir . '/*', GLOB_ONLYDIR);
+        $sessions = [];
+
+        if ($dirs) {
+            foreach ($dirs as $dir) {
+                $token = basename($dir);
+                $manifestFile = $dir . '/manifest.json';
+                if (!file_exists($manifestFile)) {
+                    continue;
+                }
+                $manifest = json_decode((string)@file_get_contents($manifestFile), true);
+                if (!is_array($manifest)) {
+                    continue;
+                }
+
+                $slug = (string)($manifest['slug'] ?? '');
+                if ($filterSlug !== null && $filterSlug !== '' && $filterSlug !== 'Todas las empresas' && $slug !== $filterSlug) {
+                    continue;
+                }
+
+                $totalBytes = 0;
+                $files = $manifest['files'] ?? [];
+                if (is_array($files)) {
+                    foreach ($files as $f) {
+                        $totalBytes += (int)($f['size'] ?? 0);
+                    }
+                }
+
+                $status = (string)($manifest['status'] ?? 'unknown');
+                $committed = !empty($manifest['databaseCommitted']);
+
+                $sessions[] = [
+                    'session' => $token,
+                    'slug' => $slug,
+                    'timestamp' => (string)($manifest['timestamp'] ?? ''),
+                    'status' => $status,
+                    'databaseCommitted' => $committed,
+                    'committedAt' => $manifest['committedAt'] ?? null,
+                    'filesCount' => count($files),
+                    'totalBytes' => $totalBytes,
+                    'formattedSize' => $this->formatBytes($totalBytes),
+                    'isPurgeable' => ($status === 'committed' && $committed),
+                ];
+            }
+        }
+
+        // Ordenar por fecha cronológica descendente
+        usort($sessions, fn($a, $b) => strcmp($b['timestamp'], $a['timestamp']));
+
+        return $sessions;
+    }
+
+    /**
+     * Previsualiza la purga de una única sesión de cuarentena verificando consistencia SQL y física.
+     */
+    public function previewQuarantinePurge(string $sessionToken): array
+    {
+        $cleanSession = $this->validateSessionToken($sessionToken);
+        $baseDir = $this->getQuarantineBaseDir();
+        $sessionDir = $baseDir . '/' . $cleanSession;
+
+        $realSessionDir = realpath($sessionDir);
+        $realBaseDir = realpath($baseDir);
+
+        if ($realSessionDir === false || $realBaseDir === false || !str_starts_with($realSessionDir, $realBaseDir . DIRECTORY_SEPARATOR)) {
+            throw new \InvalidArgumentException("La sesión de cuarentena especificada no existe o la ruta es inválida.");
+        }
+
+        $manifestPath = $realSessionDir . '/manifest.json';
+        if (!file_exists($manifestPath)) {
+            throw new \RuntimeException("La sesión no posee un manifiesto válido (manifest.json inexistente).");
+        }
+
+        $manifest = json_decode((string)@file_get_contents($manifestPath), true);
+        if (!is_array($manifest)) {
+            throw new \RuntimeException("El archivo manifest.json está corrupto o mal formado.");
+        }
+
+        $status = (string)($manifest['status'] ?? '');
+        $committed = !empty($manifest['databaseCommitted']);
+
+        if ($status !== 'committed' || !$committed) {
+            throw new \RuntimeException("La sesión '{$cleanSession}' no tiene estado 'committed' (estado actual: '{$status}'). Únicamente se permite purgar sesiones confirmadas en MySQL tras una eliminación exitosa.");
+        }
+
+        $slug = (string)($manifest['slug'] ?? '');
+        $files = $manifest['files'] ?? [];
+        $filesCount = count($files);
+        $totalBytes = 0;
+        $risks = [];
+
+        $existingFilesCount = 0;
+        foreach ($files as $f) {
+            $qPath = $f['quarantine'] ?? null;
+            if ($qPath && file_exists($qPath)) {
+                $existingFilesCount++;
+                $totalBytes += (int)($f['size'] ?? @filesize($qPath) ?: 0);
+            }
+        }
+
+        // Verificar referencias cruzadas activas en la BD
+        $activeRefsFound = 0;
+        foreach ($files as $f) {
+            $origPath = $f['original'] ?? '';
+            if ($origPath !== '') {
+                $filename = basename($origPath);
+                $subDir = basename(dirname($origPath));
+                if ($this->isFileReferencedByOtherCompany($slug, $subDir, $filename)) {
+                    $activeRefsFound++;
+                }
+            }
+        }
+
+        if ($activeRefsFound > 0) {
+            $risks[] = "Se detectaron {$activeRefsFound} archivo(s) actualmente referenciados en publicaciones sobrevivientes. La purga se bloquea para evitar pérdidas.";
+        }
+
+        $canPurge = ($status === 'committed' && $committed && empty($risks));
+
+        return [
+            'session' => $cleanSession,
+            'slug' => $slug,
+            'createdAt' => (string)($manifest['timestamp'] ?? ''),
+            'committedAt' => (string)($manifest['committedAt'] ?? ''),
+            'status' => $status,
+            'filesCount' => $filesCount,
+            'existingFilesCount' => $existingFilesCount,
+            'totalBytes' => $totalBytes,
+            'formattedSize' => $this->formatBytes($totalBytes),
+            'canPurge' => $canPurge,
+            'risks' => $risks,
+        ];
+    }
+
+    /**
+     * Ejecuta la purga manual definitiva de una única sesión de cuarentena confirmada.
+     */
+    public function executeQuarantinePurge(string $sessionToken, string $confirmSession, string $operator = 'superadmin'): array
+    {
+        $cleanSession = $this->validateSessionToken($sessionToken);
+        $cleanConfirm = trim($confirmSession);
+
+        if ($cleanSession !== $cleanConfirm) {
+            throw new \InvalidArgumentException("Confirmación tipográfica no coincide: se esperaba '{$cleanSession}' pero se recibió '{$cleanConfirm}'.");
+        }
+
+        $preview = $this->previewQuarantinePurge($cleanSession);
+        if (!$preview['canPurge']) {
+            throw new \RuntimeException('La purga no puede continuar debido a riesgos de consistencia o estado no confirmado.');
+        }
+
+        $baseDir = $this->getQuarantineBaseDir();
+        $sessionDir = $baseDir . '/' . $cleanSession;
+        $realSessionDir = realpath($sessionDir);
+
+        $lockFile = $baseDir . '/.lock_purge_' . $cleanSession;
+        $lockFp = @fopen($lockFile, 'w+');
+        if (!$lockFp || !flock($lockFp, LOCK_EX | LOCK_NB)) {
+            throw new \RuntimeException("La sesión '{$cleanSession}' ya está siendo procesada o purgada por otra operación.");
+        }
+
+        try {
+            $purgedFiles = 0;
+            $reclaimedBytes = 0;
+
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($realSessionDir, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+
+            foreach ($iterator as $item) {
+                $realItemPath = realpath($item->getPathname());
+                if ($realItemPath === false || !str_starts_with($realItemPath, $realSessionDir . DIRECTORY_SEPARATOR)) {
+                    continue;
+                }
+
+                if ($item->isFile() || $item->isLink()) {
+                    if ($item->getBasename() !== 'manifest.json') {
+                        $fileSize = $item->getSize();
+                        if (@unlink($realItemPath)) {
+                            $purgedFiles++;
+                            $reclaimedBytes += $fileSize;
+                        }
+                    }
+                } elseif ($item->isDir()) {
+                    @rmdir($realItemPath);
+                }
+            }
+
+            $manifestPath = $realSessionDir . '/manifest.json';
+            if (file_exists($manifestPath)) {
+                @unlink($manifestPath);
+            }
+            @rmdir($realSessionDir);
+
+            // Registro mínimo de auditoría persistente
+            $auditEntry = [
+                'timestamp' => date('c'),
+                'event' => 'quarantine_purge',
+                'session' => $cleanSession,
+                'slug' => $preview['slug'],
+                'operator' => $operator,
+                'purgedFiles' => $purgedFiles,
+                'reclaimedBytes' => $reclaimedBytes,
+                'formattedReclaimed' => $this->formatBytes($reclaimedBytes),
+            ];
+            $auditLogPath = $baseDir . '/quarantine_audit.jsonl';
+            @file_put_contents($auditLogPath, json_encode($auditEntry, JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+
+            return [
+                'session' => $cleanSession,
+                'slug' => $preview['slug'],
+                'purgedFiles' => $purgedFiles,
+                'reclaimedBytes' => $reclaimedBytes,
+                'formattedReclaimed' => $this->formatBytes($reclaimedBytes),
+                'purgedAt' => date('c'),
+            ];
+        } finally {
             if ($lockFp) {
                 flock($lockFp, LOCK_UN);
                 fclose($lockFp);
