@@ -4,7 +4,6 @@ namespace App\Service;
 
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Filesystem\Path;
 
 /**
  * Servicio administrativo para la eliminación segura de inventario completo por empresa.
