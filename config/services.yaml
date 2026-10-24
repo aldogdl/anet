@@ -89,3 +89,12 @@ services:
             $publicKeyPath: '%authJwtPublicKeyPath%'
             $anyToken: '%anyToken%'
 
+    App\Service\InventoryCompanyDeletionService:
+        public: true
+        arguments:
+            $invExp: '%invExp%'
+
+    App\Command\InventoryQuarantineRestoreCommand:
+        arguments:
+            $invExp: '%invExp%'
+

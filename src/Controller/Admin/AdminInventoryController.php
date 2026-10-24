@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Repository\ItemPubRepository;
 use App\Service\Any\Fsys\AnyPath;
 use App\Service\Any\Fsys\Fsys;
+use App\Service\InventoryCompanyDeletionService;
 use App\Service\InventoryTemporalImportService;
 use App\Service\Security\AdminJwtService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -513,6 +514,202 @@ class AdminInventoryController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Ejecuta la importación definitiva de un archivo CSV temporal en item_pub (Fase 2).
+     *
+     * Protegido estrictamente con rol superadmin y permiso inventory.write.
+     */
+    #[Route('/execute-import-temporal', methods: ['POST', 'OPTIONS'])]
+    public function executeImportTemporal(Request $request, InventoryTemporalImportService $importService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'POST, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $rawSlug = $payload['slug'] ?? null;
+        $rawFilename = $payload['filename'] ?? null;
+        $resolutions = $payload['resolutions'] ?? [];
+
+        if (empty($rawSlug) || !is_string($rawSlug) || empty($rawFilename) || !is_string($rawFilename)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_parameters',
+                'message' => 'Los parámetros slug y filename son obligatorios.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = $importService->executeImportTemporal(
+                trim($rawSlug),
+                trim($rawFilename),
+                is_array($resolutions) ? $resolutions : []
+            );
+
+            return new JsonResponse([
+                'abort' => false,
+                'msg' => 'Importación temporal ejecutada con éxito en AutoParnet.',
+                'body' => $result,
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_parameter',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'execute_import_error',
+                'message' => 'Error durante la ejecución de la importación: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Previsualización dry-run de la eliminación de inventario de una empresa.
+     * Restringido a superadmin (inventory.write).
+     */
+    #[Route('/company-deletion-preview', methods: ['GET', 'OPTIONS'])]
+    public function companyDeletionPreview(Request $request, InventoryCompanyDeletionService $deletionService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $rawSlug = $request->query->get('slug');
+        if (empty($rawSlug) || !is_string($rawSlug)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_parameters',
+                'message' => 'El parámetro slug es obligatorio.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $preview = $deletionService->previewDeletion(trim($rawSlug));
+            return new JsonResponse([
+                'abort' => false,
+                'body' => $preview,
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_parameter',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'preview_error',
+                'message' => 'Error al calcular la previsualización: ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Ejecuta la eliminación definitiva de inventario de una empresa con cuarentena.
+     * Restringido a superadmin (inventory.write) y confirmación tipográfica exacta.
+     */
+    #[Route('/company-deletion-execute', methods: ['POST', 'OPTIONS'])]
+    public function companyDeletionExecute(Request $request, InventoryCompanyDeletionService $deletionService): JsonResponse
+    {
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT, [
+                'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'POST, OPTIONS',
+                'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept, Origin, X-Requested-With',
+            ]);
+        }
+
+        try {
+            $context = $this->jwtService->authenticateRequest($request, 'inventory.write');
+            if ($context->getRoleAdmin() !== 'superadmin') {
+                return new JsonResponse([
+                    'abort' => true,
+                    'error' => 'forbidden',
+                    'message' => 'Acceso denegado: se requieren facultades de superadministrador.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (\Throwable $e) {
+            return $this->jwtService->handleAuthError($e);
+        }
+
+        $payload = json_decode($request->getContent(), true) ?? [];
+        $rawSlug = $payload['slug'] ?? null;
+        $confirmSlug = $payload['confirmSlug'] ?? null;
+
+        if (empty($rawSlug) || !is_string($rawSlug) || empty($confirmSlug) || !is_string($confirmSlug)) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'missing_parameters',
+                'message' => 'Los parámetros slug y confirmSlug son obligatorios.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $result = $deletionService->executeDeletion(trim($rawSlug), trim($confirmSlug));
+            return new JsonResponse([
+                'abort' => false,
+                'msg' => 'Inventario de la empresa eliminado con éxito.',
+                'body' => $result,
+            ], Response::HTTP_OK, [
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'invalid_parameter',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_BAD_REQUEST);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'abort' => true,
+                'error' => 'deletion_execution_error',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 }
+
 
 

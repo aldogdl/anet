@@ -121,16 +121,27 @@ class InventoryTemporalImportService
     }
 
     /**
+     * Valida y normaliza el slug de la empresa.
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function validateSlug(string $slug): string
+    {
+        $cleanSlug = trim($slug);
+        if ($cleanSlug === '' || $cleanSlug === 'Todas las empresas' || !preg_match('/^[a-zA-Z0-9_-]+$/', $cleanSlug)) {
+            throw new \InvalidArgumentException('El parámetro slug es obligatorio y debe ser alfanumérico.');
+        }
+        return $cleanSlug;
+    }
+
+    /**
      * Valida la existencia, ruta segura y formato de un archivo CSV temporal.
      *
      * @throws \InvalidArgumentException|\RuntimeException
      */
     public function getSecureCsvPath(string $slug, string $filename): string
     {
-        $cleanSlug = trim($slug);
-        if ($cleanSlug === '' || $cleanSlug === 'Todas las empresas' || !preg_match('/^[a-zA-Z0-9_-]+$/', $cleanSlug)) {
-            throw new \InvalidArgumentException('El parámetro slug es obligatorio y debe ser alfanumérico.');
-        }
+        $cleanSlug = $this->validateSlug($slug);
 
         $cleanFilename = basename($filename);
         $pattern = '/^tmp_inv_' . preg_quote($cleanSlug, '/') . '_\d{8}_\d{6}_[a-zA-Z0-9]+\.csv$/';
@@ -636,6 +647,7 @@ class InventoryTemporalImportService
         $lado = $get('lado', '');
         $poss = $get('poss', '');
         $detalles = $get('detalles', '');
+        $variantes = $get('variantes', '');
         $waId = $get('wa_id', '');
         $taId = (int)$get('ta_id', 0);
         $fromDev = $get('from_dev', 'admin_csv');
@@ -692,6 +704,7 @@ class InventoryTemporalImportService
             'lado' => $lado,
             'poss' => $poss,
             'detalles' => $detalles,
+            'variantes' => $variantes !== '' ? $variantes : null,
             'wa_id' => $waId,
             'ta_id' => $taId,
             'from_dev' => $fromDev,
@@ -700,6 +713,275 @@ class InventoryTemporalImportService
             'extras' => $extras,
             'isValid' => $isValid,
             'validationError' => $validationError,
+        ];
+    }
+
+    /**
+     * Ejecuta la importación definitiva de un archivo CSV temporal en item_pub (Fase 2).
+     *
+     * 1. Revalida en caliente mediante prevalidateTemporalCsv(). Aborta inmediatamente si isReadyForImport !== true.
+     * 2. Transacción atómica completa con rollback íntegro ante cualquier error.
+     * 3. INSERT: omite ID antiguo del CSV, aprovecha AUTO_INCREMENT y conserva IKU definitivo.
+     * 4. UPDATE: exclusivo para el mismo slug con targetId exacto sin ambigüedad.
+     * 5. Hidratación de extra.idSr con el ID definitivo asignado por MySQL, conservando intacto el resto de extra.
+     * 6. Garantiza unicidad global de IKU durante la corrida con bloqueo de concurrencia FOR UPDATE.
+     * 7. Bloquea cualquier cambio de IKU que genere conflicto de imágenes con el sistema de archivos.
+     * 8. Tras confirmación (commit), elimina exclusivamente el archivo CSV temporal (unlink). Si falla, registra estado recuperable.
+     *
+     * @param string $slug Slug alfanumérico estricto de la empresa.
+     * @param string $filename Nombre del archivo temporal CSV.
+     * @param array $resolutions Mapa asociativo de resoluciones [ rowHash => [ action, targetId?, newIku? ] ].
+     * @return array Resumen de importación ejecutada.
+     */
+    public function executeImportTemporal(string $slug, string $filename, array $resolutions = []): array
+    {
+        $cleanSlug = $this->validateSlug($slug);
+        $barrierFile = rtrim($this->invExp, '/\\') . '/.write_barrier_' . $cleanSlug;
+        if (file_exists($barrierFile)) {
+            throw new \RuntimeException("La empresa '{$cleanSlug}' se encuentra en un proceso de depuración o eliminación administrativa activa. Importaciones bloqueadas temporalmente.");
+        }
+
+        $startTime = microtime(true);
+        $fullPath = $this->getSecureCsvPath($cleanSlug, $filename);
+
+        // 1. Revalidación en caliente contra el CSV y el estado actual de MySQL
+        $preval = $this->prevalidateTemporalCsv($slug, $filename, $resolutions);
+        $summary = $preval['summary'] ?? [];
+
+        if (!($summary['isReadyForImport'] ?? false)) {
+            throw new \RuntimeException('La importación fue rechazada porque la prevalidación indica que el archivo no está listo para importar (existen conflictos pendientes o colisiones no resueltas).');
+        }
+        if (($summary['pendingCount'] ?? 0) > 0) {
+            throw new \RuntimeException('La importación no puede continuar porque existen ' . $summary['pendingCount'] . ' publicaciones pendientes de resolución.');
+        }
+        if (($summary['hasImageConflicts'] ?? 0) > 0) {
+            throw new \RuntimeException('La importación no puede continuar porque existen colisiones de imágenes con el sistema de archivos.');
+        }
+        if (($summary['invalidatedResolutionsCount'] ?? 0) > 0) {
+            throw new \RuntimeException('Una o más resoluciones propuestas quedaron invalidadas debido a cambios concurrentes en la base de datos.');
+        }
+
+        // 2. Abrir CSV temporal para lectura de datos
+        $fp = fopen($fullPath, 'r');
+        if (!$fp) {
+            throw new \RuntimeException('No fue posible abrir el archivo CSV temporal para ejecución.');
+        }
+
+        $header = fgetcsv($fp);
+        if ($header === false || count($header) < 20) {
+            fclose($fp);
+            throw new \RuntimeException('El archivo CSV temporal no contiene una cabecera válida con los campos mínimos.');
+        }
+
+        if (isset($header[0])) {
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+        }
+        $header = array_map('trim', $header);
+        $colMap = array_flip($header);
+
+        $insertedCount = 0;
+        $updatedCount = 0;
+        $excludedCount = 0;
+        $seenIkusInRun = [];
+
+        // 3. Ejecución atómica bajo transacción completa
+        $this->conn->beginTransaction();
+        try {
+            $lineNum = 1;
+            while (($row = fgetcsv($fp)) !== false) {
+                $lineNum++;
+                if (empty(array_filter($row, fn($v) => trim((string)$v) !== ''))) {
+                    continue; // Omitir filas vacías
+                }
+
+                $item = $this->extractRowData($row, $colMap, $lineNum, $slug);
+                $rowHash = $item['rowHash'];
+                $res = $resolutions[$rowHash] ?? null;
+                $action = is_array($res) ? ($res['action'] ?? null) : null;
+
+                // A. Exclusiones de publicaciones
+                if ($action === 'exclude') {
+                    $excludedCount++;
+                    continue;
+                }
+
+                // B. Determinar IKU definitivo y validar imágenes
+                $originalIku = $item['iku'];
+                $finalIku = $originalIku;
+                if ($action === 'generate_new_iku') {
+                    $proposedIku = trim((string)($res['newIku'] ?? ''));
+                    if (!ItemPub::isValidIku($proposedIku, $item['id_src'])) {
+                        throw new \RuntimeException("Propuesta de IKU inválida ('{$proposedIku}') en fila {$lineNum}.");
+                    }
+                    $imgConflict = $this->detectImageConflict($item, $originalIku, $proposedIku);
+                    if ($imgConflict !== null) {
+                        throw new \RuntimeException("Conflicto de imágenes al alterar IKU en fila {$lineNum}: {$imgConflict}");
+                    }
+                    $finalIku = $proposedIku;
+                }
+
+                // C. Garantizar unicidad global en la corrida
+                if (isset($seenIkusInRun[$finalIku])) {
+                    throw new \RuntimeException("Violación de unicidad de IKU: el IKU '{$finalIku}' se procesó más de una vez en esta importación (fila {$lineNum}).");
+                }
+                $seenIkusInRun[$finalIku] = true;
+
+                // D. Consultar MySQL con bloqueo FOR UPDATE para evaluar colisión o existencia
+                $dbMatches = $this->conn->fetchAllAssociative(
+                    "SELECT id, slug, id_src, iku, extras FROM item_pub WHERE iku = ? FOR UPDATE",
+                    [$finalIku]
+                );
+                $dbCount = count($dbMatches);
+
+                $now = date('Y-m-d H:i:s');
+                $extras = is_array($item['extras']) ? $item['extras'] : [];
+
+                if ($dbCount === 0) {
+                    // --- INSERT: nuevo AUTO_INCREMENT ignorando ID antiguo ---
+                    $insertData = [
+                        'slug' => $slug,
+                        'type' => $item['type'],
+                        'stt' => $item['stt'],
+                        'id_src' => $item['id_src'],
+                        'iku' => $finalIku,
+                        'src' => $item['src'],
+                        'fuente' => $item['fuente'],
+                        'thumb' => $item['thumb'],
+                        'img_big' => $item['img_big'],
+                        'price' => $item['price'],
+                        'costo' => $item['costo'],
+                        'link' => $item['link'],
+                        'is_active' => $item['is_active'] ? 1 : 0,
+                        'pieza' => $item['pieza'],
+                        'mrk_id' => $item['mrk_id'],
+                        'mdl_id' => $item['mdl_id'],
+                        'anio_inicio' => $item['anio_inicio'],
+                        'anio_fin' => $item['anio_fin'],
+                        'lado' => $item['lado'],
+                        'poss' => $item['poss'],
+                        'detalles' => $item['detalles'],
+                        'variantes' => $item['variantes'],
+                        'wa_id' => $item['wa_id'],
+                        'ta_id' => $item['ta_id'],
+                        'from_dev' => $item['from_dev'] ?: 'admin_csv',
+                        'created' => $item['created'] ?: $now,
+                        'updated_at' => $now,
+                        'extras' => null, // Se hidrata inmediatamente con idSr
+                    ];
+
+                    $this->conn->insert('item_pub', $insertData);
+                    $finalId = (int)$this->conn->lastInsertId();
+
+                    // Hidratar extra.idSr conservando intacto el resto de extras
+                    $extras['idSr'] = $finalId;
+                    $this->conn->update('item_pub', [
+                        'extras' => json_encode($extras, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                    ], ['id' => $finalId]);
+
+                    $insertedCount++;
+                } else {
+                    // --- UPDATE: únicamente si pertenece al mismo slug sin ambigüedad ---
+                    $targetId = null;
+                    if ($action === 'keep_existing') {
+                        $requestedTargetId = (int)($res['targetId'] ?? 0);
+                        $matchedTarget = array_filter($dbMatches, fn($m) => (int)$m['id'] === $requestedTargetId);
+                        if (empty($matchedTarget)) {
+                            throw new \RuntimeException("El targetId {$requestedTargetId} especificado para resolver {$finalIku} no existe en MySQL.");
+                        }
+                        $targetRecord = reset($matchedTarget);
+                        if ($targetRecord['slug'] !== $slug) {
+                            throw new \RuntimeException("El registro ID {$requestedTargetId} pertenece a otra empresa ('{$targetRecord['slug']}'). Modificación rechazada.");
+                        }
+                        $targetId = $requestedTargetId;
+                    } elseif ($dbCount === 1) {
+                        $single = $dbMatches[0];
+                        if ($single['slug'] !== $slug) {
+                            throw new \RuntimeException("El IKU '{$finalIku}' pertenece a otra empresa ('{$single['slug']}'). Modificación rechazada.");
+                        }
+                        if ($single['id_src'] !== $item['id_src']) {
+                            throw new \RuntimeException("Conflicto no resuelto de idSrc en IKU '{$finalIku}' (BD: '{$single['id_src']}' vs CSV: '{$item['id_src']}').");
+                        }
+                        $targetId = (int)$single['id'];
+                    } else {
+                        throw new \RuntimeException("Existen múltiples registros en BD para el IKU '{$finalIku}' sin resolución unívoca keep_existing.");
+                    }
+
+                    $finalId = $targetId;
+                    $extras['idSr'] = $finalId;
+
+                    $updateData = [
+                        'type' => $item['type'],
+                        'stt' => $item['stt'],
+                        'id_src' => $item['id_src'],
+                        'iku' => $finalIku,
+                        'src' => $item['src'],
+                        'fuente' => $item['fuente'],
+                        'thumb' => $item['thumb'],
+                        'img_big' => $item['img_big'],
+                        'price' => $item['price'],
+                        'costo' => $item['costo'],
+                        'link' => $item['link'],
+                        'is_active' => $item['is_active'] ? 1 : 0,
+                        'pieza' => $item['pieza'],
+                        'mrk_id' => $item['mrk_id'],
+                        'mdl_id' => $item['mdl_id'],
+                        'anio_inicio' => $item['anio_inicio'],
+                        'anio_fin' => $item['anio_fin'],
+                        'lado' => $item['lado'],
+                        'poss' => $item['poss'],
+                        'detalles' => $item['detalles'],
+                        'variantes' => $item['variantes'],
+                        'wa_id' => $item['wa_id'],
+                        'ta_id' => $item['ta_id'],
+                        'from_dev' => $item['from_dev'] ?: 'admin_csv',
+                        'updated_at' => $now,
+                        'extras' => json_encode($extras, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    ];
+
+                    $this->conn->update('item_pub', $updateData, ['id' => $finalId, 'slug' => $slug]);
+                    $updatedCount++;
+                }
+            }
+
+            fclose($fp);
+            unset($fp);
+
+            // Confirmar transacción de base de datos
+            $this->conn->commit();
+        } catch (\Throwable $e) {
+            if (isset($fp) && is_resource($fp)) {
+                fclose($fp);
+            }
+            if ($this->conn->isTransactionActive()) {
+                $this->conn->rollBack();
+            }
+            throw $e;
+        }
+
+        // 4. Eliminación atómica del archivo CSV importado con reporte recuperable
+        $csvDeleted = false;
+        $csvDeleteWarning = null;
+        try {
+            if (file_exists($fullPath)) {
+                $csvDeleted = @unlink($fullPath);
+                if (!$csvDeleted) {
+                    $csvDeleteWarning = 'Los registros fueron importados e hidratados con éxito en MySQL, pero no fue posible eliminar el archivo temporal del disco (' . basename($fullPath) . '). Debe eliminarse manualmente para evitar reimportaciones accidentales.';
+                }
+            }
+        } catch (\Throwable $te) {
+            $csvDeleteWarning = 'Error al intentar eliminar el archivo temporal tras la importación: ' . $te->getMessage();
+        }
+
+        return [
+            'filename' => $filename,
+            'slug' => $slug,
+            'totalRows' => $insertedCount + $updatedCount + $excludedCount,
+            'insertedCount' => $insertedCount,
+            'updatedCount' => $updatedCount,
+            'excludedCount' => $excludedCount,
+            'csvDeleted' => $csvDeleted,
+            'csvDeleteWarning' => $csvDeleteWarning,
+            'durationMs' => (int)round((microtime(true) - $startTime) * 1000),
         ];
     }
 

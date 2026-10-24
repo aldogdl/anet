@@ -85,6 +85,12 @@ class InventoryImportService
 	 */
 	public function importFromCsv(UploadedFile $file, string $slug): array
 	{
+		$cleanSlug = trim($slug);
+		$barrierFile = rtrim($this->invExp, '/\\') . '/.write_barrier_' . $cleanSlug;
+		if (file_exists($barrierFile)) {
+			throw new \RuntimeException("La empresa '{$cleanSlug}' se encuentra en un proceso de depuración o eliminación administrativa activa. Sincronización e importaciones bloqueadas temporalmente.");
+		}
+
 		$handle = fopen($file->getRealPath(), 'r');
 		if (!$handle) {
 			throw new \Exception("No se pudo abrir el archivo CSV.");
