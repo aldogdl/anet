@@ -404,18 +404,40 @@ class ItemController extends AbstractController
 	}
 
 	/**
-	 * Endpoint para obtener el idSr de un item a partir de su idSrc
+	 * Endpoint para obtener el idSr de un item a partir de su idSrc o su iku.
+	 * Consultar exclusivamente el campo recibido y rechazar peticiones con ambos parámetros.
 	 */
 	#[Route('/item-pub/check', methods: ['GET'])]
 	public function checkItemPub(Request $req, ItemPubRepository $repo): Response
 	{
-		$idSrc = $req->query->get('idSrc');
-		if (!$idSrc) {
+		$hasIdSrc = $req->query->has('idSrc') && trim((string)$req->query->get('idSrc')) !== '';
+		$hasIku = $req->query->has('iku') && trim((string)$req->query->get('iku')) !== '';
+
+		// Rechazar peticiones con ambos parámetros o con ninguno
+		if (($hasIdSrc && $hasIku) || (!$hasIdSrc && !$hasIku)) {
 			return new Response('0', Response::HTTP_BAD_REQUEST);
 		}
 
-		$item = $repo->findOneBy(['idSrc' => $idSrc]);
-		$idSr = $item ? $item->getId() : 0;
+		// Consulta exclusiva por idSrc (preserva compatibilidad sin romper consumidores existentes)
+		if ($hasIdSrc) {
+			$idSrc = trim((string)$req->query->get('idSrc'));
+			$item = $repo->findOneBy(['idSrc' => $idSrc]);
+			$idSr = $item ? $item->getId() : 0;
+			return new Response((string) $idSr);
+		}
+
+		// Consulta exclusiva por iku (sin índice UNIQUE en MySQL; no elegir arbitrariamente si hay duplicados)
+		$iku = trim((string)$req->query->get('iku'));
+		$items = $repo->findBy(['iku' => $iku]);
+
+		if (count($items) === 1) {
+			$idSr = $items[0]->getId();
+		} elseif (count($items) > 1) {
+			// iku duplicado detectado: rechazar con conflicto en lugar de seleccionar arbitrariamente
+			return new Response('0', Response::HTTP_CONFLICT);
+		} else {
+			$idSr = 0;
+		}
 
 		return new Response((string) $idSr);
 	}
