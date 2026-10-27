@@ -52,7 +52,7 @@ class WaController extends AbstractController
 								@mkdir($fbFailsDir, 0777, true);
 							}
 							$failFilename = rtrim($fbFailsDir, '/\\') . '/status_fail_' . date('Ymd_His') . '_' . substr(md5(uniqid()), 0, 6) . '.json';
-							@file_put_contents($failFilename, json_encode($st, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+							@file_put_contents($failFilename, json_encode($st, JSON_UNESCAPED_UNICODE));
 						}
 					}
 				}
@@ -153,7 +153,7 @@ class WaController extends AbstractController
 		$filePath = $targetDir . '/' . $filename;
 
 		// Guardar JSON formateado
-		file_put_contents($filePath, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+		file_put_contents($filePath, json_encode($data, JSON_UNESCAPED_UNICODE));
 
 		// Manejo de imágenes adjuntas si aplica en multipart
 		if ($req->files->count() > 0) {

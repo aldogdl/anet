@@ -202,7 +202,7 @@ class MMController extends AbstractController
 					json_encode([
 						'pendingAutosVersion' => $newAutosVersion,
 						'updatedAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-					], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+					], JSON_UNESCAPED_SLASHES)
 				);
 			} catch (\Throwable $th) {
 				error_log('No se pudo registrar archivo de recuperación durable: ' . $th->getMessage());
@@ -212,7 +212,7 @@ class MMController extends AbstractController
 			try {
 				$filesystem->dumpFile(
 					$versionsPath,
-					json_encode($versionsData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+					json_encode($versionsData, JSON_UNESCAPED_SLASHES)
 				);
 				$versionSaved = true;
 				// Remueve recuperación una vez confirmado el archivo en disco
@@ -241,7 +241,7 @@ class MMController extends AbstractController
 			// F. Persistencia de caché de operación para idempotencia
 			if ($operationId !== '' && $opCachePath !== '') {
 				try {
-					$filesystem->dumpFile($opCachePath, json_encode($res, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+					$filesystem->dumpFile($opCachePath, json_encode($res, JSON_UNESCAPED_SLASHES));
 				} catch (\Throwable $th) {
 					// No interrumpir la respuesta si falla la persistencia de idempotencia
 				}
@@ -460,7 +460,7 @@ class MMController extends AbstractController
 					json_encode([
 						'pendingDiccVersion' => $newDiccVersion,
 						'updatedAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-					], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+					], JSON_UNESCAPED_SLASHES)
 				);
 			} catch (\Throwable $th) {
 				error_log('No se pudo registrar archivo de recuperación durable de diccionario: ' . $th->getMessage());
@@ -470,7 +470,7 @@ class MMController extends AbstractController
 			try {
 				$filesystem->dumpFile(
 					$diccPath,
-					json_encode($mergedDict, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+					json_encode($mergedDict, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
 				);
 				if ($filesystem->exists($recoveryPath)) {
 					$filesystem->remove($recoveryPath);
@@ -521,7 +521,7 @@ class MMController extends AbstractController
 
 			if ($operationId !== '' && $opCachePath !== '') {
 				try {
-					$filesystem->dumpFile($opCachePath, json_encode($res, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+					$filesystem->dumpFile($opCachePath, json_encode($res, JSON_UNESCAPED_SLASHES));
 				} catch (\Throwable $th) {
 				}
 			}
@@ -557,7 +557,7 @@ class MMController extends AbstractController
 				$currentDicc = json_decode(file_get_contents($diccPath), true);
 				if (is_array($currentDicc) && ((int)($currentDicc['version'] ?? 0)) < (int)$pendingVersion) {
 					$currentDicc['version'] = (int)$pendingVersion;
-					$filesystem->dumpFile($diccPath, json_encode($currentDicc, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+					$filesystem->dumpFile($diccPath, json_encode($currentDicc, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 				}
 			}
 			$filesystem->remove($recoveryPath);
@@ -599,7 +599,7 @@ class MMController extends AbstractController
 				$versionsData['autos'] = (string)$pendingAutos;
 				$filesystem->dumpFile(
 					$versionsPath,
-					json_encode($versionsData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+					json_encode($versionsData, JSON_UNESCAPED_SLASHES)
 				);
 			}
 

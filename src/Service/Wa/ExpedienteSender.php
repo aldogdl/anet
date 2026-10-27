@@ -53,7 +53,7 @@ class ExpedienteSender
                     @mkdir($fbFailsDir, 0777, true);
                 }
                 $filename = rtrim($fbFailsDir, '/\\') . DIRECTORY_SEPARATOR . $prefix . '_' . date('Ymd_His') . '_' . substr(md5(uniqid()), 0, 6) . '.json';
-                @file_put_contents($filename, json_encode($logData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                @file_put_contents($filename, json_encode($logData, JSON_UNESCAPED_UNICODE));
             }
         } catch (\Throwable $e) {
             // Silenciar errores de escritura de log
@@ -216,7 +216,7 @@ class ExpedienteSender
         } else {
             // Si hubo fallos parciales o no todos se enviaron, actualizar el archivo JSON con las banderas _sent
             if ($modifiedFlags && file_exists($filePath)) {
-                @file_put_contents($filePath, json_encode($messagesList, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                @file_put_contents($filePath, json_encode($messagesList, JSON_UNESCAPED_UNICODE));
             }
 
             // Registrar log de fallo en fb_fails

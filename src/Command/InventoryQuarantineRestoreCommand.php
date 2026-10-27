@@ -207,7 +207,7 @@ class InventoryQuarantineRestoreCommand extends Command
         if (!$isDryRun && $missingInQuarantineCount === 0) {
             $manifest['status'] = 'restored';
             $manifest['restoredAt'] = date('c');
-            @file_put_contents($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            @file_put_contents($manifestPath, json_encode($manifest, JSON_UNESCAPED_SLASHES));
             $io->success("Restauración finalizada exitosamente para la sesión {$targetSession}.");
         }
 

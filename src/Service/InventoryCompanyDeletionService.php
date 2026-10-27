@@ -88,7 +88,7 @@ class InventoryCompanyDeletionService
             'pid' => getmypid(),
             'reason' => 'company_deletion_in_progress',
         ];
-        @file_put_contents($barrierPath, json_encode($meta, JSON_PRETTY_PRINT));
+        @file_put_contents($barrierPath, json_encode($meta));
     }
 
     /**
@@ -448,7 +448,7 @@ class InventoryCompanyDeletionService
                 ];
                 @file_put_contents(
                     $quarantineSessionDir . '/manifest.json',
-                    json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+                    json_encode($manifest, JSON_UNESCAPED_SLASHES)
                 );
             }
 
@@ -485,7 +485,7 @@ class InventoryCompanyDeletionService
                     $manifest['committedAt'] = date('c');
                     @file_put_contents(
                         $quarantineSessionDir . '/manifest.json',
-                        json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+                        json_encode($manifest, JSON_UNESCAPED_SLASHES)
                     );
                 }
             } catch (\Throwable $sqlException) {

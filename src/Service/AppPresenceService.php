@@ -92,7 +92,7 @@ class AppPresenceService
             $entries = array_slice($entries, 0, 15);
 
             // 6. Truncar, escribir nuevo JSON y forzar flush a disco
-            $json = json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $json = json_encode($entries, JSON_UNESCAPED_SLASHES);
             rewind($fp);
             ftruncate($fp, 0);
             fwrite($fp, $json);

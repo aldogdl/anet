@@ -234,7 +234,7 @@ class PartnerService
                 'partners' => $partners,
             ];
 
-            $encoded = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $encoded = json_encode($payload, JSON_UNESCAPED_SLASHES);
             if ($encoded === false) {
                 throw new \RuntimeException("Error al serializar el contenido de partners.json");
             }
