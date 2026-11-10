@@ -29,72 +29,79 @@ class AdminCompanyController extends AbstractController
      */
     public static function isValidCompanyDossier(string $filePath, string $filename): bool
     {
+        return self::readValidCompanyDossier($filePath, $filename) !== null;
+    }
+
+    /**
+     * Valida y decodifica estructuralmente el expediente JSON de una empresa.
+     * Retorna el arreglo decodificado si cumple las reglas canónicas, o null si no es válido.
+     */
+    public static function readValidCompanyDossier(string $filePath, string $filename): ?array
+    {
         if (!is_file($filePath) || !is_readable($filePath)) {
-            return false;
+            return null;
         }
 
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         if ($ext !== 'json') {
-            return false;
+            return null;
         }
 
         $baseSlug = strtolower(pathinfo($filename, PATHINFO_FILENAME));
         if ($baseSlug === '') {
-            return false;
+            return null;
         }
 
         // Criterio estructural de nomenclatura no empresarial / auxiliar / sistema
         if (preg_match('/^(any_|tpub|rep_|exp_|saf_|prueba_|anytest$|cot\d+$|partners$|versions$|index_)/i', $baseSlug)) {
-            return false;
+            return null;
         }
 
         $content = @file_get_contents($filePath);
         if ($content === false || trim($content) === '') {
-            return false;
+            return null;
         }
 
         $data = json_decode($content, true);
         if (!is_array($data) || empty($data)) {
-            return false;
+            return null;
         }
 
         // Descartar arrays indexados numéricamente (listas puras como any_block, any_ref, piezas)
         if (array_keys($data) === range(0, count($data) - 1)) {
-            return false;
+            return null;
         }
 
         // Validar identidad empresarial: empresa y slug no vacíos
         if (empty($data['empresa']) || !is_string($data['empresa']) || trim($data['empresa']) === '') {
-            return false;
+            return null;
         }
         if (empty($data['slug']) || !is_string($data['slug']) || trim($data['slug']) === '') {
-            return false;
+            return null;
         }
 
         // Coherencia de slug
         if (strtolower(trim($data['slug'])) !== $baseSlug) {
-            return false;
+            return null;
         }
 
         // Validar lista de colaboradores con al menos un colaborador con waId
         if (!isset($data['colabs']) || !is_array($data['colabs']) || empty($data['colabs'])) {
-            return false;
+            return null;
         }
 
-        $hasColabWithWa = false;
         foreach ($data['colabs'] as $colab) {
             if (is_array($colab) && !empty($colab['waId']) && trim((string)$colab['waId']) !== '') {
-                $hasColabWithWa = true;
-                break;
+                return $data;
             }
         }
 
-        return $hasColabWithWa;
+        return null;
     }
 
     /**
      * Lista todos los slugs de empresas disponibles en ctcs que cumplan el criterio estructural.
-     * Retorna únicamente nombres de archivo sin extensión .json.
+     * Conserva `companies` como lista de slugs y agrega `items` con `{slug, desde}` canónico.
      * Excluye archivos auxiliares, de prueba y tablas del sistema.
      */
     #[Route('/companies', methods: ['GET'])]
@@ -105,11 +112,13 @@ class AdminCompanyController extends AbstractController
             return $this->json([
                 'status' => 'ok',
                 'companies' => [],
+                'items' => [],
                 'total' => 0,
             ]);
         }
 
         $companies = [];
+        $desdeBySlug = [];
         $files = scandir($folder);
         if ($files !== false) {
             foreach ($files as $file) {
@@ -117,17 +126,29 @@ class AdminCompanyController extends AbstractController
                     continue;
                 }
                 $filePath = $folder . DIRECTORY_SEPARATOR . $file;
-                if (self::isValidCompanyDossier($filePath, $file)) {
-                    $companies[] = pathinfo($file, PATHINFO_FILENAME);
+                $dossier = self::readValidCompanyDossier($filePath, $file);
+                if ($dossier !== null) {
+                    $slug = pathinfo($file, PATHINFO_FILENAME);
+                    $companies[] = $slug;
+                    $desdeBySlug[$slug] = $dossier['desde'] ?? null;
                 }
             }
         }
 
         sort($companies, SORT_STRING | SORT_FLAG_CASE);
 
+        $items = array_map(
+            static fn (string $slug): array => [
+                'slug' => $slug,
+                'desde' => $desdeBySlug[$slug] ?? null,
+            ],
+            $companies
+        );
+
         return $this->json([
             'status' => 'ok',
             'companies' => $companies,
+            'items' => $items,
             'total' => count($companies),
         ]);
     }
